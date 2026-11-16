@@ -1,6 +1,10 @@
 # Campaign (planned, not built)
 
-The prototype plays Monday only. This is the agreed shape of the full game. Tracked in #3 unless noted.
+The prototype plays Monday only. Tracked in #3 unless noted.
+
+**Decided 2026-11-16:** Monday first, as a slice that is good on its own (`ROADMAP.md`). Then an arc whose
+length follows the content (3 to 7 nights, "seven" is not fixed), ending with the birthday screen, then
+endless free play with escalating her behaviour. The table below is the 7-night draft to pick from.
 
 ## Seven nights
 
