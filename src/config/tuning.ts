@@ -92,6 +92,8 @@ export const T = {
 
   // --- Loot ---
   BAG_SIZE: 18,
+  POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots
+  POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag
   DROP_WAIT_SEC: 8,
   BATTLE_DROP_CHANCE: 0.6,        // a normal battle drops 1 item 60% of the time
   BOSS_DROPS: 3, VAULT_DROPS: 5,

@@ -12,7 +12,7 @@ import { CITY, CD_PCT } from '../data/city';
 import { isAway } from '../systems/autopilot';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
 import { CHAT_QS, VISIT_CUE } from '../data/content';
-import { heroStats, maxHp, xpNeeded } from '../systems/stats';
+import { heroStats, maxHp, xpNeeded, itemPower, heroPower, heroBaseStats } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, entryValue, cap } from '../systems/loot';
 import { icon, glyph, ABILITY_GLYPHS } from './icons';
@@ -354,7 +354,7 @@ export function tooltipHtml(): string {
     const st = heroStats(h);
     if (parts[0] === 'hero') {
       const r = HERO_ROLE[h.id];
-      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · Lv ${h.level}</div><div>${r.role}</div><div class="tt-sub">Auto attack (always on): ${r.auto}</div>
+      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · Lv ${h.level} · <span style="color:#ffd27a">\u25c6 ${heroPower(h)}</span></div><div>${r.role}</div><div class="dim">Power = the average power of ${h.name}'s 6 gear slots (empty = 0).</div><div class="tt-sub">Auto attack (always on): ${r.auto}</div>
         <div class="dim">ATK ${st.atk} · HP ${maxHp(h)} · ARM ${st.armor} · SPD ${st.speed} · CRIT ${st.crit}%</div><div class="tt-hint">Click: show on the paper doll.</div>`;
     } else {
       const si = Number(parts[2]); const a = ABILITIES[h.id][si];
@@ -378,7 +378,7 @@ export function tooltipHtml(): string {
       const h = S.g.heroes[n.heroTab];
       const cur = h.gear[it.slot];
       body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
-        <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · item level ${it.ilvl}</div>
+        <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · item level ${it.ilvl} · <b style="color:#ffd27a">\u25c6 ${it.identified ? itemPower(it) : '?'} power</b></div>
         ${it.identified ? statLines(it) : '<div class="dim">Unidentified. Identify at the Appraiser in town.</div>'}
         <div class="tt-val">Sells for ${it.value} gold ${it.locked ? '· <b style="color:#f2c46b">LOCKED</b>' : ''}</div>
         ${it.identified ? `<div class="tt-cmp"><div class="dim">On ${h.name} vs ${cur ? esc(cur.name) : 'empty slot'}:</div>${compareFor(n.heroTab, it)}</div>
@@ -393,7 +393,7 @@ export function tooltipHtml(): string {
     const it = h?.gear[parts[2] as Item['slot']];
     if (!it) return '';
     body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(it.name)}</div>
-      <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · equipped on ${h.name}</div>${statLines(it)}
+      <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · equipped on ${h.name} · <b style="color:#ffd27a">\u25c6 ${itemPower(it)} power</b></div>${statLines(it)}
       <div class="tt-val">Sells for ${it.value} gold</div><div class="tt-hint">Drag to the bag to unequip.</div>`;
   } else return '';
   const left = Math.min(hover.x + 16, 1280 - 250), top = Math.min(hover.y + 12, 720 - 200);
@@ -419,12 +419,14 @@ function affixLines(item: Item): string {
 
 function compareFor(heroIdx: number, item: Item): string {
   const h = S.g.heroes[heroIdx];
+  const pBefore = heroPower(h), pAfter = heroPower(h, { [item.slot]: item }), pd = pAfter - pBefore;
+  const powLine = `<span style="color:${pd > 0 ? '#ffd27a' : pd < 0 ? '#ff8a80' : '#a999bd'}">\u25c6 Power ${pBefore} \u2192 ${pAfter}</span> `;
   const before = heroStats(h);
   const after = heroStats(h, { [item.slot]: item });
   const keys: Stat[] = ['atk', 'hp', 'armor', 'speed', 'crit', 'luck'];
   const parts = keys.map(k => ({ k, d: Math.round((after[k] - before[k]) * 10) / 10 })).filter(x => x.d !== 0)
     .map(x => `<span style="color:${x.d > 0 ? '#6fcf7f' : '#ff8a80'}">${x.d > 0 ? '+' : ''}${x.d} ${STAT_LABEL[x.k].replace(' %', '%')}</span>`);
-  return parts.join(' ') || '<span class="dim">no change</span>';
+  return powLine + (parts.join(' ') || '<span class="dim">no stat change</span>');
 }
 
 function detailHtml(e: BagEntry): string {
@@ -507,12 +509,15 @@ export function uiPanelHtml(): string {
   // --- PARTY: paper doll ---
   const tab = n.heroTab;
   const gh = g.heroes[tab];
+  const powers = g.heroes.map(h => heroPower(h));
+  const best = Math.max(...powers);
   const portraits = g.heroes.map((h, i) => {
     const mx = maxHp(h);
     const hpPct = h.downed ? 0 : (h.hp / mx) * 100;
-    return `<button class="dport ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}">
-      <span class="dface" style="background:${HERO_COLORS[h.id]}">${h.name[0]}</span>
-      <span class="dname">${h.name}<small>Lv ${h.level}</small></span>
+    const behind = best > 0 && powers[i] < best * T.POWER_BEHIND;
+    return `<button class="dport ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
+      <span class="dface" style="background:${HERO_COLORS[h.id]}">${h.name[0]}${behind ? '<em class="dneed" title="Falling behind: give them the next good item">!</em>' : ''}</span>
+      <span class="dname">${h.name}<span class="dlv">Lv ${h.level} <b class="dpow">◆${powers[i]}</b></span></span>
       <span class="dhp"><i style="width:${hpPct}%;background:${hpPct > 50 ? '#6fcf7f' : hpPct > 0 ? '#e0b24a' : '#e0524a'}"></i></span>
       <span class="dxp"><i style="width:${(h.xp / xpNeeded(h)) * 100}%"></i></span>
     </button>`;
@@ -520,19 +525,26 @@ export function uiPanelHtml(): string {
   const slots = SLOTS.map(sl => {
     const it = gh.gear[sl];
     const style = it ? `background:${RARITY_BG[it.rarity]};border-color:${RARITY_COLOR[it.rarity]}` : '';
-    return `<div class="dslot s-${sl} ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${tab}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 24)}</div>`;
+    return `<div class="dslot s-${sl} ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${tab}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 24)}${it ? `<span class="spow">${it.identified ? itemPower(it) : '?'}</span>` : ''}</div>`;
   }).join('');
-  const st = heroStats(gh);
+  const st = heroStats(gh), base = heroBaseStats(gh);
+  const statRow = (k: Stat, label: string, fmt: (v: number) => string) => {
+    const gear = st[k] - base[k];
+    return `<div class="dstat"><span>${label}</span><b>${fmt(st[k])}</b>${Math.abs(gear) >= 0.05 ? `<em class="${gear > 0 ? 'up' : 'down'}">${gear > 0 ? '+' : ''}${fmt(gear)}</em>` : '<em></em>'}</div>`;
+  };
+  const r0 = (v: number) => String(Math.round(v)), r1 = (v: number) => String(Math.round(v * 10) / 10);
+  const statBlock = `<div class="dstats"><div class="dstats-h"><span>${gh.name}'s stats</span><span class="dim">green = from gear${powers.some(p => best > 0 && p < best * T.POWER_BEHIND) ? ' · <b style="color:#b03a2a">!</b> = needs gear' : ''}</span></div>
+    ${statRow('hp', 'HP', r0)}${statRow('atk', 'ATK', r1)}${statRow('armor', 'ARM', r1)}${statRow('speed', 'SPD', r1)}${statRow('crit', 'CRIT', r1)}${statRow('luck', 'LUCK', r1)}</div>`;
   const party = `<section class="rp party"><div class="rp-title"><span>PARTY</span><span>drop gear on a hero</span></div>
     <div class="doll-wrap">
       <div class="dports">${portraits}</div>
       <div class="doll" style="--hc:${HERO_COLORS[gh.id]}">
-        <div class="doll-title">${gh.name.toUpperCase()} · ${gh.role}</div>
+        <div class="doll-title">${gh.name.toUpperCase()} · ${gh.role} <b class="doll-pow">◆ ${heroPower(gh)}</b></div>
         <div class="doll-fig"><i class="fh"></i><i class="fb"></i><i class="fl"></i></div>
         ${slots}
-        <div class="doll-stats">ATK ${Math.round(st.atk)}  HP ${st.hp}  ARM ${Math.round(st.armor)}  SPD ${Math.round(st.speed)}</div>
       </div>
-    </div></section>`;
+    </div>
+    ${statBlock}</section>`;
 
   // --- BACKPACK ---
   const bagCells = Array.from({ length: g.bagSize }, (_, i) => {
@@ -542,7 +554,8 @@ export function uiPanelHtml(): string {
     const swap = n.dropPopup ? ' swap' : '';
     const fresh = n.fresh.some(f => f.id === e.id) ? ' fresh' : '';
     const lock = e.kind === 'item' && e.item.locked ? '<i class="lockico">\u{1F512}</i>' : '';
-    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}" data-item="bag:${e.id}">${entryIcon(e, 26)}${lock}<span class="val">${entryValue(e)}</span></div>`;
+    const corner = e.kind === 'item' ? `<span class="val pow">${e.item.identified ? '\u25c6' + itemPower(e.item) : '?'}</span>` : `<span class="val">${entryValue(e)}</span>`;
+    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}" data-item="bag:${e.id}">${entryIcon(e, 26)}${lock}${corner}</div>`;
   }).join('');
   const backpack = `<section class="rp pack"><div class="rp-title"><span>BAG</span><button class="as-tog ${g.autoSalvage ? 'on' : ''}" data-act="autoSalvage" title="Common and uncommon drops turn straight into scraps">auto-salvage &lt;<b style="color:#5b9cff">blue</b>: ${g.autoSalvage ? 'ON' : 'off'}</button><span style="color:${g.bag.length >= g.bagSize ? '#ff8a80' : 'inherit'}">${g.bag.length}/${g.bagSize} · L=lock</span></div>
     <div class="bag" data-drop="bag">${bagCells}</div></section>`;

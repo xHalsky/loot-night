@@ -27,10 +27,19 @@ leave by portal or the floor ends, and goes on the corpse in a wipe.
 value in the corner, "?" for unidentified. When full, a popup offers swap or skip; the drop waits
 `DROP_WAIT_SEC` of threat time, then is lost.
 
+**Power** (Destiny's Light level). Every item has a power: `POWER_PER_ILVL` (10) × item level × the rarity
+multiplier, the same scale that sets its stats (unidentified items count as 0 until identified). A hero's
+Power is the average of their 6 slots, an empty slot counting as 0, so filling an empty slot matters as much
+as upgrading. Shown as ◆ on the portraits (next to the level), in the equip window title, on every slot, on
+bag items (the sell value moved into the tooltip), and in item tooltips as the Power change for the selected
+hero ("◆ Power 3 → 33"). A hero under `POWER_BEHIND` (85%) of the party's best gets a pulsing red "!" on
+their portrait: they deserve the next good item.
+
 **Paper doll.** Hero portraits with HP/XP; click one to show it on the doll (helm on the head, armor on the
 body, and so on, with faint icons for empty slots) and a stats line. Drag from the bag onto a slot or a
 portrait to equip; drag off to unequip; right-click to equip on the selected hero. Hover tooltips show
-stats and the comparison with what the selected hero wears.
+stats and the comparison with what the selected hero wears. Under the doll, a stat block shows the selected
+hero's HP, ATK, ARM, SPD, CRIT and LUCK, with the share that comes from gear in green (red if gear lowers it).
 
 **Lock.** Hover an item and press L: a padlock; it cannot be sold, salvaged, listed, dropped or
 swapped out, and it never stays on the corpse.
@@ -39,6 +48,10 @@ swapped out, and it never stays on the corpse.
 scraps.
 
 ## Decisions
+
+- **One Power number per hero** (0.21): level alone said nothing about gear, and six stats are too many to
+  compare at a glance. The average-of-slots rule (Destiny) rewards filling empty slots, and the "!" points
+  at who is falling behind. Rejected: summing stats into a score (hides what the item is good for).
 
 - **Players never buy gear**, in any build. Buying kills the thrill of drops. The auction house only sells.
 - **Loot at the kill, not in a popup** (0.11, 0.13): the floor becomes the reward moment, Diablo-style.

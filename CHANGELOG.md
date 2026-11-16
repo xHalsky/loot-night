@@ -3,6 +3,16 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.21.0 (2026-11-16)
+
+- **Power level** (#31). Every item has a power (item level × rarity, the scale that sets its stats); a hero's
+  Power (◆) is the average of their 6 slots, empty = 0. Shown on the portraits next to the level, in the equip
+  window, on every slot and bag item, and in tooltips as the change for the selected hero ("◆ Power 3 → 33").
+  A hero under 85% of the party's best gets a pulsing red "!" on the portrait.
+- **Rebuilt equip window**: Power in the title, power per slot, and a stat block (HP, ATK, ARM, SPD, CRIT,
+  LUCK) with the gear share in green. Bag slots show item power instead of sell value (value is in the tooltip).
+- Feed and doll slightly shorter to fit. No balance change.
+
 ## 0.20.0 (2026-11-16)
 
 - **Looks busy is gone.** Excel on screen when she looks is a pass. The meter made players fill a bar they
