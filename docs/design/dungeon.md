@@ -80,6 +80,14 @@ heavy hits (crits, Bash, Smite, Fire), shakes on crits, slowly zooms onto a lege
 
 ## Planned
 
+- **Reckless autopilot** (#15, next up). When the player chose to be away (Excel, minigames, away
+  actions), the party pulls without waiting for cooldowns, uses no skills or potions, and the healer only
+  heals below 30%. Normal floors bleed HP; bosses can wipe within 30 to 40 s. Forced visits keep the safe
+  autopilot. Today the RPG just keeps fighting at base rate behind Excel, so leaving costs almost nothing.
+- **Away-from-PC dangers** (ideas, #24): Need/Greed rolls on rare+ drops (away = auto-pass, "xX_Ninja_Xx
+  won [Legendary]"), a 10 s floor vote on the node map (away = the riskiest floor), a ready check before
+  bosses, a Party Patience meter that vote-kicks you at 100.
+
 - Skill slots 3 and 4 (Rally, Storm, Revive) and ultimates; trainer in the city. Not scheduled.
 - Ability marks and combo floors: [synergy.md](synergy.md).
 - One dungeon type and mechanic per night: [campaign.md](campaign.md), #3.

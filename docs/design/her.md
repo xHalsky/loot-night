@@ -98,7 +98,19 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 
 ## Planned
 
-- More visit types: Chat, Snack run, Cuddle, Hug from behind, Help me, each with its own cue and minigame: #12.
+- **Noise by distance and masking** (#17). Noise's effect on her (visit timer, waking) is multiplied by
+  where she is: next-door rooms x2, middle x1, far x0.5; TV on x0.5 more; shower or hair dryer x0. Never
+  shown; the player infers it. A boss kill during her shower is free; next door it is not.
+- **More visit types** (#12): Chat, Snack run, Cuddle, Hug from behind, Help me, Coming to bed?,
+  How do I look?
+- **Her activity predicts the next visit type** (#18, needs #12): TV → Chat or Cuddle, kitchen → Snack run,
+  toilet → Peek, shower → Cuddle or Hug, bedroom → Coming to bed?, phone → Peek only; 20 to 25% random.
+- **Pre-emptive actions** (#19, #20): verbs used before a visit: [preemptive.md](preemptive.md).
+- **Eye-candy moments** (#22): shower panel, "Wanna join?", hoodie walk-by and more: [eye-candy.md](eye-candy.md).
+- Room ideas (#25): audible end cues per activity (credits music, kettle whistle, flush and tap, shower →
+  hair dryer → silence), a quiet run while she sleeps (snoring stops 3 s before she wakes), her phone
+  call with pacing and eavesdropping, laundry.
+
 - Per-night behaviour modes (Cleaning, Bored, Suspicious walking silently): [campaign.md](campaign.md), #3.
 - Goodwill bank and Raid pass: [synergy.md](synergy.md).
 - Outfit unlocks: #6. Hand-made sprites: #5.

@@ -59,6 +59,14 @@ Start: `START_GOLD` 100, `START_ZL` 50.
 
 ## Planned
 
+- **Wandering merchant** (#21). Appears for 30 s (25% on each arrival, once guaranteed per night) with a
+  bell and sparkles; missed on Excel = "The merchant packs up and leaves." A reason to be in the game as
+  often as possible. **Open:** the original idea sells a guaranteed gear upgrade, which breaks the
+  sell-only rule. Alternatives: an unidentified epic as a gamble, non-gear only (maps, feathers, cans),
+  or he buys one of your items at 3x.
+- City dangers (ideas, #24): dungeon queue with a 10 s accept and a Deserter debuff, timed buyer offers on
+  listings in the Feed, AFK disconnect and login queue.
+
 - Real-life upgrade store paid in zł (better mouse, quieter keyboard, shorter alt-tab lag): #4.
 - A city that opens one or two buildings per night, a Quest board with bounties, town players who
   remember last night: [synergy.md](synergy.md).

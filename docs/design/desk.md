@@ -121,7 +121,14 @@ multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
 
 ## Planned
 
-- More interrupts (courier, car alarm, drilling, verification SMS, friends' call, dinner shout): #12.
+- **Alt-tab crash** (#16). Every switch within 20 s of the previous one raises a crash chance (10%, 25%,
+  50%; resets after 20 s). On switching back: freeze, "LootNight.exe has stopped responding", 15 s reload
+  (Excel still usable). Dungeon: back to the checkpoint, loot since then lost, Flow reset. A rising PC fan
+  is the hint. Punishes panic-switching on fake-outs; one switch a minute never crashes.
+- **Monster stash in the kitchen fridge** (idea, #25): the desk holds 2 cans; a "Fridge run" pre-emptive
+  action restocks, and backfires if she is in the kitchen or hallway.
+
+- More interrupts (courier, car alarm, drilling, verification SMS, friends' call, dinner shout, laundry request): #23.
 - Zyn as a second stimulant: #10.
 - Desk upgrades (phone stand, quieter keyboard, shorter lag): #4. Choose a pet: #7.
 - Every interrupt success pays out; Alibi stacks from Excel rows: [synergy.md](synergy.md).

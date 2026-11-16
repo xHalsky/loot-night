@@ -32,7 +32,7 @@ Debug overlay in game: F1.
 
 ## How a change goes in (every round)
 
-1. **Backlog first.** Each request becomes or updates a GitHub Issue in xHalsky/loot-night
+1. **Backlog first.** Pick the next item from `ROADMAP.md`. Each request becomes or updates a GitHub Issue in xHalsky/loot-night
    (labels: feature, bug, art, balance, ui, tech; priority p1/p2/p3). Ideas that aren't scheduled stay open as `idea`.
 2. **Build it.** Numbers in `tuning.ts`. Keep `npx tsc` clean.
 3. **Verify.** Run the bot sims (good + idle) and screenshot the changed screens. A change that alters

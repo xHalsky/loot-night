@@ -9,7 +9,7 @@ Target: about 30 minutes for an engaged player over 7 nights, each graded 1 to 3
 - **Decisions**: why it works that way, and what was tried or rejected.
 - **Planned**: agreed but not built, with its GitHub Issue number.
 
-History lives in [`CHANGELOG.md`](../../CHANGELOG.md), not here. When a change lands, edit the
+History lives in [`CHANGELOG.md`](../../CHANGELOG.md), build order in [`ROADMAP.md`](../../ROADMAP.md). When a change lands, edit the
 section in place; never append "round N" notes.
 
 | File | System |
@@ -21,6 +21,8 @@ section in place; never append "round N" notes.
 | [her.md](her.md) | The girlfriend: apartment, visits, the door, peeking, bed phase, the desk visit |
 | [desk.md](desk.md) | The phone and interrupts, Excel and alt-tab, Monster, the dog and cables, buffs |
 | [screen.md](screen.md) | Screen layout, the three UI flavours, art direction, audio |
+| [preemptive.md](preemptive.md) | Planned: actions before a visit (framework and action list) |
+| [eye-candy.md](eye-candy.md) | Her moments: built and planned, with tone rules |
 | [campaign.md](campaign.md) | Planned: 7 nights, star gates, desk shop, milestones, ending |
 | [synergy.md](synergy.md) | Planned: the synergy pass (cross-system links) |
 | [tech.md](tech.md) | Stack, architecture, save, tests |
