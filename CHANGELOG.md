@@ -3,6 +3,22 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.15.0 (2026-11-16)
+
+- **Reckless autopilot** (#15). Leaving the game is now dangerous: while you are on Excel, mid-switch, in a
+  minigame or have the cables out, nobody holds aggro, the healer waits until 35%, the party pulls without
+  resting and careless pulls give the enemies the first hit. Party chat complains in the Feed, and the
+  Loot Night taskbar button flashes orange when the party is in trouble. Forced situations (her on your desk,
+  the monitor she turned off) keep the old safe autopilot.
+- The Bailiff is stronger (700 HP / 16 atk → 850 / 24): a floor-5 boss never threatened an absent player.
+- New `test/autopilot.ts`. 40 s away, 20 trials each: boss floor 5 wipes 0 → 16, boss floor 10 3 → 20,
+  normal floor 3 stays 0 (party HP 75% → 65%), normal floor 8 1 → 2 (53% → 32%).
+- Sims (3 good, 2 idle runs): good bot before: 2-3 stars, floor 10, 0 wipes. After: 3 stars, floor 9-10,
+  0-1 wipes per night (it hides on Excel mid-fight and now pays for it). Idle unchanged (unplugged, floor 3).
+  Alt-tab test unchanged (200/200 both ways).
+- Option A for the Raid pass written into `preemptive.md` (Goodwill only pays for the Raid pass; 2.5 real min).
+- Test hook `window.__lootnight` for Playwright scripts.
+
 ## 0.14.1 (2026-11-16)
 
 - **Design bible moved into the repo** as `docs/design/`, one file per system, rewritten to describe the

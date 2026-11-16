@@ -316,6 +316,8 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .tb-app { height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border: none; border-radius: 4px; background: transparent; color: #e8e8ee; font-family: 'Inter', sans-serif; font-size: 12px; border-bottom: 2px solid transparent; }
 .tb-app:hover { background: rgba(255,255,255,.08); }
 .tb-app.on { background: rgba(255,255,255,.12); border-bottom-color: #4fa3ff; }
+.tb-app.flash { animation: tbFlash 0.9s steps(1) infinite; }
+@keyframes tbFlash { 0% { background: #e8892b; color: #1a1208; } 50% { background: rgba(232,137,43,.25); color: #e8e8ee; } }
 .tb-ico { width: 18px; height: 18px; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
 .tb-ico.game { background: #5b3aa8; } .tb-ico.xl { background: #1e7145; }
 .tb-hint { color: #8a8a96; font-size: 11px; margin-left: 4px; }

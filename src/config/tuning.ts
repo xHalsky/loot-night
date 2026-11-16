@@ -75,6 +75,13 @@ export const T = {
   FEATHER_REVIVE_PCT: 0.5,
   WIPE_TIME_MIN: 60, WIPE_GOLD_PCT: 0.10, WIPE_BAG_LEFT: 0.5,
   ELITE_MULT: 1.5,
+  // Reckless autopilot: when the player chose to leave the game (Excel, switching, minigames, cables out)
+  AUTOPILOT_HEAL_BELOW: 0.35,      // the healer only heals below this (normal: 0.6)
+  AUTOPILOT_NO_TANK: true,        // nobody holds aggro: enemies pick targets at random
+  AUTOPILOT_PACE: 1.6,            // walking and the loot pause run this much faster: they pull without resting
+  AUTOPILOT_AMBUSH_ATB: [40, 80] as [number, number],   // a careless pull: enemies start with this much ATB
+  AUTOPILOT_CHAT_GAP_SEC: 12,
+  AUTOPILOT_FLASH_HP: 0.5,        // the Loot Night taskbar button flashes when party HP is under this (or someone is down)     // party chat lines about you being away, at most this often
 
   // --- Loot ---
   BAG_SIZE: 18,

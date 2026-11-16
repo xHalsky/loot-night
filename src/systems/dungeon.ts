@@ -8,6 +8,7 @@ import { toast } from '../core/fx';
 import { chance } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
+import { isAway } from './autopilot';
 
 export const isBossBattle = () => { const n = N(); return n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
 
@@ -69,6 +70,7 @@ export function updateDungeon(realDt: number) {
   if (n.location !== 'dungeon') return;
   const dt = realDt * (menuOpen() ? T.BATTLE_MENU_SPEED : 1);
   if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); } }
+  n.phaseT += dt * (isAway() && n.phase !== 'battle' ? T.AUTOPILOT_PACE - 1 : 0);   // no resting without you
   n.phaseT += dt;
   if (n.phase === 'walk') {
     const sp = n.floorLoot.length ? 75 : 40;     // hurry over to the loot

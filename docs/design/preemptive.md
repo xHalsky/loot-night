@@ -46,8 +46,13 @@ come one per round.
 | Shout "love you!" | Instant | A far room | Mood −5; her answer's direction is a free location ping | Red Mood: "...what did you do?" Peek in 10 s. Next door or hallway: Chat visit |
 | Lock the door | Instant, 1/night | Anywhere | The next visit cannot open the door | She rattles it (Mood +15), "why is it locked?" excuse dialogue; wrong excuse = Peek with Busy 80 needed |
 
-**Raid pass** (from the synergy pass): a pre-emptive action paid with Goodwill (40) instead of a charge: no
-visits for 15 in-game minutes. Not usable in the bed phase or during a visit.
+**Raid pass** ("Babe, raid night?"): the only action paid with Goodwill (40) instead of a charge, away time
+or a location guess. No visits for 2.5 real minutes, the strongest calm in the game. Exempt from the
+suspicion rule (you ask her openly). Not usable in the bed phase or during a visit.
+
+Decided 2026-11-16 (option A): Goodwill pays only for the Raid pass. Rejected: Goodwill paying for every
+action (snowballs, and turns "do I know where she is?" into "can I afford it?"); a separate Raid pass button
+outside the action menu (two places for one kind of decision). Forgiveness stays automatic and is not an action.
 
 ## Open questions
 

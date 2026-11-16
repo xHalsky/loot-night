@@ -10,7 +10,7 @@ ring, trinket). Old saves are renamed on load.
 **Floors.** Endless. A floor is a walk, then `BATTLES_PER_FLOOR` (3) battles. Every
 `CHECKPOINT_EVERY` (5th) floor ends in a boss and sets the checkpoint. Enemies scale per floor
 (`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Dungeon of Overdue Bills:
-Debt Skeleton, Late-Fee Bat, The Collector, boss The Bailiff.
+Debt Skeleton, Late-Fee Bat, The Collector, boss The Bailiff (850 HP, 24 attack at floor 1 scale).
 
 **Interest (Monday's mechanic).** An enemy alive more than `INTEREST_AFTER_TURNS` turns deals
 +`INTEREST_PER_TURN` per extra turn. Rewards burst.
@@ -64,6 +64,19 @@ chains, roots) sliding past faster, rim-lit by the torch.
 **Camera that acts.** Dollies with a sway while walking, pushes in when a fight starts, springs back on
 heavy hits (crits, Bash, Smite, Fire), shakes on crits, slowly zooms onto a legendary drop for about 3 s.
 
+**Reckless autopilot** (`src/systems/autopilot.ts`). When you *chose* to leave the game (Excel up, mid-switch,
+a minigame window open, or cables out because you ignored the dog), the party plays badly:
+- nobody holds aggro (`AUTOPILOT_NO_TANK`): enemies pick targets at random, so the mage and healer get hit;
+- the healer only heals below `AUTOPILOT_HEAL_BELOW` (35%, normally 60%);
+- walking and the loot pause run `AUTOPILOT_PACE` (1.6x) faster: they pull without resting;
+- a pack pulled while you are away starts with `AUTOPILOT_AMBUSH_ATB` (40 to 80) ATB, so it hits first;
+- no skills (they need you).
+Her desk visit and the monitor she switched off are forced on you, so they keep the normal autopilot.
+Party chat complains in the Feed ("Rafał: afk again? pulling"), and the Loot Night taskbar button flashes
+orange like a Windows app wanting attention when party HP is under `AUTOPILOT_FLASH_HP` or a hero is down.
+Measured by `test/autopilot.ts` (40 s on Excel): bosses on floor 5 and 10 wipe 16/20 and 20/20; normal
+floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
+
 **City portal.** A button at the top left of the dungeon screen (between battles): back to the city,
 15 min. In the city, the Dungeon Portal returns to the checkpoint, 15 min.
 
@@ -74,16 +87,17 @@ heavy hits (crits, Bash, Smite, Fire), shakes on crits, slowly zooms onto a lege
 - **No auto-attack button.** It was always on, so the button was noise. Keys start at 1 / Q / A.
 - **Knight in front with the torch**, so the light leads the party and the front hero picks up loot.
 - **Floor choice as a node map** instead of a list in the right panel: the choice reads as a route.
+- **Reckless, not just slower** (#15): leaving the game has to be dangerous, or Excel is free and the stealth
+  layer has no teeth. Rejected: pausing loot or resetting Flow while away (no danger, the player just waits).
+  Random targeting was chosen over flat damage boosts because it reads as "nobody is tanking".
+- **Bailiff buffed** (700/16 → 850/24) in the same change: away from a floor-5 boss never wiped before,
+  and with you present bosses ended at 96% party HP. Still easy when present; that is the balance pass (#2).
 - **No permadeath.** Progress is never wiped (pillar 4); a wipe costs time, gold and half the bag.
 - Rejected: a 12-slot bag inside the battle UI and drag-to-equip mid-fight as the main loop. Equipping
   happens in the right panel; the fight slows while you look.
 
 ## Planned
 
-- **Reckless autopilot** (#15, next up). When the player chose to be away (Excel, minigames, away
-  actions), the party pulls without waiting for cooldowns, uses no skills or potions, and the healer only
-  heals below 30%. Normal floors bleed HP; bosses can wipe within 30 to 40 s. Forced visits keep the safe
-  autopilot. Today the RPG just keeps fighting at base rate behind Excel, so leaving costs almost nothing.
 - **Away-from-PC dangers** (ideas, #24): Need/Greed rolls on rare+ drops (away = auto-pass, "xX_Ninja_Xx
   won [Legendary]"), a 10 s floor vote on the node map (away = the riskiest floor), a ready check before
   bosses, a Party Patience meter that vote-kicks you at 100.

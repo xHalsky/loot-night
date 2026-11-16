@@ -9,6 +9,7 @@ import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
 import { headsetSvg, monsterStockSvg } from './peripherals';
 import { CITY } from '../data/city';
+import { isAway } from '../systems/autopilot';
 import { heroStats, maxHp, xpNeeded } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, entryValue, cap } from '../systems/loot';
@@ -515,8 +516,11 @@ export function taskbarHtml(): string {
   const n = S.g.night;
   if (!n) return '';
   const late = n.clock >= T.BEDTIME;
+  // Windows-style attention flash: the game wants you back (party in trouble while you are away).
+  const hp = S.g.heroes.reduce((a, h) => a + (h.downed ? 0 : h.hp), 0) / S.g.heroes.reduce((a, h) => a + maxHp(h), 0);
+  const flash = n.monitor !== 'rpg' && isAway() && (S.g.heroes.some(h => h.downed) || hp < T.AUTOPILOT_FLASH_HP);
   return `<div class="tb-start">⊞</div>
-    <button class="tb-app ${n.monitor === 'rpg' ? 'on' : ''}" data-act="showRpg"><span class="tb-ico game">⚔</span>Loot Night</button>
+    <button class="tb-app ${n.monitor === 'rpg' ? 'on' : ''} ${flash ? 'flash' : ''}" data-act="showRpg"><span class="tb-ico game">⚔</span>Loot Night</button>
     <button class="tb-app ${n.monitor === 'excel' ? 'on' : ''}" data-act="showExcel"><span class="tb-ico xl">X</span>Excel</button>
     <span class="tb-hint">Tab = switch</span>
     <span class="tb-tray">

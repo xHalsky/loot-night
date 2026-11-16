@@ -32,6 +32,8 @@ import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
 
+(window as unknown as Record<string, unknown>).__lootnight = { S };   // test hook for the Playwright scripts
+
 // ---------- DOM skeleton: three panels (docs/design/screen.md) ----------
 const stage = document.getElementById('stage')!;
 stage.innerHTML = `

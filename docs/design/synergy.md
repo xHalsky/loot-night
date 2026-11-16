@@ -50,7 +50,7 @@ per-night charge. One system for "act before she comes", not two.
 
 A 0 to 100 bank under her patience; no decay in a night; half carries over. Earned: Cuddle +20, Hug +15,
 Help me +15, two sweet answers on the desk +20, Chat visit +8, text answered +5, lean visit +3.
-Spent: **Raid pass** (40): no visits for 15 in-game minutes (not in the bed phase). **Forgiveness** (60,
+Spent: **Raid pass** (40), a pre-emptive action: no visits for 2.5 real minutes ([preemptive.md](preemptive.md)). **Forgiveness** (60,
 automatic, once per night): the next catch drops one rung. 70+: Help me gifts the better desk item.
 Catches cost 15.
 

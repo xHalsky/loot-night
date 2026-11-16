@@ -27,6 +27,8 @@ building. A night in progress is not saved.
 - `npx tsx test/sim.ts good` / `idle`: a headless bot plays one night and prints a JSON summary
   (depth, stars, catches, wakes). Run both on every balance change and note before/after in the changelog.
 - `npx tsx test/alttab.ts`: the alt-tab timing acceptance test.
+- `npx tsx test/autopilot.ts [trials]`: present vs. 40 s away at bosses and normal floors (wipes, party HP).
+- Playwright scripts reach game state through `window.__lootnight.S` (a test hook in `main.ts`).
 - `python3 test/*.py`: Playwright screenshot scripts (Chrome at `/usr/bin/google-chrome`).
 
 ## Decisions

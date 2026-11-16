@@ -8,6 +8,7 @@ import { floatText, toast } from '../core/fx';
 import { sfx } from '../ui/audio';
 import { speedMult } from './tired';
 import { CD_PCT } from '../data/city';
+import { isAway, autopilotPull, autopilotHurt } from './autopilot';
 
 export const HERO_X = [208, 124, 40];   // knight in front (right), healer at the back
 export const ENEMY_X = [380, 457, 534];
@@ -35,6 +36,7 @@ export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
     const count = randi(2, 3);
     n.enemies = Array.from({ length: count }, () => makeEnemy(pick(ENEMIES), floor, elite));
   }
+  if (isAway()) { n.enemies.forEach(e => { e.atb = rand(...T.AUTOPILOT_AMBUSH_ATB); }); autopilotPull(); }
 }
 
 export const aliveHeroes = () => S.g.heroes.filter(h => !h.downed);
@@ -119,7 +121,7 @@ function heroAct(h: Hero) {
   const mult = heroDamageMult();
   // Auto attack (slot 0).
   if (h.id === 'healer') {
-    const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * 0.6).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
+    const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * (isAway() ? T.AUTOPILOT_HEAL_BELOW : 0.6)).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
     if (hurt) { sfx.heal(); healHero(hurt, st.atk * 1.6 + 8); return; }
   }
   const target = h.id === 'mage' ? weakestEnemy() : frontEnemy();
@@ -135,6 +137,7 @@ function enemyAct(e: Enemy) {
   if (!alive.length) return;
   let target: Hero;
   if (n.taunt > 0 && !S.g.heroes[0].downed) target = S.g.heroes[0];
+  else if (T.AUTOPILOT_NO_TANK && isAway()) target = pick(alive);
   else target = chance(0.5) && !S.g.heroes[0].downed ? S.g.heroes[0] : pick(alive);
   const st = heroStats(target);
   let raw = e.atk;
@@ -146,6 +149,7 @@ function enemyAct(e: Enemy) {
   const i = S.g.heroes.indexOf(target);
   vfx('claw', heroCenter(i), undefined, 0.35);
   floatText(HERO_X[i] + 18, UNIT_Y - 30, `-${dmg}`, '#ff8a80');
+  if (isAway() && target.hp < maxHp(target) * T.AUTOPILOT_HEAL_BELOW) autopilotHurt();
   if (target.hp <= 0) { target.hp = 0; target.downed = true; target.queued = null; toast(`${target.name} is down!`, '#ff8a80'); sfx.bad(); }
 }
 
