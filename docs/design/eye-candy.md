@@ -25,7 +25,6 @@ explicit. A birthday gift gets shown around.
 |---|---|---|
 | Shower panel | While she showers, the left panel shows a fogged glass cabin with her silhouette (shifting weight, rinsing hair, arms up), steam, water streaks. Fog thickens; when the water stops the glass clears bottom-up and it cuts back as the hair dryer starts. Reveals her location, which the water already does. | Art test early: a janky silhouette reads creepy |
 | "Wanna join?" | Once, night 5, forced shower. 30 to 60 s in she calls out; 10 s choice, landing on a legendary drop or a boss at 10%. Accept: fade to steam and a pixel heart, 60 s away, Mood to 0, "Glow" buff (+loot luck for the night), and the loot is lost. Decline: "...ok. Enjoy your goblins." Mood +20. The punchline of the gift. | Campaign night 5 (#3), autopilot (#15) |
-| Doorframe (date night) | Rare, from night 4, green Mood: heels and perfume sparkle as the cue, dressed up, lands on a loot roll or boss pull. Turn to her (30 s away, Mood −25) or "one sec babe" (Mood +20). | Fold into the built lean visit as its night-4+ upgrade |
 | "How do I look?" | New outfit; turn the chair away (the RPG goes out of focus) and pick the compliment that names a visible detail. Answering without turning: Mood +15. | Visit types (#12) |
 | Hoodie walk-by | Green Mood after 23:00: she passes on the way to bed in your gaming hoodie, sleeves past her hands, "night, babe". Mood −5, no check, once per night. | Small; any time |
 | Results vignette by Mood | Green: hugging your pillow. Yellow: back turned, phone light on. Red: on the couch, TV still on. Unplugged: empty bed, note "Hope the loot was worth it." | Extends the built morning screen |
@@ -34,4 +33,6 @@ explicit. A birthday gift gets shown around.
 
 - **Attention as temptation** beats a pretty panel with nothing to do: every planned moment either costs
   RPG time or lands on a loot beat.
+- **Doorframe date-night visit cut** (2026-11-16): too close to the built lean visit. Can come back later
+  as a night-4+ version of the lean visit.
 - The shower panel gives away her location; accepted, because the shower sound already does.

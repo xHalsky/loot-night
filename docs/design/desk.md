@@ -121,10 +121,9 @@ multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
 
 ## Planned
 
-- **Alt-tab crash** (#16). Every switch within 20 s of the previous one raises a crash chance (10%, 25%,
-  50%; resets after 20 s). On switching back: freeze, "LootNight.exe has stopped responding", 15 s reload
-  (Excel still usable). Dungeon: back to the checkpoint, loot since then lost, Flow reset. A rising PC fan
-  is the hint. Punishes panic-switching on fake-outs; one switch a minute never crashes.
+- **Alt-tab crash** (parked idea, #16): repeated switches within 20 s risk a crash and a 15 s reload. Parked
+  2026-11-16: lag plus the reckless autopilot (#15) should already make panic-switching costly. Revisit only if
+  the sims show fake-outs are still free to react to.
 - **Monster stash in the kitchen fridge** (idea, #25): the desk holds 2 cans; a "Fridge run" pre-emptive
   action restocks, and backfires if she is in the kitchen or hallway.
 

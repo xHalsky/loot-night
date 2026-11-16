@@ -15,6 +15,8 @@ Versions before 0.14.0 predate the repository (they exist only as published arti
   reckless autopilot (#15), alt-tab crash (#16), Noise by distance (#17), activity predicts visit type (#18),
   pre-emptive actions (#19, #20, `preemptive.md`), wandering merchant (#21), eye-candy moments (#22,
   `eye-candy.md`), plus idea issues #23 to #25. #12 is now visit types only.
+- Decisions: no wandering merchant (#21 closed), Doorframe visit cut, alt-tab crash parked as an idea (#16):
+  lag plus reckless autopilot should be enough.
 - `ROADMAP.md`: the build order, with priorities relabelled to match.
 
 ## 0.14.0 (2026-11-16)

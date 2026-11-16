@@ -54,16 +54,13 @@ Start: `START_GOLD` 100, `START_ZL` 50.
   Bed, Bookshelf, Loot Chest, Altar...) became four city buildings; old saves migrate Dummy → Training
   Grounds and Bed → Inn.
 - **Sell-only auction house**, permanently (see [loot.md](loot.md)).
+- **No wandering merchant** (rejected 2026-11-16, #21). The idea was a 30 s merchant to pull the player back
+  into the game, but it sold gear (breaking the sell-only rule) and added a system for little gain. Kept simple.
 - **Borderless window upgrade removed** (0.14): real-life upgrades need their own store, not the
   auction house.
 
 ## Planned
 
-- **Wandering merchant** (#21). Appears for 30 s (25% on each arrival, once guaranteed per night) with a
-  bell and sparkles; missed on Excel = "The merchant packs up and leaves." A reason to be in the game as
-  often as possible. **Open:** the original idea sells a guaranteed gear upgrade, which breaks the
-  sell-only rule. Alternatives: an unidentified epic as a gamble, non-gear only (maps, feathers, cans),
-  or he buys one of your items at 3x.
 - City dangers (ideas, #24): dungeon queue with a 10 s accept and a Deserter debuff, timed buyer offers on
   listings in the Feed, AFK disconnect and login queue.
 
