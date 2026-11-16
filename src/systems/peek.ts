@@ -5,7 +5,7 @@ import { addMood } from './meters';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
 
-// Peeking through your door (design doc section 5). Hold the door: it opens a crack and the light gives a hint
+// Peeking through your door (docs/design/her.md). Hold the door: it opens a crack and the light gives a hint
 // of where she is; the map shows a vague blob only while you peek. If she is somewhere she can see your door
 // (hallway, living room), she may notice and come straight over: mood up, Flow reset.
 

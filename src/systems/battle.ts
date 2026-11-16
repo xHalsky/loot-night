@@ -14,7 +14,7 @@ export const ENEMY_X = [380, 457, 534];
 export const UNIT_Y = 212;
 let enemyUid = 1;
 
-// Visual effects on the monitor (design doc section 4: every action must be visible).
+// Visual effects on the monitor (docs/design/dungeon.md: every action must be visible).
 export const heroCenter = (i: number) => ({ x: HERO_X[i] + 30, y: UNIT_Y + 40 });
 export function enemyCenter(e: Enemy) { const i = N().enemies.indexOf(e); return e.boss ? { x: 542, y: UNIT_Y + 24 } : { x: ENEMY_X[Math.max(0, i)] + 30, y: UNIT_Y + 40 }; }
 function vfx(kind: VfxKind, at: { x: number; y: number }, from?: { x: number; y: number }, dur = 0.4) {

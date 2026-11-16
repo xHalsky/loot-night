@@ -1,4 +1,4 @@
-// Every tunable number lives here (design doc, section 0 rule 1).
+// Every tunable number lives here (docs/design/README.md, rules for builders).
 // Times: night clock in minutes after midnight of the evening (20:00 = 1200, 01:00 = 1500).
 
 export const T = {

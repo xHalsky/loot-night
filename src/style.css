@@ -64,7 +64,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .reveal { margin-top: 8px; padding: 10px 14px; border: 3px solid #b98cff; background: rgba(36,27,46,.95); box-shadow: 0 0 30px rgba(185,140,255,.6); }
 .reveal b { font-size: 18px; color: #b98cff; }
 
-/* Mini-game window, over the monitor only (design doc section 2). */
+/* Mini-game window, over the monitor only (docs/design/screen.md). */
 .win { position: absolute; left: 52px; top: 30px; width: 512px; height: 296px; background: #241b2e; border: 3px solid #f2b84b; display: flex; flex-direction: column; }
 .win-title { height: 34px; background: #3a2a52; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 0 0 12px; font-size: 14px; }
 .win-title span:first-child { font-weight: 600; flex: 1; }

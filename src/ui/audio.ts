@@ -1,4 +1,4 @@
-// Tiny Web Audio synth. Prototype sounds are generated tones (design doc section 9).
+// Tiny Web Audio synth. Prototype sounds are generated tones (docs/design/desk.md).
 // Two buses: game sounds (the RPG and the desk) and apartment sounds (her). The headset muffles the apartment bus.
 import { T } from '../config/tuning';
 

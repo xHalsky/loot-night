@@ -1,4 +1,4 @@
-// Her: pixel-anime figure (design doc section 5, "eye candy"). Vector shapes rendered through ui/pixel.ts
+// Her: pixel-anime figure (docs/design/her.md). Vector shapes rendered through ui/pixel.ts
 // at low resolution (hard edges, 1px outline, nearest-neighbour upscale). Poses: standing at the door,
 // leaning on the frame (barefoot, one foot against her calf), sitting on your desk in first person (thighs up),
 // and asleep in bed seen from the foot end (bare soles out from under the blanket).

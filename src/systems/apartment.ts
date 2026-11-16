@@ -7,7 +7,7 @@ import { toast } from '../core/fx';
 import { sfx, setHeadset } from '../ui/audio';
 import { spawnInterrupt } from './interrupts';
 
-// Where she is between visits (design doc section 5, FNAF layer).
+// Where she is between visits (docs/design/her.md, FNAF layer).
 // You track her by sound; the headset muffles it (and costs your Zone to take off); after midnight she sleeps.
 
 export function initApartment() {

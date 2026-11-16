@@ -32,7 +32,7 @@ import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
 
-// ---------- DOM skeleton: three panels (design doc section 2) ----------
+// ---------- DOM skeleton: three panels (docs/design/screen.md) ----------
 const stage = document.getElementById('stage')!;
 stage.innerHTML = `
   <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="herHead"></div><div id="doorInfo"></div></div>

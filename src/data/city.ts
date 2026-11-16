@@ -1,4 +1,4 @@
-// City buildings you build on fixed plots and upgrade to level 3 (design doc section 6).
+// City buildings you build on fixed plots and upgrade to level 3 (docs/design/city.md).
 export type CityId = 'training' | 'inn' | 'library' | 'treasury';
 export interface CityDef { id: CityId; name: string; effect: string[]; gold: number[]; mats: number[] }
 export const CITY: CityDef[] = [

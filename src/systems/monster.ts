@@ -3,7 +3,7 @@ import { S, N, type BinCan } from '../core/state';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
 
-// Monster: a boost you operate by hand (design doc section 9).
+// Monster: a boost you operate by hand (docs/design/desk.md).
 // 1 open the fridge, 2 grab any can and put it anywhere on the desk, 3 click it open (click + psst),
 // 4 drink: hold to bring it to your mouth, release in the green band, x3 (boost starts here),
 // 5 toss the empty: throw it into the bin (physics). Cans stay in the bin all night.

@@ -79,9 +79,9 @@ export interface MonsterGame {
 export interface BinCan { ax: number; ay: number; bx: number; by: number }
 export type MiniGame = PhoneGame | MonsterGame;
 
-/** The dog (design doc section 10): pops up at the desk for attention. */
+/** The dog (docs/design/desk.md): pops up at the desk for attention. */
 export interface DogState { stage: 'away' | 'up' | 'happy'; t: number; next: number; ignores: number; limit: number; pet: number; sweet: number; flinch: number }
-/** She sits on the desk in front of the monitor (design doc section 10). */
+/** She sits on the desk in front of the monitor (docs/design/her.md). */
 export interface LapState { stage: 'arrive' | 'ask' | 'react' | 'leave'; t: number; q: number; asked: number; order: number[]; sweet: number; rude: number; face: 'smile' | 'neutral' | 'pout' | 'blush' | 'wink'; line: string; outfit: string }
 
 // Excel: a slow spreadsheet Tetris. Filled rows pay overtime gold.
@@ -182,7 +182,7 @@ export function initialState(): GameState {
   };
 }
 
-// The one game state object (design doc section 9, rule 1).
+// The one game state object (docs/design/tech.md).
 export const S: { g: GameState } = { g: initialState() };
 export const N = (): Night => S.g.night as Night;
 export const uid = () => 'e' + (S.g.uid++);

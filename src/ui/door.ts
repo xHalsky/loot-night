@@ -120,7 +120,7 @@ function drawGap(c: CanvasRenderingContext2D, x: number, y: number, w: number, h
   c.restore();
 }
 
-/** Her face when she comes in, by situation (design doc section 5). */
+/** Her face when she comes in, by situation (docs/design/her.md). */
 function herFace(v: { checked: boolean; result: string; from?: string }, catches: number, mood: number, t: number): Face {
   if (v.result === 'caught') return catches >= 2 ? 'furious' : 'angry';
   if (v.result === 'look') return Math.floor(t / 1.6) % 3 === 2 ? 'wink' : 'blush';

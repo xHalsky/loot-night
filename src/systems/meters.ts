@@ -3,7 +3,7 @@ import { S, N } from '../core/state';
 import { clamp } from '../core/rng';
 import { updateTired } from './tired';
 
-/** Night clock speed in game minutes per real second (design doc section 3, "Two clocks"). */
+/** Night clock speed in game minutes per real second (docs/design/night.md). */
 export function clockRate(): number {
   const n = N();
   if (n.location === 'town') return 0;

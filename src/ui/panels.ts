@@ -72,7 +72,7 @@ export function doorInfoHtml(): string {
 }
 
 // ---------------- Apartment map (FNAF layer) ----------------
-// Blueprint of the apartment (design doc section 5). No marker for her: you listen.
+// Blueprint of the apartment (docs/design/her.md). No marker for her: you listen.
 // While you peek, a vague blob shows roughly where she is.
 const ROOM_C: Record<Room, [number, number]> = { bedroom: [46, 42], bathroom: [120, 40], kitchen: [174, 44], hallway: [96, 95], living: [58, 152] };
 function aptMapHtml(): string {

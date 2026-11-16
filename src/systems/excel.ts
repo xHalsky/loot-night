@@ -4,7 +4,7 @@ import { randi, rand } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { toast } from '../core/fx';
 
-// Excel cover screen: a slow spreadsheet Tetris (design doc section 5).
+// Excel cover screen: a slow spreadsheet Tetris (docs/design/desk.md).
 // Having Excel open raises Busy (she sees you working). Placing blocks adds a bit,
 // filling whole rows adds more and pays overtime gold: honest work is rewarded, never required.
 

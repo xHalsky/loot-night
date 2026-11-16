@@ -11,3 +11,5 @@ girlfriend, your mom, your boss, the dog and your own tiredness.
 - What changed per build: [CHANGELOG.md](CHANGELOG.md)
 - Backlog: GitHub Issues
 - All balance numbers: `src/config/tuning.ts`
+
+Design bible: [`docs/design/`](docs/design/README.md). History: [`CHANGELOG.md`](CHANGELOG.md). Backlog: GitHub Issues.

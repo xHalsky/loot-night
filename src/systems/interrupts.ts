@@ -188,7 +188,7 @@ function fail(kind: InterruptKind, how: string) {
   sfx.bad();
 }
 
-// ---------- Declining without picking up (design doc section 9) ----------
+// ---------- Declining without picking up (docs/design/desk.md) ----------
 // A call: hold the red Decline button (slower than ignoring, much faster than talking to Mom).
 // A message: drag the phone down to flip it face-down. It stays face-down for a while: new notifications only buzz.
 

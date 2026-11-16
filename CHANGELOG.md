@@ -3,6 +3,15 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.14.1 (2026-11-16)
+
+- **Design bible moved into the repo** as `docs/design/`, one file per system, rewritten to describe the
+  current build (Now / Decisions / Planned). The old claude.ai doc had 13 appended playtest rounds on top of
+  outdated sections. Unbuilt designs (campaign, synergy pass) are kept as clearly marked plans. Fixes #1.
+- New backlog issues for designed-but-unbuilt parts: more visits and interrupts (#12), real audio (#13),
+  synergy pass (#14).
+- Code comments point to the new bible files. No gameplay change.
+
 ## 0.14.0 (2026-11-16)
 
 - **Alt-tab lag.** Every switch between the game and Excel takes a random 1.0–2.5 s (`ALT_TAB_LAG_SEC`) and plays an

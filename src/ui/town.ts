@@ -1,4 +1,4 @@
-// The MMO city hub, drawn on the monitor. All hub actions happen here (design doc section 6):
+// The MMO city hub, drawn on the monitor. All hub actions happen here (docs/design/city.md):
 // click the buttons by the buildings, build on empty plots, enter the dungeon portal.
 import { T } from '../config/tuning';
 import { S, N, RARITIES, type BagEntry } from '../core/state';

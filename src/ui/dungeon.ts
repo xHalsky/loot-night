@@ -1,4 +1,4 @@
-// The dungeon as a side-view 2.5D diorama (design doc section 4, "presentation").
+// The dungeon as a side-view 2.5D diorama (docs/design/dungeon.md).
 // Layers back to front: far cave rock (slow parallax), mid arches and stalactites, a perspective floor, floor loot
 // with rarity beams, the units, VFX; then cave lighting (a torch travels with the party, darkness everywhere else),
 // fog swallowing the far end, and dark foreground silhouettes (pillars, chains, roots) sliding past the camera.

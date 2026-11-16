@@ -8,7 +8,7 @@ import { PEEK_PASS, PEEK_CAUGHT, FAKEOUT_LINES } from '../data/content';
 import { maybeLap } from './lap';
 import { updateApartment, afterVisit, sendHerSoon, hearsApartment, initApartment } from './apartment';
 
-// Night 1: Peek visits only (design doc section 5). Her movements come from apartment.ts.
+// Night 1: Peek visits only (docs/design/her.md). Her movements come from apartment.ts.
 const FAR = T.TELEGRAPH_SEC.far - T.TELEGRAPH_SEC.hall;
 const HALL = T.TELEGRAPH_SEC.hall - T.TELEGRAPH_SEC.handle;
 const HANDLE = T.TELEGRAPH_SEC.handle;

@@ -13,6 +13,7 @@ Birthday-gift browser game: a loot-heavy idle RPG on the monitor while the playe
 | Rules (no drawing) | `src/systems/*.ts` |
 | Drawing + DOM | `src/ui/*.ts`, `src/style.css`, `src/ios.css` |
 | Content tables (enemies, items, lines) | `src/data/*.ts` |
+| Design bible (one file per system) | `docs/design/` (start at `README.md`) |
 | Old design mockups | `design/mockups/` |
 | Tests | `test/` (see below) |
 
@@ -39,7 +40,7 @@ Debug overlay in game: F1.
 4. **Document.**
    - `CHANGELOG.md`: one entry per version (what changed and why, issue numbers).
    - Bump `src/config/version.ts` (shown on the title screen).
-   - The design bible describes the game *as it is now*: edit the affected section in place, never append
+   - The design bible (`docs/design/`) describes the game *as it is now*: edit the affected file in place, never append
      "round N" notes to it. Record the decision and rejected alternatives in that section.
 5. **Commit** with the issue numbers (`Fixes #12`), tag the version (`git tag v0.15.0`), push.
 6. **Publish** the build: claude.ai artifact slug `3ca28f2d-6c48-46ca-993c-0e84527c24de` (Loot Night – Night 1 prototype).

@@ -14,7 +14,7 @@ import { checkNightEnd } from '../systems/night';
 
 const STEP = 1 / 60;
 
-/** One fixed step of the game, systems in the order of design doc section 9. */
+/** One fixed step of the game, systems see docs/design/tech.md. */
 export function step(dt: number) {
   const g = S.g;
   if (g.screen !== 'night' || g.paused || !g.night) return;

@@ -4,7 +4,7 @@ import { rand, randi } from '../core/rng';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
 
-// The dog (design doc section 10). He jumps up at the desk for attention: pet him (a minigame on the desk, no window)
+// The dog (docs/design/desk.md). He jumps up at the desk for attention: pet him (a minigame on the desk, no window)
 // and he lies back down at your feet for a while. Ignore him 1-3 times (random) and he bumps the desk:
 // the monitor cables come out and you have to plug them back in (another on-desk minigame).
 

@@ -1,4 +1,4 @@
-// The bin next to the desk: tonight's empties pile up in it (design doc section 9).
+// The bin next to the desk: tonight's empties pile up in it (docs/design/desk.md).
 import { S } from '../core/state';
 
 export function deskPileHtml(): string {

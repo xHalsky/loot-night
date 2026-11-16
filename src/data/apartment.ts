@@ -1,6 +1,6 @@
 import type { ActivityId, Room } from '../core/state';
 
-// Her activities in the apartment (design doc section 5, "Apartment map").
+// Her activities in the apartment (docs/design/her.md).
 // sound: what you hear (empty = silent activity, the map goes stale).
 export interface ActivityDef { id: ActivityId; room: Room; label: string; sound: string; dur: [number, number]; weight: number }
 export const ACTIVITIES: ActivityDef[] = [

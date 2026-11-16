@@ -44,7 +44,7 @@ export function startNight() {
   toast('Monday, 20:00. Town is quiet. Hit the Dungeon Gate.', '#8fb3ff');
 }
 
-/** Checks the three ways a night ends (design doc section 3). */
+/** Checks the three ways a night ends (docs/design/night.md). */
 export function checkNightEnd() {
   const n = N();
   if (n.mood >= T.MOOD_MAX) endNight('unplugged');

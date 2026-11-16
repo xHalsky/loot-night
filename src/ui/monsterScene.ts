@@ -1,4 +1,4 @@
-// The Monster break, drawn on one canvas inside its window (design doc section 9).
+// The Monster break, drawn on one canvas inside its window (docs/design/desk.md).
 // Fridge -> grab any can, put it anywhere on the desk -> click it open -> hold to drink (can goes to your mouth)
 // -> throw the empty into the bin (Verlet capsule physics; the bin keeps its cans all night).
 import { T } from '../config/tuning';

@@ -5,7 +5,7 @@ import { addMood, moodZone } from './meters';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
 
-// She sits on your desk (design doc section 10). Not a punishment: it happens when a visit goes well and she is
+// She sits on your desk (docs/design/her.md). Not a punishment: it happens when a visit goes well and she is
 // in a good mood. She blocks most of the monitor (the right panel still works). No other interrupts meanwhile.
 // To get your screen back you have to be sweet: she asks three things; sweet answers make her leave happy,
 // rude ones make her sulk off.
