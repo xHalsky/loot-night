@@ -44,6 +44,13 @@ Skills **cast instantly** on click or key, with no global cooldown; only their o
 `NOISE_ABILITY`. Skills are blocked while switching screens, while a minigame has your hands, and
 during microsleeps.
 
+**Teaching the skills.** Hovering a skill shows a tooltip with what it does in this hero's current numbers
+(damage, heal, duration), its cooldown (after the Library), Noise per cast, and a "use it when" line; locked
+skills show their unlock level. Hovering a portrait shows the hero's role and what their auto attack does.
+During a boss wind-up, the skills that answer it pulse red (Taunt, Ward, and Bash unless the boss is braced),
+so the game teaches the answer in the moment. Skill numbers (`power`, `flat`, `dur`) live in
+`src/data/heroes.ts` and are read by both the battle code and the tooltip, so they cannot disagree.
+
 **Skill bar** (dungeon screen only, Infinity Engine style): a stone-and-gold bar along the bottom with a
 framed portrait per hero (vertical HP gauge, name; click to select in the paper doll), then that hero's
 skills with glyph, hotkey, cooldown sweep and level lock. The auto attack has no button.
@@ -94,6 +101,8 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
 
 - **Instant skills, no GCD** (0.13). Waiting for the hero's turn felt unresponsive. Side effect: the bot
   reaches about floor 10 by bedtime (was 5 to 7) and skill spam can wake her. Open: #2.
+- **Tooltips over a manual** (0.19): the RPG is half of a split-attention game, so skills are taught at the
+  point of use (hover, and the pulsing answers during a wind-up) rather than in a help screen.
 - **No auto-attack button.** It was always on, so the button was noise. Keys start at 1 / Q / A.
 - **Knight in front with the torch**, so the light leads the party and the front hero picks up loot.
 - **Floor choice as a node map** instead of a list in the right panel: the choice reads as a route.

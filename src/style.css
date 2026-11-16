@@ -712,6 +712,8 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
   background: radial-gradient(circle at 40% 35%, #3a2c1e, #140e09); display: grid; place-items: center; box-shadow: inset 0 0 0 1px #000; }
 #monUi .ie-sk.ready { border-color: #c9a46a; }
 #monUi .ie-sk.ready:hover { border-color: #ffe0a0; filter: brightness(1.25); }
+#monUi .ie-sk.answer { border-color: #ff5a5a; animation: skAnswer .5s steps(2) infinite; }
+@keyframes skAnswer { 50% { box-shadow: 0 0 0 3px rgba(255,90,90,.7), 0 0 14px rgba(255,90,90,.6); } }
 #monUi .ie-sk.auto { border-color: #5a6a7a; }
 #monUi .ie-sk.locked { opacity: .55; cursor: default; }
 #monUi .ie-sk.queued { border-color: #6fe08a; box-shadow: 0 0 6px rgba(111,224,138,.7); }

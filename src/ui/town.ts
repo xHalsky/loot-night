@@ -397,7 +397,7 @@ function skillBarHtml(): string {
   const lock = abilitiesLocked();
   const groups = S.g.heroes.map((h, hi) => {
     const mx = maxHp(h), hp = h.downed ? 0 : h.hp / mx;
-    const por = `<button class="ie-por ${n.heroTab === hi ? 'sel' : ''} ${h.downed ? 'down' : ''}" data-act="heroTab" data-arg="${hi}" style="--hc:${HERO_COLORS[h.id]}">
+    const por = `<button class="ie-por ${n.heroTab === hi ? 'sel' : ''} ${h.downed ? 'down' : ''}" data-act="heroTab" data-arg="${hi}" data-tip="hero:${hi}" style="--hc:${HERO_COLORS[h.id]}">
       <span class="ie-face">${portrait(h.id)}</span><span class="ie-hp"><i style="height:${Math.round(hp * 100)}%;background:${hp > 0.5 ? '#4fbf5f' : hp > 0 ? '#d9a33a' : '#a33'}"></i></span><span class="ie-name">${h.name}</span></button>`;
     const sk = ABILITIES[h.id].map((a, si) => {
       if (si === 0) return '';                    // auto attack is always on: no button
@@ -411,7 +411,9 @@ function skillBarHtml(): string {
       else cls += ' ready';
       if (h.queued === si) cls += ' queued';
       if (lock && si > 0) cls += ' blocked';
-      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" title="${a.name}: ${a.desc}">${glyph(gname, unlocked ? gcol : '#4a4440', 20)}${over}<span class="ie-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
+      const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
+      if (wind && unlocked && cd <= 0 && ((h.id === 'knight' && (si === 1 || (si === 2 && !wind.braced))) || (h.id === 'healer' && si === 2))) cls += ' answer';
+      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" data-tip="skill:${hi}:${si}">${glyph(gname, unlocked ? gcol : '#4a4440', 20)}${over}<span class="ie-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
     }).join('');
     return `<div class="ie-grp ${h.downed ? 'downed' : ''}">${por}<div class="ie-sks">${sk}</div></div>`;
   }).join('');

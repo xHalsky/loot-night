@@ -74,20 +74,21 @@ function castAbility(h: Hero, slot: number) {
   h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]);
   n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);
   sfx.ability();
-  if (h.id === 'knight' && slot === 1) { n.taunt = 5; vfx('taunt', me, undefined, 0.7); toast(`${h.name}: TAUNT`, '#6aa8ff'); return; }
+  const A = ABILITIES[h.id][slot];
+  if (h.id === 'knight' && slot === 1) { n.taunt = A.dur!; vfx('taunt', me, undefined, 0.7); toast(`${h.name}: TAUNT`, '#6aa8ff'); return; }
   if (h.id === 'knight' && slot === 2) {
     const e = n.enemies.find(x => x.hp > 0 && (x.wind ?? 0) > 0) ?? frontEnemy();   // Bash goes for a winding-up boss first
     if (e) {
-      hitEnemy(e, st.atk * 2 * mult, st.crit, 'bash');
+      hitEnemy(e, st.atk * A.power! * mult, st.crit, 'bash');
       if ((e.wind ?? 0) > 0 && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
       else { e.stunned = 1; if ((e.wind ?? 0) > 0) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts FINAL NOTICE! He braces for the next one.`, '#8fb3ff'); sfx.good(); } }
     }
     return;
   }
-  if (h.id === 'mage' && slot === 1) { n.enemies.filter(e => e.hp > 0).forEach(e => hitEnemy(e, st.atk * 1.0 * mult, st.crit, 'fire', me)); return; }
-  if (h.id === 'mage' && slot === 2) { const e = frontEnemy(); if (e) hitEnemy(e, st.atk * 2.6 * mult, st.crit, 'frost', me); return; }
-  if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, st.atk * 2.2 + 14)); return; }
-  if (h.id === 'healer' && slot === 2) { n.ward = 6; vfx('ward', heroCenter(1), undefined, 0.8); toast(`${h.name}: WARD`, '#6fcf7f'); return; }
+  if (h.id === 'mage' && slot === 1) { n.enemies.filter(e => e.hp > 0).forEach(e => hitEnemy(e, st.atk * A.power! * mult, st.crit, 'fire', me)); return; }
+  if (h.id === 'mage' && slot === 2) { const e = frontEnemy(); if (e) hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); return; }
+  if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, st.atk * A.power! + A.flat!)); return; }
+  if (h.id === 'healer' && slot === 2) { n.ward = A.dur!; vfx('ward', heroCenter(1), undefined, 0.8); toast(`${h.name}: WARD`, '#6fcf7f'); return; }
 }
 
 function heroDamageMult(): number {
@@ -159,7 +160,7 @@ function enemyAct(e: Enemy) {
   let raw = e.atk;
   const over = e.turnsAlive - T.INTEREST_AFTER_TURNS;
   if (over > 0) raw *= 1 + T.INTEREST_PER_TURN * over;
-  if (n.ward > 0) raw *= 0.6;
+  if (n.ward > 0) raw *= ABILITIES.healer[2].power!;
   const dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - st.armor * 0.5));
   target.hp -= dmg;
   const i = S.g.heroes.indexOf(target);

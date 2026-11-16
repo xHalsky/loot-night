@@ -3,6 +3,15 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.19.0 (2026-11-16)
+
+- **Skill tooltips.** Hover a skill: what it does with this hero's real numbers, cooldown, Noise, and when to use
+  it; locked skills show their unlock level. Hover a portrait: the hero's role and auto attack. Replaces the
+  browser's slow native title, which often did not show at all because the bar redraws every frame.
+- During a boss wind-up, the answering skills (Taunt, Ward, Bash unless braced) pulse red.
+- Skill numbers moved from the battle code into `src/data/heroes.ts` (one source for effect and tooltip).
+  No balance change.
+
 ## 0.18.0 (2026-11-16)
 
 - **Bosses make you sweat** (#2). The Bailiff now winds up FINAL NOTICE every 2nd action: a boss cast bar at

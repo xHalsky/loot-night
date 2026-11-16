@@ -175,8 +175,8 @@ document.addEventListener('pointermove', ev => {
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
   } else {
-    const t = (ev.target as HTMLElement).closest('[data-item]') as HTMLElement | null;
-    hover.key = t ? t.dataset.item! : ''; hover.x = p.x; hover.y = p.y;
+    const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
+    hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
   }
   if (!drag) return;
   const d = ((drag.axis === 'x' ? ev.clientX - drag.x0 : ev.clientY - drag.y0) * drag.dir) / stageScale / drag.dist;

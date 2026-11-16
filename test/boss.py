@@ -18,7 +18,9 @@ async def main():
             w = await pg.evaluate("()=>window.__lootnight.S.g.night.enemies.some(e=>e.wind>1.2)")
             if w: break
         await pg.evaluate("()=>{window.__lootnight.S.g.timeScale=0}"); await pg.wait_for_timeout(150)
-        await pg.screenshot(path='test/boss_windup3.png', clip={'x':300,'y':14,'width':640,'height':400})
+        bb = await pg.evaluate("()=>{const r=document.querySelector('[data-tip=\"skill:0:2\"]').getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
+        await pg.mouse.move(bb[0], bb[1]); await pg.wait_for_timeout(250)
+        await pg.screenshot(path='test/boss_tooltip.png', clip={'x':300,'y':14,'width':640,'height':420})
         print('winding', w, 'ERRORS', errs)
         await b.close()
 asyncio.run(main())

@@ -3,12 +3,12 @@ import { VERSION } from '../config/version';
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
 import { S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
-import { ABILITIES, HOTKEYS, HERO_COLORS } from '../data/heroes';
+import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
 import { headsetSvg, monsterStockSvg } from './peripherals';
-import { CITY } from '../data/city';
+import { CITY, CD_PCT } from '../data/city';
 import { isAway } from '../systems/autopilot';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
 import { CHAT_QS, VISIT_CUE } from '../data/content';
@@ -351,6 +351,28 @@ export function tooltipHtml(): string {
   if (!n || !hover.key) return '';
   const parts = hover.key.split(':');
   let body = '';
+  if (parts[0] === 'skill' || parts[0] === 'hero') {
+    const h = S.g.heroes[Number(parts[1])];
+    if (!h) return '';
+    const st = heroStats(h);
+    if (parts[0] === 'hero') {
+      const r = HERO_ROLE[h.id];
+      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · Lv ${h.level}</div><div>${r.role}</div><div class="tt-sub">Auto attack (always on): ${r.auto}</div>
+        <div class="dim">ATK ${st.atk} · HP ${maxHp(h)} · ARM ${st.armor} · SPD ${st.speed} · CRIT ${st.crit}%</div><div class="tt-hint">Click: show on the paper doll.</div>`;
+    } else {
+      const si = Number(parts[2]); const a = ABILITIES[h.id][si];
+      const unlocked = abilityUnlocked(h, si);
+      const cd = a.cd * (1 - CD_PCT[S.g.furniture.library ?? 0]);
+      const desc = a.desc.replace('{dmg}', `<b>${Math.round(st.atk * (a.power ?? 1))}</b> damage`).replace('{heal}', `<b>${Math.round(st.atk * (a.power ?? 0) + (a.flat ?? 0))}</b> HP`).replace('{dur}', String(a.dur ?? 0));
+      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${h.name} · key ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
+        <div>${desc}</div>
+        ${a.use ? `<div class="tt-sub">Use it when: ${a.use}</div>` : ''}
+        <div class="dim">Cooldown ${cd.toFixed(cd % 1 ? 1 : 0)} s · casts at once · Noise +${T.NOISE_ABILITY}</div>
+        ${unlocked ? '' : `<div class="tt-hint" style="color:#f2c46b">${si <= 2 ? `Unlocks at level ${T.ABILITY_UNLOCK[si]}` : 'Not in this build yet'}.</div>`}`;
+    }
+    const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 150, 720 - 200));
+    return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
+  }
   if (parts[0] === 'bag') {
     const e = S.g.bag.find(x => x.id === parts[1]);
     if (!e) return '';

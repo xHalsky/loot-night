@@ -1,6 +1,12 @@
 import type { HeroId, Stat } from '../core/state';
 
-export interface AbilityDef { name: string; short: string; cd: number; desc: string }
+/** power: damage or heal multiplier of attack; flat: added heal; dur: seconds of an effect. use: when to fire it. */
+export interface AbilityDef { name: string; short: string; cd: number; desc: string; power?: number; flat?: number; dur?: number; use?: string }
+export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
+  knight: { role: 'Tank. Stands in front, carries the torch, picks up loot.', auto: 'Slashes the front enemy.' },
+  mage: { role: 'Damage. Fragile, hits hard.', auto: 'Bolts the weakest enemy (finishes kills).' },
+  healer: { role: 'Support. Keeps everyone alive.', auto: 'Heals an ally under 60% HP, otherwise smites.' },
+};
 
 export const HERO_BASE: Record<HeroId, Record<Stat, number>> = {
   knight: { hp: 130, atk: 9, armor: 6, speed: 9, crit: 5, luck: 0 },
@@ -20,22 +26,22 @@ export const HOTKEYS: Record<HeroId, string[]> = {
 export const ABILITIES: Record<HeroId, AbilityDef[]> = {
   knight: [
     { name: 'Slash', short: 'SLASH', cd: 0, desc: 'Auto attack on the front enemy.' },
-    { name: 'Taunt', short: 'TAUNT', cd: 10, desc: 'All enemies attack the knight for 5 s.' },
-    { name: 'Bash', short: 'BASH', cd: 8, desc: '2x damage and stuns the front enemy for a turn.' },
+    { name: 'Taunt', short: 'TAUNT', cd: 10, dur: 5, desc: 'All enemies attack the knight for {dur} s. FINAL NOTICE hits only him.', use: 'The mage or healer is low, or a boss winds up.' },
+    { name: 'Bash', short: 'BASH', cd: 8, power: 2, desc: 'Hits the front enemy for {dmg} and stuns it for a turn. Interrupts FINAL NOTICE (then the boss braces: the next one can\'t be interrupted).', use: 'A boss winds up FINAL NOTICE.' },
     { name: 'Rally', short: 'RALLY', cd: 0, desc: 'Locked in the prototype.' },
     { name: 'Ultimate', short: 'ULT', cd: 0, desc: 'Locked in the prototype.' },
   ],
   mage: [
     { name: 'Bolt', short: 'BOLT', cd: 0, desc: 'Auto attack on the weakest enemy.' },
-    { name: 'Fire', short: 'FIRE', cd: 9, desc: 'Hits every enemy.' },
-    { name: 'Frost', short: 'FROST', cd: 7, desc: '2.6x damage to one enemy.' },
+    { name: 'Fire', short: 'FIRE', cd: 9, power: 1, desc: 'Hits every enemy for {dmg}.', use: 'Three enemies are up.' },
+    { name: 'Frost', short: 'FROST', cd: 7, power: 2.6, desc: 'Hits the front enemy for {dmg}.', use: 'One big target, like a boss. Kill things before Interest stacks.' },
     { name: 'Storm', short: 'STORM', cd: 0, desc: 'Locked in the prototype.' },
     { name: 'Ultimate', short: 'ULT', cd: 0, desc: 'Locked in the prototype.' },
   ],
   healer: [
     { name: 'Smite', short: 'SMITE', cd: 0, desc: 'Auto: heals an ally under 60% HP, else attacks.' },
-    { name: 'Mend', short: 'MEND', cd: 10, desc: 'Heals the whole party.' },
-    { name: 'Ward', short: 'WARD', cd: 14, desc: 'Party takes 40% less damage for 6 s.' },
+    { name: 'Mend', short: 'MEND', cd: 10, power: 2.2, flat: 14, desc: 'Heals every hero for {heal}.', use: 'After a big hit, or before you alt-tab.' },
+    { name: 'Ward', short: 'WARD', cd: 14, dur: 6, power: 0.6, desc: 'Party takes 40% less damage for {dur} s. Halves FINAL NOTICE.', use: 'A braced boss winds up, or a big pack hits hard.' },
     { name: 'Revive', short: 'REVIVE', cd: 0, desc: 'Locked in the prototype.' },
     { name: 'Ultimate', short: 'ULT', cd: 0, desc: 'Locked in the prototype.' },
   ],
