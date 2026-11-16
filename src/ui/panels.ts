@@ -1,3 +1,4 @@
+import { VERSION } from '../config/version';
 // HTML renderers for the DOM parts of the screen. Every clickable element carries
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
@@ -530,17 +531,17 @@ export function screenHtml(): string {
   const g = S.g;
   if (g.screen === 'title') {
     return `<div class="screen"><div class="card">
-      <div class="kicker">PROTOTYPE · NIGHT 1 · MONDAY</div>
+      <div class="kicker">PROTOTYPE v${VERSION} · NIGHT 1 · MONDAY</div>
       <h1>Loot Night</h1>
       <p>Grind a loot-obsessed MMO all night. Keep your girlfriend, your mom and your boss off your back.</p>
       <ul>
         <li><b>RPG:</b> the party auto-fights. Fire skills (1-2, Q-W, A-S): they go off instantly, click bag items to equip, pick the next floor.</li>
-        <li><b>Alt-tab:</b> <kbd>Tab</kbd> flips to Excel: a slow spreadsheet Tetris (A/D move, W rotate, Space drop). Being on Excel builds Busy; filled rows pay overtime gold.</li>
+        <li><b>Alt-tab:</b> <kbd>Tab</kbd> flips to Excel, but switching takes 1-2.5 s (old fullscreen game): commit early. Excel is a slow spreadsheet Tetris (A/D move, W rotate, Space drop). Being on Excel builds Busy; filled rows pay overtime gold.</li>
         <li><b>The door:</b> listen for footsteps. When her shadow shows, be on Excel with Busy 60+.</li>
         <li><b>After midnight</b> she goes to bed: loud play (crits, bosses, vaults) wakes her. Answer her text or she gets up.</li>
         <li><b>Apartment map:</b> track her by sound (TV, kettle, shower, steps). Long shower = safe time. Headset (<kbd>H</kbd>): after 30 s on you are in the <b>Zone</b> (Flow +25% faster, +10% loot luck), but she is muffled: no far footsteps, map goes stale. Taking it off to listen empties the Zone.</li>
         <li><b>Phone:</b> Mom calls (slide to answer), the boss and your girlfriend message (hold to face-unlock). Answer before the timer runs out.</li>
-        <li><b>Tired:</b> after 22:00 you get sleepy. Eyelids drift shut: click or press any key to snap awake. <b>Monster</b> (on the desk): lift, flick the tab, pull it slowly, hold to drink, put it down. Party +30% speed for 60 s, Tiredness -35, then a short crash.</li>
+        <li><b>Tired:</b> after 22:00 you get sleepy. Eyelids drift shut: click or press any key to snap awake. <b>Monster</b> (on the desk): open the fridge, grab a can, click it open, hold to drink, fling the empty into the bin. Party +30% speed for 60 s, Tiredness -35, then a short crash.</li>
         <li><b>Bedtime 01:00.</b> Playing later costs sleep debt. Dawn ends the night.</li>
         <li><kbd>Esc</kbd> pause · <kbd>F1</kbd> debug</li>
       </ul>

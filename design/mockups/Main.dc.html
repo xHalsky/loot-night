@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game screen, three panels</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position:relative;width:1280px;height:720px;overflow:hidden;display:flex;background:#0d0a12;font-family:'Pixelify Sans',monospace;color:#f2e9d8">
+
+<!-- ================= DOOR PANEL ================= -->
+<div style="position:relative;width:280px;height:720px;flex:none;background:#110d17;border-right:3px solid #2a2033">
+<div style="position:absolute;left:16px;top:14px;font-size:12px;color:#a999bd;letter-spacing:1px">BEDROOM DOOR</div>
+<!-- wall -->
+<div style="position:absolute;left:0;top:40px;width:280px;height:380px;background:repeating-linear-gradient(90deg,#16111d 0 18px,#130f19 18px 36px)"></div>
+<!-- door frame -->
+<div style="position:absolute;left:44px;top:62px;width:192px;height:346px;background:#2b1d16;box-sizing:border-box;border:6px solid #3d2a1e"></div>
+<sc-if value="{{doorClosed}}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:50px;top:68px;width:180px;height:334px;background:#4a3324;box-sizing:border-box;border:3px solid #2b1d16"></div>
+<div style="position:absolute;left:66px;top:88px;width:148px;height:120px;box-sizing:border-box;border:3px solid #3a281c"></div>
+<div style="position:absolute;left:66px;top:226px;width:148px;height:150px;box-sizing:border-box;border:3px solid #3a281c"></div>
+<div style="position:absolute;left:198px;top:236px;width:14px;height:8px;background:#d9a441"></div>
+<!-- light gap -->
+<div style="position:absolute;left:50px;top:402px;width:180px;height:8px;background:#ffcf7a"></div>
+<div style="position:absolute;left:30px;top:408px;width:220px;height:36px;background:radial-gradient(ellipse at 50% 0%,rgba(255,207,122,0.35),rgba(255,207,122,0) 70%)"></div>
+</sc-if>
+<sc-if value="{{feetShadow}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:104px;top:402px;width:26px;height:8px;background:#110d17"></div>
+<div style="position:absolute;left:146px;top:402px;width:26px;height:8px;background:#110d17"></div>
+</sc-if>
+<sc-if value="{{doorOpen}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50px;top:68px;width:180px;height:334px;background:linear-gradient(#ffd99a,#e8a85a)"></div>
+<div style="position:absolute;left:50px;top:68px;width:28px;height:334px;background:#4a3324;border-right:3px solid #2b1d16"></div>
+<div style="position:absolute;left:78px;top:110px;width:140px;height:300px">
+<svg viewBox="0 0 14 30" width="140" height="300" shape-rendering="crispEdges" aria-hidden="true">
+<rect x="5" y="0" width="5" height="2" fill="#1a1220"/>
+<rect x="4" y="2" width="7" height="4" fill="#1a1220"/>
+<rect x="3" y="2" width="2" height="7" fill="#1a1220"/>
+<rect x="5" y="6" width="5" height="2" fill="#1a1220"/>
+<rect x="3" y="8" width="9" height="9" fill="#1a1220"/>
+<rect x="1" y="9" width="2" height="7" fill="#1a1220"/>
+<rect x="12" y="9" width="2" height="5" fill="#1a1220"/>
+<rect x="11" y="13" width="2" height="2" fill="#1a1220"/>
+<rect x="4" y="17" width="7" height="3" fill="#1a1220"/>
+<rect x="4" y="20" width="3" height="9" fill="#1a1220"/>
+<rect x="8" y="20" width="3" height="9" fill="#1a1220"/>
+<rect x="3" y="29" width="4" height="1" fill="#1a1220"/>
+<rect x="8" y="29" width="4" height="1" fill="#1a1220"/>
+</svg>
+</div>
+<div style="position:absolute;left:30px;top:402px;width:220px;height:60px;background:radial-gradient(ellipse at 50% 0%,rgba(255,207,122,0.45),rgba(255,207,122,0) 70%)"></div>
+</sc-if>
+<!-- floor -->
+<div style="position:absolute;left:0;top:410px;width:280px;height:30px;background:#1b1520;border-top:3px solid #2a2033"></div>
+
+<!-- telegraph status -->
+<div style="position:absolute;left:12px;top:450px;width:256px;box-sizing:border-box;padding:8px 10px;{{statusBox}}">
+<div style="font-size:11px;letter-spacing:1px;color:#a999bd">{{statusKicker}}</div>
+<div style="font-size:16px;font-weight:600">{{statusText}}</div>
+</div>
+
+<!-- meters -->
+<div style="position:absolute;left:16px;top:516px;width:248px;display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{meters}}" as="m" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span>{{m.label}}</span><span style="color:{{m.color}};font-weight:600">{{m.value}}</span></div>
+<div style="height:12px;box-sizing:border-box;border:2px solid #3a2f47;background:#0d0a12;padding:1px"><div style="height:100%;width:{{m.pct}}%;background:{{m.color}}"></div></div>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:2px">
+<span>Caught</span>
+<div style="display:flex;gap:5px"><div style="width:14px;height:14px;background:#e0524a"></div><div style="width:14px;height:14px;box-sizing:border-box;border:2px solid #3a2f47"></div><div style="width:14px;height:14px;box-sizing:border-box;border:2px solid #3a2f47"></div></div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span>Sleep debt</span><span style="color:#8fb3ff;font-weight:600">3 · next night clean</span></div>
+</div>
+</div>
+
+<!-- ================= DESK PANEL ================= -->
+<div style="position:relative;width:680px;height:720px;flex:none;background:#15111b">
+<!-- desk surface -->
+<div style="position:absolute;left:0;top:440px;width:680px;height:280px;background:#3a2a22;border-top:4px solid #4d382c"></div>
+<div style="position:absolute;left:0;top:444px;width:680px;height:276px;background-image:repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0 2px,transparent 2px 22px)"></div>
+<!-- monitor stand -->
+<div style="position:absolute;left:300px;top:414px;width:80px;height:30px;background:#1c1824"></div>
+<div style="position:absolute;left:250px;top:440px;width:180px;height:10px;background:#1c1824"></div>
+<!-- bezel -->
+<div style="position:absolute;left:20px;top:14px;width:640px;height:404px;box-sizing:border-box;background:#09070c;border:3px solid #2a2033"></div>
+<!-- screen -->
+<div style="position:absolute;left:32px;top:26px;width:616px;height:352px;overflow:hidden;background:#14101a">
+
+<sc-if value="{{showRpg}}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:0;top:0;width:616px;height:352px;background:linear-gradient(#0e0a14 0%,#1d1526 60%,#2a1f33 100%)"></div>
+<div style="position:absolute;left:0;top:30px;width:616px;height:262px;background-image:repeating-linear-gradient(0deg,rgba(0,0,0,0.35) 0 3px,transparent 3px 26px),repeating-linear-gradient(90deg,rgba(0,0,0,0.25) 0 3px,transparent 3px 52px)"></div>
+<div style="position:absolute;left:0;top:290px;width:616px;height:62px;background:#2b2030;border-top:4px solid #4a3a5c"></div>
+<div style="position:absolute;left:290px;top:80px;width:34px;height:210px;background:#241b2e;border-left:4px solid #3a2c48;border-right:4px solid #130e1a"></div>
+<div style="position:absolute;left:260px;top:100px;width:96px;height:96px;border-radius:48px;background:radial-gradient(circle,rgba(255,154,77,0.3),rgba(255,154,77,0) 70%)"></div>
+<div style="position:absolute;left:301px;top:128px;width:12px;height:16px;background:#ff9a4d"></div>
+<div style="position:absolute;left:304px;top:132px;width:6px;height:8px;background:#ffe27a"></div>
+<!-- map node strip -->
+<div style="position:absolute;left:0;top:0;width:616px;height:30px;box-sizing:border-box;background:#1b1424;border-bottom:2px solid #4a3a5c;display:flex;align-items:center;gap:8px;padding:0 10px;font-size:12px">
+<span style="color:#a999bd">FLOOR 7 · BATTLE 2/3</span>
+<span style="color:#a999bd;margin-left:auto">NEXT:</span>
+<span style="padding:2px 8px;border:2px solid #f2b84b;background:#3a2a52">Elite Pack</span>
+<span style="padding:2px 8px;border:2px solid #6fcf7f;background:#1f3a2c">Shrine</span>
+<span style="padding:2px 8px;border:2px solid #4a3a5c">Plain</span>
+</div>
+<!-- heroes -->
+<div style="position:absolute;left:40px;top:212px;width:60px;height:80px">
+<svg viewBox="0 0 12 16" width="60" height="80" shape-rendering="crispEdges" aria-hidden="true"><rect x="5" y="0" width="2" height="1" fill="#d9534f"/><rect x="3" y="1" width="6" height="3" fill="#9aa8c4"/><rect x="5" y="2" width="4" height="1" fill="#2b2f3e"/><rect x="3" y="4" width="6" height="5" fill="#3d6fb4"/><rect x="3" y="7" width="6" height="1" fill="#d9a441"/><rect x="9" y="4" width="3" height="6" fill="#d9a441"/><rect x="0" y="1" width="1" height="7" fill="#cfd6e4"/><rect x="0" y="7" width="3" height="1" fill="#8a5a1c"/><rect x="4" y="9" width="2" height="5" fill="#2d3a5c"/><rect x="7" y="9" width="2" height="5" fill="#2d3a5c"/><rect x="4" y="14" width="3" height="2" fill="#1c1f2e"/><rect x="7" y="14" width="3" height="2" fill="#1c1f2e"/></svg>
+</div>
+<div style="position:absolute;left:124px;top:214px;width:60px;height:80px">
+<svg viewBox="0 0 12 16" width="60" height="80" shape-rendering="crispEdges" aria-hidden="true"><rect x="4" y="0" width="3" height="1" fill="#7a4bd1"/><rect x="3" y="1" width="5" height="1" fill="#7a4bd1"/><rect x="2" y="2" width="8" height="1" fill="#7a4bd1"/><rect x="4" y="3" width="4" height="2" fill="#e8b98a"/><rect x="3" y="5" width="6" height="9" fill="#5b3aa8"/><rect x="3" y="13" width="6" height="1" fill="#f2b84b"/><rect x="10" y="2" width="1" height="13" fill="#8a5a1c"/><rect x="9" y="1" width="3" height="2" fill="#6fe0ff"/></svg>
+</div>
+<div style="position:absolute;left:208px;top:212px;width:60px;height:80px">
+<svg viewBox="0 0 12 16" width="60" height="80" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="0" width="6" height="3" fill="#e9e2cf"/><rect x="5" y="2" width="3" height="2" fill="#e8b98a"/><rect x="3" y="4" width="6" height="9" fill="#3a8f6a"/><rect x="5" y="6" width="2" height="4" fill="#f2e9d8"/><rect x="4" y="7" width="4" height="1" fill="#f2e9d8"/><rect x="9" y="6" width="2" height="3" fill="#d9a441"/><rect x="4" y="13" width="4" height="2" fill="#2b2f3e"/></svg>
+</div>
+<!-- enemies -->
+<div style="position:absolute;left:380px;top:214px;width:60px;height:80px">
+<svg viewBox="0 0 12 16" width="60" height="80" shape-rendering="crispEdges" aria-hidden="true"><rect x="4" y="0" width="5" height="4" fill="#e8e4d4"/><rect x="5" y="1" width="1" height="1" fill="#14101a"/><rect x="7" y="1" width="1" height="1" fill="#14101a"/><rect x="5" y="4" width="3" height="1" fill="#e8e4d4"/><rect x="4" y="5" width="5" height="4" fill="#e8e4d4"/><rect x="5" y="6" width="3" height="1" fill="#14101a"/><rect x="0" y="3" width="1" height="6" fill="#9aa8c4"/><rect x="1" y="8" width="3" height="1" fill="#8a5a1c"/><rect x="5" y="9" width="1" height="5" fill="#e8e4d4"/><rect x="7" y="9" width="1" height="5" fill="#e8e4d4"/></svg>
+</div>
+<div style="position:absolute;left:534px;top:212px;width:60px;height:80px">
+<svg viewBox="0 0 12 16" width="60" height="80" shape-rendering="crispEdges" aria-hidden="true"><rect x="4" y="0" width="4" height="3" fill="#1c1f2e"/><rect x="3" y="3" width="6" height="1" fill="#1c1f2e"/><rect x="4" y="4" width="4" height="2" fill="#e8e4d4"/><rect x="4" y="5" width="1" height="1" fill="#14101a"/><rect x="7" y="5" width="1" height="1" fill="#14101a"/><rect x="3" y="6" width="6" height="7" fill="#5a1f2b"/><rect x="5" y="7" width="1" height="1" fill="#f2b84b"/><rect x="0" y="7" width="3" height="3" fill="#d9a441"/><rect x="4" y="13" width="2" height="3" fill="#1c1f2e"/><rect x="6" y="13" width="2" height="3" fill="#1c1f2e"/></svg>
+</div>
+<!-- loot beam from dead enemy -->
+<div style="position:absolute;left:478px;top:90px;width:10px;height:200px;background:linear-gradient(rgba(185,140,255,0),rgba(185,140,255,0.9))"></div>
+<div style="position:absolute;left:466px;top:282px;width:34px;height:12px;background:#b98cff"></div>
+<div style="position:absolute;left:418px;top:64px;width:132px;box-sizing:border-box;padding:4px 6px;background:#241b2e;border:2px solid #b98cff;font-size:12px;text-align:center">??? Unidentified Epic</div>
+<!-- hp tags -->
+<div style="position:absolute;left:36px;top:194px;width:68px;height:8px;background:#0d0a12;border:2px solid #4a3a5c;box-sizing:border-box"><div style="width:76%;height:100%;background:#6fcf7f"></div></div>
+<div style="position:absolute;left:120px;top:196px;width:68px;height:8px;background:#0d0a12;border:2px solid #4a3a5c;box-sizing:border-box"><div style="width:48%;height:100%;background:#e0b24a"></div></div>
+<div style="position:absolute;left:204px;top:194px;width:68px;height:8px;background:#0d0a12;border:2px solid #4a3a5c;box-sizing:border-box"><div style="width:92%;height:100%;background:#6fcf7f"></div></div>
+<div style="position:absolute;left:376px;top:196px;width:68px;height:8px;background:#0d0a12;border:2px solid #4a3a5c;box-sizing:border-box"><div style="width:40%;height:100%;background:#e0524a"></div></div>
+<div style="position:absolute;left:530px;top:194px;width:68px;height:8px;background:#0d0a12;border:2px solid #4a3a5c;box-sizing:border-box"><div style="width:84%;height:100%;background:#e0524a"></div></div>
+<div style="position:absolute;left:396px;top:160px;font-size:20px;font-weight:600;color:#ff8a80">-48</div>
+<div style="position:absolute;left:540px;top:150px;font-size:24px;font-weight:600;color:#f2b84b">-131!</div>
+<div style="position:absolute;left:534px;top:176px;font-size:11px;color:#ffb3a8">INTEREST +20%</div>
+<div style="position:absolute;left:10px;top:310px;font-size:12px;color:#a999bd">Dungeon of Overdue Bills · enemies alive 3+ turns gain interest</div>
+</sc-if>
+
+<sc-if value="{{dimRpg}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;top:0;width:616px;height:352px;background:rgba(9,7,12,0.62)"></div>
+</sc-if>
+
+<sc-if value="{{isPeek}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;top:0;width:616px;height:352px;background:#f4f6f3;color:#1e2a22;font-family:Arial,sans-serif">
+<div style="height:28px;background:#1e7145;color:#ffffff;display:flex;align-items:center;padding:0 10px;font-size:13px;font-weight:700">Q4_report_FINAL_v3.xlsx</div>
+<div style="height:22px;background:#e6ece7;border-bottom:1px solid #b9c4bb;display:flex;font-size:11px;color:#3f5246">
+<div style="width:40px"></div>
+<sc-for list="{{cols}}" as="c" hint-placeholder-count="8"><div style="width:72px;border-left:1px solid #b9c4bb;display:flex;align-items:center;justify-content:center">{{c}}</div></sc-for>
+</div>
+<div style="position:absolute;left:0;top:50px;width:616px;height:302px;background-image:repeating-linear-gradient(0deg,#d3dbd5 0 1px,transparent 1px 22px),repeating-linear-gradient(90deg,#d3dbd5 0 1px,transparent 1px 72px);background-position:40px 0"></div>
+<!-- rhythm lanes in columns C-F -->
+<div style="position:absolute;left:184px;top:50px;width:288px;height:302px;background:rgba(30,113,69,0.08)"></div>
+<sc-for list="{{notes}}" as="n" hint-placeholder-count="7">
+<div style="position:absolute;left:{{n.x}}px;top:{{n.y}}px;width:70px;height:20px;background:#2f9e5f;border:1px solid #1e7145;box-sizing:border-box"></div>
+</sc-for>
+<div style="position:absolute;left:184px;top:300px;width:288px;height:4px;background:#1e7145"></div>
+<div style="position:absolute;left:184px;top:308px;width:288px;display:flex">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="4"><div style="width:72px;height:30px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#1e7145">{{k}}</div></sc-for>
+</div>
+<div style="position:absolute;left:490px;top:64px;width:110px;font-size:12px;color:#3f5246;line-height:1.35">Hit D F J K on the beat to fill Busy.<br><span style="color:#1e7145;font-weight:700">Combo x14</span></div>
+</div>
+</sc-if>
+</div>
+
+<!-- bezel tabs -->
+<div style="position:absolute;left:36px;top:384px;display:flex;gap:6px">
+<div style="height:24px;padding:0 10px;display:flex;align-items:center;font-size:12px;{{tabRpg}}">RPG</div>
+<div style="height:24px;padding:0 10px;display:flex;align-items:center;font-size:12px;{{tabExcel}}">Excel</div>
+</div>
+<div style="position:absolute;left:520px;top:381px;width:124px;height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:13px;background:#3a2a52;border:2px solid #f2b84b">Alt-tab · Tab</div>
+
+<!-- mini-game window -->
+<sc-if value="{{isInterrupt}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:84px;top:62px;width:512px;height:296px;box-sizing:border-box;background:#241b2e;border:3px solid #f2b84b;display:flex;flex-direction:column">
+<div style="height:34px;box-sizing:border-box;background:#3a2a52;display:flex;align-items:center;justify-content:space-between;padding:0 12px">
+<span style="font-size:15px;font-weight:600">Mom calling</span>
+<span style="font-size:13px;color:#f2b84b">0:06 left</span>
+</div>
+<div style="height:6px;background:#14101a"><div style="width:62%;height:100%;background:#f2b84b"></div></div>
+<div style="flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<div style="background:#f2e9d8;color:#14101a;padding:10px 12px;font-size:15px;line-height:1.3;max-width:420px">…and then Basia said the pierogi were too salty. Can you imagine?</div>
+<div style="font-size:12px;color:#a999bd">Reply on her beat. Wrong replies make the call longer.</div>
+<div style="position:relative;height:30px;box-sizing:border-box;border:2px solid #4a3a5c;background:#14101a">
+<div style="position:absolute;left:300px;top:0;width:4px;height:26px;background:#f2b84b"></div>
+<div style="position:absolute;left:120px;top:6px;width:14px;height:14px;background:#6fcf7f"></div>
+<div style="position:absolute;left:286px;top:6px;width:14px;height:14px;background:#f2b84b"></div>
+<div style="position:absolute;left:400px;top:6px;width:14px;height:14px;background:#6aa8ff"></div>
+</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;font-size:15px;background:#1f3a2c;border:2px solid #6fcf7f">mhm</div>
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;font-size:15px;background:#3a2a52;border:3px solid #f2b84b;font-weight:600">really?!</div>
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;font-size:15px;background:#1f2f4a;border:2px solid #6aa8ff">wow</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- desk objects -->
+<div style="position:absolute;left:30px;top:478px;width:76px;height:128px;box-sizing:border-box;border-radius:10px;padding:8px;{{phoneStyle}}">
+<div style="width:100%;height:100%;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;{{phoneScreen}}">
+<span style="font-size:12px;font-weight:600">{{phoneLine1}}</span>
+<span style="font-size:11px">{{phoneLine2}}</span>
+</div>
+</div>
+<sc-if value="{{phoneRinging}}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:92px;top:466px;width:36px;height:36px">
+<svg viewBox="0 0 36 36" width="36" height="36" aria-hidden="true"><circle cx="18" cy="18" r="14" fill="#14101a" stroke="#3a2f47" stroke-width="4"/><circle cx="18" cy="18" r="14" fill="none" stroke="#f2b84b" stroke-width="4" stroke-dasharray="60 88" transform="rotate(-90 18 18)"/></svg>
+</div>
+<div style="position:absolute;left:100px;top:476px;width:20px;font-size:11px;font-weight:600;text-align:center">6</div>
+</sc-if>
+<div style="position:absolute;left:30px;top:612px;width:76px;font-size:11px;color:#c9b8a8;text-align:center">Phone</div>
+
+<!-- headphones -->
+<div style="position:absolute;left:124px;top:470px;width:60px;height:46px">
+<svg viewBox="0 0 12 9" width="60" height="45" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="8" height="1" fill="#2d2838"/><rect x="1" y="1" width="1" height="4" fill="#2d2838"/><rect x="10" y="1" width="1" height="4" fill="#2d2838"/><rect x="0" y="4" width="3" height="5" fill="#5b3aa8"/><rect x="9" y="4" width="3" height="5" fill="#5b3aa8"/></svg>
+</div>
+<div style="position:absolute;left:116px;top:518px;width:76px;font-size:11px;color:#c9b8a8;text-align:center">Headset · on</div>
+
+<!-- keyboard -->
+<div style="position:absolute;left:200px;top:496px;width:300px;height:92px;box-sizing:border-box;background:#1c1824;border:3px solid #2d2838;padding:8px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px">
+<sc-for list="{{kbd}}" as="k" hint-placeholder-count="36"><div style="height:20px;background:{{k}}"></div></sc-for>
+</div>
+<div style="position:absolute;left:200px;top:592px;width:300px;font-size:11px;color:#c9b8a8;text-align:center">Keyboard (RGB = Noise when it flashes)</div>
+<!-- mouse -->
+<div style="position:absolute;left:520px;top:516px;width:34px;height:52px;border-radius:16px;background:#1c1824;border:3px solid #2d2838;box-sizing:border-box"></div>
+
+<!-- monster -->
+<div style="position:absolute;left:586px;top:470px;width:34px;height:60px;box-sizing:border-box;background:#1b1b1b;border:3px solid #6fcf7f;display:flex;align-items:center;justify-content:center">
+<div style="width:14px;height:22px;background:#6fcf7f"></div>
+</div>
+<div style="position:absolute;left:570px;top:534px;width:68px;font-size:11px;color:#c9b8a8;text-align:center">Monster ×2</div>
+<!-- zyn -->
+<div style="position:absolute;left:586px;top:560px;width:40px;height:40px;border-radius:20px;background:#dfe6ef;border:3px solid #6aa8ff;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:11px;color:#14101a;font-weight:600">ZYN</div>
+<div style="position:absolute;left:572px;top:604px;width:68px;font-size:11px;color:#c9b8a8;text-align:center">Zyn ×0</div>
+<!-- cans pile (tell) -->
+<div style="position:absolute;left:640px;top:486px;width:16px;height:30px;background:#2b2b2b;border:2px solid #4c7a52"></div>
+<!-- drawer -->
+<div style="position:absolute;left:200px;top:632px;width:300px;height:62px;box-sizing:border-box;background:#4d382c;border:3px solid #2b1d16;display:flex;align-items:center;justify-content:center">
+<div style="width:70px;height:10px;background:#c9a46a"></div>
+</div>
+<div style="position:absolute;left:200px;top:698px;width:300px;font-size:11px;color:#c9b8a8;text-align:center">Drawer (desk shop upgrade: hide cans in one click)</div>
+<!-- key fob -->
+<div style="position:absolute;left:46px;top:640px;width:44px;height:30px;border-radius:8px;background:#1c1824;border:3px solid #8e8a99;box-sizing:border-box"></div>
+<div style="position:absolute;left:30px;top:674px;width:76px;font-size:11px;color:#c9b8a8;text-align:center">Car key fob</div>
+</div>
+
+<!-- ================= UI PANEL ================= -->
+<div style="position:relative;width:320px;height:720px;flex:none;box-sizing:border-box;padding:12px 14px;background:#1b1424;border-left:3px solid #2a2033;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:11px;color:#a999bd;letter-spacing:1px">MONDAY · NIGHT CLOCK</div>
+<div style="font-size:32px;font-weight:600;line-height:1">23:40</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px">
+<span style="color:#8fb3ff">Bedtime 01:00</span>
+<span style="color:#a999bd">Dawn 06:00</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#a999bd">FLOW</span><span style="color:#f2b84b;font-weight:600">{{flowLabel}}</span></div>
+<div style="height:10px;box-sizing:border-box;border:2px solid #4a3a5c;background:#0d0a12;padding:1px"><div style="height:100%;width:{{flowPct}}%;background:#f2b84b"></div></div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:12px"><span>Overdue Bills · Floor 7</span><span style="color:#a999bd">Record 9</span></div>
+
+<div style="display:flex;flex-direction:column;gap:6px;{{uiDim}}">
+<sc-for list="{{heroes}}" as="h" hint-placeholder-count="3">
+<div style="box-sizing:border-box;border:2px solid #3a2f47;background:#241b2e;padding:6px;display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;{{h.portrait}}">{{h.initial}}</div>
+<span style="font-size:14px;font-weight:600">{{h.name}}</span>
+<span style="font-size:11px;color:#a999bd">{{h.role}} · Lv 5</span>
+<div style="margin-left:auto;width:70px;height:8px;box-sizing:border-box;border:2px solid #3a2f47;background:#0d0a12"><div style="height:100%;width:{{h.hp}}%;background:{{h.hpColor}}"></div></div>
+</div>
+<div style="display:flex;gap:4px">
+<sc-for list="{{h.abilities}}" as="a" hint-placeholder-count="5">
+<div style="position:relative;flex:1;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;{{a.style}}">
+<span style="position:absolute;left:3px;top:1px;font-size:9px;font-weight:400;color:#a999bd">{{a.key}}</span>{{a.label}}
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:4px;{{uiDim}}">
+<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#a999bd">MAREN'S GEAR</span><span style="color:#a999bd">drag from bag to equip</span></div>
+<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px">
+<sc-for list="{{gear}}" as="g" hint-placeholder-count="6">
+<div style="height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:9px;{{g.style}}">{{g.label}}</div>
+</sc-for>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:4px;{{uiDim}}">
+<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#a999bd">BAG</span><span style="color:#e0524a;font-weight:600">11 / 12</span></div>
+<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px">
+<sc-for list="{{bag}}" as="b" hint-placeholder-count="12">
+<div style="height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;text-align:center;line-height:1.05;{{b.style}}">{{b.label}}</div>
+</sc-for>
+</div>
+</div>
+
+<div style="display:flex;gap:6px;margin-top:auto">
+<div style="flex:1;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:13px;background:#241b2e;border:2px solid #4a3a5c">Return to town</div>
+<div style="flex:1;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:13px;background:#1f2f4a;border:2px solid #8fb3ff">Log off · sleep</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scene":{"editor":"enum","options":["battle","interrupt","peek"],"default":"battle"},"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const scene = this.props.scene ?? 'battle';
+    const isBattle = scene === 'battle', isInterrupt = scene === 'interrupt', isPeek = scene === 'peek';
+    const calm = 'background:#1b1424;border:2px solid #3a2f47;';
+    const warn = 'background:#3a2a1a;border:2px solid #f2b84b;';
+    const alarm = 'background:#3a1a1f;border:2px solid #e0524a;';
+    const status = isBattle
+      ? { box: calm, kicker: 'HALLWAY', text: 'Quiet. For now.' }
+      : isInterrupt
+        ? { box: warn, kicker: 'HALLWAY · 3s · PEEK (night 1 label)', text: 'Shadow under the door' }
+        : { box: alarm, kicker: 'SHE IS IN · PEEK', text: '"Still working, babe?"' };
+    const mv = isBattle ? [34, 52, 12] : isInterrupt ? [41, 30, 10] : [38, 20, 72];
+    const moodColor = mv[0] < 40 ? '#6fcf7f' : mv[0] < 75 ? '#f2b84b' : '#e0524a';
+    const meters = [
+      { label: 'Mood', value: mv[0] + (mv[0] < 40 ? ' · green' : ' · yellow'), pct: mv[0], color: moodColor },
+      { label: 'Noise', value: String(mv[1]), pct: mv[1], color: '#ff9a4d' },
+      { label: 'Busy (60 passes)', value: String(mv[2]), pct: mv[2], color: mv[2] >= 60 ? '#6fcf7f' : '#8e8a99' }
+    ];
+    const on = 'background:#3a2a52;border:2px solid #f2b84b;color:#f2e9d8;';
+    const off = 'background:#14101a;border:2px solid #3a2f47;color:#a999bd;';
+    const ready = 'background:#3a2a52;border:2px solid #f2b84b;color:#f2e9d8;';
+    const cd = 'background:#241b2e;border:2px solid #4a3a5c;color:#a999bd;';
+    const lock = 'background:#1b1424;border:2px dashed #4a3a5c;color:#6e6280;';
+    const blocked = isBattle ? null : lock;
+    const A = (key, label, st, note) => ({ key, label: note || label, style: blocked || (st === 'r' ? ready : st === 'c' ? cd : lock) });
+    const heroes = [
+      { name: 'Maren', role: 'Knight', initial: 'M', hp: 76, hpColor: '#6fcf7f', portrait: 'background:#3d6fb4;', abilities: [A('1','SLASH','r'),A('2','TAUNT','c','3s'),A('3','BASH','r'),A('4','','l','Lv8'),A('5','','l','Lv12')] },
+      { name: 'Tomek', role: 'Mage', initial: 'T', hp: 48, hpColor: '#e0b24a', portrait: 'background:#5b3aa8;', abilities: [A('Q','BOLT','r'),A('W','FIRE','c','5s'),A('E','FROST','r'),A('R','','l','Lv8'),A('T','','l','Lv12')] },
+      { name: 'Lena', role: 'Healer', initial: 'L', hp: 92, hpColor: '#6fcf7f', portrait: 'background:#3a8f6a;', abilities: [A('A','MEND','r'),A('S','WARD','r'),A('D','CLNS','c','2s'),A('F','','l','Lv8'),A('G','','l','Lv12')] }
+    ];
+    const R = {
+      C: 'background:#3a3342;border:2px solid #8e8a99;color:#f2e9d8;',
+      U: 'background:#1f3a2c;border:2px solid #6fcf7f;color:#f2e9d8;',
+      R: 'background:#1f2f4a;border:2px solid #6aa8ff;color:#f2e9d8;',
+      E: 'background:#34244f;border:2px solid #b98cff;color:#f2e9d8;',
+      L: 'background:#4a2f17;border:2px solid #ff9a4d;color:#f2e9d8;',
+      M: 'background:#3a2a1a;border:2px solid #f2b84b;color:#f2b84b;',
+      F: 'background:#3a1a2a;border:2px solid #ff7ab8;color:#ff7ab8;',
+      X: 'background:#14101a;border:2px dashed #3a2f47;color:#6e6280;'
+    };
+    const gear = [['WPN','C'],['HELM','C'],['ARM','R'],['BOOT','U'],['RING','X'],['TRNK','X']].map(([l,k]) => ({ label: l, style: R[k] }));
+    const bag = [['Tax Axe','R'],['Rusty Fork','C'],['???','E'],['Lucky Rcpt','U'],['MAP Elite','M'],['Phoenix','F'],['Ovrdrft Shld','R'],['Spoon','L'],['Notebook','C'],['MAP Shrine','M'],['Bent Staff','C'],['','X']].map(([l,k]) => ({ label: l, style: R[k] }));
+    const kc = ['#2d2838','#3a2f47','#5b3aa8','#3a2f47','#2d2838','#3d6fb4','#2d2838','#3a2f47','#3a8f6a','#2d2838','#3a2f47','#2d2838'];
+    const kbd = Array.from({ length: 36 }, (_, i) => kc.at(i % 12));
+    const phoneStyle = isBattle ? 'background:#1c1824;border:3px solid #f2b84b;outline:4px solid rgba(242,184,75,0.35);' : 'background:#1c1824;border:3px solid #2d2838;';
+    const phoneScreen = isBattle ? 'background:#f2b84b;color:#14101a;' : isInterrupt ? 'background:#3a2a52;color:#f2e9d8;' : 'background:#0d0a12;color:#6e6280;';
+    const notes = [
+      { x: 185, y: 70 }, { x: 329, y: 112 }, { x: 257, y: 156 }, { x: 401, y: 200 },
+      { x: 185, y: 236 }, { x: 329, y: 266 }, { x: 401, y: 92 }
+    ];
+    return {
+      scene, isPeek, isInterrupt,
+      showRpg: !isPeek, dimRpg: isInterrupt,
+      doorClosed: !isPeek, feetShadow: isInterrupt, doorOpen: isPeek,
+      statusBox: status.box, statusKicker: status.kicker, statusText: status.text,
+      meters, heroes, gear, bag, kbd, notes,
+      cols: ['A','B','C','D','E','F','G','H'], keys: ['D','F','J','K'],
+      tabRpg: isPeek ? off : on, tabExcel: isPeek ? on : off,
+      flowLabel: isBattle ? 'x2.4 · building' : isInterrupt ? 'x1.6 · decaying' : 'x1.2 · decaying',
+      flowPct: isBattle ? 70 : isInterrupt ? 30 : 10,
+      uiDim: isPeek ? 'opacity:0.4;' : '',
+      phoneStyle, phoneScreen, phoneRinging: isBattle,
+      phoneLine1: isBattle ? 'MOM' : isInterrupt ? 'In call' : '',
+      phoneLine2: isBattle ? 'calling…' : isInterrupt ? '0:06' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

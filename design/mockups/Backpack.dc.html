@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Backpack and loot decisions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position:relative;width:1280px;height:720px;overflow:hidden;background:#14101a;font-family:'Pixelify Sans',monospace;color:#f2e9d8">
+
+<!-- header -->
+<div style="position:absolute;left:0;top:0;width:1280px;height:64px;box-sizing:border-box;background:#1b1424;border-bottom:2px solid #4a3a5c;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+<div style="display:flex;align-items:baseline;gap:16px">
+<div style="font-size:22px;font-weight:600">Backpack &amp; Gear</div>
+<div style="font-size:13px;color:#a999bd">Battle keeps running behind this screen</div>
+</div>
+<div style="display:flex;align-items:center;gap:24px">
+<div style="font-size:14px;color:#a999bd">FLOW <span style="color:#f2b84b;font-weight:600">x2.4</span> (drains while you're here)</div>
+<div style="width:96px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;background:#241b2e;border:2px solid #4a3a5c">Close · B</div>
+</div>
+</div>
+
+<!-- LEFT: hero + equipment -->
+<div style="position:absolute;left:24px;top:84px;width:340px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:6px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<div style="flex:1;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;{{t.style}}">{{t.label}}</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{equip}}" as="e" hint-placeholder-count="6">
+<div style="height:48px;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:0 10px;{{e.style}}">
+<div style="width:64px;font-size:11px;color:#a999bd;letter-spacing:1px">{{e.slot}}</div>
+<div style="flex:1;font-size:14px;font-weight:600">{{e.name}}</div>
+<div style="font-size:12px;color:#a999bd">{{e.rar}}</div>
+</div>
+</sc-for>
+</div>
+<div style="border:2px solid #4a3a5c;background:#241b2e;padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px">
+<sc-for list="{{stats}}" as="s" hint-placeholder-count="6">
+<div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:#a999bd">{{s.k}}</span><span style="font-weight:600">{{s.v}}</span></div>
+</sc-for>
+</div>
+</div>
+
+<!-- CENTER: backpack grid -->
+<div style="position:absolute;left:388px;top:84px;width:440px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<div style="font-size:16px;font-weight:600">Shared backpack</div>
+<div style="font-size:14px;color:#e0524a;font-weight:600">11 / 12 slots</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+<sc-for list="{{bag}}" as="b" hint-placeholder-count="12">
+<div style="height:120px;box-sizing:border-box;padding:8px;display:flex;flex-direction:column;justify-content:space-between;{{b.style}}">
+<div style="display:flex;justify-content:space-between;align-items:flex-start">
+<div style="font-size:12px;font-weight:600">{{b.rar}}</div>
+<div style="font-size:11px;color:#f2b84b">{{b.tag}}</div>
+</div>
+<div style="font-size:13px;line-height:1.15">{{b.name}}</div>
+<div style="font-size:13px;color:#f2b84b;font-weight:600">{{b.value}}</div>
+</div>
+</sc-for>
+</div>
+<div style="border:2px solid #4a3a5c;background:#241b2e;padding:12px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between"><span style="font-size:14px;color:#a999bd">Backpack value</span><span style="font-size:18px;font-weight:600;color:#f2b84b">1,240 c</span></div>
+<div style="font-size:13px;color:#a999bd">Sold at the Shop when the run ends. Anything you drop is gone for good.</div>
+</div>
+<div style="display:flex;gap:8px">
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;background:#241b2e;border:2px solid #4a3a5c">Sort: value</div>
+<div style="flex:1;height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;background:#1b1424;border:2px dashed #4a3a5c;color:#a999bd">Auto-drop junk · Warehouse Lv 2</div>
+</div>
+</div>
+
+<!-- RIGHT: comparison -->
+<div style="position:absolute;left:852px;top:84px;width:404px;box-sizing:border-box;border:3px solid #b98cff;background:#241b2e;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:12px;color:#b98cff;letter-spacing:1px">EPIC · BOOTS</div>
+<div style="font-size:12px;color:#f2b84b">Sells for 260 c</div>
+</div>
+<div style="font-size:20px;font-weight:600">Wet Boot of the Collector</div>
+<div style="font-size:12px;color:#a999bd">COMPARED TO MAREN'S SQUEAKY BOOTS</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{diff}}" as="d" hint-placeholder-count="4">
+<div style="display:flex;justify-content:space-between;font-size:15px"><span>{{d.k}}</span><span style="font-weight:600;color:{{d.color}}">{{d.v}}</span></div>
+</sc-for>
+</div>
+<div style="font-size:14px;line-height:1.25;border-top:2px solid #4a3a5c;padding-top:8px"><span style="color:#b98cff;font-weight:600">Soggy:</span> 20% chance to slow whoever hits the wearer.</div>
+<div style="font-size:14px;line-height:1.25;border-top:2px solid #4a3a5c;padding-top:8px"><span style="color:#ff9a4d;font-weight:600">Set · Collector's Wardrobe 2/4:</span> you hold the boot and the Monster-Can Helm. Wear both for +10% crit.</div>
+<div style="font-size:12px;color:#a999bd;border-top:2px solid #4a3a5c;padding-top:8px">WHO SHOULD WEAR IT?</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{fit}}" as="f" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:8px">
+<div style="width:150px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:13px;background:#3a2a52;border:2px solid #f2b84b">{{f.btn}}</div>
+<div style="flex:1;font-size:13px;line-height:1.2;color:{{f.color}}">{{f.note}}</div>
+</div>
+</sc-for>
+</div>
+<div style="height:44px;display:flex;align-items:center;justify-content:center;font-size:14px;background:#241b2e;border:2px solid #e0524a;color:#ff8a80">Drop item (frees 1 slot)</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const on = 'background:#3a2a52;border:2px solid #f2b84b;color:#f2e9d8;font-weight:600;';
+    const off = 'background:#241b2e;border:2px solid #4a3a5c;color:#a999bd;';
+    const tabs = [
+      { label: 'Maren · Knight', style: on },
+      { label: 'Tomek · Mage', style: off },
+      { label: 'Lena · Healer', style: off }
+    ];
+    const R = {
+      C: 'background:#3a3342;border:2px solid #8e8a99;',
+      U: 'background:#1f3a2c;border:2px solid #6fcf7f;',
+      R: 'background:#1f2f4a;border:2px solid #6aa8ff;',
+      E: 'background:#34244f;border:2px solid #b98cff;',
+      L: 'background:#4a2f17;border:2px solid #ff9a4d;',
+      X: 'background:#14101a;border:2px dashed #4a3a5c;'
+    };
+    const name = { C: 'Common', U: 'Uncommon', R: 'Rare', E: 'Epic', L: 'Legendary', X: '' };
+    const eq = (slot, nm, k) => ({ slot, name: nm, rar: name[k], style: R[k] });
+    const equip = [
+      eq('WEAPON', 'Plain Sword', 'C'),
+      eq('HELM', 'Dented Pot', 'C'),
+      eq('ARMOR', 'Chain of Receipts', 'R'),
+      eq('BOOTS', 'Squeaky Boots', 'U'),
+      eq('RING', 'Empty', 'X'),
+      eq('TRINKET', 'Empty', 'X')
+    ];
+    const stats = [
+      { k: 'Attack', v: '42' }, { k: 'Max HP', v: '240' },
+      { k: 'Crit', v: '8%' }, { k: 'Speed', v: '11' },
+      { k: 'Armor', v: '14' }, { k: 'Luck', v: '3' }
+    ];
+    const B = (k, nm, val, tag, sel) => ({
+      rar: k === 'X' ? '' : k, name: nm, value: val, tag,
+      style: R[k] + (sel ? 'outline:3px solid #f2b84b;outline-offset:2px;' : '')
+    });
+    const bag = [
+      B('E', 'Wet Boot of the Collector', '260 c', 'NEW', true),
+      B('C', 'Rusty Fork', '12 c', '', false),
+      B('R', 'Tax Axe', '85 c', '', false),
+      B('U', 'Lucky Receipt', '30 c', '', false),
+      B('U', 'Phonecard Ring', '28 c', '', false),
+      B('E', 'Monster-Can Helm', '200 c', 'SET', false),
+      B('R', 'Overdraft Shield', '90 c', '', false),
+      B('L', 'Spoon of Many Lives', '442 c', '', false),
+      B('C', 'Soggy Notebook', '9 c', '', false),
+      B('R', 'Late-Fee Dagger', '70 c', '', false),
+      B('C', 'Bent Staff', '14 c', '', false),
+      B('X', 'Empty', '', '', false)
+    ];
+    const diff = [
+      { k: 'Speed', v: '11 → 14  (+3)', color: '#6fcf7f' },
+      { k: 'Max HP', v: '240 → 221  (-19)', color: '#ff8a80' },
+      { k: 'Damage vs. debt enemies', v: '+14%', color: '#6fcf7f' },
+      { k: 'Armor', v: '14 → 14', color: '#f2e9d8' }
+    ];
+    const fit = [
+      { btn: 'Equip on Maren', note: '-19 HP hurts a tank. Speed helps his taunt rotation.', color: '#f2e9d8' },
+      { btn: 'Equip on Tomek', note: '+3 speed means faster casts. His HP is already low.', color: '#f2e9d8' },
+      { btn: 'Equip on Lena', note: 'Heals sooner and she barely gets hit. Best fit.', color: '#6fcf7f' }
+    ];
+    return { tabs, equip, stats, bag, diff, fit };
+  }
+}
+</script>
+</body>
+</html>

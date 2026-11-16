@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Player house upgrades</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position:relative;width:1280px;height:720px;overflow:hidden;display:flex;background:#0d0a12;font-family:'Pixelify Sans',monospace;color:#f2e9d8">
+
+<div style="position:relative;width:280px;height:720px;flex:none;box-sizing:border-box;padding:16px;background:#110d17;border-right:3px solid #2a2033;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:12px;color:#a999bd;letter-spacing:1px">DOOR PANEL (unchanged)</div>
+<div style="height:250px;box-sizing:border-box;border:6px solid #3d2a1e;background:#4a3324;position:relative">
+<div style="position:absolute;left:0;bottom:0;width:100%;height:8px;background:#ffcf7a"></div>
+<div style="position:absolute;left:62px;bottom:0;width:24px;height:8px;background:#110d17"></div>
+<div style="position:absolute;left:150px;bottom:0;width:24px;height:8px;background:#110d17"></div>
+</div>
+<div style="box-sizing:border-box;padding:10px;background:#3a1a1f;border:2px solid #e0524a;display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;color:#a999bd;letter-spacing:1px">HALLWAY · 3s</div>
+<div style="font-size:15px;font-weight:600;line-height:1.25">Shadow under the door. Shopping does not stop her.</div>
+</div>
+</div>
+
+<!-- monitor: house interior -->
+<div style="position:relative;width:680px;height:720px;flex:none;background:#09070c">
+<div style="position:absolute;left:0;top:0;width:680px;height:40px;box-sizing:border-box;background:#1b1424;border-bottom:2px solid #4a3a5c;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+<span style="font-size:16px;font-weight:600">Maren's House · Ledgerfall</span>
+<span style="font-size:13px;padding:3px 8px;background:#1f2f4a;border:2px solid #8fb3ff">Night clock paused · 23:25</span>
+</div>
+<!-- room -->
+<div style="position:absolute;left:0;top:40px;width:680px;height:400px;background:repeating-linear-gradient(90deg,#3a2a3a 0 40px,#352636 40px 80px)"></div>
+<div style="position:absolute;left:0;top:440px;width:680px;height:280px;background:repeating-linear-gradient(90deg,#5a3f2c 0 60px,#523a28 60px 120px);border-top:4px solid #2b1d16"></div>
+<div style="position:absolute;left:280px;top:90px;width:120px;height:90px;box-sizing:border-box;background:#1a2a4a;border:6px solid #4a3324"></div>
+<div style="position:absolute;left:336px;top:90px;width:6px;height:90px;background:#4a3324"></div>
+
+<sc-for list="{{pieces}}" as="p" hint-placeholder-count="8">
+<div style="position:absolute;left:{{p.x}}px;top:{{p.y}}px;width:{{p.w}}px;height:{{p.h}}px;box-sizing:border-box;display:flex;align-items:flex-end;justify-content:center;{{p.style}}">
+<div style="margin-bottom:-26px;white-space:nowrap;font-size:12px;padding:2px 6px;background:#14101a;{{p.chip}}">{{p.label}}</div>
+</div>
+</sc-for>
+</div>
+
+<!-- UI: furniture list -->
+<div style="position:relative;width:320px;height:720px;flex:none;box-sizing:border-box;padding:12px 14px;background:#1b1424;border-left:3px solid #2a2033;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span>Gold <span style="color:#f2b84b;font-weight:600">640</span></span><span>Scraps <span style="color:#c9a46a;font-weight:600">34</span></span></div>
+<div style="font-size:12px;color:#a999bd">Every buy or upgrade costs 15 min of night clock and applies instantly.</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+<div style="display:flex;align-items:center;gap:8px;box-sizing:border-box;padding:6px 8px;border:2px solid #3a2f47;background:#241b2e;min-height:58px">
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<span style="font-size:14px;font-weight:600">{{r.name}} <span style="color:#a999bd;font-weight:400">{{r.lv}}</span></span>
+<span style="font-size:12px;color:#6fcf7f">{{r.effect}}</span>
+</div>
+<div style="width:86px;height:44px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;line-height:1.15;text-align:center;{{r.btn}}"><span style="font-weight:600">{{r.cost}}</span><span>{{r.mats}}</span></div>
+</div>
+</sc-for>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const owned = 'background:#4a3324;border:3px solid #2b1d16;';
+    const ghost = 'background:rgba(20,16,26,0.4);border:3px dashed #8e8a99;';
+    const chipOwned = 'border:2px solid #f2b84b;color:#f2e9d8;';
+    const chipGhost = 'border:2px dashed #8e8a99;color:#a999bd;';
+    const P = (label, x, y, w, h, has) => ({ label, x, y, w, h, style: has ? owned : ghost, chip: has ? chipOwned : chipGhost });
+    const pieces = [
+      P('Training Dummy Lv 2', 40, 330, 70, 140, true),
+      P('Bed Lv 1', 470, 420, 180, 90, true),
+      P('Bookshelf Lv 1', 150, 230, 100, 200, true),
+      P('Loot Chest · buy', 300, 450, 90, 60, false),
+      P('Altar · buy', 560, 260, 80, 120, false),
+      P('Trophy Wall 1/7', 440, 80, 200, 90, true),
+      P('Pet Bed · buy', 140, 520, 90, 50, false),
+      P('Mannequin · buy', 40, 120, 60, 120, false)
+    ];
+    const can = 'background:#3a2a52;border:2px solid #f2b84b;color:#f2e9d8;';
+    const cant = 'background:#14101a;border:2px dashed #4a3a5c;color:#a999bd;';
+    const rows = [
+      { name: 'Training Dummy', lv: 'Lv 2 → 3', effect: 'Attack +18% → +25%', cost: '1,500 g', mats: '30 scraps', btn: cant },
+      { name: 'Bed', lv: 'Lv 1 → 2', effect: 'Max HP +10% → +18%', cost: '700 g', mats: '16 scraps', btn: cant },
+      { name: 'Bookshelf', lv: 'Lv 1 → 2', effect: 'Cooldowns −5% → −10%', cost: '900 g', mats: '20 scraps', btn: cant },
+      { name: 'Loot Chest', lv: 'buy', effect: '+1 bag slot', cost: '500 g', mats: '12 scraps', btn: can },
+      { name: 'Altar', lv: 'buy', effect: '+3% rare-or-better', cost: '600 g', mats: '14 scraps', btn: can },
+      { name: 'Trophy Wall', lv: 'Lv 1', effect: '+1% luck per boss trophy', cost: '900 g', mats: '20 scraps', btn: cant },
+      { name: 'Pet Bed', lv: 'buy', effect: 'Pet grabs 1 drop per floor', cost: '500 g', mats: '12 scraps', btn: can },
+      { name: 'Mannequin', lv: 'buy', effect: 'Save 1 gear loadout', cost: '300 g', mats: '6 scraps', btn: can }
+    ];
+    return { pieces, rows };
+  }
+}
+</script>
+</body>
+</html>

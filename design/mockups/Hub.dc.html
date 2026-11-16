@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Town, the MMO hub</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position:relative;width:1280px;height:720px;overflow:hidden;display:flex;background:#0d0a12;font-family:'Pixelify Sans',monospace;color:#f2e9d8">
+
+<!-- door strip (compact) -->
+<div style="position:relative;width:280px;height:720px;flex:none;box-sizing:border-box;padding:16px;background:#110d17;border-right:3px solid #2a2033;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:12px;color:#a999bd;letter-spacing:1px">DOOR PANEL (unchanged)</div>
+<div style="height:250px;box-sizing:border-box;border:6px solid #3d2a1e;background:#4a3324;position:relative">
+<div style="position:absolute;left:0;bottom:0;width:100%;height:8px;background:#ffcf7a"></div>
+</div>
+<div style="box-sizing:border-box;padding:10px;background:#3a2a1a;border:2px solid #f2b84b;display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;color:#a999bd;letter-spacing:1px">THREAT TIME KEEPS RUNNING</div>
+<div style="font-size:15px;font-weight:600;line-height:1.25">Town pauses the night clock, not her. A visit can start while you shop.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span>Mood</span><span style="color:#f2b84b;font-weight:600">44 · yellow</span></div>
+<div style="height:12px;box-sizing:border-box;border:2px solid #3a2f47;background:#0d0a12;padding:1px"><div style="height:100%;width:44%;background:#f2b84b"></div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="display:flex;justify-content:space-between;font-size:13px"><span>Noise</span><span style="color:#ff9a4d;font-weight:600">8</span></div>
+<div style="height:12px;box-sizing:border-box;border:2px solid #3a2f47;background:#0d0a12;padding:1px"><div style="height:100%;width:8%;background:#ff9a4d"></div></div>
+</div>
+</div>
+
+<!-- monitor: town -->
+<div style="position:relative;width:680px;height:720px;flex:none;background:#09070c">
+<div style="position:absolute;left:0;top:0;width:680px;height:40px;box-sizing:border-box;background:#1b1424;border-bottom:2px solid #4a3a5c;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+<span style="font-size:16px;font-weight:600">Ledgerfall · Town</span>
+<span style="font-size:13px;padding:3px 8px;background:#1f2f4a;border:2px solid #8fb3ff">Night clock paused · 23:10</span>
+</div>
+<div style="position:absolute;left:0;top:40px;width:680px;height:560px;background:linear-gradient(#1a1030 0%,#3a2448 22%,#2a3a3a 23%,#1f3328 100%)"></div>
+<div style="position:absolute;left:560px;top:62px;width:36px;height:36px;border-radius:18px;background:#f2e9d8"></div>
+<div style="position:absolute;left:0;top:384px;width:680px;height:34px;background:#3a2f2a;border-top:3px solid #2a201c;border-bottom:3px solid #2a201c"></div>
+
+<sc-for list="{{buildings}}" as="b" hint-placeholder-count="7">
+<div style="position:absolute;left:{{b.x}}px;top:{{b.y}}px;width:{{b.w}}px;height:{{b.h}}px">
+<div style="position:absolute;left:0;top:0;width:100%;height:40%;background:{{b.roof}};clip-path:polygon(0 100%,50% 0,100% 100%)"></div>
+<div style="position:absolute;left:8%;top:40%;width:84%;height:60%;box-sizing:border-box;background:{{b.wall}};border:3px solid #130e1a;{{b.focus}}"></div>
+<div style="position:absolute;left:42%;top:64%;width:16%;height:36%;background:#2b1a10"></div>
+<div style="position:absolute;left:16%;top:52%;width:16%;height:16%;background:#ffd27a"></div>
+<div style="position:absolute;right:16%;top:52%;width:16%;height:16%;background:#ffd27a"></div>
+<div style="position:absolute;left:50%;top:-34px;transform:translateX(-50%);white-space:nowrap;box-sizing:border-box;padding:2px 7px;font-size:12px;background:#14101a;{{b.chip}}"><span style="font-weight:600">{{b.name}}</span> <span style="color:#8fb3ff">{{b.cost}}</span></div>
+</div>
+</sc-for>
+
+<!-- NPC players -->
+<sc-for list="{{npcs}}" as="n" hint-placeholder-count="4">
+<div style="position:absolute;left:{{n.x}}px;top:{{n.y}}px;display:flex;flex-direction:column;align-items:center;gap:2px">
+<div style="font-size:10px;color:#6fe0ff;white-space:nowrap">{{n.tag}}</div>
+<div style="width:14px;height:24px;background:{{n.color}}"></div>
+</div>
+</sc-for>
+<!-- you -->
+<div style="position:absolute;left:300px;top:426px;display:flex;flex-direction:column;align-items:center;gap:2px">
+<div style="font-size:10px;color:#f2b84b;white-space:nowrap">Maren &lt;the Night Owl&gt;</div>
+<div style="width:16px;height:28px;background:#3d6fb4;border:2px solid #f2b84b"></div>
+</div>
+
+<!-- trade chat -->
+<div style="position:absolute;left:0;top:600px;width:680px;height:120px;box-sizing:border-box;background:#120e18;border-top:2px solid #4a3a5c;padding:8px 12px;display:flex;flex-direction:column;gap:3px;font-size:13px">
+<div style="font-size:11px;color:#a999bd;letter-spacing:1px">TRADE CHAT</div>
+<div><span style="color:#ff9a4d">[Trade] Kubson:</span> WTB girlfriend patience, paying 5k gold</div>
+<div><span style="color:#ff9a4d">[Trade] xXBartekXx:</span> LF healer for Sunday raid, must have Zyn</div>
+<div><span style="color:#ff9a4d">[Trade] Wiktor:</span> selling Rusty Fork, mint condition, no lowballs</div>
+<div><span style="color:#ff9a4d">[Trade] GoldSeller99:</span> cheap gold www dot no dot pl</div>
+</div>
+</div>
+
+<!-- UI panel: appraiser + item actions -->
+<div style="position:relative;width:320px;height:720px;flex:none;box-sizing:border-box;padding:12px 14px;background:#1b1424;border-left:3px solid #2a2033;display:flex;flex-direction:column;gap:10px">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+<div style="box-sizing:border-box;padding:6px;border:2px solid #3a2f47;background:#241b2e"><div style="font-size:10px;color:#a999bd">GOLD</div><div style="font-size:16px;font-weight:600;color:#f2b84b">640</div></div>
+<div style="box-sizing:border-box;padding:6px;border:2px solid #3a2f47;background:#241b2e"><div style="font-size:10px;color:#a999bd">RECEIPT SCRAPS</div><div style="font-size:16px;font-weight:600;color:#c9a46a">34</div></div>
+<div style="box-sizing:border-box;padding:6px;border:2px solid #3a2f47;background:#241b2e"><div style="font-size:10px;color:#a999bd">ZŁ</div><div style="font-size:16px;font-weight:600;color:#6fcf7f">50</div></div>
+</div>
+
+<div style="box-sizing:border-box;padding:12px;border:3px solid #b98cff;background:#241b2e;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:1px"><span style="color:#b98cff">APPRAISER · EPIC REVEALED</span><span style="color:#8fb3ff">−10 min</span></div>
+<div style="height:44px;background:linear-gradient(90deg,rgba(185,140,255,0),rgba(185,140,255,0.45),rgba(185,140,255,0))"></div>
+<div style="font-size:18px;font-weight:600">Wet Boot of the Collector</div>
+<div style="font-size:13px;color:#6fcf7f">+3 speed · +14% damage vs. debt</div>
+<div style="font-size:13px;color:#ff8a80">−19 max HP</div>
+<div style="font-size:13px;color:#ff9a4d">Life affix: phone interrupts +2 s</div>
+</div>
+
+<div style="font-size:12px;color:#a999bd;letter-spacing:1px">WHAT TO DO WITH IT</div>
+<sc-for list="{{actions}}" as="a" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:6px 8px;{{a.style}}">
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<span style="font-size:14px;font-weight:600">{{a.verb}}</span>
+<span style="font-size:12px;color:#a999bd">{{a.note}}</span>
+</div>
+<span style="font-size:14px;font-weight:600;color:{{a.color}}">{{a.gain}}</span>
+</div>
+</sc-for>
+
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:12px;color:#a999bd">Pending listings: 2 items · paid tomorrow morning</div>
+<div style="height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:14px;background:#f2b84b;color:#14101a;font-weight:600">Back to Floor 5 checkpoint · 15 min</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const chip = 'border:2px solid #4a3a5c;';
+    const chipOn = 'border:2px solid #b98cff;';
+    const B = (name, cost, x, y, w, h, roof, wall, on) => ({ name, cost, x, y, w, h, roof, wall, chip: on ? chipOn : chip, focus: on ? 'outline:4px solid #b98cff;outline-offset:3px;' : '' });
+    const buildings = [
+      B('Appraiser', '10 min', 30, 170, 130, 120, '#4a3a6a', '#6a5a8a', true),
+      B('Vendor', '0 min', 190, 180, 120, 110, '#8a3a2a', '#b0704a', false),
+      B('Salvage', '0 min', 340, 180, 120, 110, '#5a3a2a', '#7a5a42', false),
+      B('Auction House', '5 min', 490, 160, 160, 130, '#3d4f7a', '#5a6a8f', false),
+      B('Trainer', '5 min', 40, 460, 120, 100, '#6a4a2a', '#8a6a42', false),
+      B('Your House', '15 min / buy', 250, 468, 150, 100, '#3a6a5a', '#5a8a7a', false),
+      B('Dungeon Gate', '15 min', 500, 456, 140, 110, '#2a2033', '#3a2f47', false)
+    ];
+    const npcs = [
+      { tag: 'Kubson', x: 180, y: 340, color: '#d9534f' },
+      { tag: 'xXBartekXx', x: 440, y: 330, color: '#6fcf7f' },
+      { tag: 'Wiktor', x: 600, y: 420, color: '#6aa8ff' },
+      { tag: 'GoldSeller99', x: 110, y: 420, color: '#8e8a99' }
+    ];
+    const base = 'border:2px solid #3a2f47;background:#241b2e;';
+    const pick = 'border:2px solid #f2b84b;background:#3a2a52;';
+    const actions = [
+      { verb: 'Equip on Lena', note: 'Best fit: faster heals, rarely hit', gain: 'keep', color: '#f2e9d8', style: pick },
+      { verb: 'Vendor', note: 'Instant gold', gain: '+120 g', color: '#f2b84b', style: base },
+      { verb: 'Salvage', note: 'Instant mats for the house', gain: '+8 scraps', color: '#c9a46a', style: base },
+      { verb: 'List on auction', note: 'Market ↑ 1.1× · pays tomorrow · 5 min', gain: '~38 zł', color: '#6fcf7f', style: base }
+    ];
+    return { buildings, npcs, actions };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,11 +1,13 @@
-# Loot Night – Night 1 prototype
+# Loot Night
 
-Built from the Loot Night design doc (section 10 scope).
+A short, funny browser game (birthday gift): grind a loot-obsessed idle RPG all night while hiding it from your
+girlfriend, your mom, your boss, the dog and your own tiredness.
 
     npm install
     npm run dev      # play locally
-    npm run build    # single-file dist/index.html
-    npx tsx test/sim.ts good   # headless bot plays one night, prints results
+    npm run build    # single-file dist/index.html (send this file to play)
 
-All numbers: src/config/tuning.ts. Content: src/data/. Systems: src/systems/. UI: src/ui/.
-Debug overlay: F1 (speed x4/x10, spawn visits, interrupts, loot).
+- Working rules, file map, test commands: [CLAUDE.md](CLAUDE.md)
+- What changed per build: [CHANGELOG.md](CHANGELOG.md)
+- Backlog: GitHub Issues
+- All balance numbers: `src/config/tuning.ts`
