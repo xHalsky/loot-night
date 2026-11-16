@@ -12,5 +12,5 @@ export const ENEMIES: EnemyDef[] = [
   { id: 'bat', name: 'Late-Fee Bat', hp: 55, atk: 7, armor: 0, speed: 13, sprite: bat },
   { id: 'collector', name: 'The Collector', hp: 125, atk: 11, armor: 3, speed: 7, sprite: collector },
 ];
-export const BOSS: EnemyDef = { id: 'bailiff', name: 'The Bailiff', hp: 850, atk: 24, armor: 5, speed: 8, boss: true, sprite: bailiff };
+export const BOSS: EnemyDef = { id: 'bailiff', name: 'The Bailiff', hp: 1100, atk: 28, armor: 5, speed: 8, boss: true, sprite: bailiff };
 export const ENEMY_BY_ID: Record<string, EnemyDef> = Object.fromEntries([...ENEMIES, BOSS].map(e => [e.id, e]));

@@ -75,6 +75,12 @@ export const T = {
   FEATHER_REVIVE_PCT: 0.5,
   WIPE_TIME_MIN: 60, WIPE_GOLD_PCT: 0.10, WIPE_BAG_LEFT: 0.5,
   ELITE_MULT: 1.5,
+  // Boss big attack (FINAL NOTICE): telegraphed, answerable with Bash (interrupt), Ward (halve) or Taunt (knight only)
+  BOSS_SLAM_EVERY: 2,             // every Nth boss action is a wind-up instead of a hit
+  BOSS_WINDUP_SEC: 3,             // red bar over the boss; you can hear it from Excel
+  BOSS_SLAM_PCT: 0.6,            // unanswered: every hero loses this share of max HP
+  BOSS_SLAM_TAUNT_PCT: 0.55,      // taunted: only the knight is hit, for this share of his max HP
+  BOSS_SLAM_WARD_MULT: 0.5,
   // Reckless autopilot: when the player chose to leave the game (Excel, switching, minigames, cables out)
   AUTOPILOT_HEAL_BELOW: 0.35,      // the healer only heals below this (normal: 0.6)
   AUTOPILOT_NO_TANK: true,        // nobody holds aggro: enemies pick targets at random

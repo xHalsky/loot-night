@@ -75,7 +75,15 @@ function castAbility(h: Hero, slot: number) {
   n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);
   sfx.ability();
   if (h.id === 'knight' && slot === 1) { n.taunt = 5; vfx('taunt', me, undefined, 0.7); toast(`${h.name}: TAUNT`, '#6aa8ff'); return; }
-  if (h.id === 'knight' && slot === 2) { const e = frontEnemy(); if (e) { hitEnemy(e, st.atk * 2 * mult, st.crit, 'bash'); e.stunned = 1; } return; }
+  if (h.id === 'knight' && slot === 2) {
+    const e = n.enemies.find(x => x.hp > 0 && (x.wind ?? 0) > 0) ?? frontEnemy();   // Bash goes for a winding-up boss first
+    if (e) {
+      hitEnemy(e, st.atk * 2 * mult, st.crit, 'bash');
+      if ((e.wind ?? 0) > 0 && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
+      else { e.stunned = 1; if ((e.wind ?? 0) > 0) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts FINAL NOTICE! He braces for the next one.`, '#8fb3ff'); sfx.good(); } }
+    }
+    return;
+  }
   if (h.id === 'mage' && slot === 1) { n.enemies.filter(e => e.hp > 0).forEach(e => hitEnemy(e, st.atk * 1.0 * mult, st.crit, 'fire', me)); return; }
   if (h.id === 'mage' && slot === 2) { const e = frontEnemy(); if (e) hitEnemy(e, st.atk * 2.6 * mult, st.crit, 'frost', me); return; }
   if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, st.atk * 2.2 + 14)); return; }
@@ -132,6 +140,14 @@ function enemyAct(e: Enemy) {
   const n = N();
   e.turnsAlive++;
   if (e.stunned > 0) { e.stunned--; return; }
+  if (e.boss) {
+    e.acts = (e.acts ?? 0) + 1;
+    if (e.acts % T.BOSS_SLAM_EVERY === 0) {
+      e.wind = T.BOSS_WINDUP_SEC;
+      toast(`${e.name} winds up FINAL NOTICE! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup();
+      return;
+    }
+  }
   e.lunge = 0.3;
   const alive = aliveHeroes();
   if (!alive.length) return;
@@ -167,6 +183,27 @@ function grantXp(amount: number) {
   }
 }
 
+/** The boss's telegraphed big attack lands. */
+function bossSlam(e: Enemy) {
+  const n = N();
+  e.braced = false;
+  e.lunge = 0.3;
+  sfx.slam(); n.noise = Math.min(100, n.noise + T.NOISE_CRIT);
+  const ward = n.ward > 0 ? T.BOSS_SLAM_WARD_MULT : 1;
+  const knight = S.g.heroes[0];
+  const targets = n.taunt > 0 && !knight.downed ? [knight] : aliveHeroes();
+  const pct = targets.length === 1 && targets[0] === knight && n.taunt > 0 ? T.BOSS_SLAM_TAUNT_PCT : T.BOSS_SLAM_PCT;
+  for (const h of targets) {
+    const dmg = Math.max(1, Math.round(maxHp(h) * pct * ward));
+    h.hp -= dmg;
+    const i = S.g.heroes.indexOf(h);
+    vfx('claw', heroCenter(i), undefined, 0.5);
+    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
+    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); }
+  }
+  toast(n.taunt > 0 && !knight.downed ? `FINAL NOTICE hits ${knight.name} (taunted).` : ward < 1 ? 'FINAL NOTICE, softened by Ward.' : 'FINAL NOTICE hits everyone!', '#ff8a80');
+}
+
 /** Advances the battle. Returns 'victory', 'wipe' or null while it is ongoing. */
 export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   const n = N();
@@ -179,6 +216,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   }
   for (const e of n.enemies) {
     if (e.hp <= 0) continue;
+    if ((e.wind ?? 0) > 0) { e.wind! -= dt; if (e.wind! <= 0) { e.wind = 0; bossSlam(e); } continue; }   // winding up: no normal turns
     e.atb += e.speed * T.ATB_RATE * dt;
     if (e.atb >= 100) { e.atb -= 100; enemyAct(e); }
   }

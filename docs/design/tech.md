@@ -28,7 +28,10 @@ building. A night in progress is not saved.
   (depth, stars, catches, wakes). Run both on every balance change and note before/after in the changelog.
 - `npx tsx test/alttab.ts`: the alt-tab timing acceptance test.
 - `npx tsx test/noise.ts`: Noise by distance and masking (shower vs. next door).
-- `npx tsx test/autopilot.ts [trials]`: present vs. 40 s away at bosses and normal floors (wipes, party HP).
+- `npx tsx test/autopilot.ts [trials]`: three players at the same fight (smart: answers the boss wind-up;
+  spam: skills on cooldown; away: 40 s on Excel). Reports wipes, the lowest party HP during the fight, close
+  calls (survived under 25%) and fight length.
+- `python3 test/boss.py`: screenshot of the boss cast bar.
 - Playwright scripts reach game state through `window.__lootnight.S` (a test hook in `main.ts`).
 - `python3 test/*.py`: Playwright screenshot scripts (Chrome at `/usr/bin/google-chrome`).
 

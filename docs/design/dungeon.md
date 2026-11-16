@@ -10,7 +10,17 @@ ring, trinket). Old saves are renamed on load.
 **Floors.** Endless. A floor is a walk, then `BATTLES_PER_FLOOR` (3) battles. Every
 `CHECKPOINT_EVERY` (5th) floor ends in a boss and sets the checkpoint. Enemies scale per floor
 (`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Dungeon of Overdue Bills:
-Debt Skeleton, Late-Fee Bat, The Collector, boss The Bailiff (850 HP, 24 attack at floor 1 scale).
+Debt Skeleton, Late-Fee Bat, The Collector, boss The Bailiff (1100 HP, 28 attack at floor 1 scale).
+
+**Boss big attack: FINAL NOTICE.** Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
+a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
+`BOSS_WINDUP_SEC` (3 s) with a low rising sound you can hear from Excel. Then every hero loses
+`BOSS_SLAM_PCT` (60%) of max HP. Three answers, one per hero:
+- **Bash** (knight) interrupts it, but then the boss is **braced**: his next FINAL NOTICE cannot be interrupted;
+- **Ward** (healer) halves it (`BOSS_SLAM_WARD_MULT`);
+- **Taunt** (knight) pulls it onto the knight alone (`BOSS_SLAM_TAUNT_PCT` of his max HP).
+So a boss fight is a rotation: Bash, then Ward or Taunt, then Bash again. On Excel during a wind-up,
+nobody answers.
 
 **Interest (Monday's mechanic).** An enemy alive more than `INTEREST_AFTER_TURNS` turns deals
 +`INTEREST_PER_TURN` per extra turn. Rewards burst.
@@ -90,8 +100,14 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
 - **Reckless, not just slower** (#15): leaving the game has to be dangerous, or Excel is free and the stealth
   layer has no teeth. Rejected: pausing loot or resetting Flow while away (no danger, the player just waits).
   Random targeting was chosen over flat damage boosts because it reads as "nobody is tanking".
-- **Bailiff buffed** (700/16 → 850/24) in the same change: away from a floor-5 boss never wiped before,
-  and with you present bosses ended at 96% party HP. Still easy when present; that is the balance pass (#2).
+- **Bosses should make you sweat, not wipe you** (0.18). Stat buffs alone turn into random wipes, so the
+  pressure comes from a telegraphed attack you can answer. The brace rule exists because Bash's cooldown
+  fits between wind-ups: without it one button answered everything. Measured with `test/autopilot.ts`
+  (lowest party HP during the fight, which matters because a boss kill levels the party up and heals it):
+  floor-10 boss, a player using skills on cooldown dips to ~49% with some close calls and no wipes;
+  a player who saves Taunt and Ward only for the wind-up wipes about half the time; 40 s on Excel always wipes.
+  The floor-5 boss is milder (~66 to 70%); RPG depth (#27) will give floors 5/10/15 their own bosses.
+  Bailiff history: 700/16 → 850/24 (0.15) → 1100/28 (0.18).
 - **No permadeath.** Progress is never wiped (pillar 4); a wipe costs time, gold and half the bag.
 - Rejected: a 12-slot bag inside the battle UI and drag-to-equip mid-fight as the main loop. Equipping
   happens in the right panel; the fight slows while you look.

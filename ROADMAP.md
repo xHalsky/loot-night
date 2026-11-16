@@ -11,7 +11,8 @@ Final sprites once the screens stop changing.** We have time for polish.
 **Slice is done when** someone other than Paweł plays it and:
 - understands what to do within 2 minutes,
 - gets caught at least once and feels it was their own fault,
-- sees at least 3 different visit types and has to answer each differently,
+- sees at least 3 different visit types over two nights and has to answer each differently
+  (few visits per night is intended: the dread of a visit matters more than the count),
 - wants to play another night right away,
 
 and the audit in `docs/design/synergy.md` shows every slice system taking input from 2+ systems and feeding 2+.

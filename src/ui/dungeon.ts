@@ -203,6 +203,7 @@ function units(c: CanvasRenderingContext2D, t: number) {
     const over = e.turnsAlive - T.INTEREST_AFTER_TURNS;
     if (over > 0) text(c, `INTEREST +${Math.round(over * T.INTEREST_PER_TURN * 100)}%`, x + 30, y - 30, 10, '#ffb3a8', 'center');
     if (e.stunned > 0) text(c, 'STUN', x + 30, y - 24, 11, '#8fb3ff', 'center');
+
   });
 }
 
@@ -249,6 +250,22 @@ function fog(c: CanvasRenderingContext2D, t: number) {
   }
 }
 
+/** The boss's FINAL NOTICE wind-up, drawn above the darkness and fog: it must read at a glance. */
+function windupHud(c: CanvasRenderingContext2D) {
+  const n = N();
+  for (const e of n.enemies) {
+    if (e.hp <= 0 || !((e.wind ?? 0) > 0)) continue;
+    // a boss cast bar, MMO raid style: fixed at the top centre, outside the camera
+    const k = 1 - e.wind! / T.BOSS_WINDUP_SEC, pulse = Math.floor(performance.now() / 120) % 2;
+    const bw = 240, bx = W / 2 - bw / 2, by = 62;
+    c.fillStyle = 'rgba(10,4,6,.85)'; c.fillRect(bx - 3, by - 3, bw + 6, 22);
+    c.strokeStyle = pulse ? '#ff5a5a' : '#8a2a2a'; c.lineWidth = 2; c.strokeRect(bx - 3, by - 3, bw + 6, 22);
+    c.fillStyle = pulse ? '#e0302a' : '#b8401f'; c.fillRect(bx, by, bw * k, 16);
+    text(c, `${e.name}: ${e.braced ? 'FINAL NOTICE (braced, no interrupt)' : 'FINAL NOTICE'}`, W / 2, by + 12, 12, '#fff0e8', 'center', 700);
+    text(c, e.braced ? 'Ward or Taunt!' : 'Bash, Ward or Taunt!', W / 2, by + 34, 11, '#ffb0a0', 'center', 600);
+  }
+}
+
 export function drawDungeonScene(c: CanvasRenderingContext2D) {
   const n = N();
   const t = performance.now() / 1000;
@@ -276,4 +293,5 @@ export function drawDungeonScene(c: CanvasRenderingContext2D) {
   c.globalAlpha = 1;
   c.restore();
   c.save(); camApply(c, 1.35); foreground(c, scroll, toScreen(torch.x, torch.y)); c.restore();
+  windupHud(c);
 }

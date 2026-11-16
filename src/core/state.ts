@@ -32,6 +32,7 @@ export interface Enemy {
   uid: number; defId: string; name: string; hp: number; maxHp: number;
   atk: number; armor: number; speed: number; atb: number;
   turnsAlive: number; stunned: number; boss: boolean; flash: number; lunge?: number;
+  wind?: number; acts?: number; braced?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
 }
 
 export interface FloatFx { x: number; y: number; text: string; color: string; t: number }

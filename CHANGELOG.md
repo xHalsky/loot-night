@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.18.0 (2026-11-16)
+
+- **Bosses make you sweat** (#2). The Bailiff now winds up FINAL NOTICE every 2nd action: a boss cast bar at
+  the top of the screen and a rising rumble you can hear from Excel, then 60% max HP to every hero. Answers:
+  Bash interrupts (after which he is braced and the next one cannot be interrupted), Ward halves it, Taunt pulls
+  it onto the knight. Bailiff 850/24 → 1100/28.
+- `test/autopilot.ts` now runs three players per fight and reports the lowest party HP during it (the old
+  end-of-fight HP hid the danger: a boss kill levels the party up and heals it). Floor-10 boss, skills on
+  cooldown: lowest HP 58% → 49%, close calls appear, no wipes. Floor-5 boss: 76-84% → 66-70%. Away: always wipes.
+- Sims (4 good, 2 idle): good bot 3 stars, floor 5-12, 0-1 wipes; idle unchanged. Alt-tab test unchanged.
+- Slice criterion changed: 3 visit types over two nights, not one; few visits per night is intended.
+
 ## 0.17.0 (2026-11-16)
 
 - **Three new visit types** (#12, Monday set). Each wants a different answer:
