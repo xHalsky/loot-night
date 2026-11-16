@@ -57,8 +57,8 @@ function spawn(ex: ExcelState) {
     // Stack reached the top: the sheet "crashes", the board resets.
     const n = N();
     ex.board = newExcel().board; ex.crashFx = 1.5;
-    n.busy = Math.max(0, n.busy + T.EXCEL_CRASH_BUSY);
-    toast('#REF! The spreadsheet crashed. Busy -20.', '#ff8a80'); sfx.bad();
+    void n;
+    toast('#REF! The spreadsheet crashed. Start over.', '#ff8a80'); sfx.bad();
   }
   ex.piece = piece;
 }
@@ -68,7 +68,7 @@ function lock(ex: ExcelState) {
   const p = ex.piece!;
   for (const [cx, cy] of p.cells) { const by = p.y + cy; if (by >= 0) ex.board[by][p.x + cx] = p.k + 1; }
   ex.piece = null;
-  n.busy = Math.min(100, n.busy + T.EXCEL_PIECE_BUSY);
+  void n;
   sfx.key();
   const full = ex.board.map((r, i) => (r.every(v => v > 0) ? i : -1)).filter(i => i >= 0);
   if (full.length) {
@@ -76,7 +76,6 @@ function lock(ex: ExcelState) {
     while (ex.board.length < T.EXCEL_ROWS) ex.board.unshift(Array(T.EXCEL_COLS).fill(0));
     const gold = Math.round(T.EXCEL_ROW_GOLD * full.length * T.EXCEL_MULTI[Math.min(4, full.length)]);
     S.g.gold += gold; ex.pay += gold; ex.rows += full.length; ex.clearFx = 0.6;
-    n.busy = Math.min(100, n.busy + T.EXCEL_ROW_BUSY * full.length);
     toast(`${full.length > 1 ? `${full.length} rows! ` : ''}Overtime pay +${gold} gold`, '#6fcf7f'); sfx.good();
   }
 }
@@ -86,7 +85,6 @@ export function updateExcel(dt: number) {
   const ex = n.excel;
   ex.clearFx = Math.max(0, ex.clearFx - dt); ex.crashFx = Math.max(0, ex.crashFx - dt);
   if (n.monitor !== 'excel' || n.game || n.monitorOff > 0) return;   // board waits while you are away
-  n.busy = Math.min(100, n.busy + T.EXCEL_PASSIVE_BUSY * dt);
   if (!ex.piece) spawn(ex);
   ex.fallT -= dt;
   if (ex.fallT <= 0) {

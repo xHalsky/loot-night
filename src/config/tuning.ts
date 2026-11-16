@@ -42,7 +42,8 @@ export const T = {
   // Phone declines: slower than nothing, faster than answering
   DECLINE_SEC: 1.6, FLIP_SEC: 1.0, PHONE_DOWN_SEC: 25,
   MOM_DECLINE_MOOD: 3, MOM_CALLBACK_SEC: [40, 60] as [number, number],
-  BOSS_FLIP_BUSY: -20, TEXT_FLIP_WAKE: 12, TEXT_FLIP_MOOD: 3,
+  BOSS_FLIP_FOLLOWUP_SEC: [20, 30] as [number, number],   // flipping the phone on the boss: he pings again soon
+  TEXT_FLIP_WAKE: 12, TEXT_FLIP_MOOD: 3,
   // Door peek (hold the door)
   PEEK_OPEN_SEC: 0.5, PEEK_REVEAL_SEC: 7, PEEK_FORGET_SEC: 3,   // the cloud over the map shrinks to her over 7 s of peeking
   PEEK_SEEN: { hallway: 1.4, living: 0.45, tv: 0.18 } as Record<string, number>,
@@ -110,7 +111,6 @@ export const T = {
   NOISE_DECAY_PER_SEC: 2,
   NOISE_ACTION: 0.3,              // every hero action (keyboard clacking)
   NOISE_CRIT: 3, NOISE_ABILITY: 4, NOISE_BOSS_KILL: 20, NOISE_VAULT: 30, NOISE_LEVEL: 6,
-  BUSY_DECAY_PER_SEC: 1, BUSY_PASS: 60,
 
   // --- Visits (night 1: Peek only) ---
   VISIT_INTERVAL_SEC: [60, 90] as [number, number],
@@ -163,7 +163,8 @@ export const T = {
   INTERRUPT_FIRST_DELAY_SEC: 18,
   INTERRUPT_CAP: 1,               // one phone: one notification at a time
   MOM_TIMER: 8, MOM_FAIL_MOOD: 10, MOM_BEATS: 3, MOM_MAX_MISSES: 4, MOM_SWEEP_SEC: 2.4, MOM_ZONE: 0.3, MOM_READ_SEC: 1.6,   // she talks first (marker waits), then you reply
-  BOSS_TIMER: 12, BOSS_WINDOW_SEC: 15, BOSS_FAIL_MOOD: 8, BOSS_BUSY: 40, BOSS_ROWS: 2,
+  BOSS_TIMER: 12, BOSS_WINDOW_SEC: 15, BOSS_FAIL_MOOD: 8, BOSS_ROWS: 2,
+  BOSS_GOLD: 40, BOSS_QUIET_SEC: 150,   // answering the boss: an overtime bonus, and he leaves you alone for a while
   TEXT_CHAT_SEC: 8,
   FACE_UNLOCK_SEC: 1.2,           // hold the phone to your face
   SLIDE_DIST: 150, DOOR_DIST: 70, TAKE_DIST: 170, PULL_DIST: 60, TOSS_DIST: 130,
@@ -171,12 +172,8 @@ export const T = {
   // --- Excel rhythm ---
   EXCEL_COLS: 8, EXCEL_ROWS: 12,
   EXCEL_FALL_SEC: 0.8,            // one row per 0.8 s: slow and readable
-  EXCEL_PASSIVE_BUSY: 14,         // Busy per second just for having Excel open
-  EXCEL_PIECE_BUSY: 4,
-  EXCEL_ROW_BUSY: 15,
   EXCEL_ROW_GOLD: 6,              // overtime pay per cleared row
   EXCEL_MULTI: [0, 1, 2.5, 4, 6], // pay multiplier for 1-4 rows at once
-  EXCEL_CRASH_BUSY: -20,
 
   // --- Economy ---
   START_GOLD: 100, START_ZL: 50,

@@ -46,7 +46,7 @@ while (S.g.screen === 'night' && t < 2000) {
     const v = n.visit.stage;
     const k = n.visit.kind;   // a perfect listener knows the visit type from the hallway cue
     const coming = v === 'far' || v === 'hall' || v === 'handle' || v === 'in';
-    const wantExcel = (coming && (k === 'peek' || k === 'chat')) || (n.busy < 45 && n.phase === 'mapChoice');
+    const wantExcel = (coming && (k === 'peek' || k === 'chat'));
     if (coming && k === 'snack' && !n.game) hideCans();
     if (v === 'in' && n.visit.result === 'offer') takePlate();
     if (v === 'in' && n.visit.result === 'chat') chatAnswer(0);
@@ -88,7 +88,7 @@ while (S.g.screen === 'night' && t < 2000) {
   const before = n.catches;
   const vs = n.visit.stage;
   step(dt); t += dt;
-  if (S.g.night && N().catches > before) { caught++; if (process.env.DBG) console.error('CAUGHT', N().visit.kind, N().visit.from, 'monitor', N().monitor, 'sw', !!N().switching, 'busy', Math.round(N().busy), 'stage', vs, 'clock', Math.round(N().clock)); }
+  if (S.g.night && N().catches > before) { caught++; if (process.env.DBG) console.error('CAUGHT', N().visit.kind, N().visit.from, 'monitor', N().monitor, 'sw', !!N().switching, 'stage', vs, 'clock', Math.round(N().clock)); }
   if (vs === 'handle' && S.g.night && N().visit.stage === 'in') { visits++; kinds[N().visit.kind] = (kinds[N().visit.kind] ?? 0) + 1; }
   if (S.g.night && N().visit.stage === 'in' && N().visit.t < 0.02 && N().visit.result) outcomes[N().visit.result] = 1 + (outcomes[N().visit.result] ?? 0);
   if (S.g.night && N().floor < lastFloor) wipes++;

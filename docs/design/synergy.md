@@ -14,8 +14,8 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | Loot | Gold, scraps, zł, party power | Flow, Zone, green Mood | zł is a dead end until the store (#4) |
 | Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift | Her visits give the RPG nothing positive |
 | Noise | Visit timing, waking her | Combat, dog, Monster | Only punishes; distance and masking (#17) add the read |
-| Looks busy / Excel | Passes checks, gold | Excel, boss | Fine |
-| Interrupts | Mom heals, boss gives Busy | Timers | Bedtime text only avoids a penalty |
+| Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
+| Interrupts | Mom heals, boss pays gold and goes quiet | Timers | Bedtime text only avoids a penalty |
 | Dog and cables | Noise, NO SIGNAL | A timer | Only punishes |
 | Tiredness | Yawns, microsleeps, sluggish | Clock, sleep debt, Monster | Only punishes; staying up has no upside |
 
@@ -25,7 +25,7 @@ The principle is vital, so the slice gets every item whose inputs exist on Monda
 
 | Item | Where |
 |---|---|
-| Cross-layer echoes, interrupts and the dog always pay, Goodwill, Alibi, Witching Hour | Slice: #29 |
+| Cross-layer echoes, interrupts and the dog always pay, Goodwill, Witching Hour | Slice: #29 |
 | Ability marks, cross-system affixes | Slice: inside RPG depth #27 |
 | Audio-first loot cues | Slice: inside real audio #13 |
 | A city upgrade every night | Slice: inside the balance pass #2 |
@@ -56,7 +56,8 @@ Catches cost 15.
 
 ## Excel produces something
 
-**Alibi stacks** (0 to 3): each filled row gives one; a check with Busy under 60 spends one and passes.
+(Alibi stacks were dropped in 0.20 together with Looks busy: there is no Busy threshold left to excuse.)
+
 **Overtime zł:** a 4-row clear pays 2 zł, capped at 20 per night.
 
 ## Witching Hour
@@ -69,7 +70,7 @@ a greedy choice, not only a penalty.
 
 Car alarm +60 gold; dinner shout = Fed; friends' call reveals the next node row; dog petted on the
 favourite spot = Good Boy (goblin chance ×2 for 60 s); cable fix under 6 s restores Flow; a bank shot in
-the bin gives +1 Alibi.
+the bin gives a small Flow bonus (exists).
 
 ## Synergy inside the RPG
 
@@ -78,7 +79,7 @@ the bin gives +1 Alibi.
 Cursed + Shrine = Purified; Goblin Den + Elite = Goblin King).
 **Ability marks** (2 turns): Bash → Staggered (Fire ×2 and spreads); Frost → Chilled (Bash shatters ×2.5);
 Smite → Judged (next auto attack heals 30%); Taunt → Taunted (Ward reflects 20%).
-**Cross-system affixes:** Spreadsheet Warrior (+3 Busy per kill), Library Voice, Headset Hero, Sweet
+**Cross-system affixes:** Spreadsheet Warrior (+overtime gold per kill), Library Voice, Headset Hero, Sweet
 Talker, Caffeinated, Good with Dogs. **Party sets** worn across different heroes (Guild Tabard, Ledger Plate).
 
 ## Tweaks
@@ -103,7 +104,7 @@ Talker, Caffeinated, Good with Dogs. **Party sets** worn across different heroes
 
 ## Build order
 
-Audio-first cues → interrupt payouts and echoes → Goodwill → Alibi and overtime zł → Witching Hour →
+Audio-first cues → interrupt payouts and echoes → Goodwill → overtime zł → Witching Hour →
 ability marks → combo floors → affixes and sets → bag tools → unfolding city → banter → bounties →
 upgrade-per-night tuning → the ending ([campaign.md](campaign.md)).
 

@@ -11,7 +11,6 @@ ignoring the interrupt. While a minigame has your hands, skills are paused and F
 | Meter | Rises from | Falls | Matters |
 |---|---|---|---|
 | Noise 0 to 100 | Every hero action `NOISE_ACTION`, crit, skill cast, level-up, boss kill, Treasure Vault, dog whining, Monster coughs and clanks | `NOISE_DECAY_PER_SEC` | Brings her sooner, scaled by how far she is ([her.md](her.md)); wakes her after midnight |
-| Looks busy 0 to 100 | Excel | `BUSY_DECAY_PER_SEC` | ≥ `BUSY_PASS` passes her check |
 | Tired | See [night.md](night.md) | Monster | Yawns, microsleeps, sluggish |
 
 ### The phone
@@ -35,7 +34,7 @@ time (`INTERRUPT_CAP`), every `INTERRUPT_INTERVAL_SEC`. The screen stays off unt
 | Who | Minigame | Success | Ignore or fail | Decline |
 |---|---|---|---|---|
 | Mom (call, before midnight) | 3 lines; her line's ending (… ? !) tells the reply (mhm / really?! / wow), tapped while a marker sweeps through a zone; `MOM_MAX_MISSES` | Full party heal | Mood +`MOM_FAIL_MOOD` and she calls your girlfriend (next visit soon) | Mood +`MOM_DECLINE_MOOD`, she calls back in 40 to 60 s |
-| Boss (messages) | Two easy sums in a chat, `BOSS_WINDOW_SEC`; wrong total −2 s | Looks busy +`BOSS_BUSY` | Mood +`BOSS_FAIL_MOOD` | Flip: Looks busy `BOSS_FLIP_BUSY` |
+| Boss (messages) | Two easy sums in a chat, `BOSS_WINDOW_SEC`; wrong total −2 s | Overtime bonus `BOSS_GOLD` gold, and no boss messages for `BOSS_QUIET_SEC` | Mood +`BOSS_FAIL_MOOD` | Flip: he pings again in `BOSS_FLIP_FOLLOWUP_SEC` |
 | Her (bedtime text) | Tap "Five more minutes, love" | Waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | Flip: Waking +`TEXT_FLIP_WAKE` |
 
 Sluggish (Tired 70+) shortens every phone timer to `SLUGGISH_TIMER_MULT`.
@@ -46,9 +45,9 @@ Sluggish (Tired 70+) shortens every phone timer to `SLUGGISH_TIMER_MULT`.
 Excel sheet that looks like Excel: green title bar, ribbon, name box and formula bar, column letters,
 comma-formatted cells. The minigame is spreadsheet Tetris on an `EXCEL_COLS` × `EXCEL_ROWS` sheet:
 blocks fall every `EXCEL_FALL_SEC`, A/D move, W rotates, S lowers, Space drops (ribbon buttons for the
-mouse). Looks busy +`EXCEL_PASSIVE_BUSY` per second just for having it open, +`EXCEL_PIECE_BUSY` per
-block, +`EXCEL_ROW_BUSY` per row. Overtime pay: `EXCEL_ROW_GOLD` gold per row, ×`EXCEL_MULTI` for multi-
-row clears. Topping out crashes the sheet (#REF!), Busy `EXCEL_CRASH_BUSY`. The RPG fights on behind it.
+mouse). It is optional: being on Excel is what passes her check. Overtime pay: `EXCEL_ROW_GOLD` gold per row, ×`EXCEL_MULTI` for multi-
+row clears. Topping out crashes the sheet (#REF!) and the board restarts. The RPG fights on behind it,
+recklessly ([dungeon.md](dungeon.md)).
 
 **Alt-tab lag.** Every switch, both ways, takes a random `ALT_TAB_LAG_SEC` (1.0 to 2.5 s). No input
 works meanwhile (only pause and debug); a second alt-tab is ignored; skills cannot be cast. Until it
@@ -60,7 +59,7 @@ finishes you count as still on the screen you left: she sees what you were switc
 | Hallway | 2.9 s | pass (lag at most 2.5 s) |
 | Handle | 0.9 s | caught (lag at least 1.0 s) |
 
-Passing still needs 60 Looks busy, and Excel only builds it once the switch lands. Verified by
+Excel on screen when she looks is a pass. Verified by
 `test/alttab.ts` (200/200 pass on the hallway cue, 200/200 caught on the handle cue).
 
 **The switch looks like an old Windows mode change**, stretched over the lag: the last frame freezes
@@ -114,6 +113,10 @@ multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
 
 - **One phone, one notification at a time.** Several desk objects with countdown rings (the original plan)
   read as clutter; one phone is a real-world object you already know how to handle.
+- **No Looks busy meter** (cut in 0.20): Excel on screen when she looks is a pass. The meter made players
+  play Excel to fill a bar they did not watch, and it caught players who switched in time (the lag ate the
+  time Excel needed to fill it). The reckless autopilot now carries the cost of hiding. Rejected: keeping
+  the meter but filling it faster (the same thing with extra UI).
 - **Excel as Tetris** instead of a rhythm game: the rhythm game was too fast and gave nothing. Honest
   work pays (overtime gold) but is never required.
 - **No hand in the drinking shot**; the toss went slingshot → floating fling at the user's request.
@@ -133,5 +136,5 @@ multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
 - More interrupts (courier, car alarm, drilling, verification SMS, friends' call, dinner shout, laundry request): #23.
 - Zyn as a second stimulant: #10.
 - Desk upgrades (phone stand, quieter keyboard, shorter lag): #4. Choose a pet: #7.
-- Every interrupt success pays out; Alibi stacks from Excel rows: [synergy.md](synergy.md).
+- Every interrupt success pays out: [synergy.md](synergy.md).
 - Alt-tab readability on short rolls: #8.

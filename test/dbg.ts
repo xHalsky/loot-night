@@ -17,5 +17,5 @@ for (let t = 0; t < 200; t += 1/60) {
   step(1/60);
   if (!S.g.night) break;
   const s = N().visit.stage + (N().visit.checked ? N().visit.result : '');
-  if (s !== prev) { console.log(t.toFixed(1), s, 'busy', N().busy.toFixed(0), 'mon', N().monitor, 'rows', N().excel.rows); prev = s; }
+  if (s !== prev) { console.log(t.toFixed(1), s, 'mon', N().monitor, 'rows', N().excel.rows); prev = s; }
 }

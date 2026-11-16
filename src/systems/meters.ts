@@ -36,7 +36,6 @@ export function updateMeters(dt: number) {
   n.moodDrift += dt;
   if (n.moodDrift >= T.MOOD_DRIFT_EVERY_SEC) { n.moodDrift = 0; addMood(1); }
   n.noise = clamp(n.noise - T.NOISE_DECAY_PER_SEC * dt, 0, 100);
-  n.busy = clamp(n.busy - T.BUSY_DECAY_PER_SEC * dt, 0, 100);
 
   n.taunt = Math.max(0, n.taunt - dt);
   n.ward = Math.max(0, n.ward - dt);

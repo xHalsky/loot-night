@@ -19,7 +19,7 @@ async def main():
         await pg.evaluate("()=>{const S=window.__lootnight.S; S.g.heroes.forEach(h=>h.hp=Math.max(1,Math.round(h.hp*0.3)));}")
         await pg.wait_for_timeout(1500)
         print('flash:', await pg.evaluate("!!document.querySelector('.tb-app.flash')"))
-        await pg.screenshot(path='test/autopilot1.png')
+        await pg.screenshot(path='test/nobusy.png')
         print('ERRORS', errs)
         await b.close()
 asyncio.run(main())

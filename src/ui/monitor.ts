@@ -197,7 +197,7 @@ function drawExcel(c: CanvasRenderingContext2D) {
   c.fillStyle = '#ffffff'; c.fillRect(40, by + 12 * ch, 54, 18);
   xlText(c, 'Q4', 67, by + 12 * ch + 13, 10, '#217346', 'center', 600); c.fillStyle = '#217346'; c.fillRect(40, by + 12 * ch + 16, 54, 2);
   xlText(c, 'Overtime', 120, by + 12 * ch + 13, 10, '#555', 'center'); xlText(c, '+', 160, by + 12 * ch + 13, 12, '#555', 'center');
-  xlText(c, `Ready     Busy ${Math.round(n.busy)}%`, MON_W - 8, by + 12 * ch + 13, 10, '#555', 'right');
+  xlText(c, `Ready     Overtime ${n.excel.pay} g`, MON_W - 8, by + 12 * ch + 13, 10, '#555', 'right');
 }
 
 // ---------------- Battle VFX ----------------

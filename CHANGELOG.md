@@ -3,6 +3,19 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.20.0 (2026-11-16)
+
+- **Looks busy is gone.** Excel on screen when she looks is a pass. The meter made players fill a bar they
+  did not watch, and it caught players who switched in time (the alt-tab lag ate the time Excel needed to fill
+  it). The reckless autopilot now carries the cost of hiding. The Excel Tetris stays, optional, for overtime gold.
+- The boss's message no longer pays Looks busy: answering it pays a 40 gold overtime bonus and keeps him quiet
+  for 150 s; flipping the phone on him makes him ping again in 20-30 s.
+- Removed: the Looks busy rows (YOU box, her stats), Busy in Excel's status bar (now the night's overtime pay),
+  the Busy 100 debug button, the Alibi stacks plan.
+- Sims (4 good, 2 idle): good bot 3 stars, floor 5-10, 0-1 wipes, **0 catches** (was caught in about 1 night in 3);
+  idle still caught and unplugged. Alt-tab test unchanged (200/200 both ways).
+- Designed: curios in the corridor as the RPG's third verb (#30, `dungeon.md`), slotted after RPG depth.
+
 ## 0.19.0 (2026-11-16)
 
 - **Skill tooltips.** Hover a skill: what it does with this hero's real numbers, cooldown, Noise, and when to use

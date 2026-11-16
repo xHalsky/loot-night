@@ -123,6 +123,25 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
 
 ## Planned
 
+- **Curios in the corridor** (#30, the RPG's third verb, decided 2026-11-16). While the party walks, 1 or 2
+  objects per floor appear in the cave. Click one for a quick choice with a gamble outcome. Every choice
+  trades loot against a real-life currency, so the question is "can I afford this right now, given where
+  she is?":
+
+  | Curio (Overdue Bills) | Choices | Real-life cost |
+  |---|---|---|
+  | Locked strongbox | Pick the lock (8 s, quiet) / Smash it | Smash: Noise +25 |
+  | Overdue mailbox | Open / Leave | Gold, a "late fee" curse or a rare; opening makes him groan (a little Noise) |
+  | Energy-drink shrine | Offer a Monster can / Pray for free | Offering spends a real can from the desk: a big buff. Praying: a coin flip |
+  | Snoring troll on a loot pile | Sneak and grab / Fight | Sneak: 6 s on the RPG screen, no alt-tab. Fight: a mini-boss, lots of Noise |
+  | Guild bank vault | Withdraw "just one thing" | Free loot; Rafał notices later in guild chat |
+  | Unpaid vending machine | Pay gold / Kick it | Kick: Noise, 50/50 on a snack buff |
+
+  Each dungeon gets its own set (its own jokes). Out on purpose, so it does not become a pocket Darkest
+  Dungeon: no hero stress, no torch meter, no provisions. Curios are a garnish on the walk, not a system to
+  manage. Rejected alternatives for the third verb: standing orders for the autopilot, a Loop Hero floor deck,
+  a torch light meter, pull control, raid marks, loot council, playing only Paweł.
+
 - **Away-from-PC dangers** (ideas, #24): Need/Greed rolls on rare+ drops (away = auto-pass, "xX_Ninja_Xx
   won [Legendary]"), a 10 s floor vote on the node map (away = the riskiest floor), a ready check before
   bosses, a Party Patience meter that vote-kicks you at 100.

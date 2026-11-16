@@ -106,7 +106,8 @@ export interface Night {
   phase: DungeonPhase; phaseT: number;
   floor: number; battleIdx: number; floorMap: MapKind | 'plain'; checkpoint: number; deepest: number;
   enemies: Enemy[];
-  mood: number; noise: number; busy: number; catches: number; flow: number;
+  mood: number; noise: number; catches: number; flow: number;
+  bossQuiet: number; bossCallback: number;   // threat time until the boss stays quiet; when he pings again after a flip (0 = none)
   monitor: 'rpg' | 'excel';
   action: 'none' | 'miniGame';
   dropQueue: BagEntry[];

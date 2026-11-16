@@ -18,7 +18,6 @@ function trial(cue: 'hall' | 'handle'): string {
   n.visit.fake = false; n.visit.lean = false;
   let switched = false;
   for (let i = 0; i < 60 * 30; i++) {
-    n.busy = 100;                       // enough Excel credit banked: only the timing decides
     if (!switched && n.visit.stage === cue) { altTab(); switched = true; }
     step(1 / 60);
     if (n.visit.result) return n.visit.result;

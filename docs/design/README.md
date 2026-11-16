@@ -73,7 +73,6 @@ be done at a time, so the skill is triage.
 | Zone | Headset-on bonus that fills over time; empties when the headset comes off. |
 | Mood | Her patience as a trouble meter, 0 to 100 (shown to the player as hearts and words). 100 ends the night. |
 | Noise | How loud the room is. Brings her sooner; wakes her after midnight. |
-| Busy (Looks busy) | How convincingly you are working. Checked when she looks in. |
 | Tiredness | Live 0 to 100 meter; sleep debt from earlier nights raises its start. |
 | Scraps | Crafting material from salvage (Receipt Scraps on Monday). |
 | zł | Real money. Only from the auction house. |

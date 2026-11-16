@@ -145,7 +145,7 @@ function lookOnly() {
   toast(pick(['She leans on the door frame, barefoot, watching you. "Nothing. Carry on."', '"Just checking on my nerd." She smiles and stays a moment.', 'She leans in the doorway, rubbing one foot against her calf. "...Hi."']), '#ff9ab8');
 }
 
-const screenPasses = () => { const n = N(); return n.monitorOff > 0 || (n.monitor === 'excel' && n.busy >= T.BUSY_PASS); };
+const screenPasses = () => { const n = N(); return n.monitorOff > 0 || n.monitor === 'excel'; };   // Excel on screen = pass
 
 /** Peek and Chat: she looks at the screen. */
 function check() {

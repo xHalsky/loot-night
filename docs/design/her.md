@@ -3,7 +3,7 @@
 ## Now
 
 **Her stats** (left panel, "Babe" box): patience as hearts with a mood word (happy, a bit annoyed,
-furious, asleep), catches as broken hearts, and after midnight "waking up" instead of Looks busy.
+furious, asleep), catches as broken hearts, and after midnight a "waking up" meter.
 Internally this is **Mood** 0 to 100: green below `MOOD_GREEN` (+10% loot luck), red from `MOOD_RED`
 (visits likelier). 100 ends the night.
 
@@ -67,9 +67,9 @@ rely on the sound.
 
 | Type | Hallway cue | She checks | Your answer | Outcome |
 |---|---|---|---|---|
-| Peek | Quick light steps | The screen | Excel up, Looks busy ≥ `BUSY_PASS` (60) | Pass: Mood `PEEK_PASS_MOOD`. Fail: caught |
+| Peek | Quick light steps | The screen | Excel on screen | Pass: Mood `PEEK_PASS_MOOD`. Fail: caught |
 | Snack run | Plates clinking | The desk, never the screen | Click the Monster cans during the footsteps to shove them under the desk; you can keep playing. Then "Take the plate" within `SNACK_TAKE_SEC` | Plate: party +20% HP, Mood `SNACK_PASS_MOOD`. Plate ignored: Mood +3. Cans in sight (or mid-Monster): she confiscates one, Mood +`SNACK_FAIL_MOOD` (not a catch) |
-| Chat | Humming | The screen, then your ears | Excel up and headset off, then answer 3 questions (`CHAT_ASK_SEC` each, good / meh / rude, shuffled; silence = meh) while staying on Excel | 2 good: Mood `CHAT_PASS_MOOD`. 2 rude: Mood +`CHAT_BAD_MOOD`. Headset on: "are you even listening?" Mood +`CHAT_HEADSET_MOOD`. Back to the game mid-chat: caught |
+| Chat | Humming | The screen, then your ears | Excel on screen and headset off, then answer 3 questions (`CHAT_ASK_SEC` each, good / meh / rude, shuffled; silence = meh) while staying on Excel | 2 good: Mood `CHAT_PASS_MOOD`. 2 rude: Mood +`CHAT_BAD_MOOD`. Headset on: "are you even listening?" Mood +`CHAT_HEADSET_MOOD`. Back to the game mid-chat: caught |
 | Cuddle (green only) | Slow, soft slipper steps | Nothing | "Come here" or "One sec, babe" (`CUDDLE_ASK_SEC`; no answer = one sec) | Cuddle minigame below. One sec: Mood +`CUDDLE_REFUSE_MOOD` |
 
 **The cuddle minigame.** A window over the monitor: a dot drifts once around a heart over `CUDDLE_SEC`; keep

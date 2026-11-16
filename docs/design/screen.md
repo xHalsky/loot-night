@@ -8,7 +8,7 @@
 |---|---|
 | Left (her) | The door (280 × 396, the eye-candy window), the blueprint, her stats |
 | Centre (desk) | The monitor (game, city, Excel, minigames), and below it the desk: keyboard and mouse centred on a mat, phone, headset, Monster fridge, cans; the bin behind the monitor. The dog and her desk visit overlay it. |
-| Right (RPG) | Top to bottom: YOU (Noise, Looks busy, Tired), Feed, run progress (floor, checkpoint, Flow, Zone), Party (paper doll), Backpack |
+| Right (RPG) | Top to bottom: YOU (Noise, Tired), Feed, run progress (floor, checkpoint, Flow, Zone), Party (paper doll), Backpack |
 
 **Monitor chrome.** A desktop taskbar under the screen: app buttons for Loot Night and Excel, the zł
 wallet, the night clock with the bedtime note (red after 01:00), and the power button "Sleep" (from 23:00).

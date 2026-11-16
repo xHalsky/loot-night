@@ -79,12 +79,9 @@ export function doorInfoHtml(): string {
   const tired = n.tired;
   const caught = [0, 1, 2].map(i => `<span class="bheart ${i < n.catches ? 'on' : ''}">&#9829;</span>`).join('');
   const tiredFx = [tired >= T.TIRED_YAWN && 'yawning', tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Monster holds you up' : 'eyes closing'), tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
-  const busyRow = n.clock >= T.BED_FROM
-    ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>`
-    : `<div class="her-row"><span>Looks busy</span><div class="pill"><i style="width:${n.busy}%;background:${n.busy >= T.BUSY_PASS ? '#5cb88a' : '#c9b4bd'}"></i><em style="left:${T.BUSY_PASS}%"></em></div><b>${Math.round(n.busy)}</b></div>`;
   const wakeRow = n.clock >= T.BED_FROM
     ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>` : '';
-  void busyRow; void tiredFx; void tired;
+  void tiredFx; void tired;
   return `${aptMapHtml()}
   <div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div>
   <div class="her-stats">
@@ -559,7 +556,6 @@ export function uiPanelHtml(): string {
   const tiredFx2 = [n.tired >= T.TIRED_YAWN && 'yawning', n.tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Monster holds you up' : 'eyes closing'), n.tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
   const you = `<section class="rp you"><div class="rp-title"><span>YOU</span><span>${tiredFx2 || 'awake enough'}</span></div>
     <div class="you-row"><span>Noise</span><div class="ybar"><i style="width:${n.noise}%;background:#f2a03d"></i></div><b>${Math.round(n.noise)}</b></div>
-    <div class="you-row"><span>Looks busy</span><div class="ybar"><i style="width:${n.busy}%;background:${n.busy >= T.BUSY_PASS ? '#5cb88a' : '#8a7a6a'}"></i><em style="left:${T.BUSY_PASS}%"></em></div><b>${Math.round(n.busy)}</b></div>
     <div class="you-row"><span>Tired</span><div class="ybar"><i style="width:${n.tired}%;background:#8fa8d9"></i><em style="left:${T.TIRED_MICROSLEEP}%"></em></div><b>${Math.round(n.tired)}</b></div>
   </section>`;
   // order (top to bottom): You, Feed, run progress, Party, Bag
@@ -604,8 +600,8 @@ export function screenHtml(): string {
       <p>Grind a loot-obsessed MMO all night. Keep your girlfriend, your mom and your boss off your back.</p>
       <ul>
         <li><b>RPG:</b> the party auto-fights. Fire skills (1-2, Q-W, A-S): they go off instantly, click bag items to equip, pick the next floor.</li>
-        <li><b>Alt-tab:</b> <kbd>Tab</kbd> flips to Excel, but switching takes 1-2.5 s (old fullscreen game): commit early. Excel is a slow spreadsheet Tetris (A/D move, W rotate, Space drop). Being on Excel builds Busy; filled rows pay overtime gold.</li>
-        <li><b>The door:</b> listen for footsteps. When her shadow shows, be on Excel with Busy 60+.</li>
+        <li><b>Alt-tab:</b> <kbd>Tab</kbd> flips to Excel, but switching takes 1-2.5 s (old fullscreen game): commit early. If Excel is on screen when she looks, you pass. Excel is a slow spreadsheet Tetris (A/D move, W rotate, Space drop): optional, filled rows pay overtime gold. While you hide, the party plays recklessly.</li>
+        <li><b>The door:</b> listen for footsteps. When her shadow shows, be on Excel. Each visit wants something different: learn the sounds.</li>
         <li><b>After midnight</b> she goes to bed: loud play (crits, bosses, vaults) wakes her. Answer her text or she gets up.</li>
         <li><b>Apartment map:</b> track her by sound (TV, kettle, shower, steps). Long shower = safe time. Headset (<kbd>H</kbd>): after 30 s on you are in the <b>Zone</b> (Flow +25% faster, +10% loot luck), but she is muffled: no far footsteps, map goes stale. Taking it off to listen empties the Zone.</li>
         <li><b>Phone:</b> Mom calls (slide to answer), the boss and your girlfriend message (hold to face-unlock). Answer before the timer runs out.</li>
@@ -675,7 +671,7 @@ export function debugHtml(): string {
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
     <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
-    <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgBusy', 'Busy 100', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
+    <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
   </div>`;
 }
 

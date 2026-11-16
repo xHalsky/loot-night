@@ -26,7 +26,9 @@ const timerMult = () => (N().tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_TIMER_MULT :
 export function spawnInterrupt(kind?: InterruptKind) {
   const n = N();
   if (phoneBusy()) return false;
-  const kinds: InterruptKind[] = n.clock >= T.BED_FROM ? ['boss'] : ['mom', 'boss'];   // Mom sleeps after midnight
+  const quiet = n.threat < n.bossQuiet;   // you answered him recently
+  const kinds: InterruptKind[] = (n.clock >= T.BED_FROM ? ['boss'] : ['mom', 'boss']).filter(k => !(k === 'boss' && quiet)) as InterruptKind[];   // Mom sleeps after midnight
+  if (!kinds.length && !kind) return false;
   const k = kind ?? pick(kinds);
   const max = (k === 'mom' ? T.MOM_TIMER : k === 'boss' ? T.BOSS_TIMER : T.TEXT_TIMER) * timerMult();
   // messages come in bursts of 1-3 (each one buzzes once); the boss may follow up mid-way
@@ -44,6 +46,7 @@ export function updateInterrupts(dt: number) {
   const n = N();
   if (n.threat >= n.nextInterruptAt) { spawnInterrupt(); scheduleInterrupt(); }
   if (n.momCallback && n.threat >= n.momCallback && !phoneBusy() && n.clock < T.BED_FROM) { n.momCallback = 0; spawnInterrupt('mom'); }
+  if (n.bossCallback && n.threat >= n.bossCallback && !phoneBusy()) { n.bossCallback = 0; spawnInterrupt('boss'); }
   updateDeclines(dt);
   for (const i of n.interrupts) i.t -= dt;
   const expired = n.interrupts.filter(i => i.t <= 0);
@@ -165,8 +168,8 @@ function succeed(kind: InterruptKind) {
     S.g.heroes.forEach(h => { if (!h.downed) h.hp = maxHp(h); });
     toast('Mom: "Love you, eat something!" Party fully healed.', '#6fcf7f'); sfx.heal();
   } else if (kind === 'boss') {
-    n.busy = Math.min(100, n.busy + T.BOSS_BUSY);
-    toast(`Report fixed. Busy +${T.BOSS_BUSY}.`, '#6fcf7f'); sfx.good();
+    S.g.gold += T.BOSS_GOLD; n.bossQuiet = n.threat + T.BOSS_QUIET_SEC;
+    toast(`Report fixed. Overtime bonus +${T.BOSS_GOLD} gold, and he leaves you alone for a while.`, '#6fcf7f'); sfx.good();
   } else replyText(true);
 }
 
@@ -208,7 +211,7 @@ export function togglePhoneDown() {
   const it = n.interrupts[0];
   if (it && it.kind !== 'mom') {
     n.interrupts.shift();
-    if (it.kind === 'boss') { n.busy = Math.max(0, n.busy + T.BOSS_FLIP_BUSY); toast(`Phone face-down. The boss can wait. Busy ${T.BOSS_FLIP_BUSY}.`, '#ffb07a'); }
+    if (it.kind === 'boss') { n.bossCallback = n.threat + rand(...T.BOSS_FLIP_FOLLOWUP_SEC); toast('Phone face-down. The boss can wait. He will ping again soon.', '#ffb07a'); }
     else {
       const a = n.apt; a.wake = Math.min(T.WAKE_UP, a.wake + T.TEXT_FLIP_WAKE); a.textSent = false; addMood(T.TEXT_FLIP_MOOD);
       toast(`Phone face-down. She saw "delivered", no reply. Mood +${T.TEXT_FLIP_MOOD}.`, '#ffb07a');

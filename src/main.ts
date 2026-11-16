@@ -139,7 +139,6 @@ const actions: Record<string, (arg: string) => void> = {
   dbgMap: () => N().dropQueue.push(mapEntry('vault')),
   dbgGold: () => { S.g.gold += 1000; S.g.mats += 30; },
   dbgMood: () => addMood(20),
-  dbgBusy: () => { N().busy = 100; },
   dbgClock: () => { N().clock += 60; },
   dbgFloor: () => { const n = N(); if (n.location === 'dungeon') { n.phase = 'mapChoice'; n.enemies = []; } },
   lapAns: a => lapAnswer(Number(a)),
