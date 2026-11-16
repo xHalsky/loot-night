@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.17.0 (2026-11-16)
+
+- **Three new visit types** (#12, Monday set). Each wants a different answer:
+  - **Snack run** (plates clinking): she never looks at the screen; she checks the desk for Monster cans.
+    Click the cans during the footsteps to hide them, then take the plate (party +20% HP). Cans in sight: one
+    is confiscated.
+  - **Chat** (humming): Excel up and headset off, then 3 quick questions while you stay on Excel (and the
+    reckless autopilot runs).
+  - **Cuddle** (slow slippers, only when she is happy): "Come here" starts a cuddle minigame (follow her breathing
+    around a heart, slowly); "One sec, babe" costs Mood. The party keeps the safe autopilot while you cuddle.
+- Visit types come from a shuffled deck (Peek x2, Snack, Chat, Cuddle), so a short night still shows variety.
+- First night: the her-note names each hallway cue. Plate prop and new faces at the door. New sounds: plates,
+  humming, slower slipper steps.
+- Debug panel: spawn a Snack, Chat or Cuddle visit. New `test/visits.py` screenshots. `test/alttab.ts` now forces Peeks.
+- Sims (4 good, 2 idle): good bot 2-3 stars, floor 5-10, 0-1 wipes, 0-2 catches, 1-5 visits covering all types;
+  idle still unplugged. Finding for #2: a Peek can catch a player who switched on the earliest cue if Looks
+  busy started low (the lag eats the Excel time); and nights only get 2 to 4 visits before bed.
+
 ## 0.16.0 (2026-11-16)
 
 - **Noise by distance and masking** (#17). Your Noise reaches her x2 from the living room, kitchen and hallway,

@@ -10,7 +10,7 @@ import { toast } from '../core/fx';
 
 export function isAway(): boolean {
   const n = N();
-  if (n.location !== 'dungeon' || n.lap || n.monitorOff > 0) return false;
+  if (n.location !== 'dungeon' || n.lap || n.monitorOff > 0 || n.game?.kind === 'cuddle') return false;
   return n.monitor === 'excel' || !!n.switching || n.action !== 'none' || !!n.unplugged;
 }
 

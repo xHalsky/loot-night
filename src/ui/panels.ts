@@ -10,6 +10,8 @@ import { SW, SH } from './monsterScene';
 import { headsetSvg, monsterStockSvg } from './peripherals';
 import { CITY } from '../data/city';
 import { isAway } from '../systems/autopilot';
+import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
+import { CHAT_QS, VISIT_CUE } from '../data/content';
 import { heroStats, maxHp, xpNeeded } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, entryValue, cap } from '../systems/loot';
@@ -49,10 +51,30 @@ export function doorInfoHtml(): string {
   let kicker = 'her', txt = n.headset ? 'Headset on. No idea what she is doing.' : 'She is busy with her own thing.', cls = 'calm';
   if (v.stage === 'idle' && n.apt.asleep) { kicker = 'bedroom'; txt = 'She is asleep. Shh, keep it quiet.'; }
   if (v.stage === 'far' && !n.headset) { kicker = 'footsteps'; txt = 'Footsteps... is she coming?'; cls = 'warn'; }
-  if (v.stage === 'hall') { kicker = 'at the door'; txt = 'Her shadow is at the door. Excel!'; cls = 'alarm'; }
+  if (v.stage === 'hall') { kicker = 'at the door'; txt = S.g.nightsPlayed === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; cls = 'alarm'; }
   if (v.stage === 'handle') { kicker = 'door'; txt = 'The handle is turning!'; cls = 'alarm'; }
   if (v.stage === 'passing') { kicker = 'footsteps'; txt = 'She walked past. Phew.'; cls = 'warn'; }
-  if (v.stage === 'in') { kicker = 'she is in'; txt = v.result === 'caught' ? 'Caught.' : v.result === 'look' ? '"Nothing. Just looking at you."' : v.checked ? 'She bought it.' : '"Still working, babe?"'; cls = v.result === 'caught' ? 'alarm' : 'warn'; }
+  if (v.stage === 'in') { kicker = 'she is in'; txt = v.result === 'caught' ? 'Caught.' : v.result === 'look' ? '"Nothing. Just looking at you."' : v.checked ? 'She bought it.' : '"Still working, babe?"'; cls = v.result === 'caught' ? 'alarm' : 'warn';
+    const btn = (act: string, arg: string | number, label: string, extra = '') => `<button class="her-btn ${extra}" data-act="${act}" data-arg="${arg}">${label}</button>`;
+    if (v.result === 'offer') { kicker = 'snack'; txt = `"I made you a sandwich."<div class="her-btns">${btn('takePlate', 0, 'Take the plate', 'big')}</div>`; cls = 'warn'; }
+    if (v.result === 'snackFail') { kicker = 'snack'; txt = '"Another one?!" She takes a can.'; cls = 'alarm'; }
+    if (v.result === 'snackOk') { kicker = 'snack'; txt = 'Sandwich. She ruffles your hair.'; cls = 'calm'; }
+    if (v.result === 'deaf') { kicker = 'chat'; txt = '"Are you even listening?" (headset)'; cls = 'alarm'; }
+    if (v.result === 'chat' && v.chat) {
+      const q = CHAT_QS[v.chat.order[v.chat.asked]];
+      const shuffle = [0, 1, 2].sort((a, b) => ((v.chat!.order[0] * 7 + a * 5 + v.chat!.asked) % 3) - ((v.chat!.order[0] * 7 + b * 5 + v.chat!.asked) % 3));
+      kicker = `chat ${v.chat.asked + 1}/${T.CHAT_QUESTIONS} · keep Excel up`; cls = 'warn';
+      txt = `${v.chat.line}<div class="her-btns">${shuffle.map(k => btn('chatAnswer', k, q.a[k])).join('')}</div>`;
+    }
+    if (v.result === 'chatGood') { kicker = 'chat'; txt = '"Okay, back to your spreadsheets, cutie."'; cls = 'calm'; }
+    if (v.result === 'chatBad') { kicker = 'chat'; txt = '"Wow. Okay."'; cls = 'alarm'; }
+    if (v.result === 'chatMeh') { kicker = 'chat'; txt = '"Mhm. Talk later."'; }
+    if (v.result === 'ask') { kicker = 'cuddle'; txt = `"Come cuddle for a bit?"<div class="her-btns">${btn('cuddle', 1, 'Come here', 'big')}${btn('cuddle', 0, 'One sec, babe')}</div>`; cls = 'warn'; }
+    if (v.result === 'cuddling') { kicker = 'cuddle'; txt = 'Warm. The party fights on without you.'; cls = 'calm'; }
+    if (v.result === 'cuddleGood') { kicker = 'cuddle'; txt = '"Okay, go play. Love you."'; cls = 'calm'; }
+    if (v.result === 'cuddleMeh') { kicker = 'cuddle'; txt = '"You are so restless."'; }
+    if (v.result === 'refused') { kicker = 'cuddle'; txt = 'She sighs and leaves.'; cls = 'alarm'; }
+  }
   const patience = 100 - n.mood;
   const tired = n.tired;
   const caught = [0, 1, 2].map(i => `<span class="bheart ${i < n.catches ? 'on' : ''}">&#9829;</span>`).join('');
@@ -170,6 +192,7 @@ export function deskHtml(): string {
   if (!n) return '';
   const hs = n.headset;
   const canDrink = S.g.monsters > 0 && !n.game;
+  const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing';
   const boostTxt = n.boost > 0 ? `<b style="color:#6fcf7f">BOOST ${Math.ceil(n.boost)} s</b>` : n.crash > 0 ? `<b style="color:#ff9a4d">CRASH ${Math.ceil(n.crash)} s</b>` : `Monster x${S.g.monsters}`;
   const z = Math.round(n.zone * 20) / 20;
   return `
@@ -177,8 +200,8 @@ export function deskHtml(): string {
   <div class="obj headset-obj ${hs ? 'on' : ''}" data-act="headset">${hs ? `<div class="hs-on"><div class="hs-waves"><i></i><i></i><i></i></div>on your head</div>` : headsetSvg()}</div>
   <div class="obj-label hs-label" style="color:${hs ? '#f2b84b' : '#c9b8a8'}">${hs ? (n.zone >= 1 ? 'In the Zone, deaf (H)' : 'Zone building, deaf (H)') : 'Headset (H): you hear her'}</div>
   ${phoneObjHtml()}
-  <div class="obj monster-obj ${canDrink ? 'ready' : 'off'}" ${canDrink ? 'data-act="openMonster"' : ''}>${monsterStockSvg(n.game?.kind === 'monster' ? Math.max(0, S.g.monsters - 1) : S.g.monsters)}</div>
-  <div class="obj-label mon-label">${boostTxt}</div>`;
+  ${n.cansHidden ? '<div class="obj-label mon-label">cans hidden under the desk</div>' : `<div class="obj monster-obj ${canDrink ? 'ready' : 'off'} ${coming && S.g.monsters > 0 ? 'hideable' : ''}" ${coming && S.g.monsters > 0 ? 'data-act="hideCans"' : canDrink ? 'data-act="openMonster"' : ''}>${monsterStockSvg(n.game?.kind === 'monster' ? Math.max(0, S.g.monsters - 1) : S.g.monsters)}</div>
+  <div class="obj-label mon-label">${coming && S.g.monsters > 0 ? '<b style="color:#ffb07a">click: hide the cans</b>' : boostTxt}</div>`}`;
 }
 
 // ---------------- Mini-game windows (phone and Monster) ----------------
@@ -259,10 +282,22 @@ export function windowHtml(): string {
   const n = S.g.night;
   if (!n || !n.game) return '';
   // grey circle with a red X just outside the top-right corner: always a way out
+  if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:506px;top:-6px">\u2715</button>';
   const close = n.game.kind === 'phone'
     ? '<button class="mg-close" data-act="closeGame" title="Put the phone down" style="left:390px;top:-26px">\u2715</button>'
     : '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:516px;top:-4px">\u2715</button>';
   return (n.game.kind === 'phone' ? phoneHtml(n.game) : monsterHtml(n.game)) + close;
+}
+
+/** Cuddle window: follow her slow breathing (the dot). Static frame; the dot and warmth move in updateWindowDynamics. */
+function cuddleHtml(): string {
+  const pts = Array.from({ length: 61 }, (_, i) => cuddleDot(i / 60).map(v => v.toFixed(1)).join(',')).join(' ');
+  return `<div class="cuddle-win" id="cuddleBox" style="width:${CUDDLE_W}px">
+    <div class="cd-head">Cuddle break <small>stay on her breathing, slowly</small></div>
+    <svg width="${CUDDLE_W}" height="${CUDDLE_H}" viewBox="0 0 ${CUDDLE_W} ${CUDDLE_H}"><polyline points="${pts}" fill="none" stroke="rgba(255,170,200,.35)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle id="cdDot" r="${T.CUDDLE_RADIUS}" fill="rgba(255,140,180,.18)" stroke="rgba(255,190,215,.7)" stroke-width="2"/><circle id="cdCore" r="7" fill="#ffd2e2"/></svg>
+    <div class="cd-foot"><span>warmth</span><div class="cd-bar"><i id="cdWarm"></i><em style="left:${T.CUDDLE_PASS * 100}%"></em></div><span id="cdTime"></span></div>
+  </div>`;
 }
 
 /** Per-frame updates inside the open window (drag positions, hold rings, markers), without re-rendering. */
@@ -270,6 +305,13 @@ export function updateWindowDynamics() {
   const n = S.g.night;
   if (!n || !n.game) return;
   const g = n.game;
+  if (g.kind === 'cuddle') {
+    const [x, y] = cuddleDot(1 - g.t / g.max);
+    for (const id of ['cdDot', 'cdCore']) { const e = document.getElementById(id); if (e) { e.setAttribute('cx', x.toFixed(1)); e.setAttribute('cy', y.toFixed(1)); } }
+    const w = document.getElementById('cdWarm'); if (w) { w.style.width = `${g.warmth * 100}%`; w.style.background = g.jerk > 0 ? '#e0524a' : g.warmth >= T.CUDDLE_PASS ? '#ff8ab0' : '#c9a0b4'; }
+    const tt = document.getElementById('cdTime'); if (tt) tt.textContent = g.jerk > 0 ? 'too fast!' : `${Math.ceil(g.t)} s`;
+    return;
+  }
   const d = document.getElementById('dragEl');
   if (d) {
     const dist = Number(d.dataset.dist || 0), dir = Number(d.dataset.dir || 1);
@@ -609,7 +651,7 @@ export function debugHtml(): string {
     <div><b>DEBUG</b> · speed x${g.timeScale}</div>
     ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
-    <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}</div>
+    <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
     <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgBusy', 'Busy 100', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
   </div>`;

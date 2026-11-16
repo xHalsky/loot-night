@@ -27,7 +27,9 @@ import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
 import { keyboardSvg, mouseSvg } from './ui/peripherals';
 import { wakeUp } from './systems/tired';
-import { triggerVisitNow } from './systems/visits';
+import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans } from './systems/visits';
+import { cuddlePointer, endCuddle } from './systems/cuddle';
+import type { VisitKind } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
@@ -123,7 +125,12 @@ const actions: Record<string, (arg: string) => void> = {
   closeGame: () => closeGame(false),
   // Debug (F1)
   dbgSpeed: a => { S.g.timeScale = Number(a); },
-  dbgVisit: () => triggerVisitNow(),
+  dbgVisit: a => triggerVisitNow((a || undefined) as VisitKind | undefined),
+  hideCans: () => { hideCans(); },
+  takePlate: () => takePlate(),
+  chatAnswer: a => chatAnswer(Number(a)),
+  cuddle: a => cuddleAnswer(a === '1'),
+  cuddleQuit: () => endCuddle(null),
   dbgMom: () => spawnInterrupt('mom'),
   dbgBoss: () => spawnInterrupt('boss'),
   dbgGoblin: () => { N().goblin = { t: T.GOBLIN_SEC }; },
@@ -148,7 +155,7 @@ function dbgDrop(e: ReturnType<typeof itemEntry>) { const n = N(); if (n.locatio
 
 // ---------- Tactile input: drag (slide, lift, pull) and hold (face unlock, drink) ----------
 let drag: { id: string; axis: string; dir: number; dist: number; x0: number; y0: number; t0: number; p: number } | null = null;
-function setDrag(p: number) { const g = S.g.night?.game; if (g) g.drag = p; }
+function setDrag(p: number) { const g = S.g.night?.game; if (g && g.kind !== 'cuddle') g.drag = p; }
 function setHold(on: boolean) { setPhoneHold(on); setMonsterHold(on); }
 
 // ---------- Inventory: hover tooltips, drag to equip / unequip, right-click to equip ----------
@@ -209,6 +216,8 @@ document.addEventListener('pointerdown', ev => {
   if (t.closest('[data-phone]')) { ev.preventDefault(); ev.stopImmediatePropagation(); pswipe = { x0: ev.clientX, dx: 0, moved: false }; sfx.click(); }
 }, true);
 document.addEventListener('pointermove', ev => {
+  const box = document.getElementById('cuddleBox');
+  if (box && S.g.night?.game?.kind === 'cuddle') { const r = box.getBoundingClientRect(); cuddlePointer((ev.clientX - r.left) / stageScale, (ev.clientY - r.top - 34 * stageScale) / stageScale); }
   if (!pswipe) return;
   pswipe.dx = (ev.clientX - pswipe.x0) / stageScale;
   if (Math.abs(pswipe.dx) > 6) pswipe.moved = true;

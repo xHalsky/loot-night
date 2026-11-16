@@ -95,6 +95,8 @@ export const sfx = {
   binDrop() { [0, 0.05, 0.11].forEach((w, i) => tone(1400 - i * 260, 0.06, 'triangle', 0.14, w)); noise(0.12, 0.12, 3500, 0.02); },
   buzz() { tone(110, 0.25, 'sawtooth', 0.12, 0); tone(110, 0.25, 'sawtooth', 0.12, 0.35); },
   flip() { noise(0.12, 0.15, 1200); tone(240, 0.06, 'square', 0.08, 0.1); },
+  plates() { tone(2600 + Math.random() * 500, 0.05, 'triangle', 0.07, 0, undefined, 'apt'); tone(3300 + Math.random() * 400, 0.04, 'triangle', 0.05, 0.07, undefined, 'apt'); },
+  hum() { const f = [392, 440, 494, 440, 392][Math.floor(Math.random() * 5)]; tone(f, 0.35, 'sine', 0.05, 0, f * 1.02, 'apt'); tone(f * 1.12, 0.3, 'sine', 0.04, 0.36, undefined, 'apt'); },
   creak() { tone(140, 0.4, 'sawtooth', 0.04, 0, 210, 'apt'); },
   /** Phone on vibrate: a long rattling buzz for calls, a short double buzz for messages. */
   vibCall() { for (let i = 0; i < 14; i++) tone(148 + (i % 2) * 9, 0.05, 'sawtooth', 0.09, i * 0.05); noise(0.7, 0.05, 900); },

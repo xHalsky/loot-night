@@ -1,37 +1,83 @@
 import { T } from '../config/tuning';
-import { N } from '../core/state';
+import { S, N, type VisitKind } from '../core/state';
 import { chance, pick } from '../core/rng';
 import { addMood, moodZone } from './meters';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
-import { PEEK_PASS, PEEK_CAUGHT, FAKEOUT_LINES } from '../data/content';
+import { PEEK_PASS, PEEK_CAUGHT, FAKEOUT_LINES, CHAT_QS } from '../data/content';
 import { maybeLap } from './lap';
+import { maxHp } from './stats';
 import { updateApartment, afterVisit, sendHerSoon, hearsApartment, initApartment } from './apartment';
+import { startCuddle } from './cuddle';
 
-// Night 1: Peek visits only (docs/design/her.md). Her movements come from apartment.ts.
+// Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
+// Each visit type asks for a different answer:
+//   Peek:   she checks the screen. Excel + Looks busy 60.
+//   Snack:  she brings food and never looks at the screen; she checks the desk for Monster cans.
+//   Chat:   she checks the screen, wants the headset off, then asks 3 things while you stay on Excel.
+//   Cuddle: no check. She asks you to come over; yes = a cuddle minigame, "one sec" = a sulk.
 const FAR = T.TELEGRAPH_SEC.far - T.TELEGRAPH_SEC.hall;
 const HALL = T.TELEGRAPH_SEC.hall - T.TELEGRAPH_SEC.handle;
 const HANDLE = T.TELEGRAPH_SEC.handle;
-let stepTimer = 0;
+let stepTimer = 0, cueTimer = 0;
 
 export function initVisits() {
   const v = N().visit;
-  v.stage = 'idle'; v.checked = false; v.result = '';
+  v.stage = 'idle'; v.checked = false; v.result = ''; v.kind = 'peek'; v.chat = null;
   initApartment();
   N().apt.lastVisitEnd = -(T.DOOR_MAX_GAP_SEC - T.VISIT_FIRST_DELAY_SEC);
 }
 
-function endVisit() { const v = N().visit; v.stage = 'idle'; v.checked = false; afterVisit(); }
+function endVisit() {
+  const n = N();
+  const v = n.visit;
+  v.stage = 'idle'; v.checked = false; v.chat = null;
+  n.cansHidden = false;                       // you pull the cans back out
+  afterVisit();
+}
 
-export function startVisit(woken = false) {
+/** Draws the next visit type from a shuffled deck, so a night shows variety without a fixed order.
+ *  Cuddle only while she is happy (green); otherwise it waits in the deck. */
+function rollKind(woken: boolean): VisitKind {
+  if (woken) return 'peek';
+  const n = N();
+  if (!n.visitDeck.length) n.visitDeck = [...T.VISIT_DECK as VisitKind[]].sort(() => Math.random() - 0.5);
+  const ok = (k: VisitKind) => k !== 'cuddle' || moodZone(n.mood) === 'green';
+  const i = n.visitDeck.findIndex(ok);
+  if (i < 0) return 'peek';
+  return n.visitDeck.splice(i, 1)[0];
+}
+
+export function startVisit(woken = false, kind?: VisitKind) {
   const v = N().visit;
   if (v.stage !== 'idle') return;
-  v.stage = 'far'; v.t = FAR; v.fake = !woken && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = '';
+  v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
   v.from = woken ? 'sleep' : N().apt.activity;
-  v.lean = !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
+  v.kind = kind ?? rollKind(woken);
+  v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
 }
 export const visitSooner = () => sendHerSoon();
-export const triggerVisitNow = () => startVisit();
+export const triggerVisitNow = (kind?: VisitKind) => startVisit(false, kind);
+
+/** Footstep tempo and the hallway cue sound per visit type. */
+function telegraphSounds(dt: number) {
+  const n = N();
+  const v = n.visit;
+  stepTimer -= dt;
+  const slow = v.kind === 'cuddle' && v.stage !== 'passing';
+  if (stepTimer <= 0) {
+    stepTimer = slow ? 0.8 : 0.45;
+    sfx.step((v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35) * (slow ? 0.6 : 1));
+    if (hearsApartment()) { n.apt.heard = 'hallway'; n.apt.heardWhat = 'STEPS'; n.apt.heardAt = n.threat; }
+  }
+  if (v.stage !== 'hall' && v.stage !== 'far') return;
+  cueTimer -= dt;
+  if (cueTimer <= 0 && !v.fake) {
+    cueTimer = v.kind === 'chat' ? 1.1 : 0.9;
+    if (v.kind === 'snack') sfx.plates();
+    if (v.kind === 'chat') sfx.hum();
+  }
+}
 
 export function updateVisits(dt: number) {
   const n = N();
@@ -43,22 +89,11 @@ export function updateVisits(dt: number) {
     if (r) startVisit(r === 'wake');
     return;
   }
+  if (v.stage === 'far' || v.stage === 'hall' || v.stage === 'passing') telegraphSounds(dt);
+  if (v.stage === 'in' && n.game?.kind === 'cuddle') return;     // you are cuddling: the visit waits for it
   v.t -= dt;
-  if (v.stage === 'far' || v.stage === 'hall' || v.stage === 'passing') {
-    stepTimer -= dt;
-    if (stepTimer <= 0) {
-      stepTimer = 0.45;
-      sfx.step(v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35);
-      if (hearsApartment()) { n.apt.heard = 'hallway'; n.apt.heardWhat = 'STEPS'; n.apt.heardAt = n.threat; }
-    }
-  }
-  if (v.t > 0) {
-    if (v.stage === 'in' && !v.checked) { if (v.lean) lookOnly(); else check(); }
-    if (v.stage === 'in' && v.checked && v.result === 'pass' && n.monitor === 'rpg' && n.monitorOff <= 0) {
-      v.result = 'caught'; caught();
-    }
-    return;
-  }
+  if (v.stage === 'in') { updateIn(dt); if (v.t > 0) return; }
+  if (v.t > 0) return;
   switch (v.stage) {
     case 'far':
       if (v.fake) { v.stage = 'passing'; v.t = 2; } else { v.stage = 'hall'; v.t = HALL; }
@@ -66,29 +101,148 @@ export function updateVisits(dt: number) {
     case 'passing': if (hearsApartment()) toast(pick(FAKEOUT_LINES), '#a999bd'); endVisit(); break;
     case 'hall': v.stage = 'handle'; v.t = HANDLE; sfx.handle(); break;
     case 'handle': v.stage = 'in'; v.t = T.VISIT_IN_SEC; v.checked = false; sfx.door(); break;
-    case 'in': endVisit(); break;
+    case 'in': leave(); break;
   }
+}
+
+/** What happens while she stands in the doorway. */
+function updateIn(dt: number) {
+  const n = N();
+  const v = n.visit;
+  if (!v.checked) {
+    v.checked = true;
+    if (v.lean) lookOnly();
+    else if (v.kind === 'snack') snackArrive();
+    else if (v.kind === 'cuddle') { v.result = 'ask'; v.t = T.CUDDLE_ASK_SEC; sfx.kiss(); }
+    else check();
+    return;
+  }
+  // Switching back to the game while she still watches (Peek, Chat) gets you caught.
+  if ((v.result === 'pass' || v.result === 'chat') && n.monitor === 'rpg' && n.monitorOff <= 0) { v.result = 'caught'; v.chat = null; v.t = T.VISIT_IN_SEC; caught(); return; }
+  if (v.result === 'chat' && v.chat) {
+    const c = v.chat;
+    c.t -= dt;
+    if (c.t <= 0) chatAnswer(1, true);          // silence counts as "meh"
+    v.t = Math.max(v.t, 1);
+  }
+}
+
+/** Leaves the doorway; timeouts of open prompts resolve here. */
+function leave() {
+  const n = N();
+  const v = n.visit;
+  if (v.result === 'offer') { addMood(T.SNACK_IGNORE_MOOD); toast('"Fine. More for me." She takes the plate back.', '#ffb07a'); }
+  if (v.result === 'ask') { cuddleAnswer(false); return; }
+  if ((v.result === 'pass' || v.result === 'chatGood') && maybeLap()) { afterVisit(); v.stage = 'idle'; v.checked = false; n.cansHidden = false; return; }
+  endVisit();
 }
 
 /** She just leans on the door frame and looks at you: no check, a little warmth. */
 function lookOnly() {
   const v = N().visit;
-  v.checked = true; v.result = 'look';
+  v.result = 'look';
   addMood(T.LEAN_MOOD);
   toast(pick(['She leans on the door frame, barefoot, watching you. "Nothing. Carry on."', '"Just checking on my nerd." She smiles and stays a moment.', 'She leans in the doorway, rubbing one foot against her calf. "...Hi."']), '#ff9ab8');
 }
 
+const screenPasses = () => { const n = N(); return n.monitorOff > 0 || (n.monitor === 'excel' && n.busy >= T.BUSY_PASS); };
+
+/** Peek and Chat: she looks at the screen. */
 function check() {
   const n = N();
   const v = n.visit;
-  v.checked = true;
-  const pass = n.monitorOff > 0 || (n.monitor === 'excel' && n.busy >= T.BUSY_PASS);
-  if (pass) {
-    v.result = 'pass';
-    addMood(T.PEEK_PASS_MOOD);
-    toast(`Peek passed. ${pick(PEEK_PASS)}`, '#6fcf7f'); sfx.good();
-    if (maybeLap()) { afterVisit(); return; }
-  } else { v.result = 'caught'; caught(); }
+  if (!screenPasses()) { v.result = 'caught'; caught(); return; }
+  if (v.kind === 'chat') {
+    if (n.headset) {
+      v.result = 'deaf'; addMood(T.CHAT_HEADSET_MOOD);
+      toast(`"Babe? BABE. Are you even listening?" Headset on. Mood +${T.CHAT_HEADSET_MOOD}.`, '#ff8a80'); sfx.bad();
+      return;
+    }
+    const order = CHAT_QS.map((_, i) => i).sort(() => Math.random() - 0.5).slice(0, T.CHAT_QUESTIONS);
+    v.chat = { order, asked: 0, good: 0, bad: 0, t: T.CHAT_ASK_SEC, line: `"${CHAT_QS[order[0]].q}"` };
+    v.result = 'chat'; v.t = T.CHAT_ASK_SEC + 1;
+    return;
+  }
+  v.result = 'pass';
+  addMood(T.PEEK_PASS_MOOD);
+  toast(`Peek passed. ${pick(PEEK_PASS)}`, '#6fcf7f'); sfx.good();
+}
+
+// ---------- Snack run ----------
+export const cansInSight = () => { const n = N(); return n.game?.kind === 'monster' || (S.g.monsters > 0 && !n.cansHidden); };
+
+function snackArrive() {
+  const n = N();
+  const v = n.visit;
+  if (cansInSight()) {
+    v.result = 'snackFail';
+    addMood(T.SNACK_FAIL_MOOD);
+    if (S.g.monsters > 0) S.g.monsters--;
+    toast(`"Another one?! I am taking this." She confiscates a can. Mood +${T.SNACK_FAIL_MOOD}.`, '#ff8a80'); sfx.bad();
+    return;
+  }
+  v.result = 'offer'; v.t = T.SNACK_TAKE_SEC;
+  toast('"I made you a sandwich." Take the plate!', '#ff9ab8');
+}
+
+export function takePlate() {
+  const n = N();
+  const v = n.visit;
+  if (v.stage !== 'in' || v.result !== 'offer') return;
+  v.result = 'snackOk'; v.t = 1.4;
+  addMood(T.SNACK_PASS_MOOD);
+  S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.min(maxHp(h), h.hp + Math.round(maxHp(h) * T.SNACK_HEAL)); });
+  toast(`Sandwich! Party healed ${Math.round(T.SNACK_HEAL * 100)}%. "Eat, nerd."`, '#6fcf7f'); sfx.heal();
+}
+
+/** Click the Monster cans during a visit's footsteps: shove them under the desk. */
+export function hideCans() {
+  const n = N();
+  if (n.visit.stage === 'idle' || n.cansHidden) return false;
+  n.cansHidden = true; sfx.click();
+  return true;
+}
+
+// ---------- Chat ----------
+/** kind: 0 good, 1 meh, 2 bad. */
+export function chatAnswer(kind: number, timeout = false) {
+  const n = N();
+  const v = n.visit;
+  const c = v.chat;
+  if (!c || v.result !== 'chat') return;
+  if (kind === 0) { c.good++; sfx.good(); }
+  else if (kind === 2) { c.bad++; sfx.bad(); }
+  else if (!timeout) sfx.click();
+  c.asked++;
+  if (c.asked >= T.CHAT_QUESTIONS || c.bad >= 2) {
+    v.chat = null; v.t = 1.6;
+    if (c.good >= 2) { v.result = 'chatGood'; addMood(T.CHAT_PASS_MOOD); toast(`Nice talk. "Okay, back to your spreadsheets, cutie." Mood ${T.CHAT_PASS_MOOD}.`, '#6fcf7f'); }
+    else if (c.bad >= 2) { v.result = 'chatBad'; addMood(T.CHAT_BAD_MOOD); toast(`"Wow. Okay." She leaves. Mood +${T.CHAT_BAD_MOOD}.`, '#ff8a80'); }
+    else { v.result = 'chatMeh'; addMood(T.CHAT_MEH_MOOD); toast('"Mhm. Talk later."', '#ffb07a'); }
+    return;
+  }
+  c.t = T.CHAT_ASK_SEC; c.line = `"${CHAT_QS[c.order[c.asked]].q}"`;
+  v.t = T.CHAT_ASK_SEC + 1;
+}
+
+// ---------- Cuddle ----------
+export function cuddleAnswer(yes: boolean) {
+  const n = N();
+  const v = n.visit;
+  if (v.stage !== 'in' || v.result !== 'ask') return;
+  if (yes) { v.result = 'cuddling'; startCuddle(); return; }
+  v.result = 'refused'; v.t = 1.6;
+  addMood(T.CUDDLE_REFUSE_MOOD);
+  toast(`"One sec, babe." She sighs and leaves. Mood +${T.CUDDLE_REFUSE_MOOD}.`, '#ff8a80'); sfx.bad();
+}
+/** Called by the cuddle minigame when it ends. */
+export function cuddleDone(score: number | null) {
+  const v = N().visit;
+  if (v.stage !== 'in') return;
+  v.t = 1.6;
+  if (score === null) { v.result = 'refused'; addMood(T.CUDDLE_REFUSE_MOOD); toast(`You pulled away for the game. Mood +${T.CUDDLE_REFUSE_MOOD}.`, '#ff8a80'); return; }
+  if (score >= T.CUDDLE_PASS) { v.result = 'cuddleGood'; addMood(T.CUDDLE_PASS_MOOD); toast(`Warm. "Okay, go play, I love you." Mood ${T.CUDDLE_PASS_MOOD}.`, '#ff9ab8'); sfx.kiss(); }
+  else { v.result = 'cuddleMeh'; addMood(T.CUDDLE_FAIL_MOOD); toast(`"You are so restless." Mood +${T.CUDDLE_FAIL_MOOD}.`, '#ffb07a'); }
 }
 
 function caught() {

@@ -15,7 +15,7 @@ export const CABLE_COUNT = 4;
 export function updateDog(dt: number) {
   const n = N();
   const d = n.dog;
-  if (n.lap) return;
+  if (n.lap || n.game?.kind === 'cuddle') return;
   if (n.unplugged) n.monitorOff = Math.max(n.monitorOff, 0.5);
   d.flinch = Math.max(0, d.flinch - dt);
   if (d.stage === 'away') {

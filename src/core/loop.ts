@@ -7,6 +7,7 @@ import { updateMeters } from '../systems/meters';
 import { updateVisits } from '../systems/visits';
 import { updateInterrupts } from '../systems/interrupts';
 import { updateMonster } from '../systems/monster';
+import { updateCuddle } from '../systems/cuddle';
 import { updateExcel } from '../systems/excel';
 import { updateDungeon } from '../systems/dungeon';
 import { updateDrops } from '../systems/loot';
@@ -23,8 +24,10 @@ export function step(dt: number) {
   updatePeek(dt);
   updateLap(dt);
   updateDog(dt);
-  if (!g.night.lap) updateInterrupts(dt);
+  const busyWithHer = !!g.night.lap || g.night.game?.kind === 'cuddle';
+  if (!busyWithHer) updateInterrupts(dt); else g.night.nextInterruptAt += dt;   // her time: the phone waits
   updateMonster(dt);
+  updateCuddle(dt);
   updateSwitch(dt);
   updateExcel(dt);
   updateDungeon(dt);     // walking, battle, loot

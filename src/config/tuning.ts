@@ -114,6 +114,12 @@ export const T = {
   FAKEOUT_CHANCE: 0.2,
   VISIT_RED_SPEEDUP: 0.7,
   PEEK_PASS_MOOD: -5,
+  // Visit types (Monday set). Weights when she comes to your door; Cuddle only while she is happy (green).
+  VISIT_DECK: ['peek', 'peek', 'snack', 'chat', 'cuddle'],   // drawn in shuffled order, reshuffled when empty: variety without a fixed order
+  SNACK_TAKE_SEC: 3, SNACK_HEAL: 0.2, SNACK_PASS_MOOD: -5, SNACK_IGNORE_MOOD: 3, SNACK_FAIL_MOOD: 8,   // fail = cans in sight: she takes one
+  CHAT_QUESTIONS: 3, CHAT_ASK_SEC: 5, CHAT_PASS_MOOD: -8, CHAT_MEH_MOOD: -2, CHAT_BAD_MOOD: 10, CHAT_HEADSET_MOOD: 10,
+  CUDDLE_ASK_SEC: 6, CUDDLE_SEC: 12, CUDDLE_PASS: 0.6, CUDDLE_RADIUS: 34, CUDDLE_JERK: 900,   // px/s of mouse speed that counts as rushing
+  CUDDLE_PASS_MOOD: -20, CUDDLE_FAIL_MOOD: 5, CUDDLE_REFUSE_MOOD: 12,
   CATCH_MOOD: [15, 10, 25],
   GUILT_SEC: 30, GUILT_DMG: 0.10,
   MONITOR_OFF_SEC: 8,

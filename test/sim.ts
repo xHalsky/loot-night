@@ -12,6 +12,8 @@ import { petStroke, plugIn } from '../src/systems/pets';
 import { answer as lapAnswer } from '../src/systems/lap';
 import { openMonster, monsterOpenFridge, monsterPlaced, monsterOpenCan, setMonsterHold, monsterBinned } from '../src/systems/monster';
 import { wakeUp } from '../src/systems/tired';
+import { hideCans, takePlate, chatAnswer, cuddleAnswer } from '../src/systems/visits';
+import { cuddleDot, cuddlePointer } from '../src/systems/cuddle';
 import { skipDrop } from '../src/systems/loot';
 import { T } from '../src/config/tuning';
 import { endNight } from '../src/systems/night';
@@ -35,13 +37,21 @@ startNight();
 travelToDungeon();
 const dt = 1 / 60;
 let t = 0, caught = 0, visits = 0, wipes = 0;
+const kinds: Record<string, number> = {}; const outcomes: Record<string, number> = {};
 let lastFloor = 1; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
 while (S.g.screen === 'night' && t < 2000) {
   const n = N();
   if (mode === 'good') {
     // Visits: go to Excel during the telegraph, back after she leaves.
     const v = n.visit.stage;
-    const wantExcel = v === 'far' || v === 'hall' || v === 'handle' || v === 'in' || (n.busy < 45 && n.phase === 'mapChoice');
+    const k = n.visit.kind;   // a perfect listener knows the visit type from the hallway cue
+    const coming = v === 'far' || v === 'hall' || v === 'handle' || v === 'in';
+    const wantExcel = (coming && (k === 'peek' || k === 'chat')) || (n.busy < 45 && n.phase === 'mapChoice');
+    if (coming && k === 'snack' && !n.game) hideCans();
+    if (v === 'in' && n.visit.result === 'offer') takePlate();
+    if (v === 'in' && n.visit.result === 'chat') chatAnswer(0);
+    if (v === 'in' && n.visit.result === 'ask') cuddleAnswer(true);
+    if (n.game?.kind === 'cuddle') { const [x, y] = cuddleDot(1 - n.game.t / n.game.max); cuddlePointer(x, y); }
     if (wantExcel && n.monitor === 'rpg' && !n.visit.fake) altTab();
     if (!wantExcel && n.monitor === 'excel' && v !== 'in') altTab();
     if (!n.game && n.interrupts.length && (v === 'idle')) openPhone();
@@ -78,10 +88,11 @@ while (S.g.screen === 'night' && t < 2000) {
   const before = n.catches;
   const vs = n.visit.stage;
   step(dt); t += dt;
-  if (S.g.night && N().catches > before) caught++;
-  if (vs === 'handle' && S.g.night && N().visit.stage === 'in') visits++;
+  if (S.g.night && N().catches > before) { caught++; if (process.env.DBG) console.error('CAUGHT', N().visit.kind, N().visit.from, 'monitor', N().monitor, 'sw', !!N().switching, 'busy', Math.round(N().busy), 'stage', vs, 'clock', Math.round(N().clock)); }
+  if (vs === 'handle' && S.g.night && N().visit.stage === 'in') { visits++; kinds[N().visit.kind] = (kinds[N().visit.kind] ?? 0) + 1; }
+  if (S.g.night && N().visit.stage === 'in' && N().visit.t < 0.02 && N().visit.result) outcomes[N().visit.result] = 1 + (outcomes[N().visit.result] ?? 0);
   if (S.g.night && N().floor < lastFloor) wipes++;
   if (S.g.night) { lastTired = N().tired; lastFloor = N().floor; const a = N().apt; maxWake = Math.max(maxWake, a.wake); noiseSum += N().noise; noiseN++; for (const tt of N().toasts) { if (tt.t > 3.99 && tt.text.startsWith('Text from')) texts++; if (tt.t > 3.99 && tt.text.startsWith('You woke')) wakes++; } }
 }
 const r = S.g.results!; const N0tired = lastTired;
-console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), near: r.nearMisses }));
+console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), near: r.nearMisses }));

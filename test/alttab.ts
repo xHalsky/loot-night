@@ -14,7 +14,7 @@ function trial(cue: 'hall' | 'handle'): string {
   startNight(); travelToDungeon();
   const n = N();
   n.interrupts = []; n.nextInterruptAt = 1e9; n.dog.next = 1e9;
-  startVisit();
+  startVisit(false, 'peek');
   n.visit.fake = false; n.visit.lean = false;
   let switched = false;
   for (let i = 0; i < 60 * 30; i++) {

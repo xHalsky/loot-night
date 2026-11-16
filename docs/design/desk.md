@@ -71,6 +71,9 @@ A Win9x hourglass cursor throughout; a relay click at the start, mode change and
 
 ### Monster energy break
 
+The can pack on the desk is also a tell for the Snack run: during a visit's footsteps, clicking it shoves the
+cans under the desk instead (they come back out when she leaves).
+
 Click the mini fridge on the desk; one canvas scene, five steps, `MONSTER_PER_NIGHT` (3) cans per night:
 1. Click the fridge: it opens, stocked with a dozen cans.
 2. Drag any can out and drop it anywhere on the desk (natural angle).

@@ -59,10 +59,27 @@ fills she rushes straight over: Mood +`PEEK_CAUGHT_MOOD`, Flow reset.
 
 `FAKEOUT_CHANCE` of the far steps just walk past ("She went to the kitchen").
 
-**The check (Peek visit).** Passes if the monitor shows Excel with Looks busy ≥ `BUSY_PASS` (60), or the
-monitor is off. If you switch back to the game while she still stands there, you are caught. A pass gives
-Mood `PEEK_PASS_MOOD`. Switching to Excel takes 1 to 2.5 s ([desk.md](desk.md)): you must commit on the
-hallway cue or earlier.
+**Visit types** (`src/systems/visits.ts`). Each type asks for a different answer, so the player has to
+read the cue, not just alt-tab every time. The type is drawn from a shuffled deck (`VISIT_DECK`: Peek x2,
+Snack run, Chat, Cuddle), reshuffled when empty; Cuddle waits in the deck until she is happy (green). Woken
+visits are always Peeks. On the first night the her-note names the hallway cue (`VISIT_CUE`); later nights
+rely on the sound.
+
+| Type | Hallway cue | She checks | Your answer | Outcome |
+|---|---|---|---|---|
+| Peek | Quick light steps | The screen | Excel up, Looks busy ≥ `BUSY_PASS` (60) | Pass: Mood `PEEK_PASS_MOOD`. Fail: caught |
+| Snack run | Plates clinking | The desk, never the screen | Click the Monster cans during the footsteps to shove them under the desk; you can keep playing. Then "Take the plate" within `SNACK_TAKE_SEC` | Plate: party +20% HP, Mood `SNACK_PASS_MOOD`. Plate ignored: Mood +3. Cans in sight (or mid-Monster): she confiscates one, Mood +`SNACK_FAIL_MOOD` (not a catch) |
+| Chat | Humming | The screen, then your ears | Excel up and headset off, then answer 3 questions (`CHAT_ASK_SEC` each, good / meh / rude, shuffled; silence = meh) while staying on Excel | 2 good: Mood `CHAT_PASS_MOOD`. 2 rude: Mood +`CHAT_BAD_MOOD`. Headset on: "are you even listening?" Mood +`CHAT_HEADSET_MOOD`. Back to the game mid-chat: caught |
+| Cuddle (green only) | Slow, soft slipper steps | Nothing | "Come here" or "One sec, babe" (`CUDDLE_ASK_SEC`; no answer = one sec) | Cuddle minigame below. One sec: Mood +`CUDDLE_REFUSE_MOOD` |
+
+**The cuddle minigame.** A window over the monitor: a dot drifts once around a heart over `CUDDLE_SEC`; keep
+the cursor within `CUDDLE_RADIUS` of it. Warmth builds near the dot, drains when far, and drops fast when
+the mouse moves faster than `CUDDLE_JERK` ("too fast!"). Warmth ≥ `CUDDLE_PASS` at the end: Mood
+`CUDDLE_PASS_MOOD`; below: +`CUDDLE_FAIL_MOOD`. The close X means pulling away for the game (refuse
+penalty). While cuddling, the party keeps the safe autopilot, Flow is frozen, and the phone and dog wait.
+
+On Peek and Chat, switching back to the game while she still stands there gets you caught. Switching to
+Excel takes 1 to 2.5 s ([desk.md](desk.md)): commit on the hallway cue or earlier.
 
 **Caught (ladder per night).** Every catch: a 0.8 s scare face and a sting, Mood +`CATCH_MOOD`.
 1st: Flow reset. 2nd: Guilt, party −10% damage for 30 s. 3rd and later: she turns the monitor off for
@@ -93,6 +110,12 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 
 ## Decisions
 
+- **Snack run never looks at the screen** (0.17): rewarding the player who reads the cue with staying in
+  the game is what makes the cue worth reading. Hiding the cans costs one click during the footsteps,
+  the same seconds an alt-tab would take.
+- **A shuffled deck, not weighted dice** (0.17): a night has only 2 to 4 visits before bed, and random rolls
+  often repeated one type and hid the others. Rejected: fixed order (learnable, no tension).
+- **Cuddle is forced, so it is safe**: the party keeps the normal autopilot. Refusing is the risky answer.
 - **Alt-tab lag forces early commitment**, which makes information (blueprint, peeking, headset off)
   worth having. Without it the safe play was waiting for the handle.
 - **Distance does not apply while she is asleep.** She is always in the far bedroom then, so it would only
@@ -104,12 +127,11 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
   the note colour and the sounds.
 - **Tone:** tasteful pin-up. Clothed adults, flattering poses, bare-feet moments (the friend likes feet).
   Nothing explicit.
-- Rejected: showing the visit type as a label (planned only for the first nights of the campaign).
+- The visit type is labelled only on the first night; afterwards the sound is the only tell.
 
 ## Planned
 
-- **More visit types** (#12): Chat, Snack run, Cuddle, Hug from behind, Help me, Coming to bed?,
-  How do I look?
+- **More visit types** (rest of #12, later nights): Hug from behind, Help me, Coming to bed?, How do I look?
 - **Her activity predicts the next visit type** (#18, needs #12): TV → Chat or Cuddle, kitchen → Snack run,
   toilet → Peek, shower → Cuddle or Hug, bedroom → Coming to bed?, phone → Peek only; 20 to 25% random.
 - **Pre-emptive actions** (#19, #20): verbs used before a visit: [preemptive.md](preemptive.md).

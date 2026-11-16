@@ -28,7 +28,8 @@ export function updateMeters(dt: number) {
   const rate = (T.FLOW_MAX - T.FLOW_MIN) / T.FLOW_BUILD_SEC;
   // Zone: headset on without a break fills it; taking the headset off empties it.
   n.zone = n.headset ? Math.min(1, n.zone + dt / T.ZONE_FILL_SEC) : 0;
-  if (building) n.flow += rate * dt * (n.tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_FLOW_MULT : 1) * (n.zone >= 1 ? T.ZONE_FLOW_MULT : 1);
+  if (n.game?.kind === 'cuddle') { /* cuddling: Flow frozen */ }
+  else if (building) n.flow += rate * dt * (n.tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_FLOW_MULT : 1) * (n.zone >= 1 ? T.ZONE_FLOW_MULT : 1);
   else n.flow -= rate * T.FLOW_DECAY_MULT * dt;
   n.flow = clamp(n.flow, T.FLOW_MIN, T.FLOW_MAX);
 

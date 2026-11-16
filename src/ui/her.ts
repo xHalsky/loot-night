@@ -6,7 +6,7 @@ import { pixelSprite, blit, smooth, poly, mirror, rows, cel, type Pt } from './p
 
 export type Outfit = 'lounge' | 'towel' | 'hoodie' | 'pajama' | 'tank';
 export type Face = 'smile' | 'neutral' | 'angry' | 'pout' | 'blush' | 'sleepy' | 'suspicious' | 'wink' | 'surprised' | 'furious';
-export type Item = 'none' | 'mug' | 'phone' | 'remote';
+export type Item = 'none' | 'mug' | 'phone' | 'remote' | 'plate';
 export interface HerOpts { outfit: Outfit; face: Face; pose?: 'stand' | 'lean'; item?: Item; blink?: boolean }
 
 const C = {
@@ -291,6 +291,7 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
     const [x, y] = g.hand;
     if (item === 'mug') { c.fillStyle = '#e8657f'; c.fillRect(x - 4, y - 7, 8, 9); c.strokeStyle = C.line; c.lineWidth = LW; c.strokeRect(x - 4, y - 7, 8, 9); c.fillStyle = '#fff'; c.fillRect(x - 2, y - 4, 3, 2); }
     if (item === 'phone') { c.fillStyle = '#1d2230'; c.fillRect(x - 2.5, y - 9, 5, 10); c.fillStyle = '#8fc0ff'; c.fillRect(x - 1.6, y - 8, 3.2, 7); }
+    if (item === 'plate') { c.fillStyle = '#f4f1ea'; c.beginPath(); c.ellipse(x, y - 4, 13, 4, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = C.line; c.lineWidth = LW; c.stroke(); c.fillStyle = '#d9a35a'; c.fillRect(x - 7, y - 10, 14, 5); c.fillStyle = '#7cc46a'; c.fillRect(x - 7, y - 11, 14, 1.6); c.fillStyle = '#e8d2a6'; c.fillRect(x - 7, y - 13, 14, 2.4); }
     if (item === 'remote') { c.fillStyle = '#2c2c34'; c.fillRect(x - 1.8, y - 10, 3.6, 13); c.fillStyle = '#e0524a'; c.fillRect(x - 0.8, y - 8.6, 1.6, 1.4); }
   }
   headAt(); head(c, o, true); locks(c, o.outfit, false); c.restore();

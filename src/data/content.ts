@@ -17,6 +17,22 @@ export const MOM_LINES: { text: string; need: 0 | 1 | 2 }[] = [
   { text: 'Your father fixed the gutter, finally...', need: 0 },
   { text: 'Did you see my message on Facebook?', need: 1 },
 ];
+// Chat visit: she asks while you keep Excel up. [good, meh, bad] answers, shuffled on screen.
+export const CHAT_QS: { q: string; a: [string, string, string] }[] = [
+  { q: 'Do you think I should cut my hair short?', a: ['You would look great either way', 'Hm, maybe?', 'Whatever is cheaper'] },
+  { q: 'My sister wants us over on Sunday. Okay?', a: ['Sure, I will bring wine', 'If we must', 'Sunday is raid day'] },
+  { q: 'What should we eat tomorrow?', a: ['Your pick, I will cook', 'Pizza again?', 'Whatever, I am busy'] },
+  { q: 'Did you hear what Kasia did at work?', a: ['No, tell me everything', 'Mhm', 'Who is Kasia?'] },
+  { q: 'Do you still love me when I snore?', a: ['Especially then', 'Define snore', 'You snore?'] },
+  { q: 'Should we get a plant for the balcony?', a: ['Two plants. Let us go wild', 'Sure', 'They always die'] },
+];
+// The hallway cue for each visit type (shown as a label on the first night; later nights rely on sound).
+export const VISIT_CUE: Record<string, string> = {
+  peek: 'Quick light steps. She is checking on you: Excel!',
+  snack: 'Plates clinking. Snack run: hide the cans!',
+  chat: 'She is humming. She wants to talk: Excel, headset off.',
+  cuddle: 'Slow slipper steps. She wants a cuddle.',
+};
 export const MOM_REPLIES = ['mhm', 'really?!', 'wow'];
 
 export const PEEK_PASS = ['"Okay. Don\'t stay up too late."', '"Mhm. Spreadsheets. Sure."', '"Wow, so productive."', '"Want tea? No? Okay."'];

@@ -40,7 +40,14 @@ export type VfxKind = 'slash' | 'claw' | 'bolt' | 'fire' | 'frost' | 'heal' | 't
 export interface Vfx { kind: VfxKind; x: number; y: number; x2: number; y2: number; t: number; dur: number; seed: number }
 
 export type VisitStage = 'idle' | 'far' | 'hall' | 'handle' | 'in' | 'passing';
-export interface VisitState { stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean }
+/** What she comes for (docs/design/her.md, visit types). Each asks for a different answer. */
+export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle';
+export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string }
+export interface VisitState {
+  stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean;
+  kind: VisitKind;
+  chat?: ChatState | null;        // Chat: the questions she asks while you sit on Excel
+}
 
 export type Room = 'living' | 'kitchen' | 'bathroom' | 'bedroom' | 'hallway';
 export type ActivityId = 'tv' | 'tea' | 'toilet' | 'shower' | 'phone' | 'sleep';
@@ -77,7 +84,9 @@ export interface MonsterGame {
 }
 /** An empty can resting in the bin: two ends of a capsule (scene px of the toss view). */
 export interface BinCan { ax: number; ay: number; bx: number; by: number }
-export type MiniGame = PhoneGame | MonsterGame;
+/** Cuddle: follow her slow breathing (a dot moving along a path) without rushing. */
+export interface CuddleGame { kind: 'cuddle'; t: number; max: number; warmth: number; mx: number; my: number; lastMx: number; lastMy: number; jerk: number }
+export type MiniGame = PhoneGame | MonsterGame | CuddleGame;
 
 /** The dog (docs/design/desk.md): pops up at the desk for attention. */
 export interface DogState { stage: 'away' | 'up' | 'happy'; t: number; next: number; ignores: number; limit: number; pet: number; sweet: number; flinch: number }
@@ -123,6 +132,8 @@ export interface Night {
   dog: DogState;
   unplugged: { kinds: number[]; colors: number[]; sockets: number[]; plugged: boolean[] } | null;   // cable minigame: per cable plug type + colour; sockets[slot] = cable index
   lap: LapState | null;
+  cansHidden: boolean;
+  visitDeck: VisitKind[];                  // visit types still to come this cycle (shuffled)                     // Monster cans shoved under the desk (Snack run tell)
   interrupts: Interrupt[]; nextInterruptAt: number;
   game: MiniGame | null;
   excel: ExcelState;

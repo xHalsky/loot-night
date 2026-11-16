@@ -41,7 +41,8 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     const cx = X0 + DW / 2 + (lean ? -12 : 4);
     c.save(); c.beginPath(); c.rect(X0, TOP, DW, H); c.clip();
     c.fillStyle = 'rgba(60,30,10,.35)'; c.beginPath(); c.ellipse(cx, feet, 30, 6, 0, 0, Math.PI * 2); c.fill();     // contact shadow
-    drawHer(c, cx, top, s, { outfit: look.outfit, item: lean ? 'none' : look.item, face, pose: lean ? 'lean' : 'stand', blink: face !== 'wink' && (t % 3.7) < 0.12 });
+    const item = lean ? 'none' : v.kind === 'snack' && v.result !== 'snackOk' ? 'plate' : look.item;
+    drawHer(c, cx, top, s, { outfit: look.outfit, item, face, pose: lean ? 'lean' : 'stand', blink: face !== 'wink' && (t % 3.7) < 0.12 });
     c.restore();
     emote(c, cx + 34, top - 6, face, t);
   } else {
@@ -121,8 +122,12 @@ function drawGap(c: CanvasRenderingContext2D, x: number, y: number, w: number, h
 }
 
 /** Her face when she comes in, by situation (docs/design/her.md). */
-function herFace(v: { checked: boolean; result: string; from?: string }, catches: number, mood: number, t: number): Face {
+function herFace(v: { checked: boolean; result: string; from?: string; kind?: string }, catches: number, mood: number, t: number): Face {
   if (v.result === 'caught') return catches >= 2 ? 'furious' : 'angry';
+  const byResult: Record<string, Face> = { offer: 'smile', snackOk: 'wink', snackFail: 'angry', deaf: 'angry', chat: 'neutral', chatGood: 'smile', chatBad: 'pout', chatMeh: 'neutral', ask: 'blush', cuddling: 'blush', cuddleGood: 'wink', cuddleMeh: 'pout', refused: 'pout' };
+  if (byResult[v.result]) return byResult[v.result];
+  if (!v.checked && v.kind === 'cuddle') return 'blush';
+  if (!v.checked && v.kind === 'snack') return 'smile';
   if (v.result === 'look') return Math.floor(t / 1.6) % 3 === 2 ? 'wink' : 'blush';
   if (v.result === 'pass') return v.from === 'sleep' ? 'sleepy' : mood > 66 ? 'neutral' : 'smile';
   if (v.from === 'sleep') return 'pout';

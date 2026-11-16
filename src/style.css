@@ -474,6 +474,18 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #door .apt-foot { font-size: 14px; color: #9a6a76; }
 #door .apt-foot .muffled { color: #c46a1d; }
 .her-note { background: #fff4f2; color: #5a2d3c; border-radius: 10px; padding: 5px 10px 6px; box-shadow: 0 3px 0 rgba(0,0,0,.35); transform: rotate(-.6deg); }
+.her-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.her-btn { font-family: 'Patrick Hand', sans-serif; font-size: 15px; line-height: 1; padding: 4px 7px; border-radius: 8px; border: 1.5px solid #c9708a; background: #fff; color: #5a2d3c; cursor: pointer; }
+.her-btn:hover { background: #ffe1ea; }
+.her-btn.big { background: #e8657f; color: #fff; border-color: #b84562; }
+.cuddle-win { position: absolute; left: 98px; top: 8px; background: radial-gradient(ellipse at 50% 40%, #5a2c4a, #2a1428 70%); border-radius: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,180,210,.25); color: #ffe6ef; font-family: 'Patrick Hand', sans-serif; cursor: none; overflow: hidden; }
+.cd-head { padding: 8px 14px 0; font-size: 22px; } .cd-head small { font-size: 15px; opacity: .75; margin-left: 8px; }
+.cd-foot { display: flex; align-items: center; gap: 8px; padding: 0 14px 10px; font-size: 16px; }
+.cd-bar { position: relative; flex: 1; height: 10px; border-radius: 5px; background: rgba(255,255,255,.12); overflow: hidden; }
+.cd-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; transition: width .1s; }
+.cd-bar em { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; }
+.obj.monster-obj.hideable { opacity: 1; cursor: pointer; animation: hidePulse .5s steps(2) infinite; }
+@keyframes hidePulse { 50% { filter: drop-shadow(0 0 6px #ffb07a); } }
 .her-note small { font-size: 13px; color: #b07a88; text-transform: uppercase; letter-spacing: 1px; }
 .her-note div { font-size: 19px; line-height: 1.05; }
 .her-note.warn { background: #fff1d6; } .her-note.warn small { color: #b5832a; }
