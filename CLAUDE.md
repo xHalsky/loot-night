@@ -46,6 +46,10 @@ Debug overlay in game: F1.
 
 Only one session edits the design bible at a time; other sessions open Issues instead of editing it.
 
+**From Claude cloud sessions:** `gh issue create` fails (GraphQL is blocked); use REST with the session's injected
+credentials, e.g. `env -u GH_TOKEN gh api -X POST repos/xHalsky/loot-night/issues --input issue.json`.
+Tag pushes are refused by the proxy (#11): create version tags/releases from a local clone or on github.com.
+
 ## Conventions
 
 - Player-facing text: plain, short, funny where it fits. No em dashes.
