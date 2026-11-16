@@ -17,6 +17,8 @@ Versions before 0.14.0 predate the repository (they exist only as published arti
   `eye-candy.md`), plus idea issues #23 to #25. #12 is now visit types only.
 - Decisions: no wandering merchant (#21 closed), Doorframe visit cut, alt-tab crash parked as an idea (#16):
   lag plus reckless autopilot should be enough.
+- Synergy pass split: slice set (#29, plus marks/affixes in #27, audio cues in #13, upgrade-per-night in #2)
+  and arc set (#14). Audit table of what feeds what added to `synergy.md`. Raid pass becomes a pre-emptive action.
 - `ROADMAP.md`: Monday slice first (with done criteria), then a longer arc with an ending and endless free play,
   final sprites after the slice. New issues: art style sheet (#26), RPG depth (#27), onboarding (#28).
 

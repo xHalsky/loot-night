@@ -1,8 +1,38 @@
-# Synergy pass (planned, not built), #14
+# Synergy pass (planned, not built)
+
+Slice set #29, arc set #14.
 
 **Rule:** every system takes input from at least two others and feeds at least two others; a system that
 only punishes or only rewards is a dead end (Loop Hero's rule). Nothing below is in the build yet.
 All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
+
+## Audit of the current build (2026-11-16)
+
+| System | Feeds | Fed by | Gap |
+|---|---|---|---|
+| RPG combat | Noise, loot, XP | Flow, Zone, Monster, buildings, gear, Tiredness | Fine |
+| Loot | Gold, scraps, zł, party power | Flow, Zone, green Mood | zł is a dead end until the store (#4) |
+| Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift | Her visits give the RPG nothing positive |
+| Noise | Visit timing, waking her | Combat, dog, Monster | Only punishes; distance and masking (#17) add the read |
+| Looks busy / Excel | Passes checks, gold | Excel, boss | Fine |
+| Interrupts | Mom heals, boss gives Busy | Timers | Bedtime text only avoids a penalty |
+| Dog and cables | Noise, NO SIGNAL | A timer | Only punishes |
+| Tiredness | Yawns, microsleeps, sluggish | Clock, sleep debt, Monster | Only punishes; staying up has no upside |
+
+## Slice set vs. arc set (decided 2026-11-16)
+
+The principle is vital, so the slice gets every item whose inputs exist on Monday. The rest needs several nights.
+
+| Item | Where |
+|---|---|
+| Cross-layer echoes, interrupts and the dog always pay, Goodwill, Alibi, Witching Hour | Slice: #29 |
+| Ability marks, cross-system affixes | Slice: inside RPG depth #27 |
+| Audio-first loot cues | Slice: inside real audio #13 |
+| A city upgrade every night | Slice: inside the balance pass #2 |
+| Combo floors, party sets, overtime zł, bag tools, banter, unfolding city, bounties, the ending | Arc: #14 |
+
+**Raid pass merged into pre-emptive actions:** it is a pre-emptive action that costs Goodwill instead of a
+per-night charge. One system for "act before she comes", not two.
 
 ## Cross-layer echoes
 

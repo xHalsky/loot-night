@@ -46,6 +46,9 @@ come one per round.
 | Shout "love you!" | Instant | A far room | Mood −5; her answer's direction is a free location ping | Red Mood: "...what did you do?" Peek in 10 s. Next door or hallway: Chat visit |
 | Lock the door | Instant, 1/night | Anywhere | The next visit cannot open the door | She rattles it (Mood +15), "why is it locked?" excuse dialogue; wrong excuse = Peek with Busy 80 needed |
 
+**Raid pass** (from the synergy pass): a pre-emptive action paid with Goodwill (40) instead of a charge: no
+visits for 15 in-game minutes. Not usable in the bed phase or during a visit.
+
 ## Open questions
 
 - Away time needs a visible "away" state on the desk (empty chair art) and the reckless autopilot (#15).

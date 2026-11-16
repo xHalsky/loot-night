@@ -24,7 +24,7 @@ section in place; never append "round N" notes.
 | [preemptive.md](preemptive.md) | Planned: actions before a visit (framework and action list) |
 | [eye-candy.md](eye-candy.md) | Her moments: built and planned, with tone rules |
 | [campaign.md](campaign.md) | Planned: 7 nights, star gates, desk shop, milestones, ending |
-| [synergy.md](synergy.md) | Planned: the synergy pass (cross-system links) |
+| [synergy.md](synergy.md) | Planned: the synergy pass, audit of what feeds what, slice vs. arc split |
 | [tech.md](tech.md) | Stack, architecture, save, tests |
 
 ## Pillars (every feature serves at least one)
