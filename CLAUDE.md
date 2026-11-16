@@ -27,6 +27,7 @@ Birthday-gift browser game: a loot-heavy idle RPG on the monitor while the playe
     npx tsx test/sim.ts idle         # bot that never hides (should get caught)
     npx tsx test/alttab.ts           # alt-tab timing acceptance test
     npx tsx test/autopilot.ts        # reckless autopilot: present vs 40 s away (wipes, party HP)
+    npx tsx test/noise.ts            # Noise by distance and masking
     python3 test/<name>.py           # Playwright screenshot scripts (Chrome at /usr/bin/google-chrome)
 
 Debug overlay in game: F1.

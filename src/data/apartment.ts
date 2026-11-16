@@ -13,4 +13,8 @@ export const ACTIVITIES: ActivityDef[] = [
 ];
 export const ACT_BY_ID = Object.fromEntries(ACTIVITIES.map(a => [a.id, a])) as Record<ActivityId, ActivityDef>;
 export const ROOM_NAME: Record<Room, string> = { living: 'Living room', kitchen: 'Kitchen', bathroom: 'Bathroom', bedroom: 'Bedroom', hallway: 'Hallway' };
+// How far each room is from yours on the blueprint (docs/design/her.md, Noise by distance).
+// Your room shares walls with the living room and the kitchen and opens onto the hallway;
+// the bathroom is across the hallway; the bedroom is the far corner.
+export const ROOM_DISTANCE: Record<Room, 'next' | 'middle' | 'far'> = { hallway: 'next', living: 'next', kitchen: 'next', bathroom: 'middle', bedroom: 'far' };
 export const ROOM_SHORT: Record<Room, string> = { living: 'Living', kitchen: 'Kitchen', bathroom: 'Bath', bedroom: 'Bedroom', hallway: 'Hallway' };

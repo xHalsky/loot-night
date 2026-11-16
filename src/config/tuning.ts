@@ -112,7 +112,6 @@ export const T = {
   TELEGRAPH_SEC: { far: 5, hall: 3, handle: 0.9 },   // handle stage < the shortest alt-tab lag: too late to switch
   VISIT_IN_SEC: 2.5,
   FAKEOUT_CHANCE: 0.2,
-  VISIT_NOISE_SPEEDUP: 0.5,       // at 100 noise the wait is halved
   VISIT_RED_SPEEDUP: 0.7,
   PEEK_PASS_MOOD: -5,
   CATCH_MOOD: [15, 10, 25],
@@ -132,6 +131,9 @@ export const T = {
   DOOR_NOISE_CHANCE: 0.005,       // + per point of Noise
   DOOR_RED_CHANCE: 0.2,
   SHOWER_FROM: 21 * 60 + 30, SHOWER_CHANCE: 0.25,
+  // Noise by distance and masking: how much of your Noise reaches her. Never shown to the player.
+  HEAR_DISTANCE: { next: 2, middle: 1, far: 0.5 } as Record<string, number>,
+  HEAR_MASK: { tv: 0.5, shower: 0 } as Record<string, number>,   // her activity covers your noise
   SCARE_SEC: 0.8,
 
   // --- After midnight: she goes to bed ---

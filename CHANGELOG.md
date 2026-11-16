@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.16.0 (2026-11-16)
+
+- **Noise by distance and masking** (#17). Your Noise reaches her x2 from the living room, kitchen and hallway,
+  x1 from the bathroom, x0.5 from the bedroom; the TV masks a further half and the shower masks it all.
+  Heard Noise drives her chance to come to your door and makes her finish activities early. Never shown.
+  Not applied while she sleeps (the bed phase keeps its own tuning).
+- New `test/noise.ts`: boss kill during her shower 35% → 35% door chance; while she makes tea next door 35% → 85%.
+- Sims (4 good, 2 idle): good bot 3 stars, floor 10, 0-1 wipes, 1-8 visits (high variance; the bot does not use
+  her location yet). Idle unchanged. Alt-tab test unchanged.
+- Removed the unused `VISIT_NOISE_SPEEDUP` constant.
+
 ## 0.15.0 (2026-11-16)
 
 - **Reckless autopilot** (#15). Leaving the game is now dangerous: while you are on Excel, mid-switch, in a

@@ -24,6 +24,14 @@ Moving takes `APT_MOVE_SEC` with quiet steps. At each activity end she heads to 
 `DOOR_MAX_GAP_SEC`. Noise above 70 makes her finish activities twice as fast (not the shower). A failed
 Mom call sends her to your door next.
 
+**Noise by distance and masking.** How much of your Noise reaches her depends on where she is
+(`ROOM_DISTANCE` in `src/data/apartment.ts`, `HEAR_DISTANCE` / `HEAR_MASK` in `tuning.ts`). Your room shares
+walls with the living room and kitchen and opens onto the hallway (x2); the bathroom is across the hallway
+(x1); the bedroom is the far corner (x0.5). The TV masks an extra x0.5; the shower masks everything (x0).
+Moving between rooms counts as the hallway. This heard Noise drives her door chance and makes her wrap up
+early above 70. It is never shown; the player infers it from what they hear. `test/noise.ts`: a boss kill
+during her shower leaves the door chance at 35%; the same kill while she makes tea next door raises it to 85%.
+
 **The blueprint** (176 px, left panel). A blue architect's floor plan: white walls, door swings, furniture,
 a dashed line of sight from your door. It never marks where she is. With the headset off it shows what
 was last heard, where, and how long ago; stale after `APT_STALE_SEC`.
@@ -87,6 +95,8 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 
 - **Alt-tab lag forces early commitment**, which makes information (blueprint, peeking, headset off)
   worth having. Without it the safe play was waiting for the handle.
+- **Distance does not apply while she is asleep.** She is always in the far bedroom then, so it would only
+  halve the bed phase's difficulty in disguise; the bed phase keeps its own Waking tuning.
 - **The headset replaces a Listen action.** Hold-Space-to-listen cost nothing in an idle game; taking the
   headset off for a moment empties Zone, so listening has a price.
 - **The blueprint never shows her exact position**, and peeking is risky; partial information is the FNAF part.
@@ -98,9 +108,6 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 
 ## Planned
 
-- **Noise by distance and masking** (#17). Noise's effect on her (visit timer, waking) is multiplied by
-  where she is: next-door rooms x2, middle x1, far x0.5; TV on x0.5 more; shower or hair dryer x0. Never
-  shown; the player infers it. A boss kill during her shower is free; next door it is not.
 - **More visit types** (#12): Chat, Snack run, Cuddle, Hug from behind, Help me, Coming to bed?,
   How do I look?
 - **Her activity predicts the next visit type** (#18, needs #12): TV → Chat or Cuddle, kitchen → Snack run,

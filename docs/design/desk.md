@@ -10,7 +10,7 @@ ignoring the interrupt. While a minigame has your hands, skills are paused and F
 
 | Meter | Rises from | Falls | Matters |
 |---|---|---|---|
-| Noise 0 to 100 | Every hero action `NOISE_ACTION`, crit, skill cast, level-up, boss kill, Treasure Vault, dog whining, Monster coughs and clanks | `NOISE_DECAY_PER_SEC` | Brings her sooner (up to `VISIT_NOISE_SPEEDUP`); wakes her after midnight |
+| Noise 0 to 100 | Every hero action `NOISE_ACTION`, crit, skill cast, level-up, boss kill, Treasure Vault, dog whining, Monster coughs and clanks | `NOISE_DECAY_PER_SEC` | Brings her sooner, scaled by how far she is ([her.md](her.md)); wakes her after midnight |
 | Looks busy 0 to 100 | Excel | `BUSY_DECAY_PER_SEC` | ≥ `BUSY_PASS` passes her check |
 | Tired | See [night.md](night.md) | Monster | Yawns, microsleeps, sluggish |
 

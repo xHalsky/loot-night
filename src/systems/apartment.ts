@@ -1,6 +1,6 @@
 import { T } from '../config/tuning';
 import { S, N, type ActivityId, type Room } from '../core/state';
-import { ACTIVITIES, ACT_BY_ID } from '../data/apartment';
+import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE } from '../data/apartment';
 import { rand, weighted, chance, clamp } from '../core/rng';
 import { moodZone, addMood } from './meters';
 import { toast } from '../core/fx';
@@ -55,6 +55,14 @@ function pickActivity() {
   a.moving = T.APT_MOVE_SEC; a.soundT = 0.5;
 }
 
+/** How much of your Noise reaches her, by room and what she is doing (never shown). Asleep: not used. */
+export function hearing(): number {
+  const a = N().apt;
+  const room = a.moving > 0 ? 'hallway' : a.room;
+  return T.HEAR_DISTANCE[ROOM_DISTANCE[room]] * (a.moving > 0 ? 1 : T.HEAR_MASK[a.activity] ?? 1);
+}
+export const heardNoise = () => N().noise * hearing();
+
 /** Returns true when she decides to come to your door (visits.ts starts the telegraph). */
 export function updateApartment(dt: number): 'door' | 'wake' | null {
   const n = N();
@@ -76,11 +84,11 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.asleep) return updateSleep(dt);
 
   // High Noise makes her wrap up whatever she is doing (except the shower).
-  a.t -= dt * (n.noise > 70 && a.activity !== 'shower' ? 2 : 1);
+  a.t -= dt * (heardNoise() > 70 ? 2 : 1);
   const gap = n.threat - a.lastVisitEnd;
   if (a.t > 0 && !(a.forceDoor && gap >= T.DOOR_MIN_GAP_SEC)) return null;
   if (n.clock >= T.BED_FROM) { goToBed(); return null; }
-  let p = T.DOOR_BASE_CHANCE + n.noise * T.DOOR_NOISE_CHANCE + (moodZone(n.mood) === 'red' ? T.DOOR_RED_CHANCE : 0);
+  let p = T.DOOR_BASE_CHANCE + Math.min(100, heardNoise()) * T.DOOR_NOISE_CHANCE + (moodZone(n.mood) === 'red' ? T.DOOR_RED_CHANCE : 0);
   if (n.tired >= T.TIRED_WRECKED) p += 0.15;
   if (gap > T.DOOR_MAX_GAP_SEC || a.forceDoor) p = 1;
   if (gap < T.DOOR_MIN_GAP_SEC) p = 0;          // even a forced visit waits for the minimum gap
