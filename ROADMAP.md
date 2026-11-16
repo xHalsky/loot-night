@@ -1,30 +1,53 @@
 # Roadmap
 
-The build order. Issues hold the details; priority labels match the tiers below. Reorder here first,
+The build order. Issues hold the details; priority labels match the phases below. Reorder here first,
 then update the labels. Done items leave this list (they live in `CHANGELOG.md`).
 
-## Now (p1), in this order
+Plan: **a Monday slice that is a good game on its own → a longer arc with an ending → endless free play.
+Final sprites once the screens stop changing.** We have time for polish.
 
-1. **#15 Reckless autopilot.** The biggest gap: leaving the RPG costs almost nothing today, so the stealth
-   layer has no teeth. Everything "away" (Excel, minigames, pre-emptive actions) builds on it.
-2. **#17 Noise by distance and masking.** Small, and it gives the blueprint a constant use: where she is
-   decides how loud you can play.
-3. **#2 Balance pass.** After 1 and 2, because they move the numbers (depth, wipes, catches). Check that
-   panic-switching on fake-outs now costs something; if not, revisit the parked crash (#16).
-4. **#12 Visit types.** Big. Unlocks #18, most pre-emptive actions and several eye-candy moments.
-5. **#18 Her activity predicts the next visit type.** Cheap once #12 exists; makes listening pay.
+## Phase 1: the Monday slice (p1)
 
-## Next (p2)
+**Slice is done when** someone other than Paweł plays it and:
+- understands what to do within 2 minutes,
+- gets caught at least once and feels it was their own fault,
+- sees at least 3 different visit types and has to answer each differently,
+- wants to play another night right away.
 
-6. **#19 Pre-emptive actions framework** (needs #15).
-7. **#22 Eye-candy moments.** The cheap ones (shower panel, hoodie walk-by, results vignette) can be slotted
-   between any rounds; "Wanna join?" waits for night 5.
-8. **#3 Nights 2 to 7.** Once Monday is fun with real danger and several visit types.
-9. **#4 Real-life upgrade store** (the zł sink; pairs with the campaign).
-10. **#5 Hand-made sprites.** Last among the big ones, once screens stop changing.
+The bot sims (good + idle) still run every round, but these four criteria come from watching a person play.
+
+**Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
+
+1. **#15 Reckless autopilot.** Leaving the game must cost something. Cuddle visits and pre-emptive actions
+   with away time depend on it.
+2. **#17 Noise by distance and masking.** Where she is decides how loud you can play.
+3. **#12 Visit types, Monday set: Snack run, Chat, Cuddle** (Peek, Lean and the desk visit exist). Each asks
+   for a different answer: hide the can, divide attention, leave the PC. The rest of #12 is for later nights.
+4. **#18 Activity predicts the next visit type** + **activity end cues** (from #25). Listening now tells you
+   when she will come *and* what to clear.
+5. **#27 RPG depth:** full skill kit within a night, 3 more enemy types, different bosses on floors 5/10/15,
+   Cursed Floor and Goblin Den, real-life affixes. Can be interleaved with steps 1 to 4; it touches different code.
+6. **#19 Pre-emptive framework + 3 actions** (from #20): Text her, Make her tea, Towel under the door.
+   One phone verb, one away verb, one FNAF trade.
+7. **#23 two more interrupts:** courier call (pays a gear drop), friends' group call (Noise).
+8. **#22 cheap eye-candy:** shower panel, hoodie walk-by, results vignette by Mood.
+9. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
+   generated beeps undersell it. Music can wait.
+10. **#28 first-night onboarding.**
+11. **#2 balance pass** + outside playtests against the criteria above. Repeat 11 until it passes.
+    If panic-switching on fake-outs is still free, revisit the parked crash (#16).
+
+## Phase 2: the arc (p2)
+
+- **#3 Nights after Monday**, each adding one rule, one visit type or interrupt, one dungeon. Length decided
+  by content (3 to 7 nights), ending with the birthday level-up screen and credits, then endless free play
+  with escalating her behaviour.
+- **#5 Final sprites** once the slice's screens are stable.
+- **#4 Real-life upgrade store** (the zł sink).
+- Rest of #12, #20, #23, #22 ("How do I look?", "Wanna join?") as the nights need them.
 
 ## Later (p3)
 
-#20 pre-emptive action list (one per round after #19) · #23 more interrupts · #24 away-from-PC dangers ·
-#25 her rooms extras · #14 synergy pass (not scheduled) · #13 real audio · #6 outfit unlocks · #7 pet choice ·
-#16 alt-tab crash (parked) · #8 alt-tab readability · #9 lap visit vs. skill bar · #10 Zyn · #11 tags from cloud sessions
+#24 away-from-PC dangers · #25 her rooms extras · #14 synergy pass (not scheduled) · #6 outfit unlocks ·
+#7 pet choice · #16 alt-tab crash (parked) · #8 alt-tab readability · #9 lap visit vs. skill bar · #10 Zyn ·
+#11 tags from cloud sessions
