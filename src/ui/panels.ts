@@ -1,0 +1,626 @@
+// HTML renderers for the DOM parts of the screen. Every clickable element carries
+// data-act (+ data-arg); main.ts dispatches them on pointerdown.
+import { T } from '../config/tuning';
+import { S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
+import { ABILITIES, HOTKEYS, HERO_COLORS } from '../data/heroes';
+import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
+import { MOM_REPLIES } from '../data/content';
+import { SW, SH } from './monsterScene';
+import { headsetSvg, monsterStockSvg } from './peripherals';
+import { CITY } from '../data/city';
+import { heroStats, maxHp, xpNeeded } from '../systems/stats';
+import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
+import { entryName, entryColor, entryValue, cap } from '../systems/loot';
+import { icon, glyph, ABILITY_GLYPHS } from './icons';
+import { canLeaveDungeon } from '../systems/dungeon';
+import { moodZone } from '../systems/meters';
+import { fmtClock } from '../core/fx';
+import { hasSave } from '../systems/save';
+import { canSleep } from '../systems/night';
+import { ROOM_SHORT } from '../data/apartment';
+import type { Room } from '../core/state';
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const btn = (act: string, label: string, arg = '', cls = '') => `<button class="btn ${cls}" data-act="${act}" data-arg="${esc(arg)}">${label}</button>`;
+const meter = (label: string, value: string, pct: number, color: string, mark?: number) =>
+  `<div class="meter"><div class="meter-row"><span>${label}</span><b style="color:${color}">${value}</b></div>` +
+  `<div class="meter-bar"><div style="width:${Math.round(Math.max(0, Math.min(100, pct)))}%;background:${color}"></div>${mark !== undefined ? `<i style="left:${mark}%"></i>` : ''}</div></div>`;
+
+// ---------------- Girlfriend panel (her world: warm, handwritten, hearts) ----------------
+export function herHeadHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const zone = moodZone(n.mood);
+  const word = n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'a bit annoyed' : 'furious';
+  return `<span class="her-name">&#9829; Babe</span><span class="her-mood m-${zone}">${word}</span>`;
+}
+
+function hearts(patience: number): string {
+  const full = Math.ceil(patience / 20);
+  return Array.from({ length: 5 }, (_, i) => `<span class="heart ${i < full ? 'on' : ''}">&#9829;</span>`).join('');
+}
+
+export function doorInfoHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const v = n.visit;
+  let kicker = 'her', txt = n.headset ? 'Headset on. No idea what she is doing.' : 'She is busy with her own thing.', cls = 'calm';
+  if (v.stage === 'idle' && n.apt.asleep) { kicker = 'bedroom'; txt = 'She is asleep. Shh, keep it quiet.'; }
+  if (v.stage === 'far' && !n.headset) { kicker = 'footsteps'; txt = 'Footsteps... is she coming?'; cls = 'warn'; }
+  if (v.stage === 'hall') { kicker = 'at the door'; txt = 'Her shadow is at the door. Excel!'; cls = 'alarm'; }
+  if (v.stage === 'handle') { kicker = 'door'; txt = 'The handle is turning!'; cls = 'alarm'; }
+  if (v.stage === 'passing') { kicker = 'footsteps'; txt = 'She walked past. Phew.'; cls = 'warn'; }
+  if (v.stage === 'in') { kicker = 'she is in'; txt = v.result === 'caught' ? 'Caught.' : v.result === 'look' ? '"Nothing. Just looking at you."' : v.checked ? 'She bought it.' : '"Still working, babe?"'; cls = v.result === 'caught' ? 'alarm' : 'warn'; }
+  const patience = 100 - n.mood;
+  const tired = n.tired;
+  const caught = [0, 1, 2].map(i => `<span class="bheart ${i < n.catches ? 'on' : ''}">&#9829;</span>`).join('');
+  const tiredFx = [tired >= T.TIRED_YAWN && 'yawning', tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Monster holds you up' : 'eyes closing'), tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
+  const busyRow = n.clock >= T.BED_FROM
+    ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>`
+    : `<div class="her-row"><span>Looks busy</span><div class="pill"><i style="width:${n.busy}%;background:${n.busy >= T.BUSY_PASS ? '#5cb88a' : '#c9b4bd'}"></i><em style="left:${T.BUSY_PASS}%"></em></div><b>${Math.round(n.busy)}</b></div>`;
+  const wakeRow = n.clock >= T.BED_FROM
+    ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>` : '';
+  void busyRow; void tiredFx; void tired;
+  return `${aptMapHtml()}
+  <div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div>
+  <div class="her-stats">
+    <div class="her-row"><span>Patience</span><div class="hearts">${hearts(patience)}</div><b>${Math.round(patience)}</b></div>
+    <div class="her-row"><span>Caught</span><div class="bhearts">${caught}</div><b>${n.catches}/3</b></div>
+    ${wakeRow}
+  </div>`;
+}
+
+// ---------------- Apartment map (FNAF layer) ----------------
+// Blueprint of the apartment (design doc section 5). No marker for her: you listen.
+// While you peek, a vague blob shows roughly where she is.
+const ROOM_C: Record<Room, [number, number]> = { bedroom: [46, 42], bathroom: [120, 40], kitchen: [174, 44], hallway: [96, 95], living: [58, 152] };
+function aptMapHtml(): string {
+  const n = N();
+  const a = n.apt;
+  const W = 'stroke="#eaf3ff" stroke-width="2.2" fill="none"', F = 'stroke="#cfe2ff" stroke-width="1" fill="none" opacity=".8"';
+  const room: Room = n.visit.stage !== 'idle' ? 'hallway' : a.moving > 0 ? 'hallway' : a.room;
+  // Peeking: a pink cloud covers the whole flat and slowly shrinks onto her (never smaller than ~1/4 of the living room).
+  const [hx, hy] = ROOM_C[room];
+  const k = Math.pow(n.peekReveal, 0.85);
+  const cx = 100 + (hx + n.peekOff[0] - 100) * k, cy = 100 + (hy + n.peekOff[1] - 100) * k, r = 150 - (150 - 30) * k;
+  const vis = Math.min(1, n.peek * 1.4);
+  const blob = vis > 0.02
+    ? `<g opacity="${vis.toFixed(2)}"><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="url(#bpBlob)"/>${k > 0.85 ? `<text x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle" font-size="12" fill="#ffd1dc">${a.asleep && n.visit.stage === 'idle' ? 'zzz' : '?'}</text>` : ''}</g>`
+    : '';
+  const foot = n.headset ? '<span class="muffled">Headset on: you hear nothing. (H)</span>' : 'Listen. Hold the door to peek.';
+  return `<div class="bp"><svg viewBox="0 0 200 200" width="176" height="176">
+    <defs><pattern id="bpGrid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="rgba(255,255,255,.08)" stroke-width=".6"/></pattern>
+      <radialGradient id="bpBlob"><stop offset="0" stop-color="#ff7aa0" stop-opacity=".7"/><stop offset=".7" stop-color="#ff7aa0" stop-opacity=".5"/><stop offset="1" stop-color="#ff7aa0" stop-opacity="0"/></radialGradient></defs>
+    <rect width="200" height="200" fill="#1d4f91"/><rect width="200" height="200" fill="url(#bpGrid)"/>
+    <path d="M160 106 L4 92 M160 106 L40 196" fill="none" stroke="#ff9aa8" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>
+    <rect x="2" y="2" width="196" height="196" ${W} stroke-width="3"/>
+    <path d="M2 84 H52 M66 84 H110 M124 84 H150" ${W}/>
+    <path d="M92 2 V84 M148 2 V84" ${W}/>
+    <path d="M2 106 H28 M92 106 H150 M170 106 H198" ${W}/>
+    <path d="M118 106 V198" ${W}/>
+    <path d="M52 84 A14 14 0 0 1 66 70" ${F}/><path d="M110 84 A14 14 0 0 1 124 70" ${F}/><path d="M170 106 A20 20 0 0 1 150 126" ${F}/>
+    <path d="M24 2 H70 M24 5 H70 M160 2 H190 M160 5 H190 M30 195 H90 M30 198 H90 M140 195 H184 M140 198 H184 M195 20 V60 M198 20 V60" stroke="#eaf3ff" stroke-width="1"/>
+    <rect x="10" y="10" width="40" height="52" ${F}/><rect x="13" y="13" width="15" height="9" ${F}/><rect x="32" y="13" width="15" height="9" ${F}/><path d="M10 30 H50" ${F}/>
+    <rect x="98" y="8" width="22" height="46" rx="6" ${F}/><ellipse cx="136" cy="64" rx="6" ry="8" ${F}/><rect x="126" y="8" width="18" height="12" ${F}/>
+    <path d="M152 8 H194 V80 H182 V20 H152 Z" ${F}/><circle cx="188" cy="34" r="3" ${F}/><circle cx="188" cy="46" r="3" ${F}/><rect x="156" y="50" width="18" height="18" rx="9" ${F}/>
+    <rect x="12" y="166" width="58" height="20" rx="4" ${F}/><rect x="74" y="160" width="20" height="26" rx="4" ${F}/><path d="M16 114 H70" stroke="#cfe2ff" stroke-width="2.4"/><rect x="28" y="130" width="34" height="18" ${F}/>
+    <rect x="148" y="170" width="44" height="22" ${F}/><circle cx="168" cy="160" r="6" ${F}/><rect x="124" y="120" width="12" height="30" ${F}/>
+    <g font-family="Patrick Hand, sans-serif" font-size="11" fill="#eaf3ff" letter-spacing=".8">
+      <text x="50" y="76" text-anchor="middle">BEDROOM</text><text x="120" y="78" text-anchor="middle" font-size="9">BATH</text>
+      <text x="166" y="98" text-anchor="middle" font-size="9">KITCHEN</text><text x="62" y="99" font-size="9">HALLWAY</text>
+      <text x="58" y="158" text-anchor="middle">LIVING</text><text x="150" y="150" font-size="11" fill="#ffd27a">YOU</text></g>
+    ${blob}
+  </svg><div class="apt-foot">${foot}</div></div>`;
+}
+
+export function feedHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const lines = n.log.slice(-9).map(l => `<div class="fl"><i>[${l.time}]</i> <span style="color:${l.color}">${esc(l.text)}</span></div>`).join('');
+  return `<div class="feed-tabs"><b>General</b><span>Combat</span><span>Loot</span><span>Her</span></div>
+    <div class="feed-body">${lines || '<div class="fl dim">Welcome to Loot Night. Have fun, don\'t get caught.</div>'}</div>
+    <div class="feed-input">Press Enter to chat...</div>`;
+}
+
+// ---------------- Desk objects ----------------
+function ring(t: number, max: number) {
+  // Quantized to whole seconds so the desk DOM only re-renders once a second.
+  const deg = Math.max(0, Math.min(360, (Math.ceil(t) / Math.ceil(max)) * 360));
+  return `<div class="ring" style="background:conic-gradient(#f2b84b ${deg}deg,#3a2f47 0)"><span>${Math.ceil(t)}</span></div>`;
+}
+const PHONE_NOTE: Record<string, [string, string]> = {
+  mom: ['MOM', 'calling...'], boss: ['BOSS', '"you there?"'], text: ['BABE', 'coming to bed?'],
+};
+// The desk phone: a 3D card you grab and swipe sideways to flip. iOS look: the screen is off until something
+// arrives; messages wake it with stacked lock-screen banners (one per buzz), a call shows the incoming-call screen.
+const APP: Record<string, [string, string, string]> = { boss: ['Work', 'Boss', '#2f6fed'], text: ['Messages', 'Babe \u2665', '#34c759'] };
+function phoneObjHtml(): string {
+  const n = N();
+  const it = n.interrupts[0];
+  const inPhone = n.game?.kind === 'phone';
+  const down = n.phoneDown > 0;
+  let screen = '<div class="ios off"></div>';
+  // picked up: the phone leaves the desk until the minigame ends or its window is closed
+  if (inPhone) return '<div class="obj-label phone-label" style="color:#8a7a6a">phone in your hand</div>';
+  else if (it && it.kind === 'mom') {
+    // same incoming-call screen as in your hand: tap red to decline at once, tap anywhere else to pick up
+    screen = `<div class="ios call"><div class="ios-di"></div><div class="ios-cname">Mom</div><div class="ios-csub">mobile</div>
+      <div class="ios-mrow"><span>\u23F0<br>Remind</span><span>\u2709<br>Message</span></div>
+      <div class="ios-mslide"><i>&#9742;</i><span>slide to answer</span></div>
+      <div class="ios-cbtn red" data-decline="1"><span>&#9742;</span></div><div class="ios-clab">Decline</div></div>`;
+  } else if (it && it.msgs.length) {
+    const [app, who, col] = APP[it.kind];
+    const banners = it.msgs.slice(-3).reverse().map((m, i) => `<div class="ios-ban ${i === 0 && it.max - it.t - it.pingAt < 0.4 ? 'new' : ''}"><i style="background:${col}"></i><div><b>${who}</b><small>${app}</small><span>${esc(m)}</span></div></div>`).join('');
+    screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div>${banners}${it.msgs.length > 3 ? `<div class="ios-more">+${it.msgs.length - 3} more</div>` : ''}</div>`;
+  } else if (it) screen = '<div class="ios off"></div>';
+  const label = down
+    ? (it ? '<b style="color:#ffb07a">Bzzz! swipe to flip up</b>' : 'Face-down: messages<br>only buzz')
+    : it ? (it.kind === 'mom' ? 'tap: pick up<br><span style="color:#ff8a80">red: decline</span>' : 'tap: read<br><span style="color:#ffb07a">swipe: flip it over</span>') : 'swipe to flip';
+  return `<div class="phone-wrap">
+    <div class="phone3d ${down ? 'down' : ''} ${it ? 'active' : ''}" data-phone="1">
+      <div class="pface front">${screen}</div>
+      <div class="pface back"><i class="cam"></i><i class="logo"></i></div>
+    </div>${it ? ring(it.t, it.max) : ''}</div>
+    <div class="obj-label phone-label">${label}</div>`;
+}
+export function deskHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const hs = n.headset;
+  const canDrink = S.g.monsters > 0 && !n.game;
+  const boostTxt = n.boost > 0 ? `<b style="color:#6fcf7f">BOOST ${Math.ceil(n.boost)} s</b>` : n.crash > 0 ? `<b style="color:#ff9a4d">CRASH ${Math.ceil(n.crash)} s</b>` : `Monster x${S.g.monsters}`;
+  const z = Math.round(n.zone * 20) / 20;
+  return `
+  ${hs ? `<div class="zone-glow ${n.zone >= 1 ? 'full' : ''}" style="--z:${z}"></div>` : ''}
+  <div class="obj headset-obj ${hs ? 'on' : ''}" data-act="headset">${hs ? `<div class="hs-on"><div class="hs-waves"><i></i><i></i><i></i></div>on your head</div>` : headsetSvg()}</div>
+  <div class="obj-label hs-label" style="color:${hs ? '#f2b84b' : '#c9b8a8'}">${hs ? (n.zone >= 1 ? 'In the Zone, deaf (H)' : 'Zone building, deaf (H)') : 'Headset (H): you hear her'}</div>
+  ${phoneObjHtml()}
+  <div class="obj monster-obj ${canDrink ? 'ready' : 'off'}" ${canDrink ? 'data-act="openMonster"' : ''}>${monsterStockSvg(n.game?.kind === 'monster' ? Math.max(0, S.g.monsters - 1) : S.g.monsters)}</div>
+  <div class="obj-label mon-label">${boostTxt}</div>`;
+}
+
+// ---------------- Mini-game windows (phone and Monster) ----------------
+function statusBar(): string {
+  const n = N();
+  return `<div class="ph-status"><span>${fmtClock(n.clock)}</span><i class="ph-di"></i><span>\u25CF\u25CF\u25CF 5G \u25AE 41%</span></div>`;
+}
+/** The phone in your hand (iOS look). Every stage can be left: "Put down" on the lock / call screens,
+ *  the back chevron in chats, or the home bar at the bottom. Leaving counts as ignoring it. */
+function phoneHtml(g: PhoneGame): string {
+  let body = '';
+  const quit = (label: string) => `<button class="ios-quit" data-act="closeGame">${label}</button>`;
+  if (g.stage === 'ringing') {
+    body = `<div class="ios-incoming"><div class="ios-cname big">Mom</div><div class="ios-csub">mobile</div></div>
+      <div class="ios-row2"><div class="ios-mini"><span>\u23F0</span>Remind Me</div><div class="ios-mini"><span>\u2709</span>Message</div></div>
+      <div class="ph-slide"><div id="dragEl" class="ph-knob" data-drag="answer" data-axis="x" data-dir="1" data-dist="${T.SLIDE_DIST}">&#9742;</div><span>slide to answer</span></div>
+      <button class="ios-endbtn" data-act="closeGame"><span>&#9742;</span></button><div class="ios-sub2">Decline</div>`;
+  } else if (g.stage === 'locked') {
+    const [app, who, col] = APP[g.app];
+    body = `<div class="ph-lock-date">${['Monday', 'Tuesday'][0]}</div><div class="ph-lock-time">${fmtClock(N().clock)}</div>
+      ${g.msgs.slice(-3).reverse().map(m => `<div class="ios-ban big"><i style="background:${col}"></i><div><b>${who}</b><small>${app} · now</small><span>${esc(m)}</span></div></div>`).join('')}
+      <div class="ph-face" data-hold="unlock"><div class="ph-face-ring"><div id="holdFill"></div></div><span class="faceid">\u{1F642}</span></div>
+      <div class="ph-hint">Face ID: hold the phone to your face</div>
+      ${quit('Put down')}`;
+  } else if (g.stage === 'call') {
+    const reading = g.read > 0;
+    const mark = ['...', '?', '!'][g.need];
+    body = `<div class="ios-incall"><b>Mom</b><span>beat ${g.beat + 1}/${T.MOM_BEATS} \u00B7 misses ${g.misses}/${T.MOM_MAX_MISSES}</span></div>
+      <div class="ph-bubble in mom-line">${esc(g.line)}<span class="mark m${g.need}">${mark}</span></div>
+      <div class="ph-hint">Tap the matching reply inside the box.</div>
+      <div class="track ${reading ? 'reading' : ''}"><div class="zone" style="left:${g.zone * 100}%;width:${T.MOM_ZONE * 100}%"></div><div id="momMarker" class="marker"></div></div>
+      <div class="ph-chips">${MOM_REPLIES.map((r, i) => btn('mom', `<small>${['...', '?', '!'][i]}</small> ${r}`, String(i), `chip c${i}`)).join('')}</div>
+      <div class="feedback">${esc(g.feedback)}</div>
+      <button class="ios-endbtn small" data-act="closeGame"><span>&#9742;</span></button>`;
+  } else {
+    const [, who, col] = APP[g.app];
+    const history = g.msgs.map(m => `<div class="ph-bubble in">${esc(m)}</div>`).join('');
+    let reply = '', ask = '';
+    if (g.app === 'boss') {
+      const r = g.rows[Math.min(g.row, g.rows.length - 1)];
+      ask = `<div class="ph-bubble in">row ${g.row + 1}/${g.rows.length}: <b>${r.a} + ${r.b}</b> = ?</div>`;
+      reply = r.options.map((o, i) => btn('boss', `<small>${i + 1}</small> ${o}`, String(o), 'chip')).join('');
+    } else reply = btn('textReply', 'Five more minutes, love \u2665', '', 'chip');
+    body = `<div class="ios-nav"><button class="ios-back" data-act="closeGame">\u2039</button><div class="ios-who"><i style="background:${col}">${who[0]}</i><b>${who}</b></div><span id="phTime">${Math.ceil(g.t)} s</span></div>
+      <div class="ios-thread">${history}${ask}</div>
+      <div class="timebar"><div id="phBar"></div></div>
+      <div class="feedback">${esc(g.feedback)}</div>
+      <div class="ph-chips ios-replies">${reply}</div>`;
+  }
+  const timer = g.stage === 'ringing' || g.stage === 'locked' ? `<div class="ph-ring">${Math.ceil(g.t)} s</div>` : '';
+  return `<div class="phone-win">${statusBar()}<div class="ph-screen ${g.stage}">${body}</div>${timer}<button class="ph-home" data-act="closeGame" title="Swipe home: put the phone down"></button></div>`;
+}
+
+const hint = (dir: 'left' | 'right' | 'up' | 'down' | 'tap' | 'hold', x: number, y: number) =>
+  `<div class="mhint h-${dir}" style="left:${x}px;top:${y}px">${{ left: '&larr;', right: '&rarr;', up: '&uarr;', down: '&darr;', tap: 'CLICK', hold: 'HOLD' }[dir]}</div>`;
+
+const M_STEPS = [
+  ['fridge', 'Fridge', 'Click the fridge.'],
+  ['grab', 'Grab', 'Drag any can out and drop it on the desk.'],
+  ['open', 'Open', 'Click the can.'],
+  ['drink', 'Drink', 'Hold to drink. Let go in the green.'],
+  ['toss', 'Toss', 'Throw the empty into the bin.'],
+];
+
+function monsterHtml(g: MonsterGame): string {
+  const si = M_STEPS.findIndex(s => s[0] === g.stage);
+  const steps = M_STEPS.map((s, i) => `<span class="${i < si ? 'done' : i === si ? 'now' : ''}"><b>${i + 1}</b>${s[1]}</span>`).join('');
+  const scene = `<canvas id="mcv" width="${SW}" height="${SH}"></canvas>`;
+  return `<div class="monster-win">
+    <div class="m-head"><span class="m-title">Energy break</span><span class="m-sub">Hands busy: abilities paused</span>${btn('cancelMonster', '×', '', 'x')}</div>
+    <div class="m-steps">${steps}</div>
+    <div class="m-instr">${M_STEPS[si][2]}${g.feedback ? `<em>${esc(g.feedback)}</em>` : ''}</div>
+    <div class="m-scene">${scene}</div>
+  </div>`;
+}
+
+export function windowHtml(): string {
+  const n = S.g.night;
+  if (!n || !n.game) return '';
+  // grey circle with a red X just outside the top-right corner: always a way out
+  const close = n.game.kind === 'phone'
+    ? '<button class="mg-close" data-act="closeGame" title="Put the phone down" style="left:390px;top:-26px">\u2715</button>'
+    : '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:516px;top:-4px">\u2715</button>';
+  return (n.game.kind === 'phone' ? phoneHtml(n.game) : monsterHtml(n.game)) + close;
+}
+
+/** Per-frame updates inside the open window (drag positions, hold rings, markers), without re-rendering. */
+export function updateWindowDynamics() {
+  const n = S.g.night;
+  if (!n || !n.game) return;
+  const g = n.game;
+  const d = document.getElementById('dragEl');
+  if (d) {
+    const dist = Number(d.dataset.dist || 0), dir = Number(d.dataset.dir || 1);
+    if (d.dataset.drag === 'door') (d.parentElement as HTMLElement).style.transform = `perspective(500px) rotateY(${g.drag * 75}deg)`;
+    else d.style.transform = d.dataset.axis === 'x' ? `translateX(${g.drag * dist * dir}px)` : `translateY(${g.drag * dist * dir}px)`;
+  }
+  const f = document.getElementById('holdFill');
+  if (f) f.style.height = g.kind === 'phone' ? `${g.unlock * 100}%` : `${g.drink * 100}%`;
+  const gf = document.getElementById('gulpFill');
+  if (gf && g.kind === 'monster') { gf.style.height = `${Math.min(1, g.gulp / 1.15) * 100}%`; const [lo, hi] = T.MONSTER_GULP_GOOD; gf.style.background = g.gulp >= lo && g.gulp <= hi ? '#3ecf6e' : g.gulp > hi ? '#e0524a' : '#f2b84b'; }
+  if (g.kind === 'phone') {
+    const m = document.getElementById('momMarker');
+    if (m) m.style.left = `${Math.min(100, g.sweep * 100)}%`;
+    const b = document.getElementById('phBar');
+    if (b && g.max > 0) b.style.width = `${(g.t / g.max) * 100}%`;
+    const t = document.getElementById('phTime');
+    if (t) t.textContent = `${Math.ceil(g.t)} s`;
+  }
+}
+
+// ---------------- UI panel ----------------
+export function entryIcon(e: BagEntry, size: number): string {
+  if (e.kind === 'item') return icon(e.item.slot, '#f2e9d8', size, !e.item.identified);
+  if (e.kind === 'map') return icon('map', MAP_INFO[e.map].color, size);
+  return icon('feather', FEATHER.color, size);
+}
+
+// ---------------- Tooltip (hover, like an MMO) ----------------
+export const hover = { key: '', x: 0, y: 0 };
+
+function statLines(it: Item): string {
+  return it.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('');
+}
+
+export function tooltipHtml(): string {
+  const n = S.g.night;
+  if (!n || !hover.key) return '';
+  const parts = hover.key.split(':');
+  let body = '';
+  if (parts[0] === 'bag') {
+    const e = S.g.bag.find(x => x.id === parts[1]);
+    if (!e) return '';
+    if (e.kind === 'item') {
+      const it = e.item;
+      const h = S.g.heroes[n.heroTab];
+      const cur = h.gear[it.slot];
+      body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
+        <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · item level ${it.ilvl}</div>
+        ${it.identified ? statLines(it) : '<div class="dim">Unidentified. Identify at the Appraiser in town.</div>'}
+        <div class="tt-val">Sells for ${it.value} gold ${it.locked ? '· <b style="color:#f2c46b">LOCKED</b>' : ''}</div>
+        ${it.identified ? `<div class="tt-cmp"><div class="dim">On ${h.name} vs ${cur ? esc(cur.name) : 'empty slot'}:</div>${compareFor(n.heroTab, it)}</div>
+        <div class="tt-hint">Drag to the doll or a portrait to equip. Click for more. <b>L</b>: ${it.locked ? 'unlock' : 'lock'}.</div>` : ''}`;
+    } else if (e.kind === 'map') {
+      body = `<div class="tt-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div><div class="tt-hint">Choose it when the floor ends.</div>`;
+    } else {
+      body = `<div class="tt-name" style="color:${FEATHER.color}">${FEATHER.name}</div><div>${FEATHER.desc}</div><div class="tt-hint">Click it, then Use.</div>`;
+    }
+  } else if (parts[0] === 'gear') {
+    const h = S.g.heroes[Number(parts[1])];
+    const it = h?.gear[parts[2] as Item['slot']];
+    if (!it) return '';
+    body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(it.name)}</div>
+      <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · equipped on ${h.name}</div>${statLines(it)}
+      <div class="tt-val">Sells for ${it.value} gold</div><div class="tt-hint">Drag to the bag to unequip.</div>`;
+  } else return '';
+  const left = Math.min(hover.x + 16, 1280 - 250), top = Math.min(hover.y + 12, 720 - 200);
+  return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
+}
+function slotShort(e: BagEntry): string {
+  if (e.kind === 'map') return `MAP<br>${MAP_INFO[e.map].name.split(' ')[0]}`;
+  if (e.kind === 'feather') return 'PHOENIX';
+  if (!e.item.identified) return '???';
+  // Show the item noun only: drop the rarity adjective and any "of ..." suffix.
+  const noun = e.item.name.split(' ').slice(1).join(' ').split(' of ')[0];
+  return esc(noun);
+}
+function entryStyle(e: BagEntry): string {
+  if (e.kind === 'item') return `background:${RARITY_BG[e.item.rarity]};border-color:${RARITY_COLOR[e.item.rarity]}`;
+  return `background:#2a2030;border-color:${entryColor(e)};color:${entryColor(e)}`;
+}
+
+function affixLines(item: Item): string {
+  if (!item.identified) return `<div class="dim">Unidentified: stats hidden. Identify at the Appraiser in town.</div>`;
+  return item.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('');
+}
+
+function compareFor(heroIdx: number, item: Item): string {
+  const h = S.g.heroes[heroIdx];
+  const before = heroStats(h);
+  const after = heroStats(h, { [item.slot]: item });
+  const keys: Stat[] = ['atk', 'hp', 'armor', 'speed', 'crit', 'luck'];
+  const parts = keys.map(k => ({ k, d: Math.round((after[k] - before[k]) * 10) / 10 })).filter(x => x.d !== 0)
+    .map(x => `<span style="color:${x.d > 0 ? '#6fcf7f' : '#ff8a80'}">${x.d > 0 ? '+' : ''}${x.d} ${STAT_LABEL[x.k].replace(' %', '%')}</span>`);
+  return parts.join(' ') || '<span class="dim">no change</span>';
+}
+
+function detailHtml(e: BagEntry): string {
+  const n = N();
+  const town = n.location === 'town';
+  let body = '';
+  if (e.kind === 'item') {
+    const it = e.item;
+    const cur = (i: number) => S.g.heroes[i].gear[it.slot];
+    body = `<div class="d-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
+      <div class="dim">${cap(it.rarity)} · ${cap(it.slot)} · item level ${it.ilvl} · value ${it.value}</div>
+      <div class="affixes">${affixLines(it)}</div>
+      ${it.identified ? `<div class="cmp">${S.g.heroes.map((h, i) => `<div class="cmp-row">${btn('equip', `Equip on ${h.name}`, String(i), 'sm')}<div class="cmp-d"><div class="dim">${cur(i) ? 'vs ' + esc(cur(i)!.name) : 'empty slot'}</div>${compareFor(i, it)}</div></div>`).join('')}</div>` : ''}
+      ${town ? `<div class="dim">Sell, identify, salvage or list it at the buildings on the city screen.</div>` : ''}`;
+  } else if (e.kind === 'map') {
+    body = `<div class="d-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div><div class="dim">Pick it when a floor ends. It takes a bag slot until then.</div>`;
+  } else {
+    body = `<div class="d-name" style="color:${FEATHER.color}">${FEATHER.name}</div><div>${FEATHER.desc}</div>${btn('useSel', 'Use now', '', 'sm green')}`;
+  }
+  return `<div class="overlay-box">${body}<div class="d-foot">${btn('dropSel', 'Drop', '', 'sm red')}${btn('closeSel', 'Close', '', 'sm')}</div></div>`;
+}
+
+
+function dropPopupHtml(): string {
+  const n = N();
+  const p = n.dropPopup!;
+  const e = p.entry;
+  return `<div class="overlay-box popup">
+    <div class="kicker" style="color:#e0524a">BAG FULL · NEW DROP</div>
+    <div class="d-name" style="color:${entryColor(e)}">${esc(entryName(e))}</div>
+    ${e.kind === 'item' ? `<div class="affixes">${affixLines(e.item)}</div><div class="dim">value ${e.item.value}</div>` : ''}
+    <div>Click a bag item below to drop it and take this one.</div>
+    <div class="timebar"><div style="width:${(p.t / T.DROP_WAIT_SEC) * 100}%"></div></div>
+    <div class="d-foot">${btn('skipDrop', `Leave it (${Math.ceil(p.t)} s)`, '', 'sm')}</div></div>`;
+}
+
+export function uiPanelHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const g = S.g;
+  const town = n.location === 'town';
+  const lock = abilitiesLocked();
+  const flowPct = ((n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN)) * 100;
+  const building = !town && n.monitor === 'rpg' && n.action === 'none' && n.monitorOff <= 0;
+
+  // --- RUN: where you are and what's boosting you ---
+  const run = `<section class="rp run">
+    <div class="rp-title"><span>${town ? 'LEDGERFALL · TOWN' : 'DUNGEON OF OVERDUE BILLS'}</span><span>${town ? 'safe' : `Floor ${n.floor}`}</span></div>
+    <div class="run-row"><span>Checkpoint ${n.checkpoint}</span><span>Record ${Math.max(g.record, n.deepest)}</span><span class="gold">${g.gold} g</span><span class="mats">${g.mats} scraps</span></div>
+    <div class="rbar"><label>FLOW x${n.flow.toFixed(1)}</label><div><i style="width:${flowPct}%"></i></div><em>${building ? 'rising' : 'falling'}</em></div>
+    <div class="rbar zonebar"><label>ZONE</label><div><i style="width:${Math.round(n.zone * 100)}%"></i></div><em>${!n.headset ? 'headset off' : n.zone >= 1 ? '+25% flow · +10% luck' : `${Math.floor(n.zone * T.ZONE_FILL_SEC)}/${T.ZONE_FILL_SEC} s`}</em></div>
+  </section>`;
+
+  // --- SKILLS: old-school action bars ---
+  const skills = g.heroes.map((h, hi) => {
+    const buttons = ABILITIES[h.id].map((a, si) => {
+      const unlocked = si === 0 || abilityUnlocked(h, si);
+      const cd = h.cd[si];
+      const [gname, gcol] = ABILITY_GLYPHS[h.id][si];
+      let cls = 'sk', over = '';
+      if (si === 0) { cls += ' auto'; over = '<b class="sk-tag">AUTO</b>'; }
+      else if (!unlocked) { cls += ' locked'; over = `<b class="sk-tag">${si <= 2 ? `Lv${T.ABILITY_UNLOCK[si]}` : 'soon'}</b>`; }
+      else if (cd > 0) { cls += ' cd'; const pct = cd / ABILITIES[h.id][si].cd; over = `<i class="sk-sweep" style="--p:${Math.round(pct * 360)}deg"></i><b class="sk-cd">${Math.ceil(cd)}</b>`; }
+      else cls += ' ready';
+      if (h.queued === si) cls += ' queued';
+      if (lock && si > 0) cls += ' blocked';
+      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" title="${esc(a.name + ': ' + a.desc)}">${glyph(gname, unlocked ? gcol : '#4a4440', 26)}${over}<span class="sk-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
+    }).join('');
+    return `<div class="sk-row ${h.downed ? 'downed' : ''}"><button class="sk-por" style="background:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${hi}">${h.name[0]}</button>${buttons}</div>`;
+  }).join('');
+  const skillsBox = `<section class="rp skills"><div class="rp-title"><span>SKILLS</span><span class="${lock ? 'warn' : ''}">${lock ? lock : 'click or hotkey'}</span></div>${skills}</section>`;
+
+  // --- TOWN (replaces skills in town) ---
+  const townBox = `<section class="rp town"><div class="rp-title"><span>CITY</span><span>clock paused</span></div>
+    <div class="dim">Everything happens on the city screen: click the buttons by the buildings. Build on empty plots. Enter the dungeon through the portal.</div>
+    ${CITY.map(f => { const lv = g.furniture[f.id] ?? 0; return `<div class="furn"><b>${f.name}</b><span class="${lv ? 'good' : 'dim'}">${lv ? `Lv ${lv} · ${f.effect[lv - 1]}` : 'not built'}</span></div>`; }).join('')}
+    <div class="dim">Gold ${g.gold} · Scraps ${g.mats} · Auction pending: ${g.pendingListings.length}</div>
+  </section>`;
+
+  // --- PARTY: paper doll ---
+  const tab = n.heroTab;
+  const gh = g.heroes[tab];
+  const portraits = g.heroes.map((h, i) => {
+    const mx = maxHp(h);
+    const hpPct = h.downed ? 0 : (h.hp / mx) * 100;
+    return `<button class="dport ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}">
+      <span class="dface" style="background:${HERO_COLORS[h.id]}">${h.name[0]}</span>
+      <span class="dname">${h.name}<small>Lv ${h.level}</small></span>
+      <span class="dhp"><i style="width:${hpPct}%;background:${hpPct > 50 ? '#6fcf7f' : hpPct > 0 ? '#e0b24a' : '#e0524a'}"></i></span>
+      <span class="dxp"><i style="width:${(h.xp / xpNeeded(h)) * 100}%"></i></span>
+    </button>`;
+  }).join('');
+  const slots = SLOTS.map(sl => {
+    const it = gh.gear[sl];
+    const style = it ? `background:${RARITY_BG[it.rarity]};border-color:${RARITY_COLOR[it.rarity]}` : '';
+    return `<div class="dslot s-${sl} ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${tab}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 24)}</div>`;
+  }).join('');
+  const st = heroStats(gh);
+  const party = `<section class="rp party"><div class="rp-title"><span>PARTY</span><span>drop gear on a hero</span></div>
+    <div class="doll-wrap">
+      <div class="dports">${portraits}</div>
+      <div class="doll" style="--hc:${HERO_COLORS[gh.id]}">
+        <div class="doll-title">${gh.name.toUpperCase()} · ${gh.role}</div>
+        <div class="doll-fig"><i class="fh"></i><i class="fb"></i><i class="fl"></i></div>
+        ${slots}
+        <div class="doll-stats">ATK ${Math.round(st.atk)}  HP ${st.hp}  ARM ${Math.round(st.armor)}  SPD ${Math.round(st.speed)}</div>
+      </div>
+    </div></section>`;
+
+  // --- BACKPACK ---
+  const bagCells = Array.from({ length: g.bagSize }, (_, i) => {
+    const e = g.bag[i];
+    if (!e) return `<div class="bslot empty"></div>`;
+    const sel = n.selected === e.id ? ' sel' : '';
+    const swap = n.dropPopup ? ' swap' : '';
+    const fresh = n.fresh.some(f => f.id === e.id) ? ' fresh' : '';
+    const lock = e.kind === 'item' && e.item.locked ? '<i class="lockico">\u{1F512}</i>' : '';
+    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}" data-item="bag:${e.id}">${entryIcon(e, 26)}${lock}<span class="val">${entryValue(e)}</span></div>`;
+  }).join('');
+  const backpack = `<section class="rp pack"><div class="rp-title"><span>BAG</span><button class="as-tog ${g.autoSalvage ? 'on' : ''}" data-act="autoSalvage" title="Common and uncommon drops turn straight into scraps">auto-salvage &lt;<b style="color:#5b9cff">blue</b>: ${g.autoSalvage ? 'ON' : 'off'}</button><span style="color:${g.bag.length >= g.bagSize ? '#ff8a80' : 'inherit'}">${g.bag.length}/${g.bagSize} · L=lock</span></div>
+    <div class="bag" data-drop="bag">${bagCells}</div></section>`;
+
+  let overlay = '';
+  if (n.dropPopup) overlay = dropPopupHtml();
+  else if (n.selected) { const e = g.bag.find(x => x.id === n.selected); if (e) overlay = detailHtml(e); }
+
+  void `<div class="bottom-hint">${town ? 'City: use the buildings on screen' : n.phase === 'mapChoice' ? 'Pick the next floor on the map' : 'Town portal: button on the game screen'}</div>`;
+
+  const tiredFx2 = [n.tired >= T.TIRED_YAWN && 'yawning', n.tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Monster holds you up' : 'eyes closing'), n.tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
+  const you = `<section class="rp you"><div class="rp-title"><span>YOU</span><span>${tiredFx2 || 'awake enough'}</span></div>
+    <div class="you-row"><span>Noise</span><div class="ybar"><i style="width:${n.noise}%;background:#f2a03d"></i></div><b>${Math.round(n.noise)}</b></div>
+    <div class="you-row"><span>Looks busy</span><div class="ybar"><i style="width:${n.busy}%;background:${n.busy >= T.BUSY_PASS ? '#5cb88a' : '#8a7a6a'}"></i><em style="left:${T.BUSY_PASS}%"></em></div><b>${Math.round(n.busy)}</b></div>
+    <div class="you-row"><span>Tired</span><div class="ybar"><i style="width:${n.tired}%;background:#8fa8d9"></i><em style="left:${T.TIRED_MICROSLEEP}%"></em></div><b>${Math.round(n.tired)}</b></div>
+  </section>`;
+  // order (top to bottom): You, Feed, run progress, Party, Bag
+  return `${you}
+  <section class="rp feed">${feedHtml()}</section>
+  ${run}
+  <div class="mid">
+    <div class="mid-spacer"></div>
+    ${party}
+    ${overlay ? `<div class="overlay">${overlay}</div>` : ''}
+  </div>
+  ${backpack}
+  `;
+}
+
+// ---------------- OS taskbar (real life) ----------------
+export function taskbarHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const late = n.clock >= T.BEDTIME;
+  return `<div class="tb-start">⊞</div>
+    <button class="tb-app ${n.monitor === 'rpg' ? 'on' : ''}" data-act="showRpg"><span class="tb-ico game">⚔</span>Loot Night</button>
+    <button class="tb-app ${n.monitor === 'excel' ? 'on' : ''}" data-act="showExcel"><span class="tb-ico xl">X</span>Excel</button>
+    <span class="tb-hint">Tab = switch</span>
+    <span class="tb-tray">
+      <span class="tb-wallet">${S.g.zl} zł</span>
+      <span class="tb-clock ${late ? 'late' : ''}"><b>${fmtClock(n.clock)}</b><small>${late ? 'past bedtime' : 'bed 01:00'}</small></span>
+      <button class="tb-power ${canSleep() ? '' : 'off'}" data-act="sleep" title="Log off and sleep">⏻ ${n.clock < T.EARLIEST_SLEEP ? 'Sleep (23:00+)' : 'Sleep'}</button>
+    </span>`;
+}
+
+// ---------------- Full-screen screens ----------------
+export function screenHtml(): string {
+  const g = S.g;
+  if (g.screen === 'title') {
+    return `<div class="screen"><div class="card">
+      <div class="kicker">PROTOTYPE · NIGHT 1 · MONDAY</div>
+      <h1>Loot Night</h1>
+      <p>Grind a loot-obsessed MMO all night. Keep your girlfriend, your mom and your boss off your back.</p>
+      <ul>
+        <li><b>RPG:</b> the party auto-fights. Fire skills (1-2, Q-W, A-S): they go off instantly, click bag items to equip, pick the next floor.</li>
+        <li><b>Alt-tab:</b> <kbd>Tab</kbd> flips to Excel: a slow spreadsheet Tetris (A/D move, W rotate, Space drop). Being on Excel builds Busy; filled rows pay overtime gold.</li>
+        <li><b>The door:</b> listen for footsteps. When her shadow shows, be on Excel with Busy 60+.</li>
+        <li><b>After midnight</b> she goes to bed: loud play (crits, bosses, vaults) wakes her. Answer her text or she gets up.</li>
+        <li><b>Apartment map:</b> track her by sound (TV, kettle, shower, steps). Long shower = safe time. Headset (<kbd>H</kbd>): after 30 s on you are in the <b>Zone</b> (Flow +25% faster, +10% loot luck), but she is muffled: no far footsteps, map goes stale. Taking it off to listen empties the Zone.</li>
+        <li><b>Phone:</b> Mom calls (slide to answer), the boss and your girlfriend message (hold to face-unlock). Answer before the timer runs out.</li>
+        <li><b>Tired:</b> after 22:00 you get sleepy. Eyelids drift shut: click or press any key to snap awake. <b>Monster</b> (on the desk): lift, flick the tab, pull it slowly, hold to drink, put it down. Party +30% speed for 60 s, Tiredness -35, then a short crash.</li>
+        <li><b>Bedtime 01:00.</b> Playing later costs sleep debt. Dawn ends the night.</li>
+        <li><kbd>Esc</kbd> pause · <kbd>F1</kbd> debug</li>
+      </ul>
+      <div class="row">${hasSave() ? btn('continue', `Continue · night ${g.nightsPlayed + 1}`, '', 'wide gold') + btn('newGame', 'New game', '', 'wide') : btn('newGame', 'Start Monday night', '', 'wide gold')}</div>
+      <p class="dim">Turn sound on: footsteps are your early warning.</p>
+    </div></div>`;
+  }
+  if (g.screen === 'results' && g.results) {
+    const r = g.results;
+    const stars = [0, 1, 2].map(i => `<span class="star ${i < r.stars ? 'on' : ''}">★</span>`).join('');
+    const endTxt = r.ending === 'sleep' ? `Logged off at ${fmtClock(r.endClock)}` : r.ending === 'dawn' ? 'Dawn. The sun is up and so are you.' : 'Unplugged. She pulled the plug. Half the bag is gone.';
+    return `<div class="screen"><div class="card">
+      <div class="kicker">MONDAY · RESULTS</div>
+      <div class="stars">${stars}</div>
+      <h2>${endTxt}</h2>
+      <div class="grid2">
+        <div><span class="dim">Deepest floor</span><b>${r.depth}</b></div>
+        <div><span class="dim">Previous record</span><b>${r.prevRecord}</b></div>
+        <div><span class="dim">Mood at the end</span><b>${r.mood}</b></div>
+        <div><span class="dim">Sleep debt</span><b>${r.debtBefore} → ${r.debtAfter}</b></div>
+      </div>
+      <div class="stars-key dim">★ survive · ★★ end in green or yellow Mood · ★★★ never caught</div>
+      ${r.nearMisses.length ? `<div class="near"><div class="kicker">SO CLOSE</div>${r.nearMisses.map(m => `<div>${esc(m)}</div>`).join('')}</div>` : ''}
+      ${r.unidentified ? `<div class="near"><div class="kicker" style="color:#b98cff">WAITING AT THE APPRAISER</div><div>${r.unidentified} unidentified item${r.unidentified > 1 ? 's' : ''} in your bag: ${'<span class="sil">???</span>'.repeat(Math.min(6, r.unidentified))}</div></div>` : ''}
+      <div class="row">${btn('morning', 'Next morning →', '', 'wide gold')}</div>
+    </div></div>`;
+  }
+  if (g.screen === 'morning' && g.morning) {
+    const m = g.morning;
+    const debt = g.sleepDebt;
+    return `<div class="screen"><div class="card morning">
+      <div class="m-grid">
+        <div class="m-art"><canvas id="morningArt" width="480" height="240"></canvas><div class="dim m-cap">She fell asleep in your shirt again.</div></div>
+        <div class="m-info">
+          <div class="kicker">MORNING SUMMARY</div>
+          <h3>${m.listings ? `Auction house sold ${m.listings} item${m.listings > 1 ? 's' : ''}: +${m.paid} zł` : 'Nothing sold overnight.'}</h3>
+          <div class="grid2">
+            <div><span class="dim">Wallet</span><b>${g.zl} zł</b></div>
+            <div><span class="dim">Sleep debt</span><b>${debt}</b></div>
+            <div><span class="dim">Gold</span><b>${g.gold}</b></div>
+            <div><span class="dim">Best stars</span><b>${g.bestStars} / 3</b></div>
+          </div>
+          <div class="m-note">${debt > 0 ? `Sleep debt ${debt}: tonight starts at Tiredness ${Math.min(100, T.TIRED_BASE + debt * T.TIRED_PER_DEBT)}.` : 'No sleep debt: tonight starts fresh.'} Party, gear, gold and city carry over.</div>
+        </div>
+      </div>
+      <div class="row">${btn('startNight', 'Start Monday night', '', 'wide gold')}</div>
+    </div></div>`;
+  }
+  return '';
+}
+
+export function pauseHtml(): string {
+  return S.g.paused && S.g.screen === 'night' ? `<div class="screen dark"><div class="card"><h1>Paused</h1><p class="dim">The screen is blacked out so pausing can't be used to peek.</p><div class="row">${btn('resume', 'Resume', '', 'wide gold')}</div></div></div>` : '';
+}
+
+export function debugHtml(): string {
+  const g = S.g;
+  if (!g.debug) return '';
+  const n = g.night;
+  return `<div class="debug">
+    <div><b>DEBUG</b> · speed x${g.timeScale}</div>
+    ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
+    <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
+    <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}</div>
+    <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
+    <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgBusy', 'Busy 100', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
+  </div>`;
+}
+
+export function scareHtml(): string {
+  const n = S.g.night;
+  if (!n || n.scare <= 0) return '';
+  // Comedic jumpscare when caught: a big generic pixel face.
+  const px: [number, number, number, number, string][] = [[3,0,10,3,'#2a1810'],[2,2,12,2,'#2a1810'],[3,4,10,9,'#e8b98a'],[2,3,2,8,'#2a1810'],[12,3,2,8,'#2a1810'],[5,6,2,2,'#14101a'],[9,6,2,2,'#14101a'],[4,5,4,1,'#2a1810'],[8,5,4,1,'#2a1810'],[6,10,4,2,'#7a1f2b'],[4,13,8,3,'#5b3aa8']];
+  const rects = px.map(([x, y, w, h, c]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`).join('');
+  return `<div class="scare"><svg viewBox="0 0 16 16" width="420" height="420" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg><div>WE NEED TO TALK.</div></div>`;
+}
+
+export function toastsHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  return (n.reveal ? `<div class="reveal"><div class="kicker">APPRAISER</div><b>${esc(n.reveal.name)}</b></div>` : '');
+}

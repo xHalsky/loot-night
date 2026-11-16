@@ -1,0 +1,120 @@
+import { T } from '../config/tuning';
+import { S, N, RARITIES } from '../core/state';
+import { removeEntry, entryName } from './loot';
+import { toast } from '../core/fx';
+import { sfx } from '../ui/audio';
+import { isLocked } from './loot';
+import { CITY_BY_ID, BAG_PLUS, type CityId } from '../data/city';
+import { maxHp } from './stats';
+import { save } from './save';
+
+const inTown = () => N().location === 'town';
+function selectedItemEntry() {
+  const n = N();
+  const e = S.g.bag.find(x => x.id === n.selected);
+  return e;
+}
+
+export function identify() {
+  const n = N();
+  const e = selectedItemEntry();
+  if (!inTown() || !e || e.kind !== 'item' || e.item.identified) return;
+  const cost = e.item.rarity === 'legendary' ? T.IDENTIFY_COST.legendary : T.IDENTIFY_COST.epic;
+  if (S.g.gold < cost) { toast(`Identify costs ${cost} gold.`, '#ff8a80'); sfx.bad(); return; }
+  S.g.gold -= cost;
+  n.clock += T.COST_IDENTIFY_MIN;
+  e.item.identified = true;
+  n.reveal = { name: e.item.name, t: 2.5 };
+  sfx.loot(RARITIES.indexOf(e.item.rarity));
+  toast(`Identified: ${e.item.name} (10 min)`, '#b98cff');
+}
+
+export function vendorValue(id: string): number {
+  const e = S.g.bag.find(x => x.id === id);
+  if (!e) return 0;
+  if (e.kind !== 'item') return 15;
+  return Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT));
+}
+
+export function vendor() {
+  const n = N();
+  if (!inTown() || !n.selected) return;
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  const v = vendorValue(n.selected);
+  const e = removeEntry(n.selected);
+  if (!e) return;
+  S.g.gold += v;
+  toast(`Sold ${entryName(e)} for ${v} gold`, '#f2b84b'); sfx.good();
+}
+
+export function salvageYield(id: string): number {
+  const e = S.g.bag.find(x => x.id === id);
+  if (!e || e.kind !== 'item') return 0;
+  return T.SALVAGE_YIELD[RARITIES.indexOf(e.item.rarity)];
+}
+export function salvage() {
+  const n = N();
+  if (!inTown() || !n.selected) return;
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  const y = salvageYield(n.selected);
+  if (!y) return;
+  const e = removeEntry(n.selected);
+  if (!e) return;
+  S.g.mats += y;
+  toast(`Salvaged ${entryName(e)}: +${y} Receipt Scraps`, '#c9a46a'); sfx.good();
+}
+
+export function listValue(id: string): number {
+  const e = S.g.bag.find(x => x.id === id);
+  if (!e || e.kind !== 'item') return 0;
+  return Math.max(1, Math.round(e.item.value * T.ZL_PER_VALUE * N().market));
+}
+export function list() {
+  const n = N();
+  if (!inTown() || !n.selected) return;
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  const zl = listValue(n.selected);
+  if (!zl) return;
+  const e = removeEntry(n.selected);
+  if (!e) return;
+  S.g.pendingListings.push({ name: entryName(e), zl });
+  n.clock += T.COST_LIST_MIN;
+  toast(`Listed ${entryName(e)} for ~${zl} zł. Pays tomorrow morning. (5 min)`, '#6fcf7f'); sfx.good();
+}
+
+export function buildCity(id: CityId) {
+  const n = N();
+  if (!inTown()) return;
+  const f = CITY_BY_ID[id];
+  const lvl = S.g.furniture[id] ?? 0;
+  if (lvl >= 3) return;
+  const gold = f.gold[lvl], mats = f.mats[lvl];
+  if (S.g.gold < gold || S.g.mats < mats) { toast(`Need ${gold} gold and ${mats} scraps.`, '#ff8a80'); sfx.bad(); return; }
+  const hpRatios = S.g.heroes.map(h => h.hp / maxHp(h));
+  S.g.gold -= gold; S.g.mats -= mats;
+  S.g.furniture[id] = lvl + 1;
+  applyCity();
+  S.g.heroes.forEach((h, i) => { if (!h.downed) h.hp = Math.round(maxHp(h) * hpRatios[i]); });
+  n.clock += T.COST_FURNITURE_MIN;
+  toast(`${f.name} ${lvl ? `upgraded to level ${lvl + 1}` : 'built'}! ${f.effect[lvl]} (15 min)`, '#f2b84b'); sfx.level();
+  save();
+}
+
+/** Derived values from city buildings (bag size). Call after load and after building. */
+export function applyCity() {
+  const f = S.g.furniture as Record<string, number>;
+  // Migrate old saves (Training Dummy / Bed).
+  if (f.dummy !== undefined) { f.training = Math.max(f.training ?? 0, f.dummy); delete f.dummy; }
+  if (f.bed !== undefined) { f.inn = Math.max(f.inn ?? 0, f.bed); delete f.bed; }
+  for (const k of ['training', 'inn', 'library', 'treasury']) f[k] = f[k] ?? 0;
+  S.g.bagSize = T.BAG_SIZE + BAG_PLUS[f.treasury];
+}
+
+export function openTownWin(w: 'merchant' | 'appraiser' | 'salvage' | 'auction' | null) { S.g.townWin = w; sfx.click(); }
+
+/** Actions from the service windows take the item id directly. */
+export function serviceAction(kind: 'identify' | 'vendor' | 'salvage' | 'list', id: string) {
+  N().selected = id;
+  if (kind === 'identify') identify(); else if (kind === 'vendor') vendor(); else if (kind === 'salvage') salvage(); else list();
+  N().selected = null;
+}

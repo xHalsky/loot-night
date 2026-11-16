@@ -1,0 +1,68 @@
+import { S, N, type Item } from '../core/state';
+import { removeEntry, entryName, swapDrop , isLocked } from './loot';
+import { useFeather } from './dungeon';
+import { maxHp } from './stats';
+import { toast } from '../core/fx';
+import { sfx } from '../ui/audio';
+
+/** Clicking a bag slot: swap target while the full-bag popup is open, else select it. */
+export function clickBagSlot(id: string) {
+  const n = N();
+  if (n.dropPopup) { swapDrop(id); return; }
+  n.selected = n.selected === id ? null : id;
+  sfx.click();
+}
+
+export function closeSelection() { N().selected = null; }
+
+export function equipOn(heroIdx: number) { const n = N(); if (n.selected) equipItemOn(n.selected, heroIdx); }
+
+/** Equip a bag item on a hero (drag and drop, or the Equip buttons). */
+export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string) {
+  const n = N();
+  const i = S.g.bag.findIndex(e => e.id === itemId);
+  const pre = S.g.bag[i];
+  if (pre && pre.kind === 'item' && wantSlot && pre.item.slot !== wantSlot) { toast(`That goes in the ${pre.item.slot} slot.`, '#a999bd'); sfx.bad(); return; }
+  const e = S.g.bag[i];
+  const h = S.g.heroes[heroIdx];
+  if (!e || e.kind !== 'item' || !h) { if (e && e.kind === 'feather') useFeather(e.id); return; }
+  if (!e.item.identified) { toast('Identify it at the Appraiser in town first.', '#b98cff'); sfx.bad(); return; }
+  const ratio = h.hp / maxHp(h);
+  const old: Item | undefined = h.gear[e.item.slot];
+  h.gear[e.item.slot] = e.item;
+  if (old) S.g.bag[i] = { kind: 'item', id: old.id, item: old };
+  else S.g.bag.splice(i, 1);
+  if (!h.downed) h.hp = Math.max(1, Math.round(maxHp(h) * ratio));
+  n.selected = null;
+  n.heroTab = heroIdx;
+  toast(`${h.name} equipped ${e.item.name}`, '#f2e9d8'); sfx.good();
+}
+
+export function dropSelected() {
+  const n = N();
+  if (!n.selected) return;
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  const e = removeEntry(n.selected);
+  if (e) { toast(`Dropped ${entryName(e)}`, '#a999bd'); sfx.click(); }
+}
+
+export function useSelected() {
+  const n = N();
+  const e = S.g.bag.find(x => x.id === n.selected);
+  if (e && e.kind === 'feather') useFeather(e.id);
+}
+
+export function setHeroTab(i: number) { N().heroTab = i; sfx.click(); }
+
+/** Drag a worn item back to the bag. */
+export function unequip(heroIdx: number, slot: string) {
+  const h = S.g.heroes[heroIdx];
+  const it = h?.gear[slot as Item['slot']];
+  if (!it) return;
+  if (S.g.bag.length >= S.g.bagSize) { toast('Bag is full.', '#ff8a80'); sfx.bad(); return; }
+  const ratio = h.hp / maxHp(h);
+  delete h.gear[slot as Item['slot']];
+  S.g.bag.push({ kind: 'item', id: it.id, item: it });
+  if (!h.downed) h.hp = Math.max(1, Math.min(maxHp(h), Math.round(maxHp(h) * ratio)));
+  sfx.click();
+}

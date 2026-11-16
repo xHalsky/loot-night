@@ -1,0 +1,81 @@
+import { T } from '../config/tuning';
+import { N } from '../core/state';
+import { rand, randi } from '../core/rng';
+import { toast } from '../core/fx';
+import { sfx } from '../ui/audio';
+
+// The dog (design doc section 10). He jumps up at the desk for attention: pet him (a minigame on the desk, no window)
+// and he lies back down at your feet for a while. Ignore him 1-3 times (random) and he bumps the desk:
+// the monitor cables come out and you have to plug them back in (another on-desk minigame).
+
+export const PLUGS = ['HDMI', 'DisplayPort', 'Power', 'USB-A', 'USB-C', 'DVI', 'VGA', 'Ethernet', 'Audio'];
+export const CABLE_COLORS = ['#e0524a', '#2f6fed', '#3fbf6a', '#f2c94c', '#9b5de5', '#ff8c42', '#f2f2f2', '#2a2a30', '#ff7ab8'];
+export const CABLE_COUNT = 4;
+
+export function updateDog(dt: number) {
+  const n = N();
+  const d = n.dog;
+  if (n.lap) return;
+  if (n.unplugged) n.monitorOff = Math.max(n.monitorOff, 0.5);
+  d.flinch = Math.max(0, d.flinch - dt);
+  if (d.stage === 'away') {
+    d.next -= dt;
+    if (d.next <= 0 && !n.unplugged) { d.stage = 'up'; d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); }
+    return;
+  }
+  if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC); } return; }
+  // up: whining, waiting for you
+  d.t -= dt;
+  n.noise = Math.min(100, n.noise + T.DOG_WHINE_NOISE * dt);
+  if (Math.floor(d.t * 0.8) !== Math.floor((d.t + dt) * 0.8)) sfx.whine();
+  if (d.t <= 0) {
+    d.ignores++;
+    if (d.ignores >= d.limit) {
+      d.ignores = 0; d.limit = randi(1, 3);
+      d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC);
+      bump();
+    } else {
+      d.stage = 'away'; d.next = rand(...T.DOG_AGAIN_SEC);
+      toast('The dog gives up and lies down. He looks offended.', '#a999bd');
+    }
+  }
+}
+
+/** A stroke over his head. `dist` px moved, `speed` px/s, `sweet` = on his favourite spot. */
+export function petStroke(dist: number, speed: number, sweet: boolean) {
+  const d = N().dog;
+  if (d.stage !== 'up') return;
+  if (speed > T.DOG_FAST) { d.flinch = 0.4; d.pet = Math.max(0, d.pet - 0.04); return; }
+  d.pet += dist * T.DOG_PET_RATE * (sweet ? T.DOG_SWEET_MULT : 1);
+  if (d.pet >= 1) {
+    d.stage = 'happy'; d.t = 1.2; d.ignores = 0;
+    toast('Good boy! He licks your hand and flops down at your feet.', '#6fcf7f'); sfx.heal();
+  }
+}
+
+const shuffle = <X,>(a: X[]) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function bump() {
+  const n = N();
+  // a fresh mix every time: which plugs, which cable colours, which socket order
+  const kinds = shuffle([...PLUGS.keys()]).slice(0, CABLE_COUNT);
+  const colors = shuffle([...CABLE_COLORS.keys()]).slice(0, CABLE_COUNT);
+  const sockets = shuffle([...Array(CABLE_COUNT).keys()]);
+  n.unplugged = { kinds, colors, sockets, plugged: Array(CABLE_COUNT).fill(false) };
+  n.monitorOff = 1;
+  sfx.sting();
+  toast('The dog slams into the desk. The monitor cables are out! Plug them back in.', '#ff8a80');
+}
+
+/** Cable `plug` dropped on socket slot `slot`. */
+export function plugIn(plug: number, slot: number): boolean {
+  const n = N();
+  const u = n.unplugged;
+  if (!u || u.plugged[plug]) return false;
+  if (u.sockets[slot] !== plug) { sfx.bad(); return false; }
+  u.plugged[plug] = true; sfx.plug();
+  if (u.plugged.every(Boolean)) { n.unplugged = null; n.monitorOff = 0; sfx.good(); toast('Signal back. Good as new.', '#6fcf7f'); }
+  return true;
+}
+
+export function triggerDog() { const d = N().dog; d.stage = 'away'; d.next = 0; }
+export function triggerUnplug() { bump(); }

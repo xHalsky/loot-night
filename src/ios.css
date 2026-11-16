@@ -1,0 +1,96 @@
+/* ===== iOS phone (desk + in hand) ===== */
+.phone3d .pface.front { padding: 4px !important; background: #0b0b0e !important; }
+.phone3d .pface.front::before { display: none; }
+.ios { position: relative; width: 100%; height: 100%; border-radius: 11px; overflow: hidden; font-family: -apple-system, 'SF Pro Text', Inter, sans-serif; color: #fff; }
+.ios.off { background: #050506; display: grid; place-items: center; }
+.ios-inuse { font-size: 8px; color: #555; }
+.ios-di { position: absolute; left: 50%; top: 5px; width: 28px; height: 8px; margin-left: -14px; border-radius: 6px; background: #000; z-index: 2; }
+.ios.lock { background: radial-gradient(circle at 30% 20%, #6a5acd, #2a1f5a 55%, #120c2a); padding: 22px 4px 4px; display: flex; flex-direction: column; gap: 3px; }
+.ios-time { font-size: 22px; font-weight: 600; text-align: center; letter-spacing: -.5px; margin-bottom: 4px; }
+.ios-ban { display: flex; gap: 3px; align-items: flex-start; background: rgba(245,245,250,.85); color: #111; border-radius: 7px; padding: 3px; }
+.ios-ban i { flex: none; width: 10px; height: 10px; border-radius: 3px; margin-top: 1px; }
+.ios-ban div { min-width: 0; display: flex; flex-direction: column; line-height: 1.1; }
+.ios-ban b { font-size: 7.5px; }
+.ios-ban small { display: none; }
+.ios-ban span { font-size: 7px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ios-ban.new { animation: banIn .35s cubic-bezier(.2,1.5,.5,1); }
+@keyframes banIn { from { transform: translateY(-14px) scale(.9); opacity: 0; } }
+.ios-more { font-size: 7px; text-align: center; color: #cfc8ff; }
+.ios.call { background: linear-gradient(#3a3f4a, #1c1f26); display: flex; flex-direction: column; align-items: center; padding-top: 30px; }
+.ios-cname { font-size: 15px; font-weight: 500; }
+.ios-cname.big { font-size: 26px; }
+.ios-csub { font-size: 8px; color: #b8bcc6; }
+.ios-cbtns { margin-top: auto; display: flex; gap: 18px; }
+.ios-cbtn { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; }
+.ios-cbtn.red { background: conic-gradient(#fff var(--d), #ff3b30 0); padding: 2px; cursor: pointer; touch-action: none; }
+.ios-cbtn.red span { width: 100%; height: 100%; border-radius: 50%; background: #ff3b30; display: grid; place-items: center; transform: rotate(135deg); }
+.ios-cbtn.green { background: #34c759; }
+.ios-clab { display: flex; gap: 14px; font-size: 6.5px; color: #ddd; margin: 2px 0 10px; }
+/* in hand: iPhone proportions */
+.phone-win { left: 216px !important; top: -18px !important; width: 186px !important; height: 398px !important; border-radius: 34px !important; border: 5px solid #1d1d22 !important; padding: 8px 8px 6px !important; background: #050506 !important; }
+.ph-status { position: relative; padding: 2px 10px 4px !important; font-size: 10px !important; font-weight: 600; }
+.ph-di { position: absolute; left: 50%; top: 0; width: 62px; height: 18px; margin-left: -31px; border-radius: 10px; background: #000; }
+.ph-screen { border-radius: 24px !important; padding: 8px 9px !important; gap: 6px !important; background: radial-gradient(circle at 30% 15%, #6a5acd, #2a1f5a 55%, #120c2a) !important; }
+.ph-screen.chat { background: #fff !important; color: #111; }
+.ph-screen.call, .ph-screen.ringing { background: linear-gradient(#4a505c, #1c1f26) !important; }
+.ph-lock-date { text-align: center; font-size: 11px; color: #ddd; margin-top: 4px; }
+.ph-lock-time { font-size: 48px !important; font-weight: 600 !important; letter-spacing: -1px; margin-top: 0 !important; }
+.ios-ban.big { padding: 6px; border-radius: 12px; }
+.ios-ban.big i { width: 18px; height: 18px; border-radius: 5px; }
+.ios-ban.big b { font-size: 11px; }
+.ios-ban.big small { display: block; font-size: 9px; color: #777; }
+.ios-ban.big span { font-size: 11px; white-space: normal; }
+.faceid { font-size: 26px; }
+.ios-quit { margin: 4px auto 0; font: 600 11px Inter, sans-serif; color: #fff; background: rgba(255,255,255,.18); border: 0; border-radius: 14px; padding: 5px 16px; cursor: pointer; }
+.ph-home { display: block; width: 90px !important; height: 6px !important; border: 0; padding: 0; border-radius: 3px; background: #ddd !important; margin: 7px auto 0 !important; cursor: pointer; }
+.ph-home:hover { background: #fff !important; box-shadow: 0 0 6px #fff; }
+.ios-incoming { text-align: center; margin-top: 26px; }
+.ios-row2 { display: flex; justify-content: space-around; margin-top: auto; font-size: 9px; color: #ddd; text-align: center; }
+.ios-mini span { display: block; font-size: 16px; }
+.ios-endbtn { width: 50px; height: 50px; border-radius: 50%; border: 0; margin: 4px auto 0; background: #ff3b30; color: #fff; font-size: 20px; cursor: pointer; display: grid; place-items: center; flex: none; }
+.ios-endbtn span { transform: rotate(135deg); }
+.ios-endbtn.small { width: 40px; height: 40px; font-size: 16px; }
+.ios-sub2 { text-align: center; font-size: 10px; color: #ddd; }
+.ph-knob { background: #34c759 !important; font-size: 18px !important; }
+.ios-incall { text-align: center; }
+.ios-incall b { display: block; font-size: 18px; font-weight: 500; }
+.ios-incall span { font-size: 10px; color: #b8bcc6; }
+.ios-nav { display: grid; grid-template-columns: 24px 1fr 30px; align-items: center; border-bottom: 1px solid #e5e5ea; padding-bottom: 5px; margin: -2px -4px 0; }
+.ios-back { border: 0; background: none; color: #007aff; font-size: 26px; line-height: 1; cursor: pointer; padding: 0; }
+.ios-who { display: flex; flex-direction: column; align-items: center; }
+.ios-who i { width: 24px; height: 24px; border-radius: 50%; color: #fff; font-style: normal; font-size: 12px; display: grid; place-items: center; }
+.ios-who b { font-size: 9px; font-weight: 500; }
+#phTime { font-size: 10px; color: #8e8e93; text-align: right; }
+.ios-thread { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; overflow: hidden; }
+.ph-screen.chat .ph-bubble.in { background: #e9e9eb; color: #111; align-self: flex-start; max-width: 88%; border-radius: 16px 16px 16px 4px; font-size: 12px; padding: 6px 10px; }
+.ios-replies .btn.chip { background: #007aff; color: #fff; border: 0; border-radius: 16px; font-family: Inter, sans-serif; }
+.ph-screen.chat .feedback { color: #ff3b30 !important; }
+.ph-screen.chat .timebar { height: 3px; background: #e5e5ea; }
+
+/* ===== Buffs and debuffs (top right of the game screen) ===== */
+#monUi .buffs { position: absolute; right: 8px; top: 32px; display: flex; gap: 4px; flex-direction: row-reverse; z-index: 3; pointer-events: auto; }
+#monUi .buff { width: 30px; text-align: center; font: 600 10px Inter, sans-serif; color: #fff; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
+#monUi .buff .bi { position: relative; width: 30px; height: 30px; border: 2px solid #6fcf7f; border-radius: 3px; background: #14101a; display: grid; place-items: center; box-shadow: 0 0 0 1px #000; overflow: hidden; }
+#monUi .buff.de .bi { border-color: #e0524a; }
+#monUi .buff .bi svg { display: block; }
+#monUi .buff .sweep { position: absolute; inset: 0; background: conic-gradient(rgba(0,0,0,.55) var(--p), transparent 0); }
+#monUi .buff .bt { display: block; margin-top: 1px; }
+#monUi .buff.low .bt { color: #ffcf6a; }
+#monUi .tportal { left: 8px !important; right: auto !important; top: 32px !important; }
+.phone3d.active .pface.front { border-color: #3a3a44 !important; box-shadow: 0 0 14px 2px rgba(200,210,255,.35) !important; }
+
+#monUi .ie-sks { grid-template-columns: repeat(4, 34px) !important; }
+#monUi .ie-sk { width: 34px !important; }
+
+.ios.call { padding-top: 22px !important; }
+.ios-mrow { display: flex; justify-content: space-around; width: 100%; margin-top: auto; font-size: 6px; color: #ddd; text-align: center; line-height: 1.2; }
+.ios-mslide { position: relative; width: 86%; height: 16px; border-radius: 8px; background: rgba(255,255,255,.18); margin: 5px 0 4px; display: flex; align-items: center; justify-content: center; font-size: 6px; color: #eee; }
+.ios-mslide i { position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #34c759; font-style: normal; font-size: 7px; display: grid; place-items: center; }
+.ios.call .ios-cbtn.red { width: 26px; height: 26px; background: #ff3b30; padding: 0; }
+.ios.call .ios-cbtn.red:hover { filter: brightness(1.2); box-shadow: 0 0 6px #ff3b30; }
+.ios.call .ios-clab { justify-content: center; margin: 1px 0 6px; }
+/* floating close button for every minigame window */
+.mg-close { position: absolute; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; background: #8e8e93; color: #ff3b30; font: 900 15px/1 Inter, sans-serif; display: grid; place-items: center; cursor: pointer; z-index: 9; box-shadow: 0 2px 6px rgba(0,0,0,.5); padding: 0; }
+.mg-close:hover { background: #a8a8ad; transform: scale(1.08); }
+.monster-win .m-head .btn.x { display: none; }
+
