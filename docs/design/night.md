@@ -55,7 +55,32 @@ Auction listings pay out here in zł.
 
 Monster lowers Tiredness and blocks microsleeps while the boost lasts (see [desk.md](desk.md)).
 
+**Onboarding (the first night, #28).** No tutorial level and no walls of text; the first night teaches by
+happening.
+- **Title:** two lines (raid night, your girlfriend thinks you are doing spreadsheets; the RPG plays itself,
+  your job is to listen, hide and keep everyone happy) and "turn the sound on".
+- **How-to-hide card** (`howtoHtml`): opens when the first night starts and the night waits until "Got it"
+  (or Esc / Enter). Four tiles, two lines each: 1 Listen (the sounds, the last-heard line, hold the door to
+  peek), 2 Tab to Excel (footsteps: switch now, never wait for the handle), 3 Answer her (each visit wants
+  something else), 4 Headset (the Zone, but you are deaf to her). The pause menu reopens it.
+- **First-time tips** (`src/data/tips.ts`, `src/systems/tips.ts`): the first time each thing happens, one line
+  from her or the guild chat (Rafał and Jacek, your party) lands in the feed and stays pinned at its top for
+  `TIP_PIN_SEC`. Once per save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`)
+  and the plan on the wall (`TIP_PLAN_AT`). On events: footsteps, a pass, a catch, an end cue, a call, a
+  message, the dog, a yawn, the headset, her bedtime, a peek, the first loot, the first floor choice, the shower.
+- **Labelled cues on the first night:** the her-note names the hallway cue of each visit type (`VISIT_CUE`) and,
+  new, the cue that ends each activity (`END_HINT`: "The kettle clicked off. Tea, then maybe a snack run.").
+  Later nights rely on the sound.
+- Tests: `npx tsx test/tips.ts`, `python3 test/onboarding.py` (screens: `test/onb_*.png`).
+
 ## Decisions
+
+- **Onboarding by happening, not by a tutorial** (0.39): the slice is meant to be understood within 2 minutes
+  without being told. One card for the one rule you cannot learn by watching (Excel up before the door
+  opens), then each system explains itself once, in a friend's or her voice, when it first shows up. Tips go
+  to the feed, pinned, because on-screen toasts would cover the game and the door. Rejected: a scripted first
+  visit (it would teach the script, not the listening); the old title screen's eight bullets (nobody reads
+  them before playing); tips that repeat every night (noise after the first night).
 
 - **Earliest sleep 23:00.** Logging off at 20:00 used to earn 3 stars for free.
 - **Tiredness replaced the sleep-debt effects table** (yawn at 4 debt, shorter timers at 8, and so on).

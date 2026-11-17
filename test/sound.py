@@ -13,7 +13,7 @@ async def main():
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await pg.mouse.click(640, 360)
-        await act(pg, '[data-act=newGame]')
+        await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
         await pg.wait_for_timeout(2500)
         st = await pg.evaluate("()=>window.__lootnight.audio.soundStatus()")
         print('status', st)

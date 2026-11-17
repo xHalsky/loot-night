@@ -217,6 +217,8 @@ export const T = {
   ZONE_LUCK: 0.10,                // ...and +10% loot luck. Headset off empties Zone instantly.
   HEADSET_APT_VOLUME: 0.15,       // ...but apartment sounds are muffled and the map stops updating
   HEADSET_APT_LOWPASS: 500,       // Hz: what is left of her through the headset
+  // First-night onboarding (#28): tips pinned at the top of the feed, two timed ones on a fresh save
+  TIP_PIN_SEC: 9, TIP_HER_AT: 4, TIP_PLAN_AT: 40,
   // His face in the webcam view (#37, #38): reactions and status, no gameplay effect (yet: #39 poker face)
   HIS_GRIN_RARITY: 3,             // an epic or better drop makes him grin...
   HIS_GRIN_SEC: 2.5,              // ...for this long

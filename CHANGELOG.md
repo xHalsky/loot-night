@@ -3,6 +3,36 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.39.0 (2026-11-17)
+
+First-night onboarding (#28): the first night teaches by happening, no walls of text.
+
+- **Title screen:** the eight-bullet wall is gone. Two lines of pitch (raid night, she thinks you are doing
+  spreadsheets; the RPG plays itself, you listen, hide and keep everyone happy) and "turn the sound on".
+- **How-to-hide card:**
+  - Opens when the first night starts; the night waits until "Got it" (or Esc / Enter).
+  - Four tiles: Listen, Tab to Excel, Answer her, Headset.
+  - The pause menu has a "How to hide" button to reopen it.
+- **First-time tips:**
+  - The first time each thing happens, one line from her or the guild chat (Rafał and Jacek, your party) in
+    the feed, pinned at the top for 9 s so combat lines cannot bury it.
+  - Her opening line ("I'm watching my show, babe"); the plan on the wall after 40 s.
+  - On events: footsteps, a pass, a catch, an end cue, a call, a message, the dog, a yawn, the headset, her
+    bedtime, a peek, the first loot, the first floor choice, the shower.
+  - Once per save; a new game starts them over.
+- **Labelled cues on night 1:** besides the hallway cue of each visit, her note now names the cue that ends each
+  activity ("The kettle clicked off. Tea, then maybe a snack run."). The kettle's end cue is heard as
+  "KETTLE CLICK", so the last-heard line tells it apart from the boiling.
+- **Tests and sims:**
+  - New `test/tips.ts`: the card holds the night, tips once and pinned, kept in the save, reset by a new game.
+    Passes.
+  - New `test/onboarding.py`: the title, the card, the pause button, Esc, the pinned tip, the end-cue label.
+    Passes.
+  - The headless tests that run the game loop now close the card like a player would. While fixing that, a
+    broken insert had disabled the autopilot's and alt-tab's dungeon start for a moment; it was caught and
+    both run as before.
+  - Sims (4 good, 4 idle): good depth 9.8, visits 6.0, 0 catches; idle caught 1.0. No rule changes.
+
 ## 0.38.0 (2026-11-17)
 
 The webcam view's frame (#41).

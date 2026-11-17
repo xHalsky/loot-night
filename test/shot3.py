@@ -8,7 +8,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html')
         await pg.wait_for_timeout(300)
-        await pg.click('[data-act=newGame]', force=True)
+        await pg.click('[data-act=newGame]', force=True); await pg.evaluate("()=>{window.__lootnight.S.g.howto=false}")
         await pg.click('[data-act=gate]', force=True)
         await pg.wait_for_timeout(7000)
         await pg.screenshot(path='test/f1_map.png')

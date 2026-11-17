@@ -18,7 +18,7 @@ async def main():
         pg = await b.new_page(viewport={'width':1280,'height':720})
         errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
-        await act(pg,'[data-act=newGame]')
+        await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
         await pg.evaluate(GEAR); await pg.wait_for_timeout(300)
         bb = await pg.evaluate("()=>{const r=document.querySelector('[data-item=\"bag:b1\"]').getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
         await pg.screenshot(path='test/party_full3.png', clip={'x':960,'y':0,'width':320,'height':720})

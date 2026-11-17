@@ -87,8 +87,8 @@ screenshots every row (`test/peek_sheet.png`).
 read the cue, not just alt-tab every time. The type depends on what she was doing (`VISIT_BIAS`, table
 below); `VISIT_RANDOM` (25%) of the time it is drawn from `VISIT_FLAT` instead (Peek 2, Snack, Chat, Cuddle),
 so the activity is a good bet and never a promise. Cuddle is only drawn while she is happy (green). Woken
-visits are always Peeks. On the first night the her-note names the hallway cue (`VISIT_CUE`); later nights
-rely on the sound.
+visits are always Peeks. On the first night the her-note names the hallway cue (`VISIT_CUE`) and the cue that
+ends each activity (`END_HINT`); later nights rely on the sound. Onboarding: [night.md](night.md).
 
 **What she was doing predicts the visit** (`test/predict.ts` prints the odds):
 

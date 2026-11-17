@@ -54,7 +54,7 @@ function castReady() {
 /** Plays present until a fight of the wanted kind starts on floor >= minFloor. Returns a snapshot or null. */
 function reach(boss: boolean, minFloor: number): string | null {
   S.g = initialState();
-  startNight(); travelToDungeon();
+  startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */ travelToDungeon();
   for (let i = 0; i < 60 * 60 * 40; i++) {
     calm();
     const n = N();

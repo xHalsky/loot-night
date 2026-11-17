@@ -8,7 +8,7 @@ async def main():
         pg = await b.new_page(viewport={'width':1280,'height':720})
         errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html'); await pg.wait_for_timeout(500)
-        await act(pg,'[data-act=newGame]'); await act(pg,'[data-act=portal]')
+        await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]'); await act(pg,'[data-act=portal]')
         await pg.keyboard.press('F1'); await pg.wait_for_timeout(150); await act(pg,'[data-act=dbgBoss]'); await pg.keyboard.press('F1')
         await pg.wait_for_timeout(1200)
         r = await pg.evaluate("(()=>{const r=document.querySelector('.phone3d').getBoundingClientRect(); return [r.x+r.width/2, r.y+r.height/2]})()")

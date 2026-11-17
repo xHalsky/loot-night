@@ -19,7 +19,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html')
         await pg.wait_for_timeout(300)
-        await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=gate]')
+        await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=howtoClose]'); await act(pg, '[data-act=gate]')
         await pg.wait_for_timeout(500)
         await act(pg, '[data-act=openMonster]'); await pg.wait_for_timeout(200)
         await pg.screenshot(path='test/mo1.png', clip={'x':300,'y':10,'width':650,'height':410})

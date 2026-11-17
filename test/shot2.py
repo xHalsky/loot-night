@@ -8,7 +8,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html')
         await pg.wait_for_timeout(300)
-        await pg.click('[data-act=newGame]', force=True)
+        await pg.click('[data-act=newGame]', force=True); await pg.evaluate("()=>{window.__lootnight.S.g.howto=false}")
         await pg.keyboard.press('F1')
         await pg.click('[data-act=dbgGold]', force=True)
         await pg.click('[data-act=dbgSpeed][data-arg="1"]', force=True)

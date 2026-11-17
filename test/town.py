@@ -11,7 +11,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html')
         await pg.wait_for_timeout(600)
-        await act(pg,'[data-act=newGame]'); await pg.wait_for_timeout(1500)
+        await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]'); await pg.wait_for_timeout(1500)
         await pg.screenshot(path='test/t1_city.png')
         await pg.keyboard.press('F1'); await pg.wait_for_timeout(200); await act(pg,'[data-act=dbgGold]'); await act(pg,'[data-act=dbgGold]'); await pg.keyboard.press('F1')
         await act(pg,'[data-act=build][data-arg=training]'); await act(pg,'[data-act=build][data-arg=inn]'); await act(pg,'[data-act=build][data-arg=inn]')

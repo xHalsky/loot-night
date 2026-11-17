@@ -13,7 +13,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html')
         await pg.wait_for_timeout(300)
-        await act(pg, '[data-act=newGame]')
+        await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
         await act(pg, '[data-act=gate]')
         await pg.keyboard.press('F1')
         await act(pg, '[data-act=dbgSpeed][data-arg="10"]')

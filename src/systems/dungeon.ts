@@ -11,6 +11,7 @@ import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
 import { planCurios, curioDue, startCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
 import { triggerDog } from './pets';
+import { tip } from './tips';
 
 export const isBossBattle = () => { const n = N(); return !n.curioFight && n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
 
@@ -51,7 +52,7 @@ function floorEnd() {
   const n = N();
   S.g.heroes.forEach(h => reviveHero(h, T.DOWNED_REVIVE_PCT));
   sweepFloorLoot();
-  n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = [];
+  n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; tip('map');
 }
 
 export function chooseNextFloor(bagId: string | null) {

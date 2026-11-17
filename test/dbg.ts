@@ -5,7 +5,7 @@ import { startNight } from '../src/systems/night';
 import { travelToDungeon, chooseNextFloor } from '../src/systems/dungeon';
 import { altTab } from '../src/systems/excel';
 import { skipDrop } from '../src/systems/loot';
-S.g = initialState(); startNight(); travelToDungeon();
+S.g = initialState(); startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */ travelToDungeon();
 let prev = '';
 for (let t = 0; t < 200; t += 1/60) {
   const n = N(); const v = n.visit.stage;

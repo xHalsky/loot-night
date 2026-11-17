@@ -9,7 +9,7 @@ async def main():
         pg = await b.new_page(viewport={'width':1280,'height':720})
         errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
-        await act(pg,'[data-act=newGame]')
+        await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
         await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.checkpoint=5;}")
         await act(pg,'[data-act=portal]')
         await pg.evaluate("()=>{const S=window.__lootnight.S; S.g.heroes.forEach(h=>{h.level=4}); const n=S.g.night; n.battleIdx=2;}")

@@ -4,7 +4,7 @@ import { step } from '../src/core/loop';
 import { startNight } from '../src/systems/night';
 import { travelToDungeon, chooseNextFloor } from '../src/systems/dungeon';
 import { skipDrop } from '../src/systems/loot';
-S.g = initialState(); startNight(); travelToDungeon();
+S.g = initialState(); startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */ travelToDungeon();
 N().visit.t = 1e9; N().nextInterruptAt = 1e9;
 let bt = 0, battles = 0, inB = false, drops = 0, t = 0;
 while (t < 480) {

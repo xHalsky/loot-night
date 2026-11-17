@@ -13,6 +13,7 @@ import { startCuddle } from './cuddle';
 import { towelSteps } from './preemptive';
 import { addBuff } from './curios';
 import { addGoodwill, tryForgive } from './goodwill';
+import { tip } from './tips';
 
 // Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
 // Each visit type asks for a different answer:
@@ -55,6 +56,7 @@ export function pickKind(from: string, woken = false, green = moodZone(N().mood)
 export function startVisit(woken = false, kind?: VisitKind) {
   const v = N().visit;
   if (v.stage !== 'idle') return;
+  tip('steps');
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && !N().apt.forceKind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
@@ -200,7 +202,7 @@ function check() {
     v.result = 'chat'; v.t = T.CHAT_ASK_SEC + 1;
     return;
   }
-  v.result = 'pass';
+  v.result = 'pass'; tip('pass');
   addMood(T.PEEK_PASS_MOOD);
   toast(`Peek passed. ${pick(PEEK_PASS)}`, '#6fcf7f'); sfx.good();
 }
@@ -296,6 +298,7 @@ function caught() {
     toast(`"It's a team-building exercise, for work." She squints. She buys it. Once. Mood +${T.AFFIX_EXCUSE_MOOD}.`, '#ff7ab8'); sfx.good();
     return;
   }
+  tip('caught');
   if (tryForgive()) {   // Goodwill 60+: once a night she lets it go (and leaves: no second look)
     n.visit.result = 'forgiven'; n.visit.chat = null; n.visit.t = 1.8;
     toast(`She sees the game. Sighs. "I know, I know. Raid night." Forgiven (Goodwill -${T.GOODWILL_FORGIVE}).`, '#ff9ab8'); sfx.kiss();

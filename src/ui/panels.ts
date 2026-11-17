@@ -7,6 +7,7 @@ import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGam
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
 import { specialText, hasLife } from '../systems/affixes';
+import { END_HINT } from '../data/tips';
 import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
 import { preBlocked, nextMult } from '../systems/preemptive';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
@@ -56,6 +57,7 @@ export function doorInfoHtml(): string {
   const v = n.visit;
   let kicker = 'her', txt = n.headset ? 'In the zone. She could be anywhere.' : 'She is busy with her own thing.', cls = 'calm';
   if (v.stage === 'idle' && n.apt.asleep) { kicker = 'bedroom'; txt = 'She is asleep. Shh, keep it quiet.'; }
+  if (v.stage === 'idle' && S.g.nightsPlayed === 0 && n.apt.cued && !n.headset && END_HINT[n.apt.activity]) { kicker = 'listen'; txt = END_HINT[n.apt.activity]; cls = 'warn'; }   // first night: name the tell
   if (v.stage === 'far' && !n.headset) { kicker = 'footsteps'; txt = 'Footsteps... is she coming?'; cls = 'warn'; }
   if (v.stage === 'hall') { kicker = 'at the door'; txt = S.g.nightsPlayed === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; cls = 'alarm'; }
   if (v.stage === 'handle') { kicker = 'door'; txt = 'The handle is turning!'; cls = 'alarm'; }
@@ -213,9 +215,10 @@ export function planHtml(): string {
 export function feedHtml(): string {
   const n = S.g.night;
   if (!n) return '';
-  const lines = n.log.slice(-9).map(l => `<div class="fl"><i>[${l.time}]</i> <span style="color:${l.color}">${esc(l.text)}</span></div>`).join('');
+  const lines = n.log.filter(l => l.text !== n.tip?.text).slice(-9).map(l => `<div class="fl"><i>[${l.time}]</i> <span style="color:${l.color}">${esc(l.text)}</span></div>`).join('');
+  const pin = n.tip ? `<div class="fl tip" style="color:${n.tip.color}">${esc(n.tip.text)}</div>` : '';
   return `<div class="feed-tabs"><b>General</b><span>Combat</span><span>Loot</span><span>Her</span></div>
-    <div class="feed-body">${lines || '<div class="fl dim">Welcome to Loot Night. Have fun, don\'t get caught.</div>'}</div>
+    ${pin}<div class="feed-body">${lines || '<div class="fl dim">Welcome to Loot Night. Have fun, don\'t get caught.</div>'}</div>
     <div class="feed-input">Press Enter to chat...</div>`;
 }
 
@@ -724,20 +727,10 @@ export function screenHtml(): string {
     return `<div class="screen"><div class="card">
       <div class="kicker">PROTOTYPE v${VERSION} · NIGHT 1 · MONDAY</div>
       <h1>Loot Night</h1>
-      <p>Grind a loot-obsessed MMO all night. Keep your girlfriend, your mom and your boss off your back.</p>
-      <ul>
-        <li><b>RPG:</b> the party auto-fights. Fire skills (1-2, Q-W, A-S): they go off instantly, click bag items to equip, pick the next floor.</li>
-        <li><b>Alt-tab:</b> <kbd>Tab</kbd> flips to Excel, but switching takes 1-2.5 s (old fullscreen game): commit early. If Excel is on screen when she looks, you pass. Excel is a slow spreadsheet Tetris (A/D move, W rotate, Space drop): optional, filled rows pay overtime gold. While you hide, the party plays recklessly.</li>
-        <li><b>The door:</b> listen for footsteps. When her shadow shows, be on Excel. Each visit wants something different: learn the sounds.</li>
-        <li><b>After midnight</b> she goes to bed: loud play (crits, bosses, vaults) wakes her. Answer her text or she gets up.</li>
-        <li><b>Apartment map:</b> track her by sound (TV, kettle, shower, steps). Long shower = safe time. Headset (<kbd>H</kbd>): after 30 s on you are in the <b>Zone</b> (Flow +25% faster, +10% loot luck), but she is muffled: no far footsteps, map goes stale. Taking it off to listen empties the Zone.</li>
-        <li><b>Phone:</b> Mom calls (slide to answer), the boss and your girlfriend message (hold to face-unlock). Answer before the timer runs out.</li>
-        <li><b>Tired:</b> after 22:00 you get sleepy. Eyelids drift shut: click or press any key to snap awake. <b>Monster</b> (on the desk): open the fridge, grab a can, click it open, hold to drink, fling the empty into the bin. Party +30% speed for 60 s, Tiredness -35, then a short crash.</li>
-        <li><b>Bedtime 01:00.</b> Playing later costs sleep debt. Dawn ends the night.</li>
-        <li><kbd>Esc</kbd> pause · <kbd>F1</kbd> debug</li>
-      </ul>
+      <p>Raid night. Your guild needs you, the loot is dropping, and your girlfriend thinks you are doing spreadsheets.</p>
+      <p class="dim">The RPG plays itself. Your job: listen, hide, and keep her, your mom, your boss and the dog happy until dawn.</p>
       <div class="row">${hasSave() ? btn('continue', `Continue · night ${g.nightsPlayed + 1}`, '', 'wide gold') + btn('newGame', 'New game', '', 'wide') : btn('newGame', 'Start Monday night', '', 'wide gold')}</div>
-      <p class="dim">Turn sound on: footsteps are your early warning.</p>
+      <p class="dim">Turn the sound on: her footsteps are your early warning. <kbd>Esc</kbd> pause.</p>
     </div></div>`;
   }
   if (g.screen === 'results' && g.results) {
@@ -785,7 +778,27 @@ export function screenHtml(): string {
 }
 
 export function pauseHtml(): string {
-  return S.g.paused && S.g.screen === 'night' ? `<div class="screen dark"><div class="card"><h1>Paused</h1><p class="dim">The screen is blacked out so pausing can't be used to peek.</p><div class="row">${btn('resume', 'Resume', '', 'wide gold')}</div></div></div>` : '';
+  if (S.g.howto && S.g.screen === 'night') return howtoHtml();
+  return S.g.paused && S.g.screen === 'night' ? `<div class="screen dark"><div class="card"><h1>Paused</h1><p class="dim">The screen is blacked out so pausing can't be used to peek.</p><div class="row">${btn('resume', 'Resume', '', 'wide gold')}${btn('howtoOpen', 'How to hide', '', 'wide')}</div></div></div>` : '';
+}
+
+/** The one-screen how-to-hide card (#28): opens the first night, and from the pause menu. The night waits. */
+const HOWTO: [string, string, string][] = [
+  ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.',
+    '<rect x="14" y="6" width="22" height="34" rx="2" fill="#4a4a54"/><rect x="14" y="40" width="22" height="3" fill="#ffcf7a"/><path d="M40 16q5 7 0 14M44 12q8 11 0 22" stroke="#ff9ab8" stroke-width="2.4" fill="none"/>'],
+  ['Tab to Excel', 'Footsteps? Press <kbd>Tab</kbd> now. Switching takes a second or two, so never wait for the handle.',
+    '<rect x="4" y="16" width="20" height="16" rx="3" fill="#3a3a44"/><text x="14" y="28" font-size="9" fill="#fff" text-anchor="middle" font-family="Inter">Tab</text><path d="M26 24h6" stroke="#fff" stroke-width="2"/><rect x="34" y="12" width="20" height="24" rx="3" fill="#1d7a44"/><text x="44" y="29" font-size="13" fill="#fff" text-anchor="middle" font-weight="700" font-family="Inter">X</text>'],
+  ['Answer her', 'Each visit wants something else. Plates clinking: hide your cans. Humming: talk to her. Slow steps: a cuddle.',
+    '<rect x="8" y="8" width="42" height="28" rx="6" fill="#fff4f2"/><path d="M18 36l-4 8 10-8" fill="#fff4f2"/><text x="29" y="27" font-size="16" fill="#e8657f" text-anchor="middle" font-family="Patrick Hand">?!</text>'],
+  ['Headset (H)', 'After 30 s on you are in the Zone: faster Flow, more loot. But you cannot hear her coming.',
+    '<path d="M14 30a15 15 0 0 1 30 0" stroke="#6a6a78" stroke-width="5" fill="none"/><rect x="9" y="27" width="9" height="15" rx="3" fill="#55555f"/><rect x="40" y="27" width="9" height="15" rx="3" fill="#55555f"/><rect x="10" y="30" width="2" height="9" fill="#9a6bff"/><rect x="46" y="30" width="2" height="9" fill="#9a6bff"/>'],
+];
+export function howtoHtml(): string {
+  const tiles = HOWTO.map(([h, p, svg], i) => `<div class="ht-tile"><svg viewBox="0 0 58 48" width="58" height="48">${svg}</svg><b><i>${i + 1}</i> ${h}</b><p>${p}</p></div>`).join('');
+  return `<div class="screen howto"><div class="card"><div class="kicker">MONDAY, 20:00 · HOW TO HIDE</div>
+    <div class="ht-grid">${tiles}</div>
+    <p class="dim">The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts); when they run out she pulls the plug.</p>
+    <div class="row">${btn('howtoClose', 'Got it', '', 'wide gold')}</div></div></div>`;
 }
 
 export function debugHtml(): string {

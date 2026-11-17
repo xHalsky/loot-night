@@ -3,6 +3,7 @@ import { N } from '../core/state';
 import { rand, randi } from '../core/rng';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
+import { tip } from './tips';
 
 // The dog (docs/design/desk.md). He jumps up at the desk for attention: pet him (a minigame on the desk, no window)
 // and he lies back down at your feet for a while. Ignore him 1-3 times (random) and he bumps the desk:
@@ -20,7 +21,7 @@ export function updateDog(dt: number) {
   d.flinch = Math.max(0, d.flinch - dt);
   if (d.stage === 'away') {
     d.next -= dt;
-    if (d.next <= 0 && !n.unplugged) { d.stage = 'up'; d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweetPet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); }
+    if (d.next <= 0 && !n.unplugged) { d.stage = 'up'; d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweetPet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); tip('dog'); }
     return;
   }
   if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC); } return; }

@@ -11,7 +11,7 @@ import { startVisit } from '../src/systems/visits';
 
 function trial(cue: 'hall' | 'handle'): string {
   S.g = initialState();
-  startNight(); travelToDungeon();
+  startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */ travelToDungeon();
   const n = N();
   n.interrupts = []; n.nextInterruptAt = 1e9; n.dog.next = 1e9;
   startVisit(false, 'peek');

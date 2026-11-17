@@ -5,7 +5,7 @@ import type { ActivityId, Room } from '../core/state';
 export interface ActivityDef { id: ActivityId; room: Room; label: string; sound: string; end: string; dur: [number, number]; weight: number }
 export const ACTIVITIES: ActivityDef[] = [
   { id: 'tv', room: 'living', label: 'Watching TV', sound: 'TV', end: 'CREDITS', dur: [20, 35], weight: 5 },
-  { id: 'tea', room: 'kitchen', label: 'Making tea', sound: 'KETTLE', end: 'KETTLE', dur: [10, 18], weight: 2 },
+  { id: 'tea', room: 'kitchen', label: 'Making tea', sound: 'KETTLE', end: 'KETTLE CLICK', dur: [10, 18], weight: 2 },
   { id: 'toilet', room: 'bathroom', label: 'Bathroom', sound: 'FLUSH', end: 'TAP', dur: [8, 12], weight: 1 },
   { id: 'phone', room: 'bedroom', label: 'On her phone', sound: '', end: 'BYE LOVE YOU', dur: [15, 25], weight: 2 },
   { id: 'shower', room: 'bathroom', label: 'Shower', sound: 'SHOWER', end: 'HAIR DRYER', dur: [90, 120], weight: 0 },

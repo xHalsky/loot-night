@@ -3,6 +3,7 @@ import { hasLife } from './affixes';
 import { S, N } from '../core/state';
 import { rand } from '../core/rng';
 import { toast } from '../core/fx';
+import { tip } from './tips';
 
 // Tiredness: the live form of sleep debt (docs/design/night.md).
 // 30+: yawns blur the desk. 50+: microsleeps (eyelids drift shut, any click or key snaps them open).
@@ -23,7 +24,7 @@ export function updateTired(dt: number, clockDelta: number) {
   // Yawns.
   if (n.tired >= T.TIRED_YAWN) {
     n.nextYawn -= dt;
-    if (n.nextYawn <= 0) { n.nextYawn = T.YAWN_EVERY_SEC * (1.3 - n.tired / 200); n.yawn = T.YAWN_SEC; }
+    if (n.nextYawn <= 0) { n.nextYawn = T.YAWN_EVERY_SEC * (1.3 - n.tired / 200); n.yawn = T.YAWN_SEC; tip('yawn'); }
   }
   n.yawn = Math.max(0, n.yawn - dt);
 

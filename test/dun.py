@@ -8,7 +8,7 @@ async def main():
         pg = await b.new_page(viewport={'width':1280,'height':720})
         errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html'); await pg.wait_for_timeout(500)
-        await act(pg,'[data-act=newGame]'); await act(pg,'[data-act=portal]')
+        await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]'); await act(pg,'[data-act=portal]')
         await pg.wait_for_timeout(1500); await pg.screenshot(path='test/dn1.png')
         await pg.keyboard.press('h')
         for i in range(40):

@@ -102,6 +102,8 @@ const actions: Record<string, (arg: string) => void> = {
   startNight: () => startNight(),
   morning: () => toMorning(),
   resume: () => { S.g.paused = false; },
+  howtoOpen: () => { S.g.paused = false; S.g.howto = true; },
+  howtoClose: () => { S.g.howto = false; },
   altTab: () => { if (S.g.night) altTab(); },
   showRpg: () => { if (S.g.night && N().monitor !== 'rpg') altTab(); },
   showExcel: () => { if (S.g.night && N().monitor !== 'excel') altTab(); },
@@ -348,6 +350,7 @@ window.addEventListener('keydown', ev => {
   if (ev.key === 'F1') { ev.preventDefault(); g.debug = !g.debug; return; }
   if (g.screen !== 'night' || !g.night) return;
   const n = g.night;
+  if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); g.howto = false; } return; }   // the card: the night waits
   if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } g.paused = !g.paused; return; }
   if (g.paused) return;
   if (n.switching) { ev.preventDefault(); return; }
@@ -408,7 +411,7 @@ function render() {
     el('desk').classList.toggle('yawn', n.yawn > 0);
     el('ui').classList.toggle('dimmed', n.monitor === 'excel');
   }
-  if (g.screen !== 'night' || g.paused) stopAmbience();   // her TV does not follow you to the title or the morning
+  if (g.screen !== 'night' || g.paused || g.howto) stopAmbience();   // her TV does not follow you to the title or the morning
   setHtml('screens', screenHtml());
   const ma = document.getElementById('morningArt') as HTMLCanvasElement | null;
   if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());

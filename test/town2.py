@@ -11,7 +11,7 @@ async def main():
         pg = await b.new_page(viewport={'width':1280,'height':720})
         errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html'); await pg.wait_for_timeout(600)
-        await act(pg,'[data-act=newGame]'); await pg.wait_for_timeout(500)
+        await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]'); await pg.wait_for_timeout(500)
         for a in ['dbgEpic','dbgLeg','dbgMap','dbgMap']: await dbg(pg,a)
         await act(pg,'[data-act=portal]'); await pg.wait_for_timeout(1500)
         await dbg(pg,'dbgFloor'); await pg.wait_for_timeout(5000)

@@ -873,3 +873,13 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #planUi svg { display: block; margin: 0 auto; }
 #planUi .plan-foot { font-size: 15px; line-height: 1.15; margin-top: 6px; color: #cfe2ff; }
 #planUi .mg-close { right: -10px; top: -10px; }
+
+/* First-night onboarding (#28): the pinned tip in the feed, the how-to-hide card */
+.fl.tip { font-size: 12px; padding: 3px 6px; margin: 2px 5px 0; background: rgba(126,224,138,.10); border-left: 3px solid currentColor; animation: tipIn .4s ease-out; }
+@keyframes tipIn { from { background: rgba(255,255,255,.28); } }
+.screen.howto .card { width: 640px; }
+.ht-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 8px; }
+.ht-tile { display: grid; grid-template-columns: 58px 1fr; grid-template-rows: auto 1fr; column-gap: 10px; background: rgba(255,255,255,.05); border-radius: 8px; padding: 8px 10px; text-align: left; }
+.ht-tile svg { grid-row: span 2; }
+.ht-tile b { font-size: 15px; } .ht-tile b i { font-style: normal; color: #f2b84b; }
+.ht-tile p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.3; opacity: .85; }

@@ -11,6 +11,7 @@ import { MOM_LINES, MOM_REPLIES, COURIER_TALKS, FRIENDS_TALKS, type TalkStep } f
 import { weighted } from '../core/rng';
 import { deliverPackage, entryName } from './loot';
 import { addBuff } from './curios';
+import { tip } from './tips';
 
 export const BOSS_MSGS = ['you there?', 'quick question', 'need the Q4 totals for the deck', 'asap pls', 'hello??'];
 export const HER_MSGS = ['are you coming to bed?', 'babe', 'its really late', 'hello??'];
@@ -48,6 +49,7 @@ export function spawnInterrupt(kind?: InterruptKind) {
   n.interrupts.push({ kind: k, t: max, max, msgs: [], pend, pingAt: -9 });
   n.callsTonight[k] = (n.callsTonight[k] ?? 0) + 1;
   if (isCall(k)) sfx.vibCall();
+  tip(isCall(k) ? 'call' : 'message');
   return true;
 }
 

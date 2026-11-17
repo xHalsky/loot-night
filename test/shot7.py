@@ -8,7 +8,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html')
         await pg.wait_for_timeout(300)
-        await pg.evaluate("document.querySelector('[data-act=newGame]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}))")
+        await pg.evaluate("document.querySelector('[data-act=newGame]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}))"); await pg.evaluate("()=>{window.__lootnight.S.g.howto=false}")
         await pg.evaluate("document.querySelector('[data-act=gate]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}))")
         await pg.wait_for_timeout(5500)
         await pg.keyboard.press('w')

@@ -68,7 +68,8 @@ listening, so her sounds are the most important ones in the game.
   `step_1.mp3` for variants) replaces that cue. The F1 debug panel has a sound board with every cue.
 - `python3 test/sound.py` (Chrome): every file decodes, loop points, loops following her, the headset.
 
-**Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`.
+**Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`, a two-line pitch and "turn the sound
+on". The first night opens with the how-to-hide card ([night.md](night.md), Onboarding).
 
 **The webcam view** (`src/ui/door.ts`, him in `src/ui/him.ts`; #36, #40). The left panel is what the webcam on
 top of his monitor sees (a small webcam sits on the monitor bezel so the framing reads). His room is dark:

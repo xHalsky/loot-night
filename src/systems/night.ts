@@ -27,7 +27,7 @@ export function newNight(): Night {
     excel: newExcel(),
     taunt: 0, ward: 0, rally: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
     callsTonight: {}, pre: null, preUses: {}, preMenu: null, towel: false, herReply: null,
-    curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0,
+    curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,
     market: Math.round(rand(...T.MARKET_RANGE) * 100) / 100, reveal: null,
@@ -45,6 +45,7 @@ export function startNight() {
   scheduleInterrupt(true);
   S.g.screen = 'night';
   S.g.paused = false;
+  S.g.howto = S.g.nightsPlayed === 0;   // the first night opens with the how-to-hide card (#28)
   toast('Monday, 20:00. Town is quiet. Hit the Dungeon Gate.', '#8fb3ff');
 }
 

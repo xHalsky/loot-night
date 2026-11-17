@@ -165,6 +165,7 @@ export interface Night {
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
+  tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
   moodDrift: number;
   selected: string | null; heroTab: number;
   everCaught: boolean; unidentifiedFound: number;
@@ -194,6 +195,8 @@ export interface GameState {
   sleepDebt: number;
   monsters: number;
   bestStars: number; record: number; nightsPlayed: number;
+  tipsSeen: string[];   // first-time tips already shown (#28)
+  howto: boolean;       // the how-to-hide card is open (the night waits)
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back
   goodwill: number;              // her Goodwill bank, 0-100 (systems/goodwill.ts); half carries over
@@ -216,7 +219,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, seen: [], curiosSeen: [], goodwill: 0,
+    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0,
     pendingListings: [], pity: 0, uid: 1,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1,
     results: null, morning: null,

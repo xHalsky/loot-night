@@ -15,19 +15,21 @@ import { updateDungeon } from '../systems/dungeon';
 import { updateDrops } from '../systems/loot';
 import { checkNightEnd } from '../systems/night';
 import { updateHim } from '../systems/him';
+import { updateTips } from '../systems/tips';
 
 const STEP = 1 / 60;
 
 /** One fixed step of the game, systems see docs/design/tech.md. */
 export function step(dt: number) {
   const g = S.g;
-  if (g.screen !== 'night' || g.paused || !g.night) return;
+  if (g.screen !== 'night' || g.paused || g.howto || !g.night) return;
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
   updatePre(dt);
   updateCurioTimers(dt);   // party buffs, Rafał's sulk
   updateVisits(dt);
   updatePeek(dt);
   updateHim(dt);
+  updateTips(dt);
   updateLap(dt);
   updateDog(dt);
   const busyWithHer = !!g.night.lap || g.night.game?.kind === 'cuddle';

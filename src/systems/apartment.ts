@@ -9,6 +9,7 @@ import { spawnInterrupt } from './interrupts';
 import { hasLife } from './affixes';
 import { towelNoise, towelPace, towelSteps } from './preemptive';
 import { addGoodwill } from './goodwill';
+import { tip } from './tips';
 
 // Where she is between visits (docs/design/her.md, FNAF layer).
 // You track her by sound; the headset muffles it (and costs your Zone to take off); after midnight she sleeps.
@@ -45,13 +46,14 @@ function goToBed(wake = 0) {
   a.activity = 'sleep'; a.room = 'bedroom'; a.asleep = true; a.wake = wake; a.textSent = false;
   a.t = 99999; a.moving = T.APT_MOVE_SEC; a.soundT = 1; a.cued = false;
   if (first || wake > 0) toast(first ? 'She went to bed. Keep the Noise down.' : 'She went back to bed.', '#b98cff');
+  if (first) tip('bed');
 }
 
 function pickActivity() {
   const n = N();
   const a = n.apt;
   let id: ActivityId;
-  if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < T.BED_FROM && chance(T.SHOWER_CHANCE)) { id = 'shower'; a.showerUsed = true; }
+  if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < T.BED_FROM && chance(T.SHOWER_CHANCE)) { id = 'shower'; a.showerUsed = true; if (!n.headset) tip('shower'); }
   else {
     const pool = ACTIVITIES.filter(x => x.weight > 0 && x.id !== a.activity);
     id = pool[weighted(pool.map(x => x.weight))].id;
@@ -107,7 +109,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   // High Noise makes her wrap up whatever she is doing (except the shower).
   a.t -= dt * (heardNoise() > 70 ? 2 : 1) * towelPace();   // the towel: she gets up less often
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
-    a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end);
+    a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end); if (!n.headset) tip('endcue');
   }
   const gap = n.threat - a.lastVisitEnd;
   if (a.t > 0 && !(a.forceDoor && gap >= T.DOOR_MIN_GAP_SEC)) return null;
@@ -167,6 +169,7 @@ export function sendHerSoon() { const a = N().apt; if (a.asleep) return; a.force
 export function toggleHeadset() {
   const n = N();
   n.headset = !n.headset;
+  if (n.headset) tip('headset');
   if (!n.headset && n.zone > 0) toast('Headset off: Zone lost.', '#ff9a4d');
   setHeadset(n.headset);
   sfx.click();

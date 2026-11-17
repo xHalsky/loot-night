@@ -36,7 +36,7 @@ function tryEquip() {
 const mode = process.argv[2] ?? 'good';   // good | idle
 const sleepAt = Number(process.argv[3] ?? T.BEDTIME);
 S.g = initialState();
-startNight();
+startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */
 travelToDungeon();
 const dt = 1 / 60;
 let t = 0, caught = 0, visits = 0, wipes = 0;

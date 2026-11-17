@@ -10,7 +10,7 @@ async def main():
         pg = await b.new_page(viewport={'width':1280,'height':720})
         errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/lootnight/dist/index.html'); await pg.wait_for_timeout(500)
-        await act(pg,'[data-act=newGame]'); await act(pg,'[data-act=portal]')
+        await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]'); await act(pg,'[data-act=portal]')
         await dbg(pg,'dbgMom'); await pg.wait_for_timeout(400)
         await pg.screenshot(path='test/r1.png', clip={'x':280,'y':440,'width':200,'height':280})
         r = await pg.evaluate("(()=>{const r=document.querySelector('[data-decline]').getBoundingClientRect(); return [r.x+r.width/2, r.y+r.height/2]})()")
