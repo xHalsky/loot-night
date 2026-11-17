@@ -480,7 +480,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #door .apt-foot .muffled { color: #c46a1d; }
 .her-note { background: #fff4f2; color: #5a2d3c; border-radius: 10px; padding: 5px 10px 6px; box-shadow: 0 3px 0 rgba(0,0,0,.35); transform: rotate(-.6deg); }
 .her-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.her-btn { font-family: 'Patrick Hand', sans-serif; font-size: 15px; line-height: 1; padding: 4px 7px; border-radius: 8px; border: 1.5px solid #c9708a; background: #fff; color: #5a2d3c; cursor: pointer; }
+.her-btn { font-family: 'Patrick Hand', sans-serif; font-size: 15px; line-height: 1; padding: 3px 7px; border-radius: 8px; border: 1.5px solid #c9708a; background: #fff; color: #5a2d3c; cursor: pointer; }
 .her-btn:hover { background: #ffe1ea; }
 .her-btn.big { background: #e8657f; color: #fff; border-color: #b84562; }
 .cuddle-win { position: absolute; left: 98px; top: 8px; background: radial-gradient(ellipse at 50% 40%, #5a2c4a, #2a1428 70%); border-radius: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,180,210,.25); color: #ffe6ef; font-family: 'Patrick Hand', sans-serif; cursor: none; overflow: hidden; }
@@ -710,7 +710,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 /* ===== Layout v4: tall door, feed in the right panel ===== */
 #doorCanvas { top: 0 !important; }
 #herHead { top: 6px !important; }
-#doorInfo { top: 400px !important; gap: 4px !important; }
+#doorInfo { top: 535px !important; gap: 4px !important; }   /* under the webcam view (#36) */
 .bp { width: 168px !important; }
 .bp .apt-foot { font-size: 11px !important; }
 #door .her-note div { font-size: 15px; }
@@ -851,8 +851,24 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 /* the shower panel over the apartment map (#22) */
 #showerCanvas { position: absolute; display: none; width: 176px; height: 176px; border-radius: 4px; z-index: 3; pointer-events: none; image-rendering: auto; box-shadow: 0 0 0 2px #fff4f2; }
 /* Last-heard caption (#33): one line between the door and the her-note */
-.heard { font: 17px/1.1 'Patrick Hand', sans-serif; color: #ffd1dc; padding: 1px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .3px; }
+.heard { font: 16px/1.1 'Patrick Hand', sans-serif; color: #ffd1dc; padding: 1px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .3px; }
 .heard i { font-style: normal; color: #ff9ab8; margin-right: 2px; }
 .heard.stale { opacity: .5; }
 .heard.stale b { font-weight: 400; color: #fff; margin-right: 2px; }
-.heard.muffled { color: #e0a070; }
+.heard.muffled { color: #e0a070; font-size: 15px; letter-spacing: 0; }
+
+/* Webcam view (#36): the camera on top of his monitor */
+.webcam { position: absolute; left: 324px; top: 4px; width: 32px; height: 12px; border-radius: 6px; background: #17131c; border: 1px solid #3a3044; z-index: 3; }
+.webcam i { position: absolute; left: 11px; top: 2px; width: 8px; height: 8px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #6a7aa8, #0b0b12 70%); }
+.webcam::after { content: ''; position: absolute; right: 4px; top: 4px; width: 3px; height: 3px; border-radius: 50%; background: #52e07a; box-shadow: 0 0 4px #52e07a; }
+/* The plan taken off the wall (#35) */
+#planUi { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
+#planUi .plan-back { position: absolute; inset: 0; pointer-events: auto; background: rgba(10,6,14,.35); }
+#planUi .plan-sheet { position: absolute; left: 30px; top: 110px; width: 364px; padding: 10px 12px 10px; background: #1d4f91; border-radius: 6px; transform: rotate(-1deg);
+  box-shadow: 0 10px 40px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.15); font-family: 'Patrick Hand', sans-serif; color: #eaf3ff; }
+#planUi .plan-sheet::before, #planUi .plan-sheet::after { content: ''; position: absolute; top: -8px; width: 54px; height: 16px; background: rgba(240,230,200,.75); }
+#planUi .plan-sheet::before { left: 18px; transform: rotate(-6deg); } #planUi .plan-sheet::after { right: 18px; transform: rotate(5deg); }
+#planUi .plan-title { font-size: 22px; margin-bottom: 4px; } #planUi .plan-title small { font-size: 14px; opacity: .75; margin-left: 6px; }
+#planUi svg { display: block; margin: 0 auto; }
+#planUi .plan-foot { font-size: 15px; line-height: 1.15; margin-top: 6px; color: #cfe2ff; }
+#planUi .mg-close { right: -10px; top: -10px; }

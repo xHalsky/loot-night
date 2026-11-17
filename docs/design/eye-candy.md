@@ -11,6 +11,7 @@ explicit. A birthday gift gets shown around.
 
 | Moment | Where | Detail in |
 |---|---|---|
+| Her in the doorway behind his face (0.35): the key screenshot. He sits low on the left in the webcam view and never covers her, the crack or her toes | Webcam view | [screen.md](screen.md) |
 | Barefoot at the door in every outfit, painted toenails | Door | [her.md](her.md) |
 | Outfit by activity (off-shoulder tee and shorts, oversized hoodie, tank top, towel wrap and turban, sleep shirt) | Door | her.md |
 | Lean visit: leaning on the frame, one foot against her calf, blush and wink | Door | her.md |
@@ -18,7 +19,7 @@ explicit. A birthday gift gets shown around.
 | Through the crack (0.34): her at the kitchen counter from behind (bare legs, the hoodie, the pink clip), her bare feet on the sofa armrest in the TV light, the frosted shape in the bathroom door's glass with steam leaking out | Door crack | her.md, Peeking |
 | She sits on your desk: first person, thighs up, three poses | Desk | her.md |
 | Morning vignette by how the night ended (0.32): green, asleep in your shirt hugging your pillow; yellow, back turned, her phone still lit; red, asleep on the couch in the TV light; unplugged, an empty bed and a note "Hope the loot was worth it." Bare soles toward you in the first three | Morning screen | `drawHerBed` in `src/ui/her.ts` |
-| Shower panel (0.32): while she showers and you can hear it (headset off, no visit, not peeking), the apartment map becomes a frosted glass cabin: her blurred silhouette swaying, water streaks, steam, drips. The fog thickens through the shower; at the hair dryer cue the water stops and the glass clears bottom-up, then it cuts back to the map when she moves | Door panel, over the map | `drawShowerPanel` |
+| Shower daydream (0.32, a thought bubble since 0.35): while she showers and you can hear it (headset off, no visit, not peeking), a thought bubble rises from his head in the webcam view: the frosted glass cabin, her blurred silhouette swaying, water streaks, steam, drips. The fog thickens through the shower; at the hair dryer cue the water stops and the glass clears bottom-up; it pops when she moves | Webcam view, over the door's left half | `drawShowerPanel`, `daydream` in door.ts |
 | Hoodie walk-by (0.32): green Mood at bedtime, she stops at your door in your dark gaming hoodie (guild logo, sleeves over her hands), sleepy: "Night, babe. Don't stay up too late." Mood −5, no check, once a night, then bed | Door | [her.md](her.md) visit table |
 
 ## Planned (#22)

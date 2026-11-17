@@ -3,6 +3,34 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.35.0 (2026-11-17)
+
+Left panel rework, part 2: the blueprint panel is gone; the left panel is the webcam view of him (#36) with the
+plan taped on the wall (#35).
+
+- **The webcam view (#36):** the left panel is what the webcam on top of his monitor sees: him low on the left
+  in a gaming chair, facing the camera, your door behind him at its old size, the floor running toward the
+  camera. A small webcam sits on the monitor bezel. He overlaps only the door frame, never the doorway, the
+  crack, the light gap or her toes. While peeking he turns around (the back of his head). The headset shows on
+  his head while worn. New art: `src/ui/him.ts` (one head pose, expression and gear layers ready for #37,
+  #38).
+- **The plan on the wall (#35):** the blueprint is a taped sheet left of the door. Click it to open it large
+  over the panel (the plan, the line of sight, a line on which rooms are next to yours), with the game still
+  running; close with ✕, Esc or a click outside.
+- **The shower panel became his daydream:** it used to sit over the map; now a thought bubble rises from his
+  head with the frosted cabin (same rules: headset off, no visit, not peeking).
+- **The space under the view:**
+  - The last-heard line hides while she stands in the doorway.
+  - The "before" row hides during a visit; every action said "too late" then.
+  - So the tallest note (a chat question with three answers) fits without pushing the stats off.
+  - The headset line is shorter, and her note under the headset reads "In the zone. She could be anywhere."
+- **Tests and sims:**
+  - New `test/webcam.py`: screenshots of idle, peeking, her in the doorway, a pass, the headset, the shower
+    daydream, her toes and a chat; checks that the plan opens and that ✕, Esc (without pausing) and a click
+    outside each close it.
+  - `test/peek.py` and `test/sound.py` pass.
+  - Sims (3 good, 3 idle): good depth 8.3, 0 catches; idle caught 0.7. Rules unchanged, UI only.
+
 ## 0.34.0 (2026-11-17)
 
 Left panel rework, part 1: two of the blueprint's jobs move out (#33, #34). The rework replaces the blueprint

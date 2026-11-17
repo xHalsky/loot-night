@@ -32,12 +32,13 @@ Moving between rooms counts as the hallway. This heard Noise drives her door cha
 early above 70. It is never shown; the player infers it from what they hear. `test/noise.ts`: a boss kill
 during her shower leaves the door chance at 35%; the same kill while she makes tea next door raises it to 85%.
 
-**The blueprint** (168 px, left panel). A blue architect's floor plan: white walls, door swings, furniture,
-a dashed line of sight from your door. It never marks where she is. It teaches the layout: which rooms are
-next to yours (Noise by distance) and where the doorways in the crack lead. (Moving onto the wall in the
-webcam view, #35/#36.)
+**The plan** (a sheet taped to the wall in the webcam view, #35; screen.md). A blue architect's floor plan:
+white walls, door swings, furniture, a dashed line of sight from your door. It never marks where she is. Click
+it for the large version: it teaches the layout, which rooms are next to yours (Noise by distance) and where
+the doorways in the crack lead.
 
-**Last heard** (one line under it, above the her-note, `heardHtml()`): what you last heard of her, where,
+**Last heard** (one line under the webcam view, above the her-note, `heardHtml()`; hidden while she stands in
+the doorway): what you last heard of her, where,
 and how long ago: "♫ KETTLE · kitchen · 12 s ago", "♫ STEPS · hallway · now", "♫ ZZZ · bedroom". After
 `APT_STALE_SEC` without a new sound it dims behind a "?" (her phone is silent, so it goes stale). Headset on:
 "Headset on. You hear nothing. (H)", and it stops updating (Earplugs of Peace still let hallway steps

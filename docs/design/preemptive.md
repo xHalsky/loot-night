@@ -28,7 +28,7 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
   "next: half" or "suspicious next".
 - **Calm.** No visit roll while it runs, even past the guaranteed-visit gap. Heard Noise above
   `PRE_CALM_BREAK_NOISE` (70) ends it and she comes to check, so a calm does not make loud play free.
-- **Where they live.** Door actions in a "before" row on the door panel, under her note. Phone actions:
+- **Where they live.** Door actions in a "before" row under her note (hidden while she is at the door). Phone actions:
   tap the phone while nothing is on it (its label says "tap: text her"); an iOS card opens next to it. Only
   allowed while no visit is under way and your hands are free.
 - **Debug:** F1 → "Calm +30s" (the framework's test action).

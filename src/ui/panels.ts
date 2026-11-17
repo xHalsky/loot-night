@@ -54,7 +54,7 @@ export function doorInfoHtml(): string {
   const n = S.g.night;
   if (!n) return '';
   const v = n.visit;
-  let kicker = 'her', txt = n.headset ? 'Headset on. No idea what she is doing.' : 'She is busy with her own thing.', cls = 'calm';
+  let kicker = 'her', txt = n.headset ? 'In the zone. She could be anywhere.' : 'She is busy with her own thing.', cls = 'calm';
   if (v.stage === 'idle' && n.apt.asleep) { kicker = 'bedroom'; txt = 'She is asleep. Shh, keep it quiet.'; }
   if (v.stage === 'far' && !n.headset) { kicker = 'footsteps'; txt = 'Footsteps... is she coming?'; cls = 'warn'; }
   if (v.stage === 'hall') { kicker = 'at the door'; txt = S.g.nightsPlayed === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; cls = 'alarm'; }
@@ -90,10 +90,9 @@ export function doorInfoHtml(): string {
   const wakeRow = n.clock >= T.BED_FROM
     ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>` : '';
   void tiredFx; void tired;
-  return `${aptMapHtml()}
-  ${heardHtml()}
+  return `${heardHtml()}
   <div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div>
-  ${preRowHtml()}
+  ${v.stage === 'idle' ? preRowHtml() : ''}
   <div class="her-stats">
     <div class="her-row pc" title="Patience ${Math.round(patience)} · caught ${n.catches}/3"><span>Patience</span><div class="hearts">${hearts(patience)}</div><span class="sm">Caught</span><div class="bhearts">${caught}</div></div>
     <div class="her-row gw" title="Goodwill: from good moments with her. ${T.GOODWILL_RAID}: you can ask for a Raid night (tap the phone). ${T.GOODWILL_FORGIVE}: she forgives one catch (once a night). Half carries over to tomorrow."><span>Goodwill</span><div class="gwbar"><i style="width:${S.g.goodwill}%"></i><em style="left:${T.GOODWILL_RAID}%"></em><em style="left:${T.GOODWILL_FORGIVE}%"></em></div><b>${Math.floor(S.g.goodwill)}</b></div>
@@ -164,6 +163,7 @@ const ROOM_C: Record<Room, [number, number]> = { bedroom: [46, 42], bathroom: [1
 export function heardHtml(): string {
   const n = N();
   const a = n.apt;
+  if (n.visit.stage === 'in') return '';   // she is in the doorway: you see her, the last sound does not matter
   const ago = n.threat - a.heardAt;
   const earplugs = n.headset && a.heardWhat === 'STEPS' && ago < 3 && hasLife('earplugs');
   if (n.headset && !earplugs) return '<div class="heard muffled">Headset on. You hear nothing. (H)</div>';
@@ -175,11 +175,9 @@ export function heardHtml(): string {
     : `<div class="heard"><i>&#9835;</i> ${what}</div>`;
 }
 
-function aptMapHtml(): string {
-  const n = N();
-  const a = n.apt;
+function planSvg(size: number): string {
   const W = 'stroke="#eaf3ff" stroke-width="2.2" fill="none"', F = 'stroke="#cfe2ff" stroke-width="1" fill="none" opacity=".8"';
-  return `<div class="bp"><svg viewBox="0 0 200 200" width="168" height="168">
+  return `<svg viewBox="0 0 200 200" width="${size}" height="${size}">
     <defs><pattern id="bpGrid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="rgba(255,255,255,.08)" stroke-width=".6"/></pattern>
 </defs>
     <rect width="200" height="200" fill="#1d4f91"/><rect width="200" height="200" fill="url(#bpGrid)"/>
@@ -200,7 +198,16 @@ function aptMapHtml(): string {
       <text x="50" y="76" text-anchor="middle">BEDROOM</text><text x="120" y="78" text-anchor="middle" font-size="9">BATH</text>
       <text x="166" y="98" text-anchor="middle" font-size="9">KITCHEN</text><text x="62" y="99" font-size="9">HALLWAY</text>
       <text x="58" y="158" text-anchor="middle">LIVING</text><text x="150" y="150" font-size="11" fill="#ffd27a">YOU</text></g>
-  </svg></div>`;
+  </svg>`;
+}
+
+/** The plan taken off the wall (#35): the blueprint, large. It teaches the layout; it never shows her. */
+export function planHtml(): string {
+  return `<div class="plan-back"><div class="plan-sheet"><button class="mg-close" title="Back (Esc)">\u2715</button>
+    <div class="plan-title">The plan <small>which rooms are next to yours, and where the doorways lead</small></div>
+    ${planSvg(340)}
+    <div class="plan-foot">Next to your room: living room, kitchen, hallway (she hears you best). Across: bathroom. Far: bedroom.
+    Through the crack: kitchen first, then the bathroom, the far end only when wide.</div></div></div>`;
 }
 
 export function feedHtml(): string {

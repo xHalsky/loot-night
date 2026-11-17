@@ -4,8 +4,8 @@ import { T } from './config/tuning';
 import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
-import { drawDoor, DOOR_W, DOOR_H } from './ui/door';
-import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene } from './ui/panels';
+import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
+import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS } from './data/heroes';
@@ -27,7 +27,7 @@ import { openMonster, setMonsterHold, cancelMonster } from './systems/monster';
 import { drawMonsterScene } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawDeskFx, lapUiHtml, setDeskScale } from './ui/deskFx';
-import { drawHerBed, drawShowerPanel } from './ui/her';
+import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
 import { keyboardSvg, mouseSvg } from './ui/peripherals';
@@ -44,12 +44,12 @@ import { addMood } from './systems/meters';
 // ---------- DOM skeleton: three panels (docs/design/screen.md) ----------
 const stage = document.getElementById('stage')!;
 stage.innerHTML = `
-  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="herHead"></div><div id="doorInfo"></div><canvas id="showerCanvas" width="176" height="176"></canvas></div>
+  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="herHead"></div><div id="doorInfo"></div></div>
   <div id="desk">
     <div id="deskInner">
       <div class="desk-surface"></div>
       <div class="stand"></div><div class="stand-base"></div>
-      <div class="bezel"></div>
+      <div class="bezel"></div><div class="webcam" title="The webcam: the left panel is what it sees"><i></i></div>
       <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
       <div id="monUi"></div>
       <div id="winLayer"></div>
@@ -66,6 +66,7 @@ stage.innerHTML = `
   <div id="ui"></div>
   <div id="screens"></div>
   <div id="pause"></div>
+  <div id="planUi"></div>
   <div id="debug"></div>
   <div id="tooltipLayer"></div>
   <div id="ghost"></div>
@@ -268,7 +269,22 @@ function applyPhoneDrag() {
   wrap.classList.toggle('held', !!pswipe);
   ph.style.transform = `perspective(600px) rotateY(${phoneAngle}deg)`;
 }
-el('doorCanvas').addEventListener('pointerdown', ev => { if (S.g.night && !S.g.paused) { ev.preventDefault(); setPeeking(true); } });
+// The webcam view: hold the door to peek; click the plan on the wall to open it (#35).
+let planOpen = false;
+const camXY = (ev: PointerEvent) => { const r = el('doorCanvas').getBoundingClientRect(); return [(ev.clientX - r.left) / stageScale, (ev.clientY - r.top) / stageScale] as const; };
+el('doorCanvas').addEventListener('pointerdown', ev => {
+  if (!S.g.night || S.g.paused) return;
+  const hit = doorHit(...camXY(ev));
+  if (hit === 'plan') { ev.preventDefault(); planOpen = true; sfx.click(); }
+  else if (hit === 'door') { ev.preventDefault(); setPeeking(true); }
+});
+el('doorCanvas').addEventListener('pointermove', ev => {
+  const hit = S.g.night ? doorHit(...camXY(ev)) : null;
+  el('doorCanvas').style.cursor = hit === 'plan' ? 'zoom-in' : hit === 'door' ? 'grab' : 'default';
+});
+el('planUi').addEventListener('pointerdown', ev => {   // a click outside the sheet closes it
+  if (!(ev.target as HTMLElement).closest('.plan-sheet') || (ev.target as HTMLElement).closest('.mg-close')) { ev.preventDefault(); ev.stopPropagation(); planOpen = false; }
+});
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
 document.addEventListener('pointercancel', () => { drag = null; setDrag(0); setHold(false); });
 
@@ -332,7 +348,7 @@ window.addEventListener('keydown', ev => {
   if (ev.key === 'F1') { ev.preventDefault(); g.debug = !g.debug; return; }
   if (g.screen !== 'night' || !g.night) return;
   const n = g.night;
-  if (ev.key === 'Escape') { g.paused = !g.paused; return; }
+  if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } g.paused = !g.paused; return; }
   if (g.paused) return;
   if (n.switching) { ev.preventDefault(); return; }
   if (n.pre) { ev.preventDefault(); return; }     // busy with a pre-emptive action: hands full
@@ -362,20 +378,6 @@ window.addEventListener('keydown', ev => {
 void sfx;
 
 /** The shower panel covers the apartment map while she showers and you can hear it (docs/design/eye-candy.md). */
-const showerCtx = (el('showerCanvas') as HTMLCanvasElement).getContext('2d')!;
-function showerPanel(n: NonNullable<typeof S.g.night>) {
-  const cv = el('showerCanvas') as HTMLCanvasElement;
-  const a = n.apt;
-  const on = a.activity === 'shower' && a.moving <= 0 && !n.headset && n.visit.stage === 'idle' && n.peek <= 0;
-  cv.style.display = on ? 'block' : 'none';
-  if (!on) return;
-  const bp = document.querySelector('#doorInfo .bp svg') as HTMLElement | null;
-  if (bp) { const d = el('door').getBoundingClientRect(), r = bp.getBoundingClientRect(); cv.style.left = `${(r.left - d.left) / stageScale}px`; cv.style.top = `${(r.top - d.top) / stageScale}px`; cv.style.width = cv.style.height = `${r.width / stageScale}px`; }
-  const fog = Math.max(0, Math.min(1, 1 - a.t / ACT_BY_ID.shower.dur[1]));
-  const clear = a.cued ? Math.max(0, Math.min(1, 1 - a.t / T.END_CUE_SEC)) : 0;   // the hair dryer: water off, the glass clears
-  drawShowerPanel(showerCtx, performance.now() / 1000, fog, clear);
-}
-
 // ---------- Render ----------
 function render() {
   const g = S.g;
@@ -384,7 +386,6 @@ function render() {
   drawMonitor(monCtx);
   if (n) {
     setHtml('doorInfo', doorInfoHtml());
-    showerPanel(n);
     setHtml('herHead', herHeadHtml());
     setHtml('deskObjects', deskHtml());
     setHtml('canPile', deskPileHtml());
@@ -411,6 +412,8 @@ function render() {
   setHtml('screens', screenHtml());
   const ma = document.getElementById('morningArt') as HTMLCanvasElement | null;
   if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());
+  if (!g.night || g.screen !== 'night') planOpen = false;
+  setHtml('planUi', planOpen ? planHtml() : '');
   setHtml('pause', pauseHtml());
   setHtml('debug', debugHtml());
   setHtml('scare', scareHtml());

@@ -6,7 +6,7 @@
 
 | Column | Shows |
 |---|---|
-| Left (her) | The door (280 × 396, the eye-candy window; hold it to peek), the blueprint, the last-heard line, her note, her stats |
+| Left (her) | The webcam view (280 × 532): him low on the left, your door behind him (hold it to peek), the plan taped on the wall. Under it: the last-heard line, her note, the "before" row, her stats |
 | Centre (desk) | The monitor (game, city, Excel, minigames), and below it the desk: keyboard and mouse centred on a mat, phone, headset, Monster fridge, cans; the bin behind the monitor. The dog and her desk visit overlay it. |
 | Right (RPG) | Top to bottom: YOU (Noise, Tired), Feed, run progress (floor, checkpoint, Flow, Zone), Party (paper doll), Backpack |
 
@@ -21,7 +21,7 @@ a fake "Press Enter to chat"). Game messages go here, never over the monitor.
 
 | World | Where | Look |
 |---|---|---|
-| Her | Door, blueprint, her stats | Warm plum night, Patrick Hand handwriting, cream note cards, blueprint map. Warnings turn amber, alarms red and shaking. |
+| Her | Webcam view, her note, her stats | Warm plum night, Patrick Hand handwriting, cream note cards, the blueprint as a taped sheet. Warnings turn amber, alarms red and shaking. |
 | Real life | Desk, phone, Excel, taskbar, YOU box | Inter, flat panels, iOS and Windows conventions |
 | RPG | Monitor game, right panel | Pixelify Sans, gold-trimmed headers, stone, parchment and leather |
 
@@ -70,7 +70,32 @@ listening, so her sounds are the most important ones in the game.
 
 **Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`.
 
+**The webcam view** (`src/ui/door.ts`, him in `src/ui/him.ts`, #36). The left panel is what the webcam on top of
+his monitor sees (a small webcam sits on the monitor bezel so the framing reads). Him, low on the left, facing
+the camera in a gaming chair; your door behind him at the same size as before (the perspective is faked by
+the floor running toward the camera). He may overlap only the door frame: never the doorway, the crack (the
+door's right edge), the light gap under the door or her toes. While peeking he turns toward the door (the back
+of his head). The key screenshot is her in the doorway behind his face: both read at once.
+- **The plan on the wall** (#35): the blueprint is a sheet taped to the wall by the door. Click it (the cursor
+  turns to a magnifier) and it opens large over the panel: the same plan with the dashed line of sight and no
+  marker for her, plus a line on which rooms are next to yours. The game keeps running. Close with ✕, Esc or a
+  click outside.
+- **Under the view:** the last-heard line (hidden while she stands in the doorway), her note, the "before" row
+  (hidden during a visit: every action is "too late" then) and her stats.
+
 ## Decisions
+
+- **Webcam view instead of the blueprint panel** (0.35): the blueprint's jobs moved out (the last sound to one
+  line, peeking to the crack, the layout to the sheet on the wall), and the 190 px it took went to his face, so
+  later his reactions and status (#37, #38) can show what the player's character feels. Rejected: keeping the
+  blueprint smaller next to his face (two pictures fighting in 280 px); a separate face box under the door
+  (the face and her in the doorway would not read as one scene).
+- **The door moved right, not smaller**: it keeps its size so her and the toes stay readable; the left strip
+  holds the plan, and he sits under it.
+- **The shower panel became his daydream** (0.35): it lived over the map. Now, while she showers and you can
+  hear it, a thought bubble rises from his head with the frosted cabin. It hides when peeking, during visits and
+  when she moves, so it never covers the crack or her. Rejected: dropping it (the crack already shows a frosted
+  shape, but small); showing it on the plan overlay (the plan must stay a plain map).
 
 - **The door gets the most space in the left column**: it is where the eye candy and the threat live.
 - **Feed in the right panel** replaced an older CITY / SKILLS box; messages over the monitor hid the game.
