@@ -6,7 +6,7 @@
 
 | Column | Shows |
 |---|---|
-| Left (her) | The webcam view (280 × 532): him low on the left, your door behind him (hold it to peek), the plan taped on the wall. Under it: the last-heard line, her note, the "before" row, her stats |
+| Left (her) | The webcam view (280 × 532): a dark room, him centred at the bottom as a silhouette with shining glasses, your door behind him (hold it to peek), the plan taped on the wall. Under it: the last-heard line, her note, the "before" row, her stats |
 | Centre (desk) | The monitor (game, city, Excel, minigames), and below it the desk: keyboard and mouse centred on a mat, phone, headset, Monster fridge, cans; the bin behind the monitor. The dog and her desk visit overlay it. |
 | Right (RPG) | Top to bottom: YOU (Noise, Tired), Feed, run progress (floor, checkpoint, Flow, Zone), Party (paper doll), Backpack |
 
@@ -70,33 +70,40 @@ listening, so her sounds are the most important ones in the game.
 
 **Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`.
 
-**The webcam view** (`src/ui/door.ts`, him in `src/ui/him.ts`, #36). The left panel is what the webcam on top of
-his monitor sees (a small webcam sits on the monitor bezel so the framing reads). Him, low on the left, facing
-the camera in a gaming chair; your door behind him at the same size as before (the perspective is faked by
-the floor running toward the camera). He may overlap only the door frame: never the doorway, the crack (the
-door's right edge), the light gap under the door or her toes. While peeking he turns toward the door (the back
-of his head). The key screenshot is her in the doorway behind his face: both read at once.
+**The webcam view** (`src/ui/door.ts`, him in `src/ui/him.ts`; #36, #40). The left panel is what the webcam on
+top of his monitor sees (a small webcam sits on the monitor bezel so the framing reads). His room is dark:
+black and grey walls, floor and door. The only warm light is hers: the gap under the door, the hallway in the
+crack, her in the doorway. Him: centred at the bottom, a bust, so his hair stays just below the light gap. Your
+door behind him at the same size as before (the perspective is faked by the floor running toward the camera).
+He never covers the doorway, the crack (the door's right edge), the light gap under the door or her toes. While
+peeking he turns toward the door (the back of his head). The key screenshot is her in the doorway with him in
+front, below her: both read at once.
+- **His look** (#40): a silhouette, near black with a grey rim and a soft backlight, and glasses that catch the
+  screen and shine white (with a soft bloom tinted by what is on the monitor: cool for the game, green-white for
+  Excel). No eyes and no mouth: mysterious and stoic, the serious one in a comedy anime. The face only breaks
+  for the embarrassing moments, and then it goes all the way (comedy anime emotes).
 - **His face** (`src/systems/him.ts` rules, `src/ui/him.ts` art; #37, #38). Automatic, no emote button. Like
   the face in Doom's status bar, it shows what is going on without a meter. Reactions win over status.
 
-  | Moment | His face |
-  |---|---|
-  | She comes in | Freezes: guilty smile, a drop of sweat, eyes on her |
-  | Pass / she leaves happy | Relief: eyes shut, smile (lingers `HIS_RELIEF_SEC`) |
-  | Caught | Panic: wide eyes, open mouth, before the jumpscare |
-  | Cuddle ask, lean visit, good night | Blush |
-  | Chat answers | Good: grin. Meh: flat. Rude: frown |
-  | Snack offered / taken | Grin |
-  | Epic or better drop (`HIS_GRIN_RARITY`) | Grin for `HIS_GRIN_SEC` |
-  | A new sound of her | His eyes flick to its side for `HIS_FLICK_SEC` (`ROOM_LOOK`: living room, bathroom, bedroom left; hallway and kitchen right). Not with the headset on: that is what the headset costs |
-  | Tired (`TIRED_YAWN`+) | Heavy eyelids; yawns with the yawn |
-  | Microsleep (`TIRED_MICROSLEEP`+) | Nods off: eyes shut, head drops, "z" (seen while the lids close) |
-  | Full Zone | Focused look and a purple glow |
-  | Monster boost | Jittery |
-  | Headset worn | On his head (it leaves the desk), mic and purple strip |
+  | Moment | His face | Stoic or emote |
+  |---|---|---|
+  | Nothing happening | Silhouette, shining glasses | Stoic |
+  | She comes in | A wobbly mouth and a big sweat drop, head turned to her | Emote |
+  | Pass / she leaves happy | A small exhale puff (lingers `HIS_RELIEF_SEC`) | Stoic |
+  | Caught | Glasses become popping eyes, mouth wide open, sweat everywhere, before the jumpscare | Emote |
+  | Cuddle ask, lean visit, good night | Glasses fog pink, blush lines, steam from his head | Emote |
+  | Chat answers | Good: a grin. Meh: a short flat line. Rude: a smirk and a glint on his glasses | Small |
+  | Snack offered / taken | The grin | Emote |
+  | Epic or better drop (`HIS_GRIN_RARITY`) | A wide, slightly evil grin and a glint, for `HIS_GRIN_SEC` | Emote |
+  | A new sound of her | His head and glasses turn to its side for `HIS_FLICK_SEC` (`ROOM_LOOK`: living room, bathroom, bedroom left; hallway and kitchen right). Not with the headset on: that is what the headset costs | Stoic |
+  | Tired (`TIRED_YAWN`+) | The glasses dim and sit lower; he yawns with the yawn (mouth wide) | Stoic / emote |
+  | Microsleep (`TIRED_MICROSLEEP`+) | Nods off: glasses slide down his nose, eyes shut above them, head drops, "z" (seen while the lids close) | Emote |
+  | Full Zone | Hands steepled in front of his face, a glint, a purple glow | Stoic |
+  | Monster boost | Jittery | Stoic |
+  | Headset worn | On his head (it leaves the desk), a purple strip on each cup | Gear |
 
-  Art: one head pose, the expressions as small face layers (eyes, brows, mouth), gear as separate layers, so
-  a real-life upgrade (#4: glasses and the like) is one more layer. `python3 test/him.py` shoots every row.
+  Art: one head pose; the emotes and the glasses as layers on the silhouette; gear as separate layers, so a
+  real-life upgrade (#4) is one more layer. `python3 test/him.py` shoots every row.
 - **The plan on the wall** (#35): the blueprint is a sheet taped to the wall by the door. Click it (the cursor
   turns to a magnifier) and it opens large over the panel: the same plan with the dashed line of sight and no
   marker for her, plus a line on which rooms are next to yours. The game keeps running. Close with ✕, Esc or a
@@ -111,6 +118,12 @@ of his head). The key screenshot is her in the doorway behind his face: both rea
   later his reactions and status (#37, #38) can show what the player's character feels. Rejected: keeping the
   blueprint smaller next to his face (two pictures fighting in 280 px); a separate face box under the door
   (the face and her in the doorway would not read as one scene).
+- **A stoic silhouette, not a cartoon face** (0.37, #40, replaces the cel-shaded face of 0.35 to 0.36): the
+  shining glasses make him mysterious and leave the jokes to the emotes, so an embarrassing moment lands
+  harder. Centred at the bottom instead of low on the left: the eye goes to him first, and below the door he
+  still never covers her. The dark grey room keeps her warm world the only colour. Rejected: the goofy
+  full-colour face (every reaction felt equally loud); visible eyes behind the glasses (they break the
+  mystery); a coloured hoodie (reads as a costume, not a silhouette).
 - **His face reacts by itself** (0.36): no emote button, because the player's hands are busy and the face is
   for reading the moment, not for input. His reactions to her sounds stop under the headset, so the face also
   teaches what the headset costs. Rejected: a face that mirrors her Mood (her hearts already do that); a big

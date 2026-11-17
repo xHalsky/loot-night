@@ -463,7 +463,8 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .f-handle { left: auto; right: 8px; width: 16px; cursor: grab; }
 
 /* ---------- Girlfriend: her world (warm, handwritten, hearts) ---------- */
-#door { background: #24141f radial-gradient(ellipse at top, #3a1f30, #1c1018 75%); font-family: 'Patrick Hand', 'Inter', sans-serif; color: #fbe9ee; }
+#door { background: #0e0e11 radial-gradient(ellipse at top, #18181d, #0b0b0e 75%);   /* his dark room (#40) */
+   font-family: 'Patrick Hand', 'Inter', sans-serif; color: #fbe9ee; }
 #herHead { position: absolute; left: 8px; right: 8px; top: 6px; display: flex; justify-content: space-between; align-items: center; z-index: 4; }
 .her-name { font-size: 20px; color: #ffb3c7; text-shadow: 0 1px 0 #000; }
 .her-mood { font-size: 15px; padding: 1px 10px; border-radius: 12px; background: rgba(0,0,0,.45); }

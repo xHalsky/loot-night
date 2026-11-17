@@ -5,14 +5,14 @@ import { hisLook } from '../systems/him';
 import { T } from '../config/tuning';
 import { ACT_BY_ID } from '../data/apartment';
 
-// The webcam view (#36): what the camera on top of his monitor sees. Him low on the left, your door behind him,
-// the plan taped on the wall (#35). Hold the door to peek: it opens a crack onto the hallway (drawHallway).
+// The webcam view (#36, #40): what the camera on top of his monitor sees. A dark grey room; him centred at the
+// bottom, a silhouette whose glasses catch the screen; your door behind him; the plan taped on the wall (#35). Hold the door to peek: it opens a crack onto the hallway (drawHallway).
 // Never covered by him: the doorway, the crack (right edge), the light gap under the door and her toes.
 export const DOOR_W = 280, DOOR_H = 532;
 const TOP = 34, BOT = 370, X0 = 84, DW = 184;   // door opening (same size as before the webcam view, moved right)
 /** The plan on the wall, and where his head sits (canvas px). */
 export const PLAN_RECT = { x: 8, y: 116, w: 64, h: 74 };
-const HIM_X = 36, HIM_Y = 300;
+const HIM_X = 140, HIM_Y = 394;   // centred; his hair stays below the light gap under the door (#40)
 /** What a click on the webcam view hits. */
 export function doorHit(x: number, y: number): 'door' | 'plan' | null {
   const P = PLAN_RECT;
@@ -27,9 +27,9 @@ export function drawDoor(c: CanvasRenderingContext2D) {
   const n = S.g.night;
   const t = performance.now() / 1000;
   c.imageSmoothingEnabled = false;
-  c.fillStyle = '#110d17'; c.fillRect(0, 0, DOOR_W, DOOR_H);
-  for (let x = 0; x < DOOR_W; x += 36) { c.fillStyle = '#16111d'; c.fillRect(x, 0, 18, BOT); c.fillStyle = '#130f19'; c.fillRect(x + 18, 0, 18, BOT); }
-  c.fillStyle = '#3d2a1e'; c.fillRect(X0 - 6, TOP - 6, DW + 12, BOT - TOP + 6);       // frame
+  c.fillStyle = '#0c0c0f'; c.fillRect(0, 0, DOOR_W, DOOR_H);
+  for (let x = 0; x < DOOR_W; x += 36) { c.fillStyle = '#121216'; c.fillRect(x, 0, 18, BOT); c.fillStyle = '#0f0f13'; c.fillRect(x + 18, 0, 18, BOT); }
+  c.fillStyle = '#1d1d23'; c.fillRect(X0 - 6, TOP - 6, DW + 12, BOT - TOP + 6);       // frame
   const stage = n?.visit.stage ?? 'idle';
   const H = BOT - TOP;
   if (stage === 'in') {
@@ -42,7 +42,7 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     c.fillStyle = fg; c.fillRect(X0, FY, DW, BOT - FY);
     c.strokeStyle = 'rgba(70,40,20,.35)'; c.lineWidth = 1;
     for (let i = -4; i <= 4; i++) { c.beginPath(); c.moveTo(X0 + DW / 2 + i * 12, FY); c.lineTo(X0 + DW / 2 + i * 34, BOT); c.stroke(); }
-    c.fillStyle = '#4a3324'; c.fillRect(X0, TOP, 20, H);
+    c.fillStyle = '#2a2a31'; c.fillRect(X0, TOP, 20, H);
     const v = n!.visit;
     const look = OUTFIT_BY_ACTIVITY[v.from ?? 'tv'] ?? OUTFIT_BY_ACTIVITY.tv;
     const face = herFace(v, n!.catches, n!.mood, t);
@@ -62,12 +62,13 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     if (gap > 0.5) drawHallway(c, X0 + DW - gap, TOP, gap, H, t);
     // the door panel swings toward you: narrower and darker as it opens
     const w = DW - gap;
-    c.fillStyle = p > 0 ? `rgb(${74 - p * 20},${51 - p * 14},${36 - p * 10})` : '#4a3324';
+    const g = Math.round(44 - p * 14);   // a dark grey door, darker as it swings toward you
+    c.fillStyle = `rgb(${g},${g},${g + 6})`;
     c.beginPath(); c.moveTo(X0, TOP); c.lineTo(X0 + w, TOP - p * 6); c.lineTo(X0 + w, BOT + p * 6); c.lineTo(X0, BOT); c.fill();
-    c.strokeStyle = '#3a281c'; c.lineWidth = 3;
+    c.strokeStyle = '#202026'; c.lineWidth = 3;
     const k = w / DW;
     c.strokeRect(X0 + 14 * k, TOP + 18, (DW - 28) * k, 130); c.strokeRect(X0 + 14 * k, TOP + 168, (DW - 28) * k, 146);
-    c.fillStyle = '#d9a441'; c.fillRect(X0 + w - 20 * k, stage === 'handle' ? TOP + 164 : TOP + 156, 14 * k + 2, 7);
+    c.fillStyle = '#9a9aa6'; c.fillRect(X0 + w - 20 * k, stage === 'handle' ? TOP + 164 : TOP + 156, 14 * k + 2, 7);
   }
   if (n?.towel) {   // a towel blocks the gap: no light, so no toes and no shadows (docs/design/preemptive.md)
     c.fillStyle = '#7a8aa8'; c.fillRect(X0 - 10, BOT - 2, DW + 20, 9);
@@ -101,34 +102,40 @@ export function drawDoor(c: CanvasRenderingContext2D) {
   if (n && n.peekSus > 0.05) {
     c.fillStyle = `rgba(224,82,74,${Math.min(0.9, n.peekSus)})`; c.fillRect(X0, TOP - 14, DW * Math.min(1, n.peekSus), 5);
   }
-  if (n && n.peek <= 0 && stage === 'idle') { c.fillStyle = 'rgba(255,220,200,.35)'; c.font = '14px "Patrick Hand", sans-serif'; c.textAlign = 'center'; c.fillText('hold the door to peek', X0 + DW / 2 + 20, BOT + 22); }
+  if (n && n.peek <= 0 && stage === 'idle' && !daydreaming()) { c.fillStyle = 'rgba(220,220,230,.3)'; c.font = '14px "Patrick Hand", sans-serif'; c.textAlign = 'center'; c.fillText('hold the door to peek', X0 + DW / 2, BOT - 12); }
 }
 
 /** His side of the room: the floor, the plan on the wall, him, and his daydream while she showers. */
 function room(c: CanvasRenderingContext2D, t: number) {
   const n = S.g.night;
   // the floor between the door and the camera, in the light from under the door
-  const fg = c.createLinearGradient(0, BOT + 6, 0, DOOR_H); fg.addColorStop(0, '#2a1d1a'); fg.addColorStop(1, '#120c10');
+  const fg = c.createLinearGradient(0, BOT + 6, 0, DOOR_H); fg.addColorStop(0, '#19191e'); fg.addColorStop(1, '#09090b');
   c.fillStyle = fg; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
   c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1;
   for (let i = -5; i <= 6; i++) { c.beginPath(); c.moveTo(X0 + DW / 2 + i * 24, BOT + 6); c.lineTo(X0 + DW / 2 + i * 90, DOOR_H); c.stroke(); }
   for (const y of [BOT + 26, BOT + 58, BOT + 104, BOT + 168]) { c.beginPath(); c.moveTo(0, y); c.lineTo(DOOR_W, y); c.stroke(); }
-  c.fillStyle = '#1b1520'; c.fillRect(0, BOT + 6, X0 - 6, 3); c.fillRect(X0 + DW + 6, BOT + 6, DOOR_W, 3);   // skirting
+  c.fillStyle = '#18181d'; c.fillRect(0, BOT + 3, X0 - 6, 3); c.fillRect(X0 + DW + 6, BOT + 3, DOOR_W, 3);   // skirting
   planSheet(c);
   if (!n) return;
   // him: back of his head while he peeks, his face otherwise (expressions and gear: #37, #38)
   const me = hisLook();
-  const blink = (t % 4.3) < 0.13 && me.face !== 'asleep' && me.face !== 'relief';
   const bob = Math.sin(t * 1.4) > 0.6 ? 1 : 0;
+  // the monitor in front of him: a faint cold light on the floor around him
+  const sg = c.createRadialGradient(HIM_X, DOOR_H, 10, HIM_X, DOOR_H, 170); sg.addColorStop(0, 'rgba(170,190,255,.10)'); sg.addColorStop(1, 'rgba(170,190,255,0)');
+  c.fillStyle = sg; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
   if (me.glow) {   // full Zone: the purple glow around him
-    const zg = c.createRadialGradient(HIM_X, HIM_Y + 60, 20, HIM_X, HIM_Y + 60, 120); zg.addColorStop(0, 'rgba(154,107,255,.45)'); zg.addColorStop(1, 'rgba(154,107,255,0)');
-    c.fillStyle = zg; c.fillRect(0, HIM_Y - 70, 170, DOOR_H - HIM_Y + 70);
+    const zg = c.createRadialGradient(HIM_X, HIM_Y + 70, 20, HIM_X, HIM_Y + 70, 130); zg.addColorStop(0, 'rgba(154,107,255,.42)'); zg.addColorStop(1, 'rgba(154,107,255,0)');
+    c.fillStyle = zg; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
   }
-  drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking, blink, look: me.look, headset: n.headset, jitter: me.jitter });
-  if (me.face === 'asleep') { c.fillStyle = '#cfd8ff'; c.font = '16px "Patrick Hand", sans-serif'; c.textAlign = 'left'; c.fillText('z', HIM_X + 40, HIM_Y + 10 - (t * 8 % 12)); }
+  const back = c.createRadialGradient(HIM_X, HIM_Y + 40, 20, HIM_X, HIM_Y + 40, 120);   // backlight: his silhouette against the room
+  back.addColorStop(0, 'rgba(120,122,140,.22)'); back.addColorStop(1, 'rgba(120,122,140,0)');
+  c.fillStyle = back; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
+  const glow = n.monitor === 'excel' ? 'rgba(214,255,226,' : 'rgba(222,232,255,';   // the lenses take the screen's colour
+  drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking, look: me.look, headset: n.headset, jitter: me.jitter, glow });
+  if (me.face === 'asleep') { c.fillStyle = '#c8cad8'; c.font = '16px "Patrick Hand", sans-serif'; c.textAlign = 'left'; c.fillText('z', HIM_X + 38, HIM_Y + 6 - (t * 8 % 12)); c.fillText('z', HIM_X + 48, HIM_Y - 8 - (t * 8 % 12)); }
   // monitor light on his face from the front, a webcam's soft vignette
   const v = c.createRadialGradient(DOOR_W / 2, DOOR_H * 0.45, DOOR_H * 0.35, DOOR_W / 2, DOOR_H * 0.45, DOOR_H * 0.75);
-  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.45)');
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)');
   c.fillStyle = v; c.fillRect(0, 0, DOOR_W, DOOR_H);
   daydream(c, t);
 }
@@ -158,18 +165,23 @@ function planSheet(c: CanvasRenderingContext2D) {
 /** While she showers and he can hear it, he daydreams: the frosted glass cabin in a thought bubble (eye-candy.md).
  *  Gone while he peeks, during a visit, and when she moves. Never over the crack (it hides when peeking). */
 const bubbleCv = typeof document !== 'undefined' ? document.createElement('canvas') : null;
+function daydreaming(): boolean {
+  const n = S.g.night;
+  if (!n) return false;
+  const a = n.apt;
+  return a.activity === 'shower' && a.moving <= 0 && !n.headset && n.visit.stage === 'idle' && n.peek <= 0 && !n.peeking;
+}
 function daydream(c: CanvasRenderingContext2D, t: number) {
   const n = S.g.night!;
   const a = n.apt;
-  const on = a.activity === 'shower' && a.moving <= 0 && !n.headset && n.visit.stage === 'idle' && n.peek <= 0 && !n.peeking;
-  if (!on || !bubbleCv) return;
+  if (!daydreaming() || !bubbleCv) return;
   bubbleCv.width = 176; bubbleCv.height = 176;
   const fog = Math.max(0, Math.min(1, 1 - a.t / ACT_BY_ID.shower.dur[1]));
   const clear = a.cued ? Math.max(0, Math.min(1, 1 - a.t / T.END_CUE_SEC)) : 0;   // the hair dryer: water off, the glass clears
   drawShowerPanel(bubbleCv.getContext('2d')!, t, fog, clear);
-  const cx = 158, cy = 188, r = 64, bob = Math.sin(t * 1.6) * 2;
-  c.fillStyle = '#fff4f2';
-  for (const [bx, by, br] of [[76, 300, 4], [90, 282, 6], [106, 262, 9]] as const) { c.beginPath(); c.arc(bx, by + bob, br, 0, Math.PI * 2); c.fill(); }
+  const cx = 150, cy = 196, r = 64, bob = Math.sin(t * 1.6) * 2;
+  c.fillStyle = '#f2f2f6';
+  for (const [bx, by, br] of [[180, 382, 4], [188, 350, 6], [180, 300, 9]] as const) { c.beginPath(); c.arc(bx, by + bob, br, 0, Math.PI * 2); c.fill(); }
   c.save(); c.beginPath(); c.arc(cx, cy + bob, r + 5, 0, Math.PI * 2); c.fill();
   c.beginPath(); c.arc(cx, cy + bob, r, 0, Math.PI * 2); c.clip();
   c.drawImage(bubbleCv, cx - r - 8, cy + bob - r - 8, (r + 8) * 2, (r + 8) * 2);

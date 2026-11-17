@@ -3,6 +3,37 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.37.0 (2026-11-17)
+
+Him, redesigned (#40): a centred silhouette with screen-lit glasses, in a dark room.
+
+- **Centred:** at the bottom of the webcam view, as a bust; his hair stays just below the light gap, so he
+  still never covers the doorway, the crack, the gap or her toes.
+- **A silhouette:**
+  - Near black with a grey rim and a soft backlight. His glasses catch the screen and shine white, with a
+    bloom in the screen's colour (cool for the game, green-white for Excel).
+  - No eyes, no mouth by default: mysterious and stoic.
+- **The comedy is in the emotes**, which only come when something embarrassing happens:
+  - She walks in: a wobbly mouth and a sweat drop.
+  - Caught: popping eyes, mouth wide open, sweat everywhere.
+  - Cuddle ask: fogged pink glasses, blush lines, steam.
+  - A big drop: a wide, slightly evil grin with a glint.
+  - The yawn.
+  - Nodding off: the glasses slide down his nose.
+- **Stoic states:**
+  - Full Zone: hands steepled in front of his face, a glint.
+  - A pass: a small exhale.
+  - A sound: his head and glasses turn toward it.
+  - Tired: the glasses dim.
+- **The room:**
+  - Black and grey walls, floor and door (no brown); a steel handle.
+  - The left panel's background is dark grey too.
+  - Her world (the light under the door, the hallway in the crack, her) is the only warm colour.
+- Small fixes:
+  - The peek hint sits on the door now, not on him, and hides during his shower daydream.
+  - The daydream bubble rises from his new head position.
+- `test/him.py` re-cropped; `test/webcam.py` passes. UI only, no rule changes.
+
 ## 0.36.0 (2026-11-17)
 
 Left panel rework, part 3: his face reacts and shows his state (#37, #38). The rework is done; the poker face

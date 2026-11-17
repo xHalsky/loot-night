@@ -36,7 +36,7 @@ async def main():
         for name, js in CASES:
             await pg.evaluate("()=>{" + RESET + js + "}"); await pg.wait_for_timeout(250)
             path = f'test/him_{name}.png'
-            await pg.screenshot(path=path, clip={'x': 0, 'y': 270, 'width': 170, 'height': 180}); shots.append((name, path))
+            await pg.screenshot(path=path, clip={'x': 40, 'y': 350, 'width': 200, 'height': 182}); shots.append((name, path))
         # eye flicks: a new sound from the kitchen (right) and the living room (left), headset off; then headset on
         S = "window.__lootnight.S"
         for name, room, what, hs in (('flick_kitchen', 'kitchen', 'KETTLE', False), ('flick_living', 'living', 'TV', False), ('headset_no_flick', 'kitchen', 'KETTLE2', True)):
@@ -44,13 +44,13 @@ async def main():
             await pg.wait_for_timeout(120)
             await pg.evaluate(f"()=>{{{S}.g.timeScale=0}}")
             path = f'test/him_{name}.png'
-            await pg.screenshot(path=path, clip={'x': 0, 'y': 270, 'width': 170, 'height': 180}); shots.append((name, path))
+            await pg.screenshot(path=path, clip={'x': 40, 'y': 350, 'width': 200, 'height': 182}); shots.append((name, path))
         print('ERRORS', errs); await b.close()
     cols = 6
-    sheet = Image.new('RGB', (cols * 176, ((len(shots) + cols - 1) // cols) * 202), '#111')
+    sheet = Image.new('RGB', (cols * 206, ((len(shots) + cols - 1) // cols) * 204), '#111')
     d = ImageDraw.Draw(sheet)
     for i, (name, path) in enumerate(shots):
-        x, y = (i % cols) * 176, (i // cols) * 202
+        x, y = (i % cols) * 206, (i // cols) * 204
         sheet.paste(Image.open(path), (x, y + 20)); d.text((x + 4, y + 4), name, fill='#fff')
     sheet.save('test/him_sheet.png')
 asyncio.run(main())

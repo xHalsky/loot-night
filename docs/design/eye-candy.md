@@ -11,7 +11,7 @@ explicit. A birthday gift gets shown around.
 
 | Moment | Where | Detail in |
 |---|---|---|
-| Her in the doorway behind his face (0.35): the key screenshot. He sits low on the left in the webcam view and never covers her, the crack or her toes. Since 0.36 his face answers hers: guilty when she comes in, a blush when she asks to cuddle or leans on the frame, relief when she leaves | Webcam view | [screen.md](screen.md) |
+| Her in the doorway with him in front (0.35; centred silhouette since 0.37): the key screenshot. He sits centred below the door line, a dark silhouette with shining glasses, and never covers her, the crack or her toes. His face answers hers: a sweat drop when she comes in, fogged glasses and a blush when she asks to cuddle or leans on the frame, a small exhale when she leaves | Webcam view | [screen.md](screen.md) |
 | Barefoot at the door in every outfit, painted toenails | Door | [her.md](her.md) |
 | Outfit by activity (off-shoulder tee and shorts, oversized hoodie, tank top, towel wrap and turban, sleep shirt) | Door | her.md |
 | Lean visit: leaning on the frame, one foot against her calf, blush and wink | Door | her.md |
