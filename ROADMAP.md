@@ -21,14 +21,9 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **Left panel rework: the blueprint panel goes, his face comes in.** The blueprint's three jobs move out
-   (last sound heard, peeking, teaching the layout) and the freed space becomes the webcam view of him.
-   Before #28 because onboarding teaches this panel. Build order:
-   #33 last-heard caption → #34 peek through the crack → #36 webcam view + #35 blueprint pinned on the wall →
-   #37 his reactions + #38 status on his face.
-2. **#28 first-night onboarding.**
-3. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
-   Repeat 3 until it passes.
+1. **#28 first-night onboarding.** Teaches the webcam view (crack, plan on the wall, last-heard line) too.
+2. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
+   Repeat 2 until it passes.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
 
 ## Phase 2: the arc (p2)
@@ -37,7 +32,7 @@ The bot sims (good + idle) still run every round, but these four criteria come f
   by content (3 to 7 nights), ending with the birthday level-up screen and credits, then endless free play
   with escalating her behaviour.
 - **#39 Poker face** (idea): a big drop while she is in the doorway makes him grin; hold a key to keep a straight face.
-- **#5 Final sprites** once the slice's screens are stable (after the left panel rework, which changes its layout).
+- **#5 Final sprites** once the slice's screens are stable (the left panel rework, 0.34 to 0.36, set its layout; him included).
 - **#32 Background music**, under her sounds, ducking when she is at the door.
 - **#4 Real-life upgrade store** (the zł sink).
 - **#14 Synergy pass, arc set:** combo floors, party sets, overtime zł, bag tools, banter, unfolding city,
