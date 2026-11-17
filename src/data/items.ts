@@ -44,6 +44,8 @@ export const SUFFIXES = ['of Many Lives', 'of Five More Minutes', 'of the Night 
 export const MAP_INFO: Record<MapKind, { name: string; desc: string; color: string; value: number }> = {
   elite: { name: 'Elite Pack', desc: 'Harder enemies, a guaranteed rare', color: '#f2b84b', value: 30 },
   shrine: { name: 'Shrine', desc: 'Full heal, revive all, no loot', color: '#6fcf7f', value: 30 },
-  vault: { name: 'Treasure Vault', desc: 'No battle, 6 items, +30 Noise', color: '#ff9a4d', value: 30 },
+  vault: { name: 'Treasure Vault', desc: 'No battle, 5 items, +30 Noise', color: '#ff9a4d', value: 30 },
+  cursed: { name: 'Cursed Floor', desc: 'Your heals do half; every drop is one rarity better', color: '#c77dff', value: 30 },
+  goblin: { name: 'Goblin Den', desc: 'A loot goblin after every battle; catching one is loud', color: '#9fe05a', value: 30 },
 };
 export const FEATHER = { name: 'Phoenix Feather', desc: 'Revive a downed hero at 50% HP', color: '#ff7ab8', value: 50 };

@@ -9,10 +9,32 @@ ring, trinket). Old saves are renamed on load.
 
 **Floors.** Endless. A floor is a walk, then `BATTLES_PER_FLOOR` (3) battles. Every
 `CHECKPOINT_EVERY` (5th) floor ends in a boss and sets the checkpoint. Enemies scale per floor
-(`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Dungeon of Overdue Bills:
-Debt Skeleton, Late-Fee Bat, The Collector, boss The Bailiff (1700 HP, 28 attack at floor 1 scale).
+(`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Dungeon of Overdue Bills
+(`src/data/enemies.ts`). When a boss dies, the enemies still standing run.
 
-**Boss big attack: FINAL NOTICE.** Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
+**Enemies.** Three plain ones (Debt Skeleton, Late-Fee Bat, The Collector) and three that each ask for a
+different answer, joining from floors 2, 3 and 4. The first time you meet one, a line says what it wants.
+
+| Enemy | From | Role | Answer |
+|---|---|---|---|
+| The Auditor | floor 2 | Heals the most hurt friend under `AUDITOR_HEAL_BELOW` (75%) for `AUDITOR_HEAL` (60%) of his own max HP instead of attacking | Frost goes for him first; the mage's auto Bolt picks the weakest, often him |
+| Tax Shelter | floor 3 | Shielded: takes `SHIELD_TAKEN` (25%) damage until a Bash breaks the shield | Bash (it goes for a shield before the front enemy), then burst |
+| Junk Mail | floor 4 | A swarm of 5 envelopes; each single hit takes one envelope at most, and every envelope bites on its turn | Fire hits every envelope; Storm's bolts take one each; Taunt soaks the bites |
+
+Skill targeting: Bash goes for a winding-up boss, then a shield, then the front enemy; Frost goes for a
+healer, then the front enemy.
+
+**Bosses** rotate per checkpoint floor: floor 5 the Bailiff, 10 the Loan Shark, 15 the Landlord, then around
+again with floor scaling. Each has its own telegraphed move: a cast bar at the top centre and the skills
+that answer it pulsing red. The node map names the boss on the boss floor.
+
+| Boss (HP / attack at floor 1 scale) | Move | Answer |
+|---|---|---|
+| The Bailiff (1700 / 28) | FINAL NOTICE, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
+| The Loan Shark (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s "loan": a friend (Auditor or Junk Mail) joins; a friend still standing is refinanced instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next loan: Fire, Storm, Frost on the Auditor |
+| The Landlord (1600 / 26) | Starts behind a security deposit (a shield). Every `EVICT_EVERY` (3rd) action, a 3 s EVICTION on the most hurt hero (a red EVICT tag over them): `EVICT_PCT` (90%) of their max HP. Afterwards the deposit comes back | Taunt (the knight takes 55% instead), Ward halves, Revive after; Bash the deposit off again |
+
+**Boss big attack: FINAL NOTICE** (the Bailiff). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
 a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
 `BOSS_WINDUP_SEC` (3 s) with a low rising sound you can hear from Excel. Then every hero loses
 `BOSS_SLAM_PCT` (60%) of max HP. Three answers, one per hero:
@@ -83,6 +105,10 @@ preview. Maps (dropped as loot, 8% per drop):
 | Elite Pack | Enemies ×`ELITE_MULT`, a guaranteed rare |
 | Shrine | Full heal and revive, no battle, no loot |
 | Treasure Vault | No battle, `VAULT_DROPS` items, +`NOISE_VAULT` Noise |
+| Cursed Floor | Your heals do `CURSED_HEAL` (half); every drop is one rarity better; violet fog |
+| Goblin Den | A loot goblin after every battle; each catch gives `GOBLIN_DEN_DROPS` items and +`GOBLIN_DEN_NOISE` Noise |
+
+With six possible paths, each node shows only its name; the description appears on hover.
 
 **Downed and wipe.** At 0 HP a hero is downed and skips turns. Downed heroes return at 30% when the
 floor ends, or via a Phoenix Feather from the bag (50%). All three down = wipe, an MMO corpse run:
@@ -136,6 +162,19 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
   a player who saves Taunt and Ward only for the wind-up wipes about half the time; 40 s on Excel always wipes.
   The floor-5 boss is milder (~66 to 70%); RPG depth (#27) will give floors 5/10/15 their own bosses.
   Bailiff history: 700/16 → 850/24 (0.15) → 1100/28 (0.18) → 1700/28 (0.23, the full kit halved kill times).
+- **Each new enemy asks one question** (0.24): heal (focus it), shield (Bash), swarm (area damage). Plain stat
+  variants were rejected: they make fights longer without asking for a different button. The answers lean on
+  skills, so a pack with a shield or a swarm is worse while you are away (floor 8, 40 s away: 4/12 wipes,
+  was 2/15).
+- **A boss per checkpoint, each with its own move** (0.24): the Bailiff teaches "answer the cast bar", the
+  Loan Shark "kill the adds first", the Landlord "break the shield, then survive the targeted hit". Bash's
+  roles change per boss (interrupt, add killer, shield breaker), so the same button is a new decision.
+  - Loan Shark first version only called a friend into a free slot, so killing the friend caused the next
+    loan and leaving it alive was better. Refinancing a living friend fixed the incentive.
+  - Measured with `test/autopilot.ts` (lowest party HP, careful / skill spam): floor 5 Bailiff 69% / 67%;
+    floor 10 Loan Shark 52% / 62% with 1 to 3 wipes in 12; floor 15 Landlord 60% / 55%, about 60 s.
+    40 s on Excel wipes on all three. Shark at attack 32 wiped 3 to 4 in 10 (too punishing); at 24, 67 to 72%.
+- **The node map hides descriptions until hover** (0.24): five map types make six paths possible.
 - **Marks reward order, not speed** (0.23): two skills that are fine alone are better in sequence, so the
   player has a reason to look at the fight between alt-tabs. Judged pays off only on skill hits: when it
   also healed off auto attacks, the party healed itself while you sat on Excel and the reckless autopilot

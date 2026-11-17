@@ -1,6 +1,6 @@
 import { T } from '../config/tuning';
 import { S, N, type Enemy, type Hero, type VfxKind, type MarkId } from '../core/state';
-import { ENEMIES, BOSS, type EnemyDef } from '../data/enemies';
+import { ENEMIES, BOSSES, ENEMY_BY_ID, bossFor, type EnemyDef } from '../data/enemies';
 import { ABILITIES } from '../data/heroes';
 import { pick, randi, rand, chance } from '../core/rng';
 import { heroStats, maxHp, xpNeeded } from './stats';
@@ -29,18 +29,34 @@ function makeEnemy(def: EnemyDef, floor: number, elite: boolean): Enemy {
   const hpM = (1 + T.ENEMY_HP_PER_FLOOR * (floor - 1)) * (elite ? T.ELITE_MULT : 1);
   const atkM = (1 + T.ENEMY_ATK_PER_FLOOR * (floor - 1)) * (elite ? T.ELITE_MULT : 1);
   const hp = Math.round(def.hp * hpM);
-  return { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), turnsAlive: 0, stunned: 0, boss: !!def.boss, flash: 0 };
+  const e: Enemy = { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), turnsAlive: 0, stunned: 0, boss: !!def.boss, flash: 0 };
+  if (def.role === 'shield') e.shield = true;
+  if (def.role === 'swarm') e.per = hp / def.stacks!;
+  meet(def);
+  return e;
 }
+/** The first time you meet an enemy type, a line says what it wants from you. */
+function meet(def: EnemyDef) {
+  if (!def.meet || S.g.seen.includes(def.id)) return;
+  S.g.seen.push(def.id);
+  toast(def.meet, def.boss ? '#f2b84b' : '#ffd9a0');
+}
+export const roleOf = (e: Enemy) => ENEMY_BY_ID[e.defId]?.role;
+export const moveOf = (e: Enemy) => ENEMY_BY_ID[e.defId]?.move;
+/** Swarm bodies left (Junk Mail envelopes). */
+export const bodies = (e: Enemy) => e.per ? Math.max(0, Math.ceil(e.hp / e.per - 1e-6)) : e.hp > 0 ? 1 : 0;
 
 export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
   const n = N();
-  if (boss) n.enemies = [makeEnemy(pick(ENEMIES), floor, elite), makeEnemy(BOSS, floor, elite)];
+  const pool = ENEMIES.filter(d => (d.from ?? 1) <= floor);
+  if (boss) n.enemies = [makeEnemy(pick(pool), floor, elite), makeEnemy(bossFor(floor, T.CHECKPOINT_EVERY), floor, elite)];
   else {
     const count = randi(2, 3);
-    n.enemies = Array.from({ length: count }, () => makeEnemy(pick(ENEMIES), floor, elite));
+    n.enemies = Array.from({ length: count }, () => makeEnemy(pick(pool), floor, elite));
   }
   if (isAway()) { n.enemies.forEach(e => { e.atb = rand(...T.AUTOPILOT_AMBUSH_ATB); }); autopilotPull(); }
 }
+export { BOSSES };
 
 export const aliveHeroes = () => S.g.heroes.filter(h => !h.downed);
 export const abilityUnlocked = (h: Hero, slot: number) => slot <= 3 && h.level >= T.ABILITY_UNLOCK[slot];
@@ -84,13 +100,16 @@ function castAbility(h: Hero, slot: number) {
     return;
   }
   if (h.id === 'knight' && slot === 2) {
-    const e = n.enemies.find(x => x.hp > 0 && (x.wind ?? 0) > 0) ?? frontEnemy();   // Bash goes for a winding-up boss first
+    const e = bashTarget();
     if (e) {
+      if (e.shield) { e.shield = false; const c = enemyCenter(e); floatText(c.x, UNIT_Y - 58, 'SHIELD BROKEN!', '#8fd8ff'); sfx.crit(); }
       const shatter = cashIn(e, 'chill', `SHATTER x${T.MARK_CHILL_BASH}`) ? T.MARK_CHILL_BASH : 1;
       hitEnemy(e, st.atk * A.power! * mult * shatter, st.crit, 'bash');
       if (e.hp > 0) mark(e, 'stagger');
-      if ((e.wind ?? 0) > 0 && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
-      else { e.stunned = 1; if ((e.wind ?? 0) > 0) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts FINAL NOTICE! He braces for the next one.`, '#8fb3ff'); sfx.good(); } }
+      const slam = (e.wind ?? 0) > 0 && moveOf(e) === 'slam';
+      if (slam && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
+      else if ((e.wind ?? 0) > 0 && !slam) { /* only FINAL NOTICE can be interrupted */ }
+      else { e.stunned = 1; if (slam) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts FINAL NOTICE! He braces for the next one.`, '#8fb3ff'); sfx.good(); } }
     }
     return;
   }
@@ -108,7 +127,7 @@ function castAbility(h: Hero, slot: number) {
     });
     return;
   }
-  if (h.id === 'mage' && slot === 2) { const e = frontEnemy(); if (e) { hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); if (e.hp > 0) mark(e, 'chill'); } return; }
+  if (h.id === 'mage' && slot === 2) { const e = frostTarget(); if (e) { hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); if (e.hp > 0) mark(e, 'chill'); } return; }
   if (h.id === 'mage' && slot === 3) {
     loudOnce = true; critHeard = false;
     for (let i = 0; i < A.hits!; i++) {
@@ -160,6 +179,12 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   const isCrit = chance(crit / 100);
   let dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - e.armor * 0.5));
   if (isCrit) { dmg *= 2; if (!loudOnce || !critHeard) n.noise += T.NOISE_CRIT; critHeard = true; }
+  if (e.shield) dmg = Math.max(1, Math.round(dmg * T.SHIELD_TAKEN));
+  if (e.per) {   // a swarm: one body per single hit; Fire hits every body
+    const left = bodies(e), cur = e.hp - (left - 1) * e.per;
+    dmg = Math.round(kind === 'fire' ? Math.min(dmg, e.per) * (left - 1) + Math.min(dmg, cur) : Math.min(dmg, cur));
+    dmg = Math.max(1, dmg);
+  }
   e.hp -= dmg; e.flash = 0.15;
   const idx = n.enemies.indexOf(e);
   floatText(ENEMY_X[Math.max(0, idx)] + 18, UNIT_Y - 30, isCrit ? `-${dmg}!` : `-${dmg}`, isCrit ? '#f2b84b' : '#ff8a80');
@@ -173,12 +198,17 @@ function healHero(h: Hero, amount: number) {
   vfx('heal', heroCenter(S.g.heroes.indexOf(h)), undefined, 0.8);
   const mx = maxHp(h);
   const before = h.hp;
+  if (N().floorMap === 'cursed') amount *= T.CURSED_HEAL;
   h.hp = Math.min(mx, h.hp + Math.round(amount));
   const i = S.g.heroes.indexOf(h);
   if (h.hp > before) floatText(HERO_X[i] + 18, UNIT_Y - 30, `+${h.hp - before}`, '#6fcf7f');
 }
 
 function frontEnemy(): Enemy | undefined { return N().enemies.find(e => e.hp > 0); }
+/** Bash goes for a winding-up boss, then a shield, then the front enemy. */
+export function bashTarget(): Enemy | undefined { const a = N().enemies.filter(e => e.hp > 0); return a.find(e => (e.wind ?? 0) > 0) ?? a.find(e => e.shield) ?? a[0]; }
+/** Frost goes for a healer first (focus the healer), then the front enemy. */
+export function frostTarget(): Enemy | undefined { const a = N().enemies.filter(e => e.hp > 0); return a.find(e => roleOf(e) === 'healer') ?? a[0]; }
 function weakestEnemy(): Enemy | undefined { return [...N().enemies].filter(e => e.hp > 0).sort((a, b) => a.hp - b.hp)[0]; }
 
 /** A hero's auto action. skill: it came from Rally (counts as a skill hit for Judged). */
@@ -204,15 +234,25 @@ function enemyAct(e: Enemy) {
   const n = N();
   e.turnsAlive++;
   if (e.stunned > 0) { e.stunned--; return; }
-  if (e.boss) {
-    e.acts = (e.acts ?? 0) + 1;
-    if (e.acts % T.BOSS_SLAM_EVERY === 0) {
-      e.wind = T.BOSS_WINDUP_SEC;
-      toast(`${e.name} winds up FINAL NOTICE! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup();
+  if (e.boss && bossMove(e)) return;
+  const role = roleOf(e);
+  if (role === 'healer') {   // the Auditor cooks the books for the most hurt friend
+    const hurt = n.enemies.filter(x => x.hp > 0 && x.hp < x.maxHp * T.AUDITOR_HEAL_BELOW).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
+    if (hurt) {
+      const amt = Math.min(hurt.maxHp - hurt.hp, Math.round(e.maxHp * T.AUDITOR_HEAL));
+      hurt.hp += amt; e.lunge = 0.3;
+      const c = enemyCenter(hurt); vfx('heal', c, undefined, 0.7); floatText(c.x, UNIT_Y - 30, `+${amt}`, '#9fe08a');
       return;
     }
   }
   e.lunge = 0.3;
+  const hits = role === 'swarm' ? bodies(e) : 1;   // every envelope bites
+  for (let k = 0; k < hits; k++) attackHero(e, e.atk);
+}
+
+/** One enemy hit on a hero (target: taunt, else random when nobody tanks, else the knight half the time). */
+function attackHero(e: Enemy, atk: number) {
+  const n = N();
   const alive = aliveHeroes();
   if (!alive.length) return;
   let target: Hero;
@@ -220,7 +260,7 @@ function enemyAct(e: Enemy) {
   else if (T.AUTOPILOT_NO_TANK && isAway()) target = pick(alive);
   else target = chance(0.5) && !S.g.heroes[0].downed ? S.g.heroes[0] : pick(alive);
   const st = heroStats(target);
-  let raw = e.atk;
+  let raw = atk;
   const over = e.turnsAlive - T.INTEREST_AFTER_TURNS;
   if (over > 0) raw *= 1 + T.INTEREST_PER_TURN * over;
   if (n.ward > 0) raw *= ABILITIES.healer[2].power!;
@@ -228,10 +268,87 @@ function enemyAct(e: Enemy) {
   target.hp -= dmg;
   const i = S.g.heroes.indexOf(target);
   vfx('claw', heroCenter(i), undefined, 0.35);
-  floatText(HERO_X[i] + 18, UNIT_Y - 30, `-${dmg}`, '#ff8a80');
+  floatText(HERO_X[i] + 18 + rand(-8, 8), UNIT_Y - 30, `-${dmg}`, '#ff8a80');
   reflect(e, dmg);
   if (isAway() && target.hp < maxHp(target) * T.AUTOPILOT_HEAL_BELOW) autopilotHurt();
   if (target.hp <= 0) { target.hp = 0; target.downed = true; target.queued = null; toast(`${target.name} is down!`, '#ff8a80'); sfx.bad(); }
+}
+
+/** A boss's telegraphed move starts instead of a normal action. Returns true when it did. */
+function bossMove(e: Enemy): boolean {
+  const n = N();
+  e.acts = (e.acts ?? 0) + 1;
+  const move = moveOf(e);
+  if (move === 'slam' && e.acts % T.BOSS_SLAM_EVERY === 0) {
+    e.wind = e.windMax = T.BOSS_WINDUP_SEC;
+    toast(`${e.name} winds up FINAL NOTICE! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup();
+    return true;
+  }
+  if (move === 'loan' && e.acts % T.LOAN_EVERY === 0) {
+    e.wind = e.windMax = T.LOAN_WINDUP_SEC;
+    const friend = n.enemies.find(x => x !== e && x.hp > 0);
+    toast(friend ? `${e.name}: "Let's refinance." Kill ${friend.name} first!` : `${e.name}: "Loan approved." A friend is coming.`, '#ff8a80'); sfx.windup();
+    return true;
+  }
+  if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {
+    const v = mostHurt();
+    if (!v) return false;
+    e.evict = S.g.heroes.indexOf(v); e.wind = e.windMax = T.EVICT_WINDUP_SEC;
+    toast(`${e.name} serves an EVICTION on ${v.name}! Taunt or Ward!`, '#ff8a80'); sfx.windup();
+    return true;
+  }
+  return false;
+}
+
+/** The wind-up is over: the move lands. */
+function landMove(e: Enemy) {
+  const move = moveOf(e);
+  if (move === 'slam') return bossSlam(e);
+  if (move === 'loan') return loanFriend(e);
+  if (move === 'evict') return eviction(e);
+}
+
+/** The Loan Shark's friend takes the free slot next to him. */
+function loanFriend(e: Enemy) {
+  const n = N();
+  const old = n.enemies.find(x => x !== e && x.hp > 0);
+  if (old) {   // refinanced: back to full and meaner
+    old.hp = old.maxHp; old.atk *= T.LOAN_REFI; old.turnsAlive = 0;
+    const c = enemyCenter(old); floatText(c.x, UNIT_Y - 46, 'REFINANCED', '#ff8a80'); vfx('heal', c, undefined, 0.7);
+    e.lunge = 0.3; sfx.handle();
+    return;
+  }
+  const i = n.enemies.findIndex(x => x !== e && x.hp <= 0);
+  if (i < 0) return;
+  const def = ENEMY_BY_ID[e.acts! % (2 * T.LOAN_EVERY) === 0 ? 'junk' : 'auditor'];
+  const add = makeEnemy(def, n.floor, n.floorMap === 'elite');
+  add.atb = 0;
+  n.enemies[i] = add;
+  e.lunge = 0.3; sfx.handle();
+  toast(`${def.name} joins the fight.`, '#ff8a80');
+}
+
+/** EVICTION lands on one hero; the Landlord's deposit comes back. */
+function eviction(e: Enemy) {
+  const n = N();
+  const knight = S.g.heroes[0];
+  let v = S.g.heroes[e.evict ?? 0];
+  if (!v || v.downed) v = mostHurt();
+  e.evict = undefined; e.lunge = 0.3;
+  sfx.slam(); n.noise = Math.min(100, n.noise + T.NOISE_CRIT);
+  if (v) {
+    const taunted = n.taunt > 0 && !knight.downed;
+    const h = taunted ? knight : v;
+    const dmg = Math.max(1, Math.round(maxHp(h) * (taunted ? T.BOSS_SLAM_TAUNT_PCT : T.EVICT_PCT) * (n.ward > 0 ? T.BOSS_SLAM_WARD_MULT : 1)));
+    h.hp -= dmg;
+    const i = S.g.heroes.indexOf(h);
+    vfx('claw', heroCenter(i), undefined, 0.5);
+    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
+    reflect(e, dmg);
+    toast(taunted ? `${knight.name} takes the EVICTION for ${v.name}.` : `EVICTION! ${h.name} is out on the street.`, '#ff8a80');
+    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); }
+  }
+  if (e.hp > 0) { e.shield = true; toast(`${e.name} takes a new deposit. Bash it off.`, '#8fd8ff'); }
 }
 
 function grantXp(amount: number) {
@@ -293,7 +410,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   }
   for (const e of n.enemies) {
     if (e.hp <= 0) continue;
-    if ((e.wind ?? 0) > 0) { e.wind! -= dt; if (e.wind! <= 0) { e.wind = 0; bossSlam(e); } continue; }   // winding up: no normal turns
+    if ((e.wind ?? 0) > 0) { e.wind! -= dt; if (e.wind! <= 0) { e.wind = 0; landMove(e); } continue; }   // winding up: no normal turns
     e.atb += e.speed * T.ATB_RATE * dt;
     if (e.atb >= 100) { e.atb -= 100; enemyAct(e); }
   }
@@ -301,7 +418,10 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   for (const e of n.enemies) {
     if (e.hp <= 0 && e.maxHp > 0) {
       grantXp((e.boss ? T.XP_PER_BOSS : T.XP_PER_KILL) * n.floor);
-      if (e.boss) { n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b'); }
+      if (e.boss) {
+        n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b');
+        n.enemies.forEach(x => { if (x !== e && x.hp > 0) { x.hp = 0; x.maxHp = 0; } });   // without the boss the rest run
+      }
       e.maxHp = 0;
     }
   }

@@ -5,6 +5,7 @@ import { S, N, RARITIES, type BagEntry } from '../core/state';
 import { CITY_BY_ID, type CityId } from '../data/city';
 import { TRADE_CHAT } from '../data/content';
 import { MAP_INFO } from '../data/items';
+import { bossFor, ENEMY_BY_ID } from '../data/enemies';
 import { RARITY_COLOR } from '../data/items';
 import { entryName, entryValue } from '../systems/loot';
 import { vendorValue, salvageYield, listValue } from '../systems/town';
@@ -323,8 +324,8 @@ function serviceWindowHtml(): string {
 }
 
 // ---------- Floor node map (Slay the Spire style), shown on the monitor when a floor ends ----------
-type NodeKind = 'plain' | 'boss' | 'elite' | 'shrine' | 'vault' | 'unknown';
-const NODE_COL: Record<NodeKind, string> = { plain: '#c9b08a', boss: '#e0524a', elite: '#f2b84b', shrine: '#6fcf7f', vault: '#ff9a4d', unknown: '#6a5a4a' };
+type NodeKind = 'plain' | 'boss' | 'elite' | 'shrine' | 'vault' | 'cursed' | 'goblin' | 'unknown';
+const NODE_COL: Record<NodeKind, string> = { plain: '#c9b08a', boss: '#e0524a', elite: '#f2b84b', shrine: '#6fcf7f', vault: '#ff9a4d', cursed: '#c77dff', goblin: '#9fe05a', unknown: '#6a5a4a' };
 function nodeGlyph(k: NodeKind, col: string): string {
   const s = `stroke="${col}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
   switch (k) {
@@ -333,6 +334,8 @@ function nodeGlyph(k: NodeKind, col: string): string {
     case 'elite': return `<path d="M-8 -2 a8 8 0 0 1 16 0 v4 h-4 v5 h-8 v-5 h-4 z" fill="${col}"/><circle cx="-3.5" cy="-1" r="2.2" fill="#2a1a10"/><circle cx="3.5" cy="-1" r="2.2" fill="#2a1a10"/>`;
     case 'shrine': return `<path d="M0 -10 V10 M-9 0 H9" stroke="${col}" stroke-width="5" stroke-linecap="round"/>`;
     case 'vault': return `<rect x="-10" y="-5" width="20" height="13" rx="2" fill="${col}"/><path d="M-10 -1 H10" stroke="#2a1a10" stroke-width="2"/><rect x="-2" y="-3" width="4" height="5" fill="#2a1a10"/>`;
+    case 'cursed': return `<path d="M-8 4 a8 8 0 1 1 16 0 v4 h-16 z" fill="${col}"/><path d="M-4 -1 l2 2 M-2 -1 l-2 2 M2 -1 l2 2 M4 -1 l-2 2" stroke="#2a1a10" stroke-width="1.5"/><path d="M-3 5 h6" stroke="#2a1a10" stroke-width="1.5"/>`;
+    case 'goblin': return `<path d="M-11 -4 L-6 -1 M11 -4 L6 -1" stroke="${col}" stroke-width="3" stroke-linecap="round"/><circle r="7" fill="${col}"/><circle cx="-2.5" cy="-1" r="1.5" fill="#2a1a10"/><circle cx="2.5" cy="-1" r="1.5" fill="#2a1a10"/><path d="M-3 3 h6" stroke="#2a1a10" stroke-width="1.5"/>`;
     default: return `<text x="0" y="6" text-anchor="middle" font-size="16" fill="${col}" font-family="Pixelify Sans, monospace">?</text>`;
   }
 }
@@ -342,7 +345,7 @@ function nodeMapHtml(): string {
   const next = n.floor + 1, after = n.floor + 2;
   const bossNext = next % T.CHECKPOINT_EVERY === 0, bossAfter = after % T.CHECKPOINT_EVERY === 0;
   const opts: { kind: NodeKind; id: string; name: string; desc: string }[] = [
-    { kind: bossNext ? 'boss' : 'plain', id: '', name: bossNext ? `Floor ${next}: Boss floor` : `Floor ${next}`, desc: bossNext ? '3 battles, boss at the end. Checkpoint after.' : '3 battles, normal loot' },
+    { kind: bossNext ? 'boss' : 'plain', id: '', name: bossNext ? `Floor ${next}: ${bossFor(next, T.CHECKPOINT_EVERY).name}` : `Floor ${next}`, desc: bossNext ? '3 battles, the boss at the end. Checkpoint after.' : '3 battles, normal loot' },
   ];
   const seen = new Set<string>();
   for (const e of S.g.bag) if (e.kind === 'map' && !seen.has(e.map)) {
@@ -366,7 +369,7 @@ function nodeMapHtml(): string {
     const x = xs(opts.length, i), col = NODE_COL[o.kind];
     return `<button class="mnode" data-act="nextFloor" data-arg="${o.id}" style="left:${x}px;top:${rowY[1]}px;--nc:${col}">
       <svg viewBox="-24 -24 48 48" width="48" height="48"><circle r="21" fill="#1a120c" stroke="${col}" stroke-width="3"/>${nodeGlyph(o.kind, col)}</svg>
-      <span class="mn-tip"><b style="color:${col}">${o.name}</b>${o.desc}</span></button>`;
+      <span class="mn-tip" style="--nw:${Math.min(130, 520 / opts.length - 6)}px"><b style="color:${col}">${o.name}</b><i>${o.desc}</i></span></button>`;
   }).join('');
   return `<div class="nodemap">
     <svg class="nm-svg" viewBox="0 0 ${W} 352" width="${W}" height="352">${lines}${svgNodes}</svg>
@@ -375,7 +378,7 @@ function nodeMapHtml(): string {
     <div class="nm-lab" style="top:${rowY[2] + 22}px">floor ${after}${bossAfter ? ' · BOSS' : ' · unknown'}</div>
     ${buttons}
     <button class="tbtn tportal" data-act="toTown">Town portal <small>15 min · come back to floor ${n.checkpoint}</small></button>
-    <div class="nm-foot">Maps from loot add paths. The night clock runs at 25% while you choose.</div>
+    <div class="nm-foot">Hover a path for what it does. Maps from loot add paths. The clock runs at 25% while you choose.</div>
   </div>`;
 }
 
@@ -391,12 +394,22 @@ function monUiInner(n: NonNullable<typeof S.g.night>): string {
   return `<button class="tbtn tportal ${ok ? '' : 'off'}" data-act="toTown">Town portal <small>${ok ? '15 min' : 'after battle'}</small></button>${skillBarHtml()}`;
 }
 
+/** Skills that answer the boss's wind-up pulse red: FINAL NOTICE = Taunt, Bash (unless braced), Ward;
+ *  EVICTION = Taunt, Ward; a loan = Fire and Storm for the friend that is coming. */
+function answersMove(e: { defId: string; braced?: boolean }, id: string, si: number): boolean {
+  const move = ENEMY_BY_ID[e.defId]?.move;
+  if (move === 'slam') return (id === 'knight' && (si === 1 || (si === 2 && !e.braced))) || (id === 'healer' && si === 2);
+  if (move === 'evict') return (id === 'knight' && si === 1) || (id === 'healer' && si === 2);
+  if (move === 'loan') return id === 'mage' && (si === 1 || si === 3);
+  return false;
+}
+
 /** A mark on the field that this skill cashes in: the button glows gold (docs/design/dungeon.md, ability marks). */
 function comboReady(id: string, si: number): string {
   const alive = N().enemies.filter(e => e.hp > 0);
   const has = (e: { marks?: Record<string, number | undefined> } | undefined, m: string) => !!e && (e.marks?.[m] ?? 0) > 0;
   if (id === 'mage' && si === 1 && alive.some(e => has(e, 'stagger'))) return `x${T.MARK_STAGGER_FIRE}`;
-  if (id === 'knight' && si === 2 && has(alive.find(e => (e.wind ?? 0) > 0) ?? alive[0], 'chill')) return `x${T.MARK_CHILL_BASH}`;
+  if (id === 'knight' && si === 2 && has(alive.find(e => (e.wind ?? 0) > 0) ?? alive.find(e => e.shield) ?? alive[0], 'chill')) return `x${T.MARK_CHILL_BASH}`;
   if (id === 'healer' && si === 2 && alive.some(e => has(e, 'taunted'))) return '\u21a9';
   return '';
 }
@@ -422,7 +435,7 @@ function skillBarHtml(): string {
       if (h.queued === si) cls += ' queued';
       if (lock && si > 0) cls += ' blocked';
       const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
-      if (wind && unlocked && cd <= 0 && ((h.id === 'knight' && (si === 1 || (si === 2 && !wind.braced))) || (h.id === 'healer' && si === 2))) cls += ' answer';
+      if (wind && unlocked && cd <= 0 && answersMove(wind, h.id, si)) cls += ' answer';
       else if (unlocked && cd <= 0 && !h.downed && comboReady(h.id, si)) { cls += ' combo'; over += `<b class="ie-combo">${comboReady(h.id, si)}</b>`; }
       return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" data-tip="skill:${hi}:${si}">${glyph(gname, unlocked ? gcol : '#4a4440', 20)}${over}<span class="ie-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
     }).join('');

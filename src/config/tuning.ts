@@ -88,6 +88,15 @@ export const T = {
   BOSS_SLAM_PCT: 0.6,            // unanswered: every hero loses this share of max HP
   BOSS_SLAM_TAUNT_PCT: 0.55,      // taunted: only the knight is hit, for this share of his max HP
   BOSS_SLAM_WARD_MULT: 0.5,
+  // The Loan Shark (floor 10): every LOAN_EVERY-th action calls in a friend (Auditor or Junk Mail); a friend still
+  // standing is refinanced instead: full HP and x LOAN_REFI attack. Kill friends before the next loan.
+  LOAN_EVERY: 3, LOAN_WINDUP_SEC: 2, LOAN_REFI: 1.3,
+  // The Landlord (floor 15): a deposit shield Bash breaks; every EVICT_EVERY-th action, EVICTION on the most hurt hero.
+  EVICT_EVERY: 3, EVICT_WINDUP_SEC: 3, EVICT_PCT: 0.9,   // taunted: the knight takes BOSS_SLAM_TAUNT_PCT; Ward halves
+  // Enemy roles (docs/design/dungeon.md).
+  SHIELD_TAKEN: 0.25,             // a shielded enemy takes this share of damage until a Bash breaks the shield
+  AUDITOR_HEAL: 0.6,              // the Auditor heals a friend for this share of his own max HP
+  AUDITOR_HEAL_BELOW: 0.75,       // ...when that friend is under this share of their max HP; else he attacks
   // Reckless autopilot: when the player chose to leave the game (Excel, switching, minigames, cables out)
   AUTOPILOT_HEAL_BELOW: 0.35,      // the healer only heals below this (normal: 0.6)
   AUTOPILOT_NO_TANK: true,        // nobody holds aggro: enemies pick targets at random
@@ -107,6 +116,8 @@ export const T = {
   RARITY_SHIFT_PER_FLOOR: [-1, 0.5, 0.3, 0.15, 0.05],
   PITY_EPIC: 40,
   GOBLIN_CHANCE: 0.03, GOBLIN_SEC: 6, GOBLIN_DROPS: 3,
+  CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
+  GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,
   FEATHER_DROP_CHANCE: 0.04,
   FLOW_LUCK: 0.15,                // per point of flow above 1

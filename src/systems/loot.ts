@@ -29,7 +29,8 @@ export function rollRarity(floor: number, minIdx = 0): Rarity {
 }
 
 export function genItem(ilvl: number, minRarity = 0): Item {
-  const rarity = rollRarity(ilvl, minRarity);
+  let rarity = rollRarity(ilvl, minRarity);
+  if (S.g.night?.floorMap === 'cursed' && S.g.night.location === 'dungeon') rarity = RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(rarity) + 1)];
   const slot = pick(SLOTS);
   const mult = RARITY_MULT[rarity];
   const pool = [...SLOT_STATS[slot]];
@@ -105,7 +106,7 @@ export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: b
     out.push(itemEntry(genItem(floor, guaranteed ? 2 : 0)));
   }
   if (!opts.count) {
-    if (chance(T.MAP_DROP_CHANCE)) out.push(mapEntry(pick(['elite', 'shrine', 'vault'] as MapKind[])));
+    if (chance(T.MAP_DROP_CHANCE)) out.push(mapEntry(pick(Object.keys(MAP_INFO) as MapKind[])));
     if (chance(T.FEATHER_DROP_CHANCE)) out.push(featherEntry());
   }
   // drops fall where the enemies stood; the front hero picks them up while walking

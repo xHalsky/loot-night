@@ -7,7 +7,8 @@
 import { T } from '../config/tuning';
 import { S, N, RARITIES, type Vfx, type FloatFx, type MarkId } from '../core/state';
 import { HERO_SPRITES } from '../data/heroes';
-import { ENEMY_BY_ID } from '../data/enemies';
+import { ENEMY_BY_ID, ENVELOPE } from '../data/enemies';
+import { bodies, moveOf } from '../systems/battle';
 import { MARKS } from '../data/marks';
 import { HERO_X, ENEMY_X, UNIT_Y } from '../systems/battle';
 import { maxHp } from '../systems/stats';
@@ -198,12 +199,30 @@ function units(c: CanvasRenderingContext2D, t: number) {
     const x = (e.boss ? 500 : ENEMY_X[i]) - (e.lunge ? Math.sin(Math.PI * (1 - e.lunge / 0.3)) * 16 : 0);
     const y = e.boss ? UNIT_Y - 32 : UNIT_Y;
     c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(x + (e.boss ? 42 : 30), FEET, e.boss ? 44 : 30, 6, 0, 0, Math.PI * 2); c.fill();
-    drawPx(c, def.sprite, x, y, s, e.flash > 0 ? 0.5 : 1);
+    if (e.per) {   // a swarm: one small envelope per body, fluttering
+      const k = bodies(e);
+      for (let j = 0; j < k; j++) {
+        const ex = x + (j % 3) * 20 - 2 + Math.sin(t * 5 + j) * 3, ey = y + 18 + Math.floor(j / 3) * 26 + Math.cos(t * 4 + j * 2) * 4;
+        drawPx(c, ENVELOPE, ex, ey, 3, e.flash > 0 ? 0.5 : 1);
+      }
+    } else drawPx(c, def.sprite, x, y, s, e.flash > 0 ? 0.5 : 1);
+    if (e.shield) {   // a shield bubble until Bash breaks it
+      const cx = x + (e.boss ? 42 : 30), cy = y + (e.boss ? 56 : 40), r = e.boss ? 62 : 44;
+      c.strokeStyle = `rgba(143,216,255,${0.55 + Math.sin(t * 3) * 0.2})`; c.lineWidth = 2;
+      c.beginPath(); c.ellipse(cx, cy, r * 0.8, r, 0, 0, Math.PI * 2); c.stroke();
+      c.fillStyle = 'rgba(143,216,255,0.08)'; c.fill();
+    }
     bar(c, x - 4, y - 18, e.boss ? 92 : 68, 9, e.hp / e.maxHp, '#e0524a');
     if (e.boss) text(c, e.name, x + 42, y - 24, 12, '#f2b84b', 'center', 600);
     const over = e.turnsAlive - T.INTEREST_AFTER_TURNS;
     if (over > 0) text(c, `INTEREST +${Math.round(over * T.INTEREST_PER_TURN * 100)}%`, x + 30, y - 30, 10, '#ffb3a8', 'center');
     if (e.stunned > 0) text(c, 'STUN', x + 30, y - 24, 11, '#8fb3ff', 'center');
+    if (e.per) text(c, `x${bodies(e)}`, x + 62, y - 8, 11, '#efe6cf', 'right', 700);
+    if (e.evict !== undefined && (e.wind ?? 0) > 0) {   // EVICTION target: a red notice over that hero
+      const hx = HERO_X[e.evict] + 30, by = UNIT_Y - 40 + Math.sin(t * 8) * 3;
+      c.fillStyle = '#e0302a'; c.fillRect(hx - 22, by - 12, 44, 14);
+      text(c, 'EVICT', hx, by - 1, 10, '#fff0e8', 'center', 700);
+    }
 
   });
 }
@@ -256,13 +275,14 @@ function lighting(c: CanvasRenderingContext2D, t: number, torchW: { x: number; y
 function fog(c: CanvasRenderingContext2D, t: number) {
   const n = N();
   const k = n.phase === 'battle' ? 0.55 : 1;
+  const fc = n.floorMap === 'cursed' ? '70,24,92' : '40,30,52', fl = n.floorMap === 'cursed' ? '120,50,150' : '70,58,88';   // Cursed Floor: violet fog
   const g = c.createLinearGradient(400, 0, W, 0);
-  g.addColorStop(0, 'rgba(40,30,52,0)'); g.addColorStop(1, `rgba(40,30,52,${0.85 * k})`);
+  g.addColorStop(0, `rgba(${fc},0)`); g.addColorStop(1, `rgba(${fc},${0.85 * k})`);
   c.fillStyle = g; c.fillRect(380, 0, W - 380, H);
   for (let i = 0; i < 6; i++) {
     const x = 480 + ((i * 70 - t * (8 + i * 2)) % 220 + 220) % 220, y = 80 + rnd(i, 5) * 220, r = 60 + rnd(i, 6) * 50;
     const fg = c.createRadialGradient(x, y, 4, x, y, r);
-    fg.addColorStop(0, `rgba(70,58,88,${0.32 * k})`); fg.addColorStop(1, 'rgba(70,58,88,0)');
+    fg.addColorStop(0, `rgba(${fl},${0.32 * k})`); fg.addColorStop(1, `rgba(${fl},0)`);
     c.fillStyle = fg; c.fillRect(x - r, y - r, r * 2, r * 2);
   }
 }
@@ -273,13 +293,17 @@ function windupHud(c: CanvasRenderingContext2D) {
   for (const e of n.enemies) {
     if (e.hp <= 0 || !((e.wind ?? 0) > 0)) continue;
     // a boss cast bar, MMO raid style: fixed at the top centre, outside the camera
-    const k = 1 - e.wind! / T.BOSS_WINDUP_SEC, pulse = Math.floor(performance.now() / 120) % 2;
+    const k = 1 - e.wind! / (e.windMax ?? T.BOSS_WINDUP_SEC), pulse = Math.floor(performance.now() / 120) % 2;
+    const move = moveOf(e), victim = e.evict !== undefined ? S.g.heroes[e.evict]?.name : '';
+    const label = move === 'loan' ? (N().enemies.some(x => x !== e && x.hp > 0) ? 'REFINANCE' : 'LOAN APPROVED') : move === 'evict' ? `EVICTION: ${victim}` : e.braced ? 'FINAL NOTICE (braced, no interrupt)' : 'FINAL NOTICE';
+    const friend = N().enemies.some(x => x !== e && x.hp > 0);
+    const hint = move === 'loan' ? (friend ? 'Kill his friend first or it comes back stronger' : 'A friend is coming: Fire or Storm it') : move === 'evict' ? 'Taunt or Ward!' : e.braced ? 'Ward or Taunt!' : 'Bash, Ward or Taunt!';
     const bw = 240, bx = W / 2 - bw / 2, by = 62;
     c.fillStyle = 'rgba(10,4,6,.85)'; c.fillRect(bx - 3, by - 3, bw + 6, 22);
     c.strokeStyle = pulse ? '#ff5a5a' : '#8a2a2a'; c.lineWidth = 2; c.strokeRect(bx - 3, by - 3, bw + 6, 22);
     c.fillStyle = pulse ? '#e0302a' : '#b8401f'; c.fillRect(bx, by, bw * k, 16);
-    text(c, `${e.name}: ${e.braced ? 'FINAL NOTICE (braced, no interrupt)' : 'FINAL NOTICE'}`, W / 2, by + 12, 12, '#fff0e8', 'center', 700);
-    text(c, e.braced ? 'Ward or Taunt!' : 'Bash, Ward or Taunt!', W / 2, by + 34, 11, '#ffb0a0', 'center', 600);
+    text(c, `${e.name}: ${label}`, W / 2, by + 12, 12, '#fff0e8', 'center', 700);
+    text(c, hint, W / 2, by + 34, 11, '#ffb0a0', 'center', 600);
   }
 }
 

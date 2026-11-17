@@ -38,6 +38,8 @@ function startFloor(map: MapKind | 'plain') {
     toast('Treasure Vault! (loud)', '#ff9a4d');
     n.phase = 'loot'; n.battleIdx = T.BATTLES_PER_FLOOR - 1; return;
   }
+  if (map === 'cursed') toast('Cursed Floor: your heals do half, every drop is one rarity better.', '#c77dff');
+  if (map === 'goblin') toast('Goblin Den: a goblin after every battle. They squeal when caught.', '#9fe05a');
   n.phase = 'walk';
 }
 
@@ -86,7 +88,7 @@ export function updateDungeon(realDt: number) {
       const boss = isBossBattle();
       rollBattleDrops(n.floor, { boss, elite: n.floorMap === 'elite', at: n.enemies.map((e, i) => e.boss ? 542 : ENEMY_X[i] + 30) });
       if (boss) { n.checkpoint = n.floor + 1; toast(`Checkpoint: floor ${n.checkpoint}`, '#8fb3ff'); }
-      if (!n.goblin && chance(T.GOBLIN_CHANCE)) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); }
+      if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); }
       n.phase = 'loot'; n.phaseT = 0;
     } else if (r === 'wipe') wipe();
   } else if (n.phase === 'loot') {
@@ -120,8 +122,10 @@ export function catchGoblin() {
   const n = N();
   if (!n.goblin) return;
   n.goblin = null;
-  rollBattleDrops(n.floor, { count: T.GOBLIN_DROPS, minRare: true });
-  toast('Goblin caught!', '#f2b84b'); sfx.good();
+  const den = n.floorMap === 'goblin';
+  rollBattleDrops(n.floor, { count: den ? T.GOBLIN_DEN_DROPS : T.GOBLIN_DROPS, minRare: true });
+  if (den) n.noise = Math.min(100, n.noise + T.GOBLIN_DEN_NOISE);
+  toast(den ? 'Goblin caught! (it squeals)' : 'Goblin caught!', '#f2b84b'); sfx.good();
 }
 
 export function useFeather(id: string) {

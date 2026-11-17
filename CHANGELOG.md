@@ -3,6 +3,30 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.24.0 (2026-11-17)
+
+RPG depth, part 2 of 3 (#27).
+
+- **Three enemies that each ask for a different answer**: The Auditor (floor 2+) heals his friends; Frost now
+  goes for a healer first. Tax Shelter (3+) takes 25% damage until a Bash breaks its shield; Bash now goes for
+  a shield before the front enemy. Junk Mail (4+) is a swarm of 5 envelopes: one per single hit, all of them
+  per Fire. The first meeting with each shows a line on what it wants.
+- **A boss per checkpoint floor**: 5 the Bailiff (FINAL NOTICE, as before), 10 the Loan Shark (a loan every 3rd
+  action brings a friend; a friend still standing is refinanced: full HP, harder hits), 15 the Landlord (a
+  deposit shield Bash breaks; EVICTION on the most hurt hero, 90% of their HP; Taunt or Ward). Then around
+  again. Cast bar text and red answer pulses per boss; the node map names the boss.
+- When a boss dies, the enemies still standing run.
+- **Two maps**: Cursed Floor (heals do half, every drop one rarity better, violet fog) and Goblin Den (a goblin
+  after every battle, catching one is loud).
+- Node map: names under the nodes, descriptions on hover, so six paths fit. Fixed: the Treasure Vault said 6
+  items, it drops 5.
+- Autopilot test (lowest party HP, careful / spam, 10 to 12 trials): floor-5 Bailiff 69% / 67%; floor-10 Loan
+  Shark 52% / 62%, 1 to 3 wipes in 12 (was the Bailiff: 62% / 56%, 0 wipes); floor-15 Landlord 60% / 55%;
+  40 s away wipes on all three. Normal floor 8, 40 s away: 4/12 wipes, 22% HP (was 2/15).
+- Sims, 20 good runs averaged: depth 9.5-9.7, 0 catches, visits 5.2 (0.23: 3.9-4.7), wakes 2.5-2.9 (1.7-1.9),
+  average Noise 32 (28). Battle Noise is unchanged; the bot reaches the floor-10 boss at bedtime and its longer
+  fight runs into the sleep phase (night ends about 01:35, was 01:07). Left for the balance pass (#2).
+
 ## 0.23.0 (2026-11-17)
 
 RPG depth, part 1 of 3 (#27).

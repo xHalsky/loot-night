@@ -12,7 +12,7 @@ import { S, N, initialState } from '../src/core/state';
 import { step } from '../src/core/loop';
 import { startNight } from '../src/systems/night';
 import { travelToDungeon, chooseNextFloor, isBossBattle } from '../src/systems/dungeon';
-import { queueAbility } from '../src/systems/battle';
+import { queueAbility, moveOf } from '../src/systems/battle';
 import { maxHp } from '../src/systems/stats';
 
 const DT = 1 / 60;
@@ -29,10 +29,11 @@ function castSmart() {
   if (n.phase !== 'battle' || !n.enemies.some(e => e.hp > 0)) return;
   const [k, m, h] = S.g.heroes;
   const ok = (hero: typeof k, s: number) => !hero.downed && hero.cd[s] <= 0 && hero.level >= T.ABILITY_UNLOCK[s];
-  const winding = n.enemies.some(e => e.hp > 0 && (e.wind ?? 0) > 0);
-  const boss = n.enemies.some(e => e.boss && e.hp > 0);
-  const braced = n.enemies.some(e => e.hp > 0 && (e.wind ?? 0) > 0 && e.braced);
-  if (winding) { if (ok(k, 2) && !braced) queueAbility(0, 2); else if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
+  const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
+  const move = wind ? moveOf(wind) : undefined;
+  const boss = n.enemies.some(e => e.boss && e.hp > 0 && moveOf(e) === 'slam');   // only FINAL NOTICE needs Bash saved
+  if (move === 'slam') { if (ok(k, 2) && !wind!.braced) queueAbility(0, 2); else if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
+  if (move === 'evict') { if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
   const alive = n.enemies.filter(e => e.hp > 0);
   if (ok(k, 3)) queueAbility(0, 3);
   if (ok(m, 2)) queueAbility(1, 2);
@@ -71,11 +72,12 @@ function play(snap: string, mode: 'smart' | 'spam' | 'away'): { wiped: boolean; 
   const n = N();
   n.monitor = away ? 'excel' : 'rpg';
   const floor0 = n.floor;
-  let wiped = false, won = false, minHp = 1, secs = away ? 40 : 70;
+  const LONG = Number(process.env.LONG ?? 70);
+  let wiped = false, won = false, minHp = 1, secs = away ? 40 : LONG;
   const partyHp = () => S.g.heroes.reduce((a, h) => a + (h.downed ? 0 : h.hp), 0) / S.g.heroes.reduce((a, h) => a + maxHp(h), 0);
-  for (let i = 0; i < 60 * (away ? 40 : 70); i++) {
+  for (let i = 0; i < 60 * (away ? 40 : LONG); i++) {
     if (n.phase === 'battle') minHp = Math.min(minHp, partyHp());
-    if (won && secs >= 40) secs = Math.round(i / 60);
+    if (won && secs === LONG) secs = Math.round(i / 60);
     calm();
     if (mode === 'spam') castReady(); if (mode === 'smart') castSmart();
     if (n.phase === 'mapChoice') { won = true; break; }
@@ -86,7 +88,8 @@ function play(snap: string, mode: 'smart' | 'spam' | 'away'): { wiped: boolean; 
   return { wiped, hpPct: Math.round(minHp * 100), won, secs };
 }
 const TRIALS = Number(process.argv[2] ?? 30);
-for (const [label, boss, floor] of [['boss floor 5', true, 5], ['boss floor 10', true, 10], ['normal floor 3', false, 3], ['normal floor 8', false, 8]] as const) {
+const ONLY = process.argv[3];   // e.g. "15" runs only that floor
+for (const [label, boss, floor] of ([['boss floor 5', true, 5], ['boss floor 10', true, 10], ['boss floor 15', true, 15], ['normal floor 3', false, 3], ['normal floor 8', false, 8]] as const).filter(x => !ONLY || String(x[2]) === ONLY)) {
   const res = { smart: { wipe: 0, hp: 0, n: 0, low: 0, s: 0 }, spam: { wipe: 0, hp: 0, n: 0, low: 0, s: 0 }, away: { wipe: 0, hp: 0, n: 0, low: 0, s: 0 } };
   for (let k = 0; k < TRIALS; k++) {
     const snap = reach(boss, floor);

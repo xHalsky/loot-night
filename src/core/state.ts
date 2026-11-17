@@ -5,7 +5,7 @@ export const RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legend
 export type Slot = 'weapon' | 'helm' | 'armor' | 'boots' | 'ring' | 'trinket';
 export const SLOTS: Slot[] = ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'];
 export type Stat = 'atk' | 'hp' | 'armor' | 'speed' | 'crit' | 'luck';
-export type MapKind = 'elite' | 'shrine' | 'vault';
+export type MapKind = 'elite' | 'shrine' | 'vault' | 'cursed' | 'goblin';
 
 export interface Affix { stat: Stat; amount: number }
 export interface Item {
@@ -33,6 +33,9 @@ export interface Enemy {
   atk: number; armor: number; speed: number; atb: number;
   turnsAlive: number; stunned: number; boss: boolean; flash: number; lunge?: number;
   marks?: Partial<Record<MarkId, number>>;          // seconds left per ability mark (docs/design/dungeon.md)
+  shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
+  per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
+  windMax?: number; evict?: number;                  // boss: length of the current wind-up; EVICTION's target hero
   wind?: number; acts?: number; braced?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
 }
 
@@ -170,6 +173,7 @@ export interface GameState {
   sleepDebt: number;
   monsters: number;
   bestStars: number; record: number; nightsPlayed: number;
+  seen: string[];                // enemy ids met before: the first meeting shows what they want
   pendingListings: { name: string; zl: number }[];
   pity: number; uid: number;
   night: Night | null;
@@ -189,7 +193,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0,
+    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, seen: [],
     pendingListings: [], pity: 0, uid: 1,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1,
     results: null, morning: null,
