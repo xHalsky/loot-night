@@ -32,7 +32,7 @@ Moving between rooms counts as the hallway. This heard Noise drives her door cha
 early above 70. It is never shown; the player infers it from what they hear. `test/noise.ts`: a boss kill
 during her shower leaves the door chance at 35%; the same kill while she makes tea next door raises it to 85%.
 
-**The plan** (a sheet taped to the wall in the webcam view, #35; screen.md). A blue architect's floor plan:
+**The plan** (a sheet taped to the wall in the webcam view, only its corner in frame; #35, #41; screen.md). A blue architect's floor plan:
 white walls, door swings, furniture, a dashed line of sight from your door. It never marks where she is. Click
 it for the large version: it teaches the layout, which rooms are next to yours (Noise by distance) and where
 the doorways in the crack lead.

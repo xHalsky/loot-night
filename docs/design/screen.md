@@ -74,7 +74,8 @@ listening, so her sounds are the most important ones in the game.
 top of his monitor sees (a small webcam sits on the monitor bezel so the framing reads). His room is dark:
 black and grey walls, floor and door. The only warm light is hers: the gap under the door, the hallway in the
 crack, her in the doorway. Him: centred at the bottom, a bust, so his hair stays just below the light gap. Your
-door behind him at the same size as before (the perspective is faked by the floor running toward the camera).
+door behind him, centred in the frame above him, at the same size as before (the perspective is faked by the
+floor running toward the camera).
 He never covers the doorway, the crack (the door's right edge), the light gap under the door or her toes. While
 peeking he turns toward the door (the back of his head). The key screenshot is her in the doorway with him in
 front, below her: both read at once.
@@ -104,7 +105,8 @@ front, below her: both read at once.
 
   Art: one head pose; the emotes and the glasses as layers on the silhouette; gear as separate layers, so a
   real-life upgrade (#4) is one more layer. `python3 test/him.py` shoots every row.
-- **The plan on the wall** (#35): the blueprint is a sheet taped to the wall by the door. Click it (the cursor
+- **The plan on the wall** (#35, #41): only the corner of a blue sheet taped to the wall shows, coming in from the
+  left edge of the frame; that corner is the click area. Click it (the cursor
   turns to a magnifier) and it opens large over the panel: the same plan with the dashed line of sight and no
   marker for her, plus a line on which rooms are next to yours. The game keeps running. Close with ✕, Esc or a
   click outside.
@@ -128,8 +130,10 @@ front, below her: both read at once.
   for reading the moment, not for input. His reactions to her sounds stop under the headset, so the face also
   teaches what the headset costs. Rejected: a face that mirrors her Mood (her hearts already do that); a big
   expression set (six or so plus gear layers keeps the hand-made sprites in #5 cheap).
-- **The door moved right, not smaller**: it keeps its size so her and the toes stay readable; the left strip
-  holds the plan, and he sits under it.
+- **The door stays centred and at full size** (0.38, #41): her, the crack and her toes are what the panel is
+  for, so the door keeps its size and sits in the middle, lined up with him. The plan only needs to be found
+  and clicked, so just its corner shows at the left edge. Rejected: the door moved right to fit a whole plan
+  sheet on the wall (0.35 to 0.37: an off-centre frame for a picture you only open).
 - **The shower panel became his daydream** (0.35): it lived over the map. Now, while she showers and you can
   hear it, a thought bubble rises from his head with the frosted cabin. It hides when peeking, during visits and
   when she moves, so it never covers the crack or her. Rejected: dropping it (the crack already shows a frosted

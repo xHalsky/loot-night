@@ -9,14 +9,14 @@ import { ACT_BY_ID } from '../data/apartment';
 // bottom, a silhouette whose glasses catch the screen; your door behind him; the plan taped on the wall (#35). Hold the door to peek: it opens a crack onto the hallway (drawHallway).
 // Never covered by him: the doorway, the crack (right edge), the light gap under the door and her toes.
 export const DOOR_W = 280, DOOR_H = 532;
-const TOP = 34, BOT = 370, X0 = 84, DW = 184;   // door opening (same size as before the webcam view, moved right)
-/** The plan on the wall, and where his head sits (canvas px). */
-export const PLAN_RECT = { x: 8, y: 116, w: 64, h: 74 };
+const TOP = 34, BOT = 370, X0 = 48, DW = 184;   // door opening, centred in the frame (#41)
+/** The plan on the wall: a sheet mostly out of frame, its corner showing at the left edge (#41). */
+export const PLAN_RECT = { x: -30, y: 122, w: 64, h: 74 };
 const HIM_X = 140, HIM_Y = 394;   // centred; his hair stays below the light gap under the door (#40)
 /** What a click on the webcam view hits. */
 export function doorHit(x: number, y: number): 'door' | 'plan' | null {
   const P = PLAN_RECT;
-  if (x >= P.x - 4 && x <= P.x + P.w + 4 && y >= P.y - 4 && y <= P.y + P.h + 4) return 'plan';
+  if (x >= 0 && x <= P.x + P.w + 4 && y >= P.y - 6 && y <= P.y + P.h + 6) return 'plan';   // the visible corner
   if (x >= X0 - 6 && x <= X0 + DW + 6 && y >= TOP - 6 && y <= BOT + 8) return 'door';
   return null;
 }
@@ -143,7 +143,7 @@ function room(c: CanvasRenderingContext2D, t: number) {
 /** The blueprint, taped to the wall behind him (#35). Click it for the full plan. */
 function planSheet(c: CanvasRenderingContext2D) {
   const { x, y, w, h } = PLAN_RECT;
-  c.save(); c.translate(x + w / 2, y + h / 2); c.rotate(-0.05); c.translate(-w / 2, -h / 2);
+  c.save(); c.translate(x + w / 2, y + h / 2); c.rotate(0.06); c.translate(-w / 2, -h / 2);
   c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(2, 3, w, h);
   c.fillStyle = '#1d4f91'; c.fillRect(0, 0, w, h);
   c.strokeStyle = 'rgba(255,255,255,.08)'; c.lineWidth = 0.5;
@@ -157,8 +157,8 @@ function planSheet(c: CanvasRenderingContext2D) {
   L([[2, 84], [52, 84]]); L([[66, 84], [110, 84]]); L([[124, 84], [150, 84]]); L([[92, 2], [92, 84]]); L([[148, 2], [148, 84]]);
   L([[2, 106], [28, 106]]); L([[92, 106], [150, 106]]); L([[170, 106], [198, 106]]); L([[118, 106], [118, 198]]);
   c.fillStyle = '#ffd27a'; c.fillRect(ox + 156 * k, oy + 150 * k, 4, 4);   // YOU
-  c.fillStyle = '#cfe2ff'; c.font = '9px "Patrick Hand", sans-serif'; c.textAlign = 'center'; c.fillText('the plan', w / 2, h - 3);
-  c.fillStyle = 'rgba(240,230,200,.75)'; c.fillRect(-4, -3, 14, 6); c.fillRect(w - 10, -3, 14, 6);   // tape
+  c.fillStyle = '#cfe2ff'; c.font = '9px "Patrick Hand", sans-serif'; c.textAlign = 'right'; c.fillText('plan', w - 4, h - 4);
+  c.fillStyle = 'rgba(240,230,200,.75)'; c.fillRect(w - 12, -3, 14, 6); c.fillRect(w - 12, h - 3, 14, 6);   // tape on the corners you can see
   c.restore();
 }
 
@@ -179,7 +179,7 @@ function daydream(c: CanvasRenderingContext2D, t: number) {
   const fog = Math.max(0, Math.min(1, 1 - a.t / ACT_BY_ID.shower.dur[1]));
   const clear = a.cued ? Math.max(0, Math.min(1, 1 - a.t / T.END_CUE_SEC)) : 0;   // the hair dryer: water off, the glass clears
   drawShowerPanel(bubbleCv.getContext('2d')!, t, fog, clear);
-  const cx = 150, cy = 196, r = 64, bob = Math.sin(t * 1.6) * 2;
+  const cx = 132, cy = 196, r = 64, bob = Math.sin(t * 1.6) * 2;
   c.fillStyle = '#f2f2f6';
   for (const [bx, by, br] of [[180, 382, 4], [188, 350, 6], [180, 300, 9]] as const) { c.beginPath(); c.arc(bx, by + bob, br, 0, Math.PI * 2); c.fill(); }
   c.save(); c.beginPath(); c.arc(cx, cy + bob, r + 5, 0, Math.PI * 2); c.fill();

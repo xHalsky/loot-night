@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.38.0 (2026-11-17)
+
+The webcam view's frame (#41).
+
+- The door is centred in the frame again, lined up with him below it (it had moved right in 0.35 to make room
+  for the plan).
+- The plan on the wall shows only partly: the corner of the blue sheet comes in from the left edge, with tape on
+  its corners and a small "plan" label. That corner is the click area; clicking it still opens the full plan.
+- The shower daydream bubble follows the door to the middle.
+- `test/webcam.py` (the plan opens and every way to close it works) and `test/peek.py` pass. UI only.
+
 ## 0.37.0 (2026-11-17)
 
 Him, redesigned (#40): a centred silhouette with screen-lit glasses, in a dark room.
