@@ -21,12 +21,11 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **#22 cheap eye-candy:** shower panel, hoodie walk-by, results vignette by Mood.
-2. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
+1. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
    generated beeps undersell it. Includes audio-first loot cues. Music can wait.
-3. **#28 first-night onboarding.**
-4. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
-   Repeat 4 until it passes.
+2. **#28 first-night onboarding.**
+3. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
+   Repeat 3 until it passes.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
 
 ## Phase 2: the arc (p2)

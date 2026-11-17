@@ -85,6 +85,7 @@ other sound. Listening now tells you that she is about to come *and* what to cle
 | Snack run | Plates clinking | The desk, never the screen | Click the Monster cans during the footsteps to shove them under the desk; you can keep playing. Then "Take the plate" within `SNACK_TAKE_SEC` | Plate: party +20% HP, Mood `SNACK_PASS_MOOD`. Plate ignored: Mood +3. Cans in sight (or mid-Monster): she confiscates one, Mood +`SNACK_FAIL_MOOD` (not a catch) |
 | Chat | Humming | The screen, then your ears | Excel on screen and headset off, then answer 3 questions (`CHAT_ASK_SEC` each, good / meh / rude, shuffled; silence = meh) while staying on Excel | 2 good: Mood `CHAT_PASS_MOOD`. 2 rude: Mood +`CHAT_BAD_MOOD`. Headset on: "are you even listening?" Mood +`CHAT_HEADSET_MOOD`. Back to the game mid-chat: caught |
 | Cuddle (green only) | Slow, soft slipper steps | Nothing | "Come here" or "One sec, babe" (`CUDDLE_ASK_SEC`; no answer = one sec) | Cuddle minigame below. One sec: Mood +`CUDDLE_REFUSE_MOOD` |
+| Good night (green at bedtime, once) | Soft, sleepy steps | Nothing | Nothing to do | She stops at the door in your gaming hoodie, sleeves over her hands: "Night, babe." Mood `WALKBY_MOOD`, then she goes to bed ([eye-candy.md](eye-candy.md)) |
 
 **The cuddle minigame.** A window over the monitor: a dot drifts once around a heart over `CUDDLE_SEC`; keep
 the cursor within `CUDDLE_RADIUS` of it. Warmth builds near the dot, drains when far, and drops fast when

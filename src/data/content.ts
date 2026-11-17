@@ -32,6 +32,7 @@ export const VISIT_CUE: Record<string, string> = {
   snack: 'Plates clinking. Snack run: hide the cans!',
   chat: 'She is humming. She wants to talk: Excel, headset off.',
   cuddle: 'Slow slipper steps. She wants a cuddle.',
+  night: 'Soft, sleepy steps. She is going to bed.',
 };
 export const MOM_REPLIES = ['mhm', 'really?!', 'wow'];
 

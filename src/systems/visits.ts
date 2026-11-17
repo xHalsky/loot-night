@@ -54,10 +54,11 @@ export function pickKind(from: string, woken = false, green = moodZone(N().mood)
 export function startVisit(woken = false, kind?: VisitKind) {
   const v = N().visit;
   if (v.stage !== 'idle') return;
-  v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
+  v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && !N().apt.forceKind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
   if (!kind) N().apt.forceKind = null;
+  if (v.kind === 'night') v.from = 'night';   // the hoodie outfit
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
   if (v.kind === 'snack' && !v.fake && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
 }
@@ -69,7 +70,7 @@ function telegraphSounds(dt: number) {
   const n = N();
   const v = n.visit;
   stepTimer -= dt;
-  const slow = v.kind === 'cuddle' && v.stage !== 'passing';
+  const slow = (v.kind === 'cuddle' || v.kind === 'night') && v.stage !== 'passing';
   if (stepTimer <= 0) {
     stepTimer = slow ? 0.8 : 0.45;
     const loud = (v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35) * (slow ? 0.6 : 1);
@@ -123,6 +124,7 @@ function updateIn(dt: number) {
     if (v.lean) lookOnly();
     else if (v.kind === 'snack') snackArrive();
     else if (v.kind === 'cuddle') { v.result = 'ask'; v.t = T.CUDDLE_ASK_SEC; sfx.kiss(); }
+    else if (v.kind === 'night') walkBy();
     else check();
     return;
   }
@@ -158,6 +160,14 @@ export function screenGlance(why: string) {
   if (screenPasses()) { toast(`${why} She glances at your screen: Excel. Fine.`, '#ffb07a'); return; }
   toast(`${why} She glances at your screen.`, '#ff8a80');
   caught();
+}
+
+/** Green Mood at bedtime: she stops at your door in your gaming hoodie on her way to bed. No check. */
+function walkBy() {
+  const v = N().visit;
+  v.result = 'night'; v.t = T.WALKBY_SEC;
+  addMood(T.WALKBY_MOOD);
+  toast('"Night, babe." She is wearing your gaming hoodie, sleeves past her hands. "Don\'t stay up too late."', '#ff9ab8'); sfx.kiss();
 }
 
 /** She just leans on the door frame and looks at you: no check, a little warmth. */

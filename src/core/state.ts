@@ -49,7 +49,7 @@ export interface Vfx { kind: VfxKind; x: number; y: number; x2: number; y2: numb
 
 export type VisitStage = 'idle' | 'far' | 'hall' | 'handle' | 'in' | 'passing';
 /** What she comes for (docs/design/her.md, visit types). Each asks for a different answer. */
-export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle';
+export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle' | 'night';   // night: the hoodie walk-by on her way to bed
 export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string }
 export interface VisitState {
   stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean;
@@ -162,7 +162,7 @@ export interface Night {
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
-  goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
+  goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   moodDrift: number;
   selected: string | null; heroTab: number;

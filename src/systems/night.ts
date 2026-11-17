@@ -25,7 +25,7 @@ export function newNight(): Night {
     headset: false, scare: 0, zone: 0, tired: 0, blink: { state: 'open', lid: 0, nextIn: 40 }, boost: 0, crash: 0, cans: 0, bin: [], log: [], peeking: false, peek: 0, peekReveal: 0, peekSus: 0, peekOff: [0, 0], declineHold: false, decline: 0, phoneDown: 0, flipFx: 0, momCallback: 0, switching: null, dog: { stage: 'away', t: 0, next: T.DOG_FIRST_SEC, ignores: 0, limit: 2, pet: 0, sweet: 0, flinch: 0 }, unplugged: null, lap: null, cansHidden: false,
     interrupts: [], nextInterruptAt: 0, game: null,
     excel: newExcel(),
-    taunt: 0, ward: 0, rally: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false,
+    taunt: 0, ward: 0, rally: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
     callsTonight: {}, pre: null, preUses: {}, preMenu: null, towel: false, herReply: null,
     curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,

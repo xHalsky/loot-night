@@ -99,7 +99,10 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   }
   const gap = n.threat - a.lastVisitEnd;
   if (a.t > 0 && !(a.forceDoor && gap >= T.DOOR_MIN_GAP_SEC)) return null;
-  if (n.clock >= T.BED_FROM) { goToBed(); return null; }
+  if (n.clock >= T.BED_FROM) {
+    if (!n.walkby && moodZone(n.mood) === 'green') { n.walkby = true; a.forceKind = 'night'; a.room = 'hallway'; return 'door'; }   // good night, in your hoodie
+    goToBed(); return null;
+  }
   if (a.calm > 0 && !a.forceDoor) { pickActivity(); return null; }   // a pre-emptive action bought some quiet
   let p = T.DOOR_BASE_CHANCE + Math.min(100, heardNoise()) * T.DOOR_NOISE_CHANCE + (moodZone(n.mood) === 'red' ? T.DOOR_RED_CHANCE : 0);
   if (n.tired >= T.TIRED_WRECKED) p += 0.15;

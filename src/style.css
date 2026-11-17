@@ -845,3 +845,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #door .gwbar { position: relative; height: 9px; background: rgba(255,255,255,.12); border-radius: 5px; overflow: visible; }
 #door .gwbar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #ff9ab8, #ffd36b); }
 #door .gwbar em { position: absolute; top: -2px; width: 2px; height: 13px; background: #fff4f2; opacity: .7; }
+
+/* the shower panel over the apartment map (#22) */
+#showerCanvas { position: absolute; display: none; width: 176px; height: 176px; border-radius: 4px; z-index: 3; pointer-events: none; image-rendering: auto; box-shadow: 0 0 0 2px #fff4f2; }

@@ -3,6 +3,21 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.32.0 (2026-11-17)
+
+Eye-candy (#22), the three small moments.
+
+- **Shower panel:** while she showers (and you can hear it), the apartment map becomes a frosted glass cabin with
+  her blurred silhouette, water, steam and drips. The fog thickens; at the hair dryer the water stops and the
+  glass clears bottom-up for a few seconds, then it is the map again.
+- **Hoodie walk-by:** green Mood at bedtime, she stops at your door in your dark gaming hoodie, sleeves over her
+  hands: "Night, babe." Mood −5, no check, once a night. New outfit: the big gaming hoodie.
+- **Morning vignette by how the night ended:** green, hugging your pillow; yellow, back turned with her phone
+  still lit; red, asleep on the couch in the TV light; unplugged, an empty bed and a note.
+- `test/walkby.ts`: 5 checks pass. Sims (8 good runs): depth 9.4, visits 5.4 (the good-night visit counts),
+  0 catches.
+- Still planned in #22 for later nights: "How do I look?" (#12) and "Wanna join?" (night 5, #3).
+
 ## 0.31.0 (2026-11-17)
 
 Synergy, part 3 of 3 (#29, done): the Witching Hour.

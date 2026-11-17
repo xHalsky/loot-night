@@ -130,7 +130,7 @@ function drawGap(c: CanvasRenderingContext2D, x: number, y: number, w: number, h
 /** Her face when she comes in, by situation (docs/design/her.md). */
 function herFace(v: { checked: boolean; result: string; from?: string; kind?: string }, catches: number, mood: number, t: number): Face {
   if (v.result === 'caught') return catches >= 2 ? 'furious' : 'angry';
-  const byResult: Record<string, Face> = { offer: 'smile', snackOk: 'wink', snackFail: 'angry', deaf: 'angry', chat: 'neutral', chatGood: 'smile', chatBad: 'pout', chatMeh: 'neutral', ask: 'blush', cuddling: 'blush', cuddleGood: 'wink', cuddleMeh: 'pout', refused: 'pout' };
+  const byResult: Record<string, Face> = { night: 'sleepy', forgiven: 'pout', offer: 'smile', snackOk: 'wink', snackFail: 'angry', deaf: 'angry', chat: 'neutral', chatGood: 'smile', chatBad: 'pout', chatMeh: 'neutral', ask: 'blush', cuddling: 'blush', cuddleGood: 'wink', cuddleMeh: 'pout', refused: 'pout' };
   if (byResult[v.result]) return byResult[v.result];
   if (!v.checked && v.kind === 'cuddle') return 'blush';
   if (!v.checked && v.kind === 'snack') return 'smile';

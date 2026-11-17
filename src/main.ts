@@ -5,7 +5,7 @@ import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, DOOR_W, DOOR_H } from './ui/door';
-import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml } from './ui/panels';
+import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx } from './ui/audio';
 import { HOTKEYS } from './data/heroes';
@@ -15,6 +15,7 @@ import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } f
 import { chooseNextFloor, returnToTown, travelToDungeon, catchGoblin } from './systems/dungeon';
 import { chooseCurio, endCurio } from './systems/curios';
 import { toast } from './core/fx';
+import { ACT_BY_ID } from './data/apartment';
 import { startPre, cancelPre, episodeAnswer } from './systems/preemptive';
 import type { PreId } from './data/preemptive';
 import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction } from './systems/town';
@@ -26,7 +27,7 @@ import { openMonster, setMonsterHold, cancelMonster } from './systems/monster';
 import { drawMonsterScene } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawDeskFx, lapUiHtml, setDeskScale } from './ui/deskFx';
-import { drawHerBed } from './ui/her';
+import { drawHerBed, drawShowerPanel } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
 import { keyboardSvg, mouseSvg } from './ui/peripherals';
@@ -43,7 +44,7 @@ import { addMood } from './systems/meters';
 // ---------- DOM skeleton: three panels (docs/design/screen.md) ----------
 const stage = document.getElementById('stage')!;
 stage.innerHTML = `
-  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="herHead"></div><div id="doorInfo"></div></div>
+  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="herHead"></div><div id="doorInfo"></div><canvas id="showerCanvas" width="176" height="176"></canvas></div>
   <div id="desk">
     <div id="deskInner">
       <div class="desk-surface"></div>
@@ -359,6 +360,21 @@ window.addEventListener('keydown', ev => {
 });
 void sfx;
 
+/** The shower panel covers the apartment map while she showers and you can hear it (docs/design/eye-candy.md). */
+const showerCtx = (el('showerCanvas') as HTMLCanvasElement).getContext('2d')!;
+function showerPanel(n: NonNullable<typeof S.g.night>) {
+  const cv = el('showerCanvas') as HTMLCanvasElement;
+  const a = n.apt;
+  const on = a.activity === 'shower' && a.moving <= 0 && !n.headset && n.visit.stage === 'idle' && n.peek <= 0;
+  cv.style.display = on ? 'block' : 'none';
+  if (!on) return;
+  const bp = document.querySelector('#doorInfo .bp svg') as HTMLElement | null;
+  if (bp) { const d = el('door').getBoundingClientRect(), r = bp.getBoundingClientRect(); cv.style.left = `${(r.left - d.left) / stageScale}px`; cv.style.top = `${(r.top - d.top) / stageScale}px`; }
+  const fog = Math.max(0, Math.min(1, 1 - a.t / ACT_BY_ID.shower.dur[1]));
+  const clear = a.cued ? Math.max(0, Math.min(1, 1 - a.t / T.END_CUE_SEC)) : 0;   // the hair dryer: water off, the glass clears
+  drawShowerPanel(showerCtx, performance.now() / 1000, fog, clear);
+}
+
 // ---------- Render ----------
 function render() {
   const g = S.g;
@@ -367,6 +383,7 @@ function render() {
   drawMonitor(monCtx);
   if (n) {
     setHtml('doorInfo', doorInfoHtml());
+    showerPanel(n);
     setHtml('herHead', herHeadHtml());
     setHtml('deskObjects', deskHtml());
     setHtml('canPile', deskPileHtml());
@@ -391,7 +408,7 @@ function render() {
   }
   setHtml('screens', screenHtml());
   const ma = document.getElementById('morningArt') as HTMLCanvasElement | null;
-  if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000);
+  if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());
   setHtml('pause', pauseHtml());
   setHtml('debug', debugHtml());
   setHtml('scare', scareHtml());

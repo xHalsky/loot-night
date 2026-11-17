@@ -23,6 +23,7 @@ import { icon, glyph, ABILITY_GLYPHS } from './icons';
 import { canLeaveDungeon } from '../systems/dungeon';
 import { moodZone } from '../systems/meters';
 import { fmtClock } from '../core/fx';
+import type { MorningScene } from './her';
 import { hasSave } from '../systems/save';
 import { canSleep } from '../systems/night';
 import { ROOM_SHORT } from '../data/apartment';
@@ -78,6 +79,7 @@ export function doorInfoHtml(): string {
     if (v.result === 'cuddleGood') { kicker = 'cuddle'; txt = '"Okay, go play. Love you."'; cls = 'calm'; }
     if (v.result === 'cuddleMeh') { kicker = 'cuddle'; txt = '"You are so restless."'; }
     if (v.result === 'refused') { kicker = 'cuddle'; txt = 'She sighs and leaves.'; cls = 'alarm'; }
+    if (v.result === 'night') { kicker = 'good night'; txt = '"Night, babe." Your hoodie, sleeves past her hands.'; cls = 'calm'; }
     if (v.result === 'forgiven') { kicker = 'forgiven'; txt = '"I know, I know. Raid night." She lets it go.'; cls = 'warn'; }
   }
   const patience = 100 - n.mood;
@@ -266,6 +268,20 @@ export function deskHtml(): string {
   ${n.cansHidden ? '<div class="obj-label mon-label">cans hidden under the desk</div>' : `<div class="obj monster-obj ${canDrink ? 'ready' : 'off'} ${coming && S.g.monsters > 0 ? 'hideable' : ''}" ${coming && S.g.monsters > 0 ? 'data-act="hideCans"' : canDrink ? 'data-act="openMonster"' : ''}>${monsterStockSvg(n.game?.kind === 'monster' ? Math.max(0, S.g.monsters - 1) : S.g.monsters)}</div>
   <div class="obj-label mon-label">${coming && S.g.monsters > 0 ? '<b style="color:#ffb07a">click: hide the cans</b>' : boostTxt}</div>`}`;
 }
+
+// ---------------- Morning vignette by how the night ended (#22) ----------------
+export function morningScene(): MorningScene {
+  const r = S.g.results;
+  if (!r) return 'green';
+  if (r.ending === 'unplugged') return 'unplugged';
+  return r.mood < T.MOOD_GREEN ? 'green' : r.mood < T.MOOD_RED ? 'yellow' : 'red';
+}
+const MORNING_CAPTION: Record<MorningScene, string> = {
+  green: 'She fell asleep in your shirt again, hugging your pillow.',
+  yellow: 'Back turned. Her phone is still lit.',
+  red: 'She fell asleep on the couch. The TV is still on.',
+  unplugged: 'An empty bed. A note on your pillow: "Hope the loot was worth it."',
+};
 
 // ---------------- Mini-game windows (phone and Monster) ----------------
 function statusBar(): string {
@@ -736,7 +752,7 @@ export function screenHtml(): string {
     const debt = g.sleepDebt;
     return `<div class="screen"><div class="card morning">
       <div class="m-grid">
-        <div class="m-art"><canvas id="morningArt" width="480" height="240"></canvas><div class="dim m-cap">She fell asleep in your shirt again.</div></div>
+        <div class="m-art"><canvas id="morningArt" width="480" height="240"></canvas><div class="dim m-cap">${MORNING_CAPTION[morningScene()]}</div></div>
         <div class="m-info">
           <div class="kicker">MORNING SUMMARY</div>
           <h3>${m.listings ? `Auction house sold ${m.listings} item${m.listings > 1 ? 's' : ''}: +${m.paid} zł` : 'Nothing sold overnight.'}</h3>

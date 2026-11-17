@@ -4,7 +4,7 @@
 // and asleep in bed seen from the foot end (bare soles out from under the blanket).
 import { pixelSprite, blit, smooth, poly, mirror, rows, cel, type Pt } from './pixel';
 
-export type Outfit = 'lounge' | 'towel' | 'hoodie' | 'pajama' | 'tank';
+export type Outfit = 'lounge' | 'towel' | 'hoodie' | 'bighoodie' | 'pajama' | 'tank';   // bighoodie: your gaming hoodie on her, sleeves over her hands
 export type Face = 'smile' | 'neutral' | 'angry' | 'pout' | 'blush' | 'sleepy' | 'suspicious' | 'wink' | 'surprised' | 'furious';
 export type Item = 'none' | 'mug' | 'phone' | 'remote' | 'plate';
 export interface HerOpts { outfit: Outfit; face: Face; pose?: 'stand' | 'lean'; item?: Item; blink?: boolean }
@@ -20,7 +20,7 @@ let LW = 1;   // outline width in local units (≈1 output pixel), set per rende
 // Outfits: [base, shade] colours
 const CLOTH: Record<string, [string, string]> = {
   tee: ['#f4f1ea', '#d3cdc2'], denim: ['#5c7aaa', '#3f5a8a'], tank: ['#2e2d3a', '#1d1c26'], sweat: ['#a7aec0', '#7d8598'],
-  hoodie: ['#b8a4e2', '#8b77bf'], shirt: ['#d3e3f4', '#a5bfdb'], towel: ['#f7f4ef', '#d9d2c6'],
+  hoodie: ['#b8a4e2', '#8b77bf'], gamer: ['#2c2f3a', '#1c1e26'], shirt: ['#d3e3f4', '#a5bfdb'], towel: ['#f7f4ef', '#d9d2c6'],
 };
 
 // ---------------------------------------------------------------- head (shared by all poses)
@@ -170,6 +170,7 @@ function standGeo(lean: boolean): Geo {
         { on: 'torso', poly: B(114, 999), cloth: 'sweat' }, { on: 'legs', poly: B(-999, 133), cloth: 'sweat' },
       ],
       hoodie: [{ on: 'torso', poly: B(49, 999), cloth: 'hoodie' }, { on: 'legs', poly: B(-999, 142), cloth: 'hoodie' }, { on: 'arms', poly: B(-999, 126), cloth: 'hoodie' }],
+      bighoodie: [{ on: 'torso', poly: B(49, 999), cloth: 'gamer' }, { on: 'legs', poly: B(-999, 150), cloth: 'gamer' }, { on: 'arms', poly: B(-999, 999), cloth: 'gamer' }],
       pajama: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 73], [7, 51], [999, 51], [999, 999], [-999, 999]], cloth: 'shirt' }, { on: 'legs', poly: B(-999, 152), cloth: 'shirt' }, { on: 'arms', poly: B(-999, 97), cloth: 'shirt' }],
       towel: [{ on: 'torso', poly: [[-999, 70], [-10, 66], [10, 66], [999, 70], [999, 999], [-999, 999]], cloth: 'towel' }, { on: 'legs', poly: [[-999, 0], [999, 0], [999, 138], [-999, 143]], cloth: 'towel' }],
     },
@@ -218,6 +219,7 @@ function lapGeo(pose: number): Geo {
         { on: 'torso', poly: B2(110, 999), cloth: 'sweat' }, ...legs(130, 106, 'sweat'),
       ],
       hoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'hoodie' }, ...legs(146, 122, 'hoodie'), { on: 'arms', poly: B2(-999, 118), cloth: 'hoodie' }],
+      bighoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'gamer' }, ...legs(150, 126, 'gamer'), { on: 'arms', poly: B2(-999, 999), cloth: 'gamer' }],
       pajama: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 76], [7, 51], [999, 51], [999, 999], [-999, 999]], cloth: 'shirt' }, ...legs(156, 132, 'shirt'), { on: 'arms', poly: B2(-999, 88), cloth: 'shirt' }],
       towel: [{ on: 'torso', poly: [[-999, 70], [-10, 66], [10, 66], [999, 70], [999, 999], [-999, 999]], cloth: 'towel' }, ...legs(142, 118, 'towel')],
     },
@@ -240,8 +242,8 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
   const ln = { color: C.line, w: LW };
   const headAt = () => { c.save(); c.translate(g.head.x, g.head.y); c.rotate(g.head.r); };
   headAt(); head(c, o, false); c.restore();
-  if (o.outfit === 'hoodie') cel(c, smooth([[-21, 47], [-25, 40], [-14, 38], [0, 44], [14, 38], [25, 40], [21, 47], [0, 53]]), CLOTH.hoodie[0], CLOTH.hoodie[1], 1, ln);
-  for (const a of g.armsBack) { cel(c, a, C.skin, C.skinS, 1, ln); if (o.outfit === 'hoodie' || o.outfit === 'pajama') band(c, a, rows(-999, 999), o.outfit === 'hoodie' ? 'hoodie' : 'shirt'); }
+  if (o.outfit === 'hoodie' || o.outfit === 'bighoodie') { const cl = CLOTH[o.outfit === 'hoodie' ? 'hoodie' : 'gamer']; cel(c, smooth([[-21, 47], [-25, 40], [-14, 38], [0, 44], [14, 38], [25, 40], [21, 47], [0, 53]]), cl[0], cl[1], 1, ln); }
+  for (const a of g.armsBack) { cel(c, a, C.skin, C.skinS, 1, ln); if (o.outfit === 'hoodie' || o.outfit === 'bighoodie' || o.outfit === 'pajama') band(c, a, rows(-999, 999), o.outfit === 'hoodie' ? 'hoodie' : o.outfit === 'bighoodie' ? 'gamer' : 'shirt'); }
   const bands = g.bands[o.outfit];
   for (const f of g.feet) cel(c, f, C.skin, C.skinS, 0.8, ln);
   // toes: nails + separations on the bare feet
@@ -275,6 +277,7 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
   c.fillStyle = bShade; c.fillRect(-0.5, g.bust - 3, 1, 5);
   c.restore();
   if (o.outfit === 'tank') { c.strokeStyle = CLOTH.tank[0]; c.lineWidth = 2; c.beginPath(); c.moveTo(-13, 61); c.lineTo(-12, 53); c.moveTo(13, 61); c.lineTo(12, 53); c.stroke(); }
+  if (o.outfit === 'bighoodie') { c.fillStyle = '#6ef06e'; c.fillRect(-6, 74, 12, 3); c.fillStyle = '#c8ffc8'; c.fillRect(-4, 75, 3, 1); }   // a guild logo on your hoodie
   if (o.outfit === 'hoodie') { c.strokeStyle = '#fff'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-3.5, 53); c.lineTo(-4.5, 70); c.moveTo(3.5, 53); c.lineTo(4.5, 68); c.stroke(); }
   if (o.outfit === 'pajama') { c.fillStyle = '#7f98b8'; for (let y = 80; y < 150; y += 12) c.fillRect(-0.5, y, 1.2, 1.2); }
   if (o.outfit === 'towel') {
@@ -285,7 +288,7 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
     cel(c, a, C.skin, C.skinS, 1, ln);
     for (const b of bands) if (b.on === 'arms' || (b.on === 'armL' && i === 0) || (b.on === 'armR' && i === 1)) band(c, a, b.poly, b.cloth);
   });
-  for (const h of g.hands) cel(c, h, C.skin, C.skinS, 0.6, ln);
+  for (const h of g.hands) o.outfit === 'bighoodie' ? cel(c, h, CLOTH.gamer[0], CLOTH.gamer[1], 0.6, ln) : cel(c, h, C.skin, C.skinS, 0.6, ln);   // sleeves past her hands
   const item = o.item ?? 'none';
   if (item !== 'none') {
     const [x, y] = g.hand;
@@ -317,26 +320,55 @@ export function drawHerLap(c: CanvasRenderingContext2D, o: HerOpts, pose: number
   blit(c, sp, dx, dy, px, alpha);
 }
 
-/** Morning: asleep in your shirt, seen from the foot of the bed, bare soles out from under the blanket. 480 x 240. */
-export function drawHerBed(c: CanvasRenderingContext2D, t: number) {
-  const breathe = Math.sin(t * 1.3) > 0 ? 1 : 0;
-  const sp = pixelSprite(`bed:${breathe}`, 240, 120, cc => {
+/** Morning vignette by how the night ended (docs/design/eye-candy.md): seen from the foot end, 480 x 240.
+ *  green: asleep in your shirt, hugging your pillow. yellow: back turned, her phone still lit.
+ *  red: asleep on the couch, the TV still on. unplugged: an empty bed and a note. */
+export type MorningScene = 'green' | 'yellow' | 'red' | 'unplugged';
+export function drawHerBed(c: CanvasRenderingContext2D, t: number, scene: MorningScene = 'green') {
+  const breathe = Math.sin(t * 1.3) > 0 ? 1 : 0, flick = scene === 'red' ? Math.floor(t * 3) % 3 : 0;
+  const sp = pixelSprite(`bed:${scene}:${breathe}:${flick}`, 240, 120, cc => {
     LW = 0.7; cc.scale(1.5, 1.5);
-    // room: wall with morning light, bed
-    cc.fillStyle = '#e9d3c4'; cc.fillRect(0, 0, 160, 80);
-    cc.fillStyle = 'rgba(255,230,170,.55)'; cc.beginPath(); cc.moveTo(98, 0); cc.lineTo(130, 0); cc.lineTo(110, 80); cc.lineTo(74, 80); cc.fill();
-    cc.fillStyle = '#8a5a44'; cc.fillRect(18, 6, 124, 14);                                  // headboard
-    cc.fillStyle = '#f4efe8'; cc.fillRect(22, 18, 116, 50);                                 // sheet
-    cel(cc, smooth([[52, 15], [108, 15], [112, 26], [48, 26]]), '#ffffff', '#dcd6cc', 1, { color: C.line, w: 1 });   // pillow
-    // her head on the pillow (sleeping face), hair spread
+    const couch = scene === 'red';
+    // room: morning light on the wall (the couch: grey dawn and TV light), the bed or the couch
+    cc.fillStyle = couch ? '#5a5a74' : '#e9d3c4'; cc.fillRect(0, 0, 160, 80);
+    if (!couch) { cc.fillStyle = 'rgba(255,230,170,.55)'; cc.beginPath(); cc.moveTo(98, 0); cc.lineTo(130, 0); cc.lineTo(110, 80); cc.lineTo(74, 80); cc.fill(); }
+    cc.fillStyle = couch ? '#6a4636' : '#8a5a44'; cc.fillRect(18, 6, 124, couch ? 22 : 14);   // headboard / couch back
+    if (couch) { cc.fillStyle = '#7a5444'; cc.fillRect(22, 9, 56, 15); cc.fillRect(82, 9, 56, 15); }   // back cushions
+    cc.fillStyle = couch ? '#8a3a3a' : '#f4efe8'; cc.fillRect(22, couch ? 26 : 18, 116, couch ? 42 : 50);   // seat / sheet
+    if (scene !== 'unplugged') cel(cc, smooth([[52, 15], [108, 15], [112, 26], [48, 26]]), couch ? '#c9a86a' : '#ffffff', couch ? '#a8884a' : '#dcd6cc', 1, { color: C.line, w: 1 });   // pillow / armrest cushion
+    if (scene === 'unplugged') {
+      cel(cc, smooth([[52, 15], [108, 15], [112, 26], [48, 26]]), '#ffffff', '#dcd6cc', 1, { color: C.line, w: 1 });
+      cel(cc, smooth([[28, 44], [80, 36], [136, 44], [138, 66], [24, 66]]), '#9fb7d9', '#7a93bd', 1.5, { color: C.line, w: 1 });   // blanket thrown back, flat
+      cc.save(); cc.translate(80, 19); cc.rotate(-0.12);
+      cc.fillStyle = '#fffbe6'; cc.fillRect(-9, -5, 18, 11); cc.strokeStyle = C.line; cc.lineWidth = 0.6; cc.strokeRect(-9, -5, 18, 11);
+      cc.strokeStyle = '#7a6a9a'; cc.lineWidth = 0.6; for (let i = 0; i < 3; i++) { cc.beginPath(); cc.moveTo(-6, -2 + i * 3); cc.lineTo(6 - i * 2, -2 + i * 3); cc.stroke(); }   // the note
+      cc.restore();
+      return;
+    }
+    // her head on the pillow: face (green, red) or the back of her head (yellow)
     cc.save(); cc.translate(80, 6); cc.scale(0.42, 0.42);
     cc.fillStyle = C.hair; cc.fill(smooth([[-34, 10], [-40, 36], [-30, 58], [0, 50], [30, 58], [40, 36], [34, 10], [0, -6]]));
-    head(cc, { outfit: 'pajama', face: 'sleepy' }, true);
+    if (scene === 'yellow') { cc.fillStyle = C.hair; cc.fill(smooth([[-20, -2], [-26, 24], [-18, 46], [0, 50], [18, 46], [26, 24], [20, -2], [0, -10]])); cc.fillStyle = C.hairL; cc.fill(smooth([[-8, 2], [-12, 20], [-4, 30], [2, 12]])); }
+    else head(cc, { outfit: 'pajama', face: 'sleepy' }, true);
     cc.restore();
-    // blanket: soft mound with folds; one shoulder of your shirt peeking out
-    cel(cc, smooth([[24, 30], [60, 24], [100, 24], [136, 30], [140, 52], [134, 66], [26, 66], [20, 52]]), '#9fb7d9', '#7a93bd', 1.5, { color: C.line, w: 1 });
-    cc.strokeStyle = '#7a93bd'; cc.lineWidth = 1; cc.beginPath(); cc.moveTo(46, 36 + breathe); cc.quadraticCurveTo(70, 44, 92, 34 + breathe); cc.moveTo(66, 52); cc.quadraticCurveTo(90, 58, 120, 50); cc.stroke();
+    if (scene === 'yellow') {   // her phone, still lit, face down on the sheet; its cold light on the wall
+      const g = cc.createRadialGradient(118, 20, 2, 118, 20, 30); g.addColorStop(0, 'rgba(150,190,255,.55)'); g.addColorStop(1, 'rgba(150,190,255,0)');
+      cc.fillStyle = g; cc.fillRect(80, 0, 80, 50);
+      cc.fillStyle = '#1a1a22'; cc.fillRect(110, 22, 9, 5); cc.fillStyle = '#bcd6ff'; cc.fillRect(111, 23, 7, 3);
+    }
+    // blanket (bed) or a plaid throw (couch): soft mound with folds; one shoulder of your shirt peeking out
+    const [b1, b2] = couch ? ['#6f9a6f', '#4f7a55'] : ['#9fb7d9', '#7a93bd'];
+    const shift = scene === 'yellow' ? 6 : 0;
+    cel(cc, smooth([[24, 30], [60 + shift, 24], [100 + shift, 24], [136, 30], [140, 52], [134, 66], [26, 66], [20, 52]]), b1, b2, 1.5, { color: C.line, w: 1 });
+    if (couch) { cc.strokeStyle = 'rgba(240,230,180,.5)'; cc.lineWidth = 1; for (let x = 34; x < 132; x += 14) { cc.beginPath(); cc.moveTo(x, 28); cc.lineTo(x - 4, 64); cc.stroke(); } }
+    cc.strokeStyle = b2; cc.lineWidth = 1; cc.beginPath(); cc.moveTo(46, 36 + breathe); cc.quadraticCurveTo(70, 44, 92, 34 + breathe); cc.moveTo(66, 52); cc.quadraticCurveTo(90, 58, 120, 50); cc.stroke();
     cel(cc, smooth([[66, 26], [78, 23], [80, 30], [68, 31]]), CLOTH.shirt[0], CLOTH.shirt[1], 0.5);
+    if (scene === 'green') {   // hugging your pillow: a second pillow under her chin, her arm over it
+      cc.save(); cc.translate(80, 31); cc.rotate(0.08);
+      cel(cc, smooth([[-17, -6], [15, -7], [18, 3], [-15, 5]]), '#ffffff', '#dcd6cc', 0.8, { color: C.line, w: 0.8 });
+      cel(cc, smooth([[-14, -3], [4, -6], [10, -3], [8, 0], [-12, 2]]), C.skin, C.skinS, 0.6, { color: C.line, w: 0.7 });
+      cc.restore();
+    }
     // the feet: soles toward you, toes up, resting on the sheet
     const sole = (cx: number, dir: number) => {
       const p = smooth([[cx - 6.5 * dir, 56], [cx - 7.5 * dir, 62], [cx - 6 * dir, 68], [cx - 4 * dir, 74], [cx, 77.5], [cx + 4 * dir, 75], [cx + 5 * dir, 68], [cx + 6.5 * dir, 61], [cx + 6 * dir, 55]]);
@@ -348,6 +380,10 @@ export function drawHerBed(c: CanvasRenderingContext2D, t: number) {
       tx.forEach((x, i) => { const xx = cx + x * dir; cc.fillStyle = C.sole; cc.beginPath(); cc.ellipse(xx, ty[i], tr[i], tr[i] * 1.25, 0, 0, Math.PI * 2); cc.fill(); cc.strokeStyle = C.line; cc.lineWidth = 0.6; cc.stroke(); });
     };
     sole(66, -1); sole(90, 1);
+    if (couch) {   // the TV, still on, lights the room from the left
+      cc.fillStyle = `rgba(110,150,255,${[0.22, 0.3, 0.18][flick]})`; cc.fillRect(0, 0, 160, 80);
+      cc.fillStyle = '#14141c'; cc.fillRect(0, 34, 12, 22); cc.fillStyle = ['#7aa0ff', '#9ab8ff', '#6a8af0'][flick]; cc.fillRect(1, 36, 10, 17);
+    }
   });
   blit(c, sp, 0, 0, 2);
 }
@@ -368,4 +404,61 @@ export const OUTFIT_BY_ACTIVITY: Record<string, { outfit: Outfit; item: Item }> 
   phone: { outfit: 'tank', item: 'phone' },
   shower: { outfit: 'towel', item: 'none' },
   sleep: { outfit: 'pajama', item: 'none' },
+  night: { outfit: 'bighoodie', item: 'none' },   // the walk-by: your gaming hoodie
 };
+
+/** The shower panel (docs/design/eye-candy.md, #22): a frosted glass cabin with her silhouette, water and steam.
+ *  fog 0..1 thickens through the shower; clear 0..1 is the glass clearing bottom-up once the water stops.
+ *  Under the blur she wears the towel outfit, so the silhouette is suggestive only, never more. 176 x 176. */
+export function drawShowerPanel(c: CanvasRenderingContext2D, t: number, fog: number, clear: number) {
+  const W = 176, H = 176, gx = 34, gy = 16, gw = 108, gh = 146;
+  c.clearRect(0, 0, W, H);
+  // wall tiles and floor
+  c.fillStyle = '#cfe3ea'; c.fillRect(0, 0, W, H);
+  c.strokeStyle = 'rgba(120,150,165,.35)'; c.lineWidth = 1;
+  for (let y = 0; y < H; y += 14) { c.beginPath(); c.moveTo(0, y + 0.5); c.lineTo(W, y + 0.5); c.stroke(); }
+  for (let x = 0; x < W; x += 14) { c.beginPath(); c.moveTo(x + 0.5, 0); c.lineTo(x + 0.5, H); c.stroke(); }
+  c.fillStyle = '#9fb7c4'; c.fillRect(0, gy + gh, W, H - gy - gh);
+  // inside the cabin: darker, steamy
+  c.fillStyle = '#aac4cf'; c.fillRect(gx, gy, gw, gh);
+  const water = clear <= 0;
+  // her silhouette: sways, shifts her weight
+  const sway = Math.sin(t * 0.9) * 4, bob = Math.sin(t * 1.8) * 1.2, sx = gx + gw / 2 - 4 + sway, sy = gy + 10 + bob;   // sx: her centre
+  const figure = (blur: number, alpha: number) => {
+    c.save(); c.beginPath(); c.rect(gx, gy, gw, gh); c.clip();
+    c.filter = `blur(${blur}px) saturate(.8)`; c.globalAlpha = alpha;
+    drawHer(c, sx, sy, 0.78, { outfit: 'towel', face: 'neutral', pose: 'stand' });
+    c.restore();
+  };
+  figure(4.5, 0.75);
+  // water from the shower head
+  c.fillStyle = '#e8eef2'; c.fillRect(gx + gw / 2 - 10, gy - 6, 20, 5);
+  if (water) {
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1;
+    for (let i = 0; i < 14; i++) {
+      const x = gx + gw / 2 - 18 + ((i * 37) % 36), y0 = gy + ((t * 160 + i * 23) % gh);
+      c.beginPath(); c.moveTo(x + 0.5, y0); c.lineTo(x + 0.5, Math.min(gy + gh, y0 + 10)); c.stroke();
+    }
+  }
+  // fog on the glass, thickening; clearing from the bottom once the water stops
+  const clearH = gh * clear;
+  c.fillStyle = `rgba(245,250,252,${(0.28 + 0.6 * fog).toFixed(2)})`; c.fillRect(gx, gy, gw, gh - clearH);
+  if (clearH > 0) {
+    c.fillStyle = 'rgba(245,250,252,.12)'; c.fillRect(gx, gy + gh - clearH, gw, clearH);
+    c.save(); c.beginPath(); c.rect(gx, gy + gh - clearH, gw, clearH); c.clip(); figure(1.6, 0.9); c.restore();
+    c.fillStyle = 'rgba(245,250,252,.15)'; c.fillRect(gx, gy + gh - clearH, gw, clearH);
+  }
+  // steam puffs above the cabin
+  for (let i = 0; i < 4; i++) {
+    const k = ((t * 0.25 + i * 0.27) % 1), r = 8 + k * 14;
+    c.fillStyle = `rgba(255,255,255,${(0.35 * (1 - k) * (water ? 1 : 0.4)).toFixed(2)})`;
+    c.beginPath(); c.arc(gx + 20 + i * 24 + Math.sin(t + i) * 4, gy + 10 - k * 18, r, 0, Math.PI * 2); c.fill();
+  }
+  // drips on the glass
+  c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1;
+  for (let i = 0; i < 6; i++) { const x = gx + 8 + i * 17, y = gy + 20 + ((t * 9 + i * 31) % (gh - 40)); c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 6); c.stroke(); }
+  // chrome frame
+  c.strokeStyle = '#eef3f6'; c.lineWidth = 3; c.strokeRect(gx, gy, gw, gh);
+  c.strokeStyle = '#8fa2ad'; c.lineWidth = 1; c.strokeRect(gx - 1.5, gy - 1.5, gw + 3, gh + 3);
+  c.fillStyle = '#eef3f6'; c.fillRect(gx + gw - 8, gy + gh / 2 - 12, 3, 24);   // handle
+}

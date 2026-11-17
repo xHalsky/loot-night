@@ -163,6 +163,8 @@ export const T = {
   WITCHING_FROM: 25 * 60, WITCHING_UPGRADE: 0.35,   // each drop: chance to shift up one rarity
   WITCHING_INSOMNIAC: 0.5,        // a cross-system affix rolled in the Witching Hour is insomniac this often
   DAWN_CHASER_FROM: 27 * 60,      // Dawn Chaser counts from 03:00
+  // Eye-candy (docs/design/eye-candy.md, #22).
+  WALKBY_MOOD: -5, WALKBY_SEC: 3,   // green Mood at bedtime: she says good night in your hoodie (no check, once a night)
   CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
   GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,
