@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.22.0 (2026-11-17)
+
+- **Her activity predicts the next visit type** (#18). The type now depends on what she was doing: TV → Chat
+  or Cuddle, tea → Snack run, bathroom or phone → Peek, shower → Cuddle or Peek. 25% of the time it ignores
+  that (`VISIT_RANDOM`), and Cuddle is still only drawn while she is green. Replaces the shuffled deck
+  (`VISIT_DECK` is gone). `test/predict.ts` prints the odds.
+- **Activity end cues**: 3.5 s before she moves, each activity gets its own sound: TV credits, kettle whistle
+  and click, running tap, hair dryer, the phone goodbye jingle. The phone used to be silent, so it was the one
+  activity you could not follow. Cues come from her room, so distance and the headset mute them.
+- Sims (2 good, 1 idle): good bot 3 stars, floor 9-10, 0 catches, 0 wipes; idle still caught and unplugged.
+  Alt-tab test 200/200 both ways; noise test passes. No balance numbers moved.
+
 ## 0.21.0 (2026-11-16)
 
 - **Power level** (#31). Every item has a power (item level × rarity, the scale that sets its stats); a hero's

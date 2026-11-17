@@ -56,7 +56,7 @@ export interface Apartment {
   room: Room; activity: ActivityId; t: number; moving: number; soundT: number;
   heard: Room | null; heardWhat: string; heardAt: number;
   showerUsed: boolean; lastVisitEnd: number; forceDoor: boolean;
-  asleep: boolean; wake: number; textSent: boolean;
+  asleep: boolean; wake: number; textSent: boolean; cued: boolean;   // cued: the end-of-activity sound has played
 }
 
 // Everything that reaches you through the phone (one device on the desk).
@@ -135,7 +135,6 @@ export interface Night {
   unplugged: { kinds: number[]; colors: number[]; sockets: number[]; plugged: boolean[] } | null;   // cable minigame: per cable plug type + colour; sockets[slot] = cable index
   lap: LapState | null;
   cansHidden: boolean;
-  visitDeck: VisitKind[];                  // visit types still to come this cycle (shuffled)                     // Monster cans shoved under the desk (Snack run tell)
   interrupts: Interrupt[]; nextInterruptAt: number;
   game: MiniGame | null;
   excel: ExcelState;

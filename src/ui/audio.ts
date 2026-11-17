@@ -73,6 +73,14 @@ export const sfx = {
     if (id === 'shower') noise(1.4, 0.07, 3000, 0, 'apt', 'highpass');
     if (id === 'sleep') { tone(90, 0.9, 'sawtooth', 0.04, 0, 70, 'apt'); noise(0.9, 0.05, 250, 0.1, 'apt'); }
   },
+  /** The sound that ends each activity: the credits roll, the kettle clicks off, the tap, the hair dryer, a goodbye. */
+  endCue(id: string) {
+    if (id === 'tv') { [392, 440, 523, 392].forEach((f, i) => tone(f, 0.35, 'triangle', 0.08, i * 0.3, undefined, 'apt')); }
+    if (id === 'tea') { tone(1500, 0.9, 'sine', 0.07, 0, 2600, 'apt'); tone(300, 0.06, 'square', 0.1, 0.95, undefined, 'apt'); }
+    if (id === 'toilet') { noise(0.7, 0.16, 1800, 0, 'apt', 'highpass'); tone(700, 0.04, 'square', 0.06, 0.8, undefined, 'apt'); }
+    if (id === 'shower') { noise(1.6, 0.1, 900, 0.1, 'apt', 'bandpass'); }
+    if (id === 'phone') { tone(520, 0.12, 'sine', 0.08, 0, undefined, 'apt'); tone(420, 0.2, 'sine', 0.08, 0.14, undefined, 'apt'); tone(330, 0.25, 'sine', 0.06, 0.4, undefined, 'apt'); }
+  },
   // Game bus.
   ring() { for (let i = 0; i < 4; i++) { tone(880, 0.08, 'sine', 0.2, i * 0.16); tone(660, 0.08, 'sine', 0.2, i * 0.16 + 0.08); } },
   ping() { tone(1320, 0.08, 'sine', 0.25); tone(1760, 0.12, 'sine', 0.2, 0.08); },

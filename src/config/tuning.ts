@@ -123,7 +123,18 @@ export const T = {
   VISIT_RED_SPEEDUP: 0.7,
   PEEK_PASS_MOOD: -5,
   // Visit types (Monday set). Weights when she comes to your door; Cuddle only while she is happy (green).
-  VISIT_DECK: ['peek', 'peek', 'snack', 'chat', 'cuddle'],   // drawn in shuffled order, reshuffled when empty: variety without a fixed order
+  // The type depends on what she was doing (VISIT_BIAS, docs/design/her.md); VISIT_RANDOM of the time it ignores that
+  // and draws from VISIT_FLAT instead, so the cue is a good bet and never a promise. Cuddle only while she is green.
+  VISIT_RANDOM: 0.25,
+  VISIT_FLAT: { peek: 2, snack: 1, chat: 1, cuddle: 1 } as Record<string, number>,
+  VISIT_BIAS: {
+    tv:     { chat: 1, cuddle: 1 },
+    tea:    { snack: 1 },
+    toilet: { peek: 1 },
+    phone:  { peek: 1 },
+    shower: { cuddle: 2, peek: 1 },
+  } as Record<string, Record<string, number>>,
+  END_CUE_SEC: 3.5,               // her activity ends with a sound this long before she moves
   SNACK_TAKE_SEC: 3, SNACK_HEAL: 0.2, SNACK_PASS_MOOD: -5, SNACK_IGNORE_MOOD: 3, SNACK_FAIL_MOOD: 8,   // fail = cans in sight: she takes one
   CHAT_QUESTIONS: 3, CHAT_ASK_SEC: 5, CHAT_PASS_MOOD: -8, CHAT_MEH_MOOD: -2, CHAT_BAD_MOOD: 10, CHAT_HEADSET_MOOD: 10,
   CUDDLE_ASK_SEC: 6, CUDDLE_SEC: 12, CUDDLE_PASS: 0.6, CUDDLE_RADIUS: 34, CUDDLE_JERK: 900,   // px/s of mouse speed that counts as rushing

@@ -60,10 +60,24 @@ fills she rushes straight over: Mood +`PEEK_CAUGHT_MOOD`, Flow reset.
 `FAKEOUT_CHANCE` of the far steps just walk past ("She went to the kitchen").
 
 **Visit types** (`src/systems/visits.ts`). Each type asks for a different answer, so the player has to
-read the cue, not just alt-tab every time. The type is drawn from a shuffled deck (`VISIT_DECK`: Peek x2,
-Snack run, Chat, Cuddle), reshuffled when empty; Cuddle waits in the deck until she is happy (green). Woken
+read the cue, not just alt-tab every time. The type depends on what she was doing (`VISIT_BIAS`, table
+below); `VISIT_RANDOM` (25%) of the time it is drawn from `VISIT_FLAT` instead (Peek 2, Snack, Chat, Cuddle),
+so the activity is a good bet and never a promise. Cuddle is only drawn while she is happy (green). Woken
 visits are always Peeks. On the first night the her-note names the hallway cue (`VISIT_CUE`); later nights
 rely on the sound.
+
+**What she was doing predicts the visit** (`test/predict.ts` prints the odds):
+
+| She was | End cue (`END_CUE_SEC` before she moves) | Likely visit (about 75% bias + 25% flat) |
+|---|---|---|
+| Watching TV | Credits music | Chat or Cuddle (about 43% each in green; Chat 80% otherwise) |
+| Making tea | Kettle whistle and a click | Snack run (80%) |
+| Bathroom | Running tap | Peek (85%) |
+| On her phone | A short goodbye jingle ("ok bye love you") | Peek (85%) |
+| Shower | Hair dryer | Cuddle 55%, Peek 35% (Peek 88% when she is not green) |
+
+Each cue plays once per activity, from the room she is in, so distance and the headset mute it like any
+other sound. Listening now tells you that she is about to come *and* what to clear.
 
 | Type | Hallway cue | She checks | Your answer | Outcome |
 |---|---|---|---|---|
@@ -113,8 +127,11 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 - **Snack run never looks at the screen** (0.17): rewarding the player who reads the cue with staying in
   the game is what makes the cue worth reading. Hiding the cans costs one click during the footsteps,
   the same seconds an alt-tab would take.
-- **A shuffled deck, not weighted dice** (0.17): a night has only 2 to 4 visits before bed, and random rolls
-  often repeated one type and hid the others. Rejected: fixed order (learnable, no tension).
+- **Activity-biased draw, not a shuffled deck** (0.22, replaces the 0.17 deck): a night has only 2 to 4
+  visits, so variety already comes from her moving between activities, and a deck would fight the prediction
+  (it would hand you a Snack run after she watched TV). The 25% flat draw keeps the cue from being a
+  promise. Rejected: pure random (hid the types, nothing to read), fixed order (learnable, no tension),
+  100% prediction (listening becomes a lookup table).
 - **Cuddle is forced, so it is safe**: the party keeps the normal autopilot. Refusing is the risky answer.
 - **Alt-tab lag forces early commitment**, which makes information (blueprint, peeking, headset off)
   worth having. Without it the safe play was waiting for the handle.
@@ -132,8 +149,8 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 ## Planned
 
 - **More visit types** (rest of #12, later nights): Hug from behind, Help me, Coming to bed?, How do I look?
-- **Her activity predicts the next visit type** (#18, needs #12): TV → Chat or Cuddle, kitchen → Snack run,
-  toilet → Peek, shower → Cuddle or Hug, bedroom → Coming to bed?, phone → Peek only; 20 to 25% random.
+- **Bias for the later visit types**: Hug from behind joins the shower row, Coming to bed? joins the bedroom
+  (#18 follow-up, with #12).
 - **Pre-emptive actions** (#19, #20): verbs used before a visit: [preemptive.md](preemptive.md).
 - **Eye-candy moments** (#22): shower panel, "Wanna join?", hoodie walk-by and more: [eye-candy.md](eye-candy.md).
 - Room ideas (#25): audible end cues per activity (credits music, kettle whistle, flush and tap, shower →

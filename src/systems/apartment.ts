@@ -14,7 +14,7 @@ export function initApartment() {
   const n = N();
   n.apt = { room: 'living', activity: 'tv', t: rand(...ACT_BY_ID.tv.dur), moving: 0, soundT: 1,
     heard: 'living', heardWhat: 'TV', heardAt: 0, showerUsed: false, lastVisitEnd: 0, forceDoor: false,
-    asleep: false, wake: 0, textSent: false };
+    asleep: false, wake: 0, textSent: false, cued: false };
 }
 
 /** Called by visits.ts when she leaves your door or walks past it. */
@@ -38,7 +38,7 @@ function goToBed(wake = 0) {
   const a = n.apt;
   const first = !a.asleep && a.activity !== 'sleep';
   a.activity = 'sleep'; a.room = 'bedroom'; a.asleep = true; a.wake = wake; a.textSent = false;
-  a.t = 99999; a.moving = T.APT_MOVE_SEC; a.soundT = 1;
+  a.t = 99999; a.moving = T.APT_MOVE_SEC; a.soundT = 1; a.cued = false;
   if (first || wake > 0) toast(first ? 'She went to bed. Keep the Noise down.' : 'She went back to bed.', '#b98cff');
 }
 
@@ -52,7 +52,7 @@ function pickActivity() {
     id = pool[weighted(pool.map(x => x.weight))].id;
   }
   a.activity = id; a.room = ACT_BY_ID[id].room; a.t = rand(...ACT_BY_ID[id].dur);
-  a.moving = T.APT_MOVE_SEC; a.soundT = 0.5;
+  a.moving = T.APT_MOVE_SEC; a.soundT = 0.5; a.cued = false;
 }
 
 /** How much of your Noise reaches her, by room and what she is doing (never shown). Asleep: not used. */
@@ -85,6 +85,9 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
 
   // High Noise makes her wrap up whatever she is doing (except the shower).
   a.t -= dt * (heardNoise() > 70 ? 2 : 1);
+  if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
+    a.cued = true; sfx.endCue(act.id); hear(act.room, act.end);
+  }
   const gap = n.threat - a.lastVisitEnd;
   if (a.t > 0 && !(a.forceDoor && gap >= T.DOOR_MIN_GAP_SEC)) return null;
   if (n.clock >= T.BED_FROM) { goToBed(); return null; }

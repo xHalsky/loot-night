@@ -1,6 +1,6 @@
 import { T } from '../config/tuning';
 import { S, N, type VisitKind } from '../core/state';
-import { chance, pick } from '../core/rng';
+import { chance, pick, weighted } from '../core/rng';
 import { addMood, moodZone } from './meters';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
@@ -36,16 +36,15 @@ function endVisit() {
   afterVisit();
 }
 
-/** Draws the next visit type from a shuffled deck, so a night shows variety without a fixed order.
- *  Cuddle only while she is happy (green); otherwise it waits in the deck. */
-function rollKind(woken: boolean): VisitKind {
+/** Draws the next visit type from what she was doing (T.VISIT_BIAS), so listening predicts it.
+ *  VISIT_RANDOM of the time the bias is ignored and the flat table is used instead.
+ *  Cuddle only while she is happy (green). Woken visits are always Peeks. */
+export function pickKind(from: string, woken = false, green = moodZone(N().mood) === 'green', roll = Math.random()): VisitKind {
   if (woken) return 'peek';
-  const n = N();
-  if (!n.visitDeck.length) n.visitDeck = [...T.VISIT_DECK as VisitKind[]].sort(() => Math.random() - 0.5);
-  const ok = (k: VisitKind) => k !== 'cuddle' || moodZone(n.mood) === 'green';
-  const i = n.visitDeck.findIndex(ok);
-  if (i < 0) return 'peek';
-  return n.visitDeck.splice(i, 1)[0];
+  const table = roll < T.VISIT_RANDOM || !T.VISIT_BIAS[from] ? T.VISIT_FLAT : T.VISIT_BIAS[from];
+  const kinds = Object.keys(table).filter(k => k !== 'cuddle' || green) as VisitKind[];
+  if (!kinds.length) return 'peek';
+  return kinds[weighted(kinds.map(k => table[k]))];
 }
 
 export function startVisit(woken = false, kind?: VisitKind) {
@@ -53,7 +52,7 @@ export function startVisit(woken = false, kind?: VisitKind) {
   if (v.stage !== 'idle') return;
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
   v.from = woken ? 'sleep' : N().apt.activity;
-  v.kind = kind ?? rollKind(woken);
+  v.kind = kind ?? pickKind(v.from, woken);
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
 }
 export const visitSooner = () => sendHerSoon();
