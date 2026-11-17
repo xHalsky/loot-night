@@ -76,6 +76,27 @@ the camera in a gaming chair; your door behind him at the same size as before (t
 the floor running toward the camera). He may overlap only the door frame: never the doorway, the crack (the
 door's right edge), the light gap under the door or her toes. While peeking he turns toward the door (the back
 of his head). The key screenshot is her in the doorway behind his face: both read at once.
+- **His face** (`src/systems/him.ts` rules, `src/ui/him.ts` art; #37, #38). Automatic, no emote button. Like
+  the face in Doom's status bar, it shows what is going on without a meter. Reactions win over status.
+
+  | Moment | His face |
+  |---|---|
+  | She comes in | Freezes: guilty smile, a drop of sweat, eyes on her |
+  | Pass / she leaves happy | Relief: eyes shut, smile (lingers `HIS_RELIEF_SEC`) |
+  | Caught | Panic: wide eyes, open mouth, before the jumpscare |
+  | Cuddle ask, lean visit, good night | Blush |
+  | Chat answers | Good: grin. Meh: flat. Rude: frown |
+  | Snack offered / taken | Grin |
+  | Epic or better drop (`HIS_GRIN_RARITY`) | Grin for `HIS_GRIN_SEC` |
+  | A new sound of her | His eyes flick to its side for `HIS_FLICK_SEC` (`ROOM_LOOK`: living room, bathroom, bedroom left; hallway and kitchen right). Not with the headset on: that is what the headset costs |
+  | Tired (`TIRED_YAWN`+) | Heavy eyelids; yawns with the yawn |
+  | Microsleep (`TIRED_MICROSLEEP`+) | Nods off: eyes shut, head drops, "z" (seen while the lids close) |
+  | Full Zone | Focused look and a purple glow |
+  | Monster boost | Jittery |
+  | Headset worn | On his head (it leaves the desk), mic and purple strip |
+
+  Art: one head pose, the expressions as small face layers (eyes, brows, mouth), gear as separate layers, so
+  a real-life upgrade (#4: glasses and the like) is one more layer. `python3 test/him.py` shoots every row.
 - **The plan on the wall** (#35): the blueprint is a sheet taped to the wall by the door. Click it (the cursor
   turns to a magnifier) and it opens large over the panel: the same plan with the dashed line of sight and no
   marker for her, plus a line on which rooms are next to yours. The game keeps running. Close with ✕, Esc or a
@@ -90,6 +111,10 @@ of his head). The key screenshot is her in the doorway behind his face: both rea
   later his reactions and status (#37, #38) can show what the player's character feels. Rejected: keeping the
   blueprint smaller next to his face (two pictures fighting in 280 px); a separate face box under the door
   (the face and her in the doorway would not read as one scene).
+- **His face reacts by itself** (0.36): no emote button, because the player's hands are busy and the face is
+  for reading the moment, not for input. His reactions to her sounds stop under the headset, so the face also
+  teaches what the headset costs. Rejected: a face that mirrors her Mood (her hearts already do that); a big
+  expression set (six or so plus gear layers keeps the hand-made sprites in #5 cheap).
 - **The door moved right, not smaller**: it keeps its size so her and the toes stay readable; the left strip
   holds the plan, and he sits under it.
 - **The shower panel became his daydream** (0.35): it lived over the map. Now, while she showers and you can

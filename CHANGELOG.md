@@ -3,6 +3,34 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.36.0 (2026-11-17)
+
+Left panel rework, part 3: his face reacts and shows his state (#37, #38). The rework is done; the poker face
+(#39) stays an idea for the arc.
+
+- **Reactions (#37), automatic:**
+  - She comes in: he freezes, guilty smile and a drop of sweat, eyes on her.
+  - Pass: relief, which lingers for 2 s after she leaves.
+  - Caught: panic, before the jumpscare.
+  - Cuddle ask, her lean visit, good night: a blush.
+  - Chat answers on his face: good is a grin, meh is flat, rude is a frown.
+  - An epic or better drop: he grins for 2.5 s (`HIS_GRIN_RARITY`, `HIS_GRIN_SEC`; kept in `n.grin` for the
+    poker face, #39).
+  - A new sound of her: his eyes flick to its side (`ROOM_LOOK` in `src/data/apartment.ts`). With the headset
+    on he does not react.
+- **Status (#38):**
+  - Tired: heavy eyelids, and he yawns with the yawn.
+  - Microsleep: he nods off (eyes shut, head drops, "z").
+  - Full Zone: a focused look and a purple glow.
+  - Monster: jittery.
+  - The headset is on his head while worn.
+- Rules in the new `src/systems/him.ts` (`updateHim` in the loop, `hisLook`); art layers in `src/ui/him.ts`.
+- **Tests and sims:**
+  - New `test/him.py`: every expression, the eye flicks, the headset (`test/him_sheet.png`).
+  - `test/webcam.py`, `test/peek.py`, `test/sound.py` pass.
+  - Sims (3 good, 3 idle): good depth 9.7, 0 catches; idle caught 0.7. No rule changes (the grin has no
+    effect yet).
+
 ## 0.35.0 (2026-11-17)
 
 Left panel rework, part 2: the blueprint panel is gone; the left panel is the webcam view of him (#36) with the

@@ -50,7 +50,7 @@ export interface Vfx { kind: VfxKind; x: number; y: number; x2: number; y2: numb
 export type VisitStage = 'idle' | 'far' | 'hall' | 'handle' | 'in' | 'passing';
 /** What she comes for (docs/design/her.md, visit types). Each asks for a different answer. */
 export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle' | 'night';   // night: the hoodie walk-by on her way to bed
-export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string }
+export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string; last: number }   // last: his last answer (0 good, 1 meh, 2 rude, -1 none)
 export interface VisitState {
   stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean;
   kind: VisitKind;
@@ -164,6 +164,7 @@ export interface Night {
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
+  grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   moodDrift: number;
   selected: string | null; heroTab: number;
   everCaught: boolean; unidentifiedFound: number;

@@ -31,6 +31,7 @@ The principle is vital, so the slice gets every item whose inputs exist on Monda
 | Audio-first loot cues | Slice: built in real audio #13 (0.33) |
 | A city upgrade every night | Slice: inside the balance pass #2 |
 | Combo floors, party sets, overtime zł, bag tools, banter, unfolding city, bounties, the ending | Arc: #14 |
+| Poker face: his grin at a big drop while she is in the doorway | Arc: #39 (idea) |
 
 **Raid pass merged into pre-emptive actions:** it is a pre-emptive action that costs Goodwill instead of a
 per-night charge. One system for "act before she comes", not two.
@@ -120,6 +121,9 @@ dangerous); Taunted reflects 50% with Ward, not 20% (20% was too small to see).
   the cheapest next building.
 - **Bag tools:** auto-salvage threshold (Off / Common / Uncommon / Rare); Reroll one affix at the Salvage
   Forge (50 gold + 3 scraps, doubling); comparison shows total ATK and HP change.
+- **Poker face (#39, idea):** a big drop while she stands in the doorway makes him grin (the grin exists since
+  0.36, `n.grin`). Hold a key to keep a straight face; if he grins she gets suspicious (Mood +, next visit is a
+  Peek). Loot → her: a drop becomes a tell she can read. Numbers in tuning.ts when it is built.
 - Parked: a stash Tetris grid in the city.
 
 ## Social and city

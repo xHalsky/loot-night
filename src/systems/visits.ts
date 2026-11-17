@@ -196,7 +196,7 @@ function check() {
       return;
     }
     const order = CHAT_QS.map((_, i) => i).sort(() => Math.random() - 0.5).slice(0, T.CHAT_QUESTIONS);
-    v.chat = { order, asked: 0, good: 0, bad: 0, t: T.CHAT_ASK_SEC, line: `"${CHAT_QS[order[0]].q}"` };
+    v.chat = { order, asked: 0, good: 0, bad: 0, t: T.CHAT_ASK_SEC, line: `"${CHAT_QS[order[0]].q}"`, last: -1 };
     v.result = 'chat'; v.t = T.CHAT_ASK_SEC + 1;
     return;
   }
@@ -247,6 +247,7 @@ export function chatAnswer(kind: number, timeout = false) {
   const v = n.visit;
   const c = v.chat;
   if (!c || v.result !== 'chat') return;
+  c.last = kind;
   if (kind === 0) { c.good++; sfx.good(); }
   else if (kind === 2) { c.bad++; sfx.bad(); }
   else if (!timeout) sfx.click();

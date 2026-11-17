@@ -17,4 +17,8 @@ export const ROOM_NAME: Record<Room, string> = { living: 'Living room', kitchen:
 // Your room shares walls with the living room and the kitchen and opens onto the hallway;
 // the bathroom is across the hallway; the bedroom is the far corner.
 export const ROOM_DISTANCE: Record<Room, 'next' | 'middle' | 'far'> = { hallway: 'next', living: 'next', kitchen: 'next', bathroom: 'middle', bedroom: 'far' };
+/** Which side of the webcam picture each room is on, for his eyes (#37): -1 the viewer's left, 1 the right.
+ *  He faces the camera on the south wall; west (living room, bathroom, bedroom) is left, the hallway door
+ *  and the kitchen across it are right. */
+export const ROOM_LOOK: Record<Room, number> = { living: -1, bathroom: -1, bedroom: -1, kitchen: 1, hallway: 1 };
 export const ROOM_SHORT: Record<Room, string> = { living: 'Living', kitchen: 'Kitchen', bathroom: 'Bath', bedroom: 'Bedroom', hallway: 'Hallway' };

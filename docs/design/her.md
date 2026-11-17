@@ -47,7 +47,7 @@ through). It never shows where she is now, only the last sound.
 **Headset and Zone** (H, or click it on the desk). Headset on fills Zone over `ZONE_FILL_SEC`; full Zone
 gives Flow ×`ZONE_FLOW_MULT` and +`ZONE_LUCK` loot luck, a purple aura around the monitor and a ZONE
 badge. But she is muffled to `HEADSET_APT_VOLUME`, the last-heard line stops updating, and the far-steps
-warning is gone. Headset off empties Zone instantly. Starts off each night; disappears from the desk while worn.
+warning is gone; in the webcam view his eyes no longer flick toward her sounds. Headset off empties Zone instantly. Starts off each night; disappears from the desk while worn.
 
 **Peeking through your door** (`src/systems/peek.ts`, `drawHallway` in `src/ui/door.ts`). Hold the door: it
 opens to a narrow crack (`PEEK_CRACK_MIN` of its width) in `PEEK_OPEN_SEC`, then creeps wider to

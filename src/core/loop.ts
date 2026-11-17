@@ -14,6 +14,7 @@ import { updateExcel } from '../systems/excel';
 import { updateDungeon } from '../systems/dungeon';
 import { updateDrops } from '../systems/loot';
 import { checkNightEnd } from '../systems/night';
+import { updateHim } from '../systems/him';
 
 const STEP = 1 / 60;
 
@@ -26,6 +27,7 @@ export function step(dt: number) {
   updateCurioTimers(dt);   // party buffs, Rafał's sulk
   updateVisits(dt);
   updatePeek(dt);
+  updateHim(dt);
   updateLap(dt);
   updateDog(dt);
   const busyWithHer = !!g.night.lap || g.night.game?.kind === 'cuddle';

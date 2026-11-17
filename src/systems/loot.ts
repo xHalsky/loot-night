@@ -194,6 +194,7 @@ function announce(e: BagEntry) {
     sfx.loot(ri);
     if (!e.item.identified) n.unidentifiedFound++;
     if (e.item.rarity === 'legendary') legendaryYell();
+    if (ri >= T.HIS_GRIN_RARITY) n.grin = T.HIS_GRIN_SEC;   // he grins at the webcam (#37)
     if (e.item.witched) toast(`The Witching Hour shifts it up: ${e.item.rarity}.`, '#c77dff');
   } else sfx.loot(1);
   toast(entryName(e), color);

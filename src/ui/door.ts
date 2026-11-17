@@ -1,6 +1,7 @@
 import { S } from '../core/state';
 import { drawHer, drawHerFrosted, drawHerBack, drawShowerPanel, OUTFIT_BY_ACTIVITY, type Face } from './her';
-import { drawHim, type HisFace } from './him';
+import { drawHim } from './him';
+import { hisLook } from '../systems/him';
 import { T } from '../config/tuning';
 import { ACT_BY_ID } from '../data/apartment';
 
@@ -116,10 +117,15 @@ function room(c: CanvasRenderingContext2D, t: number) {
   planSheet(c);
   if (!n) return;
   // him: back of his head while he peeks, his face otherwise (expressions and gear: #37, #38)
-  const blink = (t % 4.3) < 0.13;
+  const me = hisLook();
+  const blink = (t % 4.3) < 0.13 && me.face !== 'asleep' && me.face !== 'relief';
   const bob = Math.sin(t * 1.4) > 0.6 ? 1 : 0;
-  const face: HisFace = 'neutral';
-  drawHim(c, HIM_X, HIM_Y + bob, { face, back: n.peek > 0.05 || n.peeking, blink, headset: n.headset });
+  if (me.glow) {   // full Zone: the purple glow around him
+    const zg = c.createRadialGradient(HIM_X, HIM_Y + 60, 20, HIM_X, HIM_Y + 60, 120); zg.addColorStop(0, 'rgba(154,107,255,.45)'); zg.addColorStop(1, 'rgba(154,107,255,0)');
+    c.fillStyle = zg; c.fillRect(0, HIM_Y - 70, 170, DOOR_H - HIM_Y + 70);
+  }
+  drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking, blink, look: me.look, headset: n.headset, jitter: me.jitter });
+  if (me.face === 'asleep') { c.fillStyle = '#cfd8ff'; c.font = '16px "Patrick Hand", sans-serif'; c.textAlign = 'left'; c.fillText('z', HIM_X + 40, HIM_Y + 10 - (t * 8 % 12)); }
   // monitor light on his face from the front, a webcam's soft vignette
   const v = c.createRadialGradient(DOOR_W / 2, DOOR_H * 0.45, DOOR_H * 0.35, DOOR_W / 2, DOOR_H * 0.45, DOOR_H * 0.75);
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.45)');

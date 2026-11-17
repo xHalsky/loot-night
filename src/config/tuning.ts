@@ -217,6 +217,11 @@ export const T = {
   ZONE_LUCK: 0.10,                // ...and +10% loot luck. Headset off empties Zone instantly.
   HEADSET_APT_VOLUME: 0.15,       // ...but apartment sounds are muffled and the map stops updating
   HEADSET_APT_LOWPASS: 500,       // Hz: what is left of her through the headset
+  // His face in the webcam view (#37, #38): reactions and status, no gameplay effect (yet: #39 poker face)
+  HIS_GRIN_RARITY: 3,             // an epic or better drop makes him grin...
+  HIS_GRIN_SEC: 2.5,              // ...for this long
+  HIS_FLICK_SEC: 0.9,             // his eyes flick toward a new sound for this long (not with the headset on)
+  HIS_RELIEF_SEC: 2,              // after she leaves happy, relief lingers
   // What you hear of her by distance (her sounds, not your Noise): volume and the walls' low-pass (Hz).
   APT_ROOM_GAIN: { next: 1, middle: 0.65, far: 0.45 } as Record<string, number>,
   APT_ROOM_LOWPASS: { next: 2800, middle: 1600, far: 1000 } as Record<string, number>,
