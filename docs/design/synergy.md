@@ -3,7 +3,7 @@
 Slice set #29, arc set #14.
 
 **Rule:** every system takes input from at least two others and feeds at least two others; a system that
-only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23), cross-system affixes (0.25). Everything else below is planned.
+only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23), cross-system affixes (0.25), cross-layer echoes and the dog and cable payouts (0.29). Everything else below is planned.
 All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 
 ## Audit of the current build (2026-11-16)
@@ -13,10 +13,10 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | RPG combat | Noise, loot, XP | Flow, Zone, Monster, buildings, gear, Tiredness; curios (a real can, Noise, standing still) | Fine |
 | Loot | Gold, scraps, zł, party power; real-life affixes change headset, alt-tab, Tiredness, excuses, waking, cans | Flow, Zone, green Mood; cross-system affixes read headset, Monster, Noise, Mood, the dog, Excel | zł is a dead end until the store (#4) |
 | Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift | Her visits give the RPG nothing positive |
-| Noise | Visit timing, waking her | Combat, dog, Monster, loud curio choices | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
+| Noise | Visit timing, waking her | Combat, dog, Monster, loud curio choices, a legendary yell, a wipe slam | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
 | Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise | Timers, the headset (the boys) | Bedtime text only avoids a penalty |
-| Dog and cables | Noise, NO SIGNAL | A timer | Only punishes |
+| Dog and cables | Noise, NO SIGNAL; Good Boy (goblins x2), a fast fix keeps Flow; a wipe calls him over | A timer, a wipe | Fine (0.29) |
 | Tiredness | Yawns, microsleeps, sluggish | Clock, sleep debt, Monster | Only punishes; staying up has no upside |
 
 ## Slice set vs. arc set (decided 2026-11-16)
@@ -34,17 +34,17 @@ The principle is vital, so the slice gets every item whose inputs exist on Monda
 **Raid pass merged into pre-emptive actions:** it is a pre-emptive action that costs Goodwill instead of a
 per-night charge. One system for "act before she comes", not two.
 
-## Cross-layer echoes
+## Cross-layer echoes (built 0.29, numbers `ECHO_*`)
 
-| Direction | Trigger | Echo |
-|---|---|---|
-| RPG → life | Legendary drop | He yells "LET'S GO": Noise +15; Feed: "[Her] what was that??" |
-| RPG → life | Boss below 25% HP (enrage) | Flow builds 50% faster for the fight; alt-tabbing resets Flow |
-| RPG → life | Party wipe | He slams the desk: Noise +10, the dog comes over |
-| Life → RPG | Cuddle or Hug passed | Loved: +15% damage, +10% crit next fight |
-| Life → RPG | Dinner shout passed | Fed: +10% max HP for the floor |
-| Life → RPG | Tiredness 70+ | Drowsy: +10% miss chance ("zzz") |
-| Life → RPG | Caught (any rung) | Guilt on every rung, not only the 2nd |
+| Direction | Trigger | Echo | Status |
+|---|---|---|---|
+| RPG → life | Legendary drop | He yells "LET'S GOOOO": Noise +15 (+5 with the headset on: into the mic); awake and no headset: "[Her] what was that??" | Built |
+| RPG → life | Boss below 25% HP (enrage) | ENRAGED tag; Flow builds x1.5 for the fight; alt-tabbing out of it resets Flow | Built (the boss itself does not get stronger: the bosses are tuned) |
+| RPG → life | Party wipe | He slams the desk: Noise +10, the dog comes over | Built |
+| Life → RPG | Cuddle passed | Loved: +15% damage, +10% crit for the next fight (buff bar: "next") | Built; Hug when it exists (#12) |
+| Life → RPG | Dinner shout passed | Fed: +10% max HP for the floor | Waits for the dinner shout (#23) |
+| Life → RPG | Tiredness 70+ | Drowsy: 10% of hero hits miss ("zzz") | Built |
+| Life → RPG | Caught (any rung) | Guilt on every rung, not only the 2nd | Built |
 
 ## Goodwill
 
@@ -68,9 +68,11 @@ a greedy choice, not only a penalty.
 
 ## Interrupts always pay
 
-Car alarm +60 gold; dinner shout = Fed; friends' call reveals the next node row; dog petted on the
-favourite spot = Good Boy (goblin chance ×2 for 60 s); cable fix under 6 s restores Flow; a bank shot in
-the bin gives a small Flow bonus (exists).
+Built (0.28, 0.29): the courier's parcel, the boys' raid buff; the dog petted mostly on his favourite spot
+(`GOOD_BOY_SWEET_SHARE` of the petting) = Good Boy, loot goblins x2 for 60 s (dog icon on the buff bar);
+cables back in under `CABLE_FAST_SEC` (6 s) restore the Flow you had when he bumped the desk; a bank shot in
+the bin gives a small Flow bonus. Planned with their interrupts: car alarm +60 gold, dinner shout = Fed, the
+boys' call revealing the next node row.
 
 ## Synergy inside the RPG
 

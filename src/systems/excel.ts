@@ -31,6 +31,9 @@ export function altTab() {
   const lag = rand(...T.ALT_TAB_LAG_SEC) * (hasLife('quick') ? 1 - T.AFFIX_QUICK : 1);   // of Quick Fingers
   n.switching = { to: n.monitor === 'rpg' ? 'excel' : 'rpg', t: lag, max: lag };
   sfx.monClick();
+  if (n.switching.to === 'excel' && n.location === 'dungeon' && n.enemies.some(e => e.enraged && e.hp > 0) && n.flow > T.FLOW_MIN) {
+    n.flow = T.FLOW_MIN; toast('You looked away from an enraged boss. Flow reset.', '#ff8a80');   // echo: the fight of the night
+  }
 }
 
 export function updateSwitch(dt: number) {

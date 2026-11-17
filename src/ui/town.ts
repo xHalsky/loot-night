@@ -480,6 +480,8 @@ const BI: Record<string, string> = {
   blessing: '<rect x="7" y="4" width="8" height="15" rx="2" fill="#111"/><ellipse cx="11" cy="5" rx="4" ry="1.2" fill="#c9ced6"/><path d="M10 8 L10.5 15 M12 7.5 L12 16" stroke="#6ef06e" stroke-width="1.4"/><circle cx="11" cy="11" r="9" fill="none" stroke="#6ef06e" stroke-width="1" opacity=".6"/>',
   fee: '<rect x="2" y="5" width="18" height="12" fill="#efe6cf"/><path d="M2 5 L11 12 L20 5" stroke="#9a8a6a" stroke-width="1.4" fill="none"/><rect x="14" y="12" width="5" height="4" fill="#e0524a"/>',
   raid: '<path d="M4 15 C4 6, 18 6, 18 15" stroke="#8fd0ff" stroke-width="2.2" fill="none"/><rect x="2" y="13" width="5" height="7" rx="2" fill="#5a9ad8"/><rect x="15" y="13" width="5" height="7" rx="2" fill="#5a9ad8"/><path d="M7 4 L15 12 M15 4 L7 12" stroke="#f2d24b" stroke-width="2"/>',
+  loved: '<path d="M11 19 C4 13, 2 9, 5 6 C7.5 3.5, 10 5, 11 7 C12 5, 14.5 3.5, 17 6 C20 9, 18 13, 11 19 Z" fill="#ff7ab8"/><path d="M7 8 C7.5 7, 8.5 6.5, 9.5 7" stroke="#ffd6e8" stroke-width="1.4" fill="none"/>',
+  dog: '<ellipse cx="11" cy="13" rx="7" ry="6" fill="#c8964e"/><ellipse cx="5" cy="9" rx="2.5" ry="4.5" fill="#8a5a2a"/><ellipse cx="17" cy="9" rx="2.5" ry="4.5" fill="#8a5a2a"/><circle cx="8.5" cy="12" r="1.1" fill="#2a1a10"/><circle cx="13.5" cy="12" r="1.1" fill="#2a1a10"/><ellipse cx="11" cy="15" rx="1.6" ry="1.1" fill="#2a1a10"/>',
   sulk: '<circle cx="11" cy="11" r="8" fill="#8a6ad8"/><circle cx="8" cy="9" r="1.2" fill="#1a1028"/><circle cx="14" cy="9" r="1.2" fill="#1a1028"/><path d="M7.5 15.5 Q11 12.5 14.5 15.5" stroke="#1a1028" stroke-width="1.5" fill="none"/>',
   monster: '<rect x="6" y="2" width="10" height="18" rx="2" fill="#111"/><ellipse cx="11" cy="3" rx="5" ry="1.4" fill="#c9ced6"/><path d="M8.5 6 L9.5 14 M11 5.5 L11 15 M13.5 6 L12.5 14" stroke="#6fe08a" stroke-width="1.6"/>',
   crash: '<rect x="6" y="5" width="10" height="15" rx="2" fill="#333"/><path d="M11 1 V9 M7.5 6 L11 10 L14.5 6" stroke="#ff8a80" stroke-width="2" fill="none"/>',
@@ -499,12 +501,15 @@ function buffsHtml(n: NonNullable<typeof S.g.night>): string {
   if (n.flow > 1.05) list.push({ k: 'flow', name: `Flow: party damage x${n.flow.toFixed(1)}`, label: `x${n.flow.toFixed(1)}` });
   if (n.taunt > 0) list.push({ k: 'taunt', name: 'Taunt: enemies hit the knight', left: n.taunt, max: 5 });
   if (n.ward > 0) list.push({ k: 'ward', name: 'Ward: party protected', left: n.ward, max: 6 });
-  for (const b of n.partyBuffs) list.push(b.floor
+  for (const b of n.partyBuffs) list.push(b.fights !== undefined
+    ? { k: b.icon, name: `${b.name}: party +${Math.round(b.dmg * 100)}% damage${b.crit ? `, +${b.crit}% crit` : ''} for the next fight`, label: 'next' }
+    : b.floor
     ? { k: b.icon, de: b.dmg < 0, name: `${b.name}: party ${Math.round(b.dmg * 100)}% damage until the next floor`, label: 'floor' }
     : { k: b.icon, de: b.dmg < 0, name: `${b.name}: party ${b.dmg >= 0 ? '+' : ''}${Math.round(b.dmg * 100)}% damage${b.speed ? `, +${Math.round(b.speed * 100)}% speed` : ''}`, left: b.t, max: b.max });
+  if (n.goodDog > 0) list.push({ k: 'dog', name: `Good Boy: loot goblins x${T.GOOD_BOY_GOBLIN}`, left: n.goodDog, max: T.GOOD_BOY_SEC });
   if (n.sulk > 0) list.push({ k: 'sulk', de: true, name: `Rafał sulks about the guild bank: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage`, left: n.sulk, max: T.CURIO_SULK_SEC });
   if (n.guilt > 0) list.push({ k: 'guilt', name: 'Guilt: party -10% damage', de: true, left: n.guilt, max: T.GUILT_SEC });
-  if (n.tired >= T.TIRED_YAWN) list.push({ k: 'tired', de: true, name: n.tired >= T.TIRED_SLUGGISH ? 'Sluggish: timers shorter, eyes closing' : n.tired >= T.TIRED_MICROSLEEP ? 'Microsleeps: your eyes close' : 'Yawning: the screen blurs now and then', label: n.tired >= T.TIRED_SLUGGISH ? 'III' : n.tired >= T.TIRED_MICROSLEEP ? 'II' : 'I' });
+  if (n.tired >= T.TIRED_YAWN) list.push({ k: 'tired', de: true, name: n.tired >= T.TIRED_SLUGGISH ? `Sluggish and Drowsy: timers shorter, ${Math.round(T.ECHO_DROWSY_MISS * 100)}% of hits miss (zzz)` : n.tired >= T.TIRED_MICROSLEEP ? 'Microsleeps: your eyes close' : 'Yawning: the screen blurs now and then', label: n.tired >= T.TIRED_SLUGGISH ? 'III' : n.tired >= T.TIRED_MICROSLEEP ? 'II' : 'I' });
   if (!list.length) return '';
   return `<div class="buffs">${list.map(b => {
     const pct = b.left !== undefined && b.max ? Math.round((1 - b.left / b.max) * 36) * 10 : 0;

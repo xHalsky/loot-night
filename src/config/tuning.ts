@@ -146,6 +146,14 @@ export const T = {
   PRE_CALM_BREAK_NOISE: 70,       // heard Noise above this ends a calm: she comes to check
   PRE_TEA_HUG_SEC: 12, PRE_TEA_HUG_MOOD: -5, PRE_TEA_COLD_MOOD: -5,
   PRE_TOWEL_SEC: 2, PRE_TOWEL_NOISE: 0.4, PRE_TOWEL_SLOW: 0.3, PRE_TOWEL_STEPS: 0.5, PRE_TOWEL_SEEN_MOOD: 5,
+  // Cross-layer echoes and payouts (docs/design/synergy.md, #29).
+  ECHO_YELL_NOISE: 15, ECHO_YELL_HEADSET: 5,   // a legendary drop: he yells (into the mic with the headset on)
+  ECHO_SLAM_NOISE: 10,                          // a wipe: he slams the desk, the dog comes over
+  ECHO_ENRAGE_HP: 0.25, ECHO_ENRAGE_FLOW: 1.5,  // a boss below this HP enrages: Flow builds faster; alt-tab resets Flow
+  ECHO_LOVED_DMG: 0.15, ECHO_LOVED_CRIT: 10,    // after a good cuddle, for the next fight
+  ECHO_DROWSY_MISS: 0.1,                        // hero hits miss this often at Tired TIRED_SLUGGISH+
+  GOOD_BOY_SEC: 60, GOOD_BOY_GOBLIN: 2, GOOD_BOY_SWEET_SHARE: 0.5,   // petted mostly on his favourite spot
+  CABLE_FAST_SEC: 6,                            // cables back in this fast: Flow comes back too
   CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
   GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,

@@ -11,7 +11,7 @@ import { CD_PCT } from '../data/city';
 import { isAway, autopilotPull, autopilotHurt } from './autopilot';
 import { MARKS } from '../data/marks';
 import { overtimeGold } from './affixes';
-import { curioDmgMult, curioSpeedMult } from './curios';
+import { curioDmgMult, curioSpeedMult, partyCrit } from './curios';
 
 export const HERO_X = [208, 124, 40];   // knight in front (right), healer at the back
 export const ENEMY_X = [380, 457, 534];
@@ -188,7 +188,11 @@ function heroDamageMult(h?: Hero): number {
 function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', from?: { x: number; y: number }, skill = true): number {
   const n = N();
   vfx(kind, enemyCenter(e), from, kind === 'bolt' ? 0.35 : kind === 'fire' ? 0.6 : 0.35);
-  const isCrit = chance(crit / 100);
+  if (n.tired >= T.TIRED_SLUGGISH && chance(T.ECHO_DROWSY_MISS)) {   // Drowsy: your eyes close mid-swing
+    const c = enemyCenter(e); floatText(c.x + rand(-10, 10), UNIT_Y - 34, 'zzz', '#a999bd');
+    return 0;
+  }
+  const isCrit = chance((crit + partyCrit()) / 100);
   let dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - e.armor * 0.5));
   if (isCrit) { dmg *= 2; if (!loudOnce || !critHeard) n.noise += T.NOISE_CRIT; critHeard = true; }
   if (e.shield) dmg = Math.max(1, Math.round(dmg * T.SHIELD_TAKEN));
@@ -198,6 +202,10 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
     dmg = Math.max(1, dmg);
   }
   e.hp -= dmg; e.flash = 0.15;
+  if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * T.ECHO_ENRAGE_HP) {   // enrage: the fight of the night, don't look away
+    e.enraged = true; sfx.sting();
+    toast(`${e.name} is ENRAGED! Flow builds faster. Alt-tab now and you lose it.`, '#ff5a3a');
+  }
   const idx = n.enemies.indexOf(e);
   floatText(ENEMY_X[Math.max(0, idx)] + 18, UNIT_Y - 30, isCrit ? `-${dmg}!` : `-${dmg}`, isCrit ? '#f2b84b' : '#ff8a80');
   if (isCrit) sfx.crit(); else sfx.hit();

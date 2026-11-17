@@ -218,6 +218,7 @@ function units(c: CanvasRenderingContext2D, t: number) {
     const over = e.turnsAlive - T.INTEREST_AFTER_TURNS;
     if (over > 0) text(c, `INTEREST +${Math.round(over * T.INTEREST_PER_TURN * 100)}%`, x + 30, y - 30, 10, '#ffb3a8', 'center');
     if (e.stunned > 0) text(c, 'STUN', x + 30, y - 24, 11, '#8fb3ff', 'center');
+    if (e.enraged) text(c, 'ENRAGED', x + 42, y + 2 + Math.sin(t * 10) * 2, 12, '#ff5a3a', 'center', 700);
     if (e.per) text(c, `x${bodies(e)}`, x + 62, y - 8, 11, '#efe6cf', 'right', 700);
     if (e.evict !== undefined && (e.wind ?? 0) > 0) {   // EVICTION target: a red notice over that hero
       const hx = HERO_X[e.evict] + 30, by = UNIT_Y - 40 + Math.sin(t * 8) * 3;

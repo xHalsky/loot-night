@@ -11,6 +11,7 @@ import { updateApartment, afterVisit, sendHerSoon, hearsApartment, hearsHallway,
 import { hasLife } from './affixes';
 import { startCuddle } from './cuddle';
 import { towelSteps } from './preemptive';
+import { addBuff } from './curios';
 
 // Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
 // Each visit type asks for a different answer:
@@ -262,7 +263,11 @@ export function cuddleDone(score: number | null) {
   if (v.stage !== 'in') return;
   v.t = 1.6;
   if (score === null) { v.result = 'refused'; addMood(T.CUDDLE_REFUSE_MOOD); toast(`You pulled away for the game. Mood +${T.CUDDLE_REFUSE_MOOD}.`, '#ff8a80'); return; }
-  if (score >= T.CUDDLE_PASS) { v.result = 'cuddleGood'; addMood(T.CUDDLE_PASS_MOOD); toast(`Warm. "Okay, go play, I love you." Mood ${T.CUDDLE_PASS_MOOD}.`, '#ff9ab8'); sfx.kiss(); }
+  if (score >= T.CUDDLE_PASS) {
+    v.result = 'cuddleGood'; addMood(T.CUDDLE_PASS_MOOD); toast(`Warm. "Okay, go play, I love you." Mood ${T.CUDDLE_PASS_MOOD}.`, '#ff9ab8'); sfx.kiss();
+    addBuff({ name: 'Loved', dmg: T.ECHO_LOVED_DMG, speed: 0, crit: T.ECHO_LOVED_CRIT, t: 1, max: 1, icon: 'loved', fights: 1 });   // echo: life feeds the RPG
+    toast(`Loved: party +${Math.round(T.ECHO_LOVED_DMG * 100)}% damage, +${T.ECHO_LOVED_CRIT}% crit for the next fight.`, '#ff9ab8');
+  }
   else { v.result = 'cuddleMeh'; addMood(T.CUDDLE_FAIL_MOOD); toast(`"You are so restless." Mood +${T.CUDDLE_FAIL_MOOD}.`, '#ffb07a'); }
 }
 
@@ -281,7 +286,7 @@ function caught() {
   const step = Math.min(n.catches, 3);
   toast(`CAUGHT! ${pick(PEEK_CAUGHT)}`, '#ff8a80');
   addMood(T.CATCH_MOOD[step - 1]);
+  n.guilt = T.GUILT_SEC; toast(`Guilt: party -${Math.round(T.GUILT_DMG * 100)}% damage for ${T.GUILT_SEC} s.`, '#ff8a80');   // every rung (echo)
   if (step === 1) { n.flow = T.FLOW_MIN; toast('Warning: Flow reset.', '#ff8a80'); }
-  if (step === 2) { n.guilt = T.GUILT_SEC; toast('Guilt: party -10% damage for 30 s.', '#ff8a80'); }
   if (step === 3) { n.monitorOff = T.MONITOR_OFF_SEC; n.flow = T.FLOW_MIN; toast('She turned the monitor off!', '#ff8a80'); }
 }

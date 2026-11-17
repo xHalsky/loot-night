@@ -20,7 +20,7 @@ export function updateDog(dt: number) {
   d.flinch = Math.max(0, d.flinch - dt);
   if (d.stage === 'away') {
     d.next -= dt;
-    if (d.next <= 0 && !n.unplugged) { d.stage = 'up'; d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); }
+    if (d.next <= 0 && !n.unplugged) { d.stage = 'up'; d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweetPet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); }
     return;
   }
   if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC); } return; }
@@ -46,10 +46,16 @@ export function petStroke(dist: number, speed: number, sweet: boolean) {
   const d = N().dog;
   if (d.stage !== 'up') return;
   if (speed > T.DOG_FAST) { d.flinch = 0.4; d.pet = Math.max(0, d.pet - 0.04); return; }
-  d.pet += dist * T.DOG_PET_RATE * (sweet ? T.DOG_SWEET_MULT : 1);
+  const add = dist * T.DOG_PET_RATE * (sweet ? T.DOG_SWEET_MULT : 1);
+  d.pet += add;
+  if (sweet) d.sweetPet = (d.sweetPet ?? 0) + add;
   if (d.pet >= 1) {
     d.stage = 'happy'; d.t = 1.2; d.ignores = 0; N().goodBoy = T.AFFIX_DOG_SEC;   // Good Boy affixes count for a while
-    toast('Good boy! He licks your hand and flops down at your feet.', '#6fcf7f'); sfx.heal();
+    if ((d.sweetPet ?? 0) / d.pet >= T.GOOD_BOY_SWEET_SHARE) {   // mostly on his favourite spot: Good Boy
+      N().goodDog = T.GOOD_BOY_SEC;
+      toast(`GOOD BOY! He found you a lucky sock. Loot goblins x${T.GOOD_BOY_GOBLIN} for ${T.GOOD_BOY_SEC} s.`, '#6fcf7f');
+    } else toast('Good boy! He licks your hand and flops down at your feet.', '#6fcf7f');
+    sfx.heal();
   }
 }
 
@@ -60,7 +66,7 @@ function bump() {
   const kinds = shuffle([...PLUGS.keys()]).slice(0, CABLE_COUNT);
   const colors = shuffle([...CABLE_COLORS.keys()]).slice(0, CABLE_COUNT);
   const sockets = shuffle([...Array(CABLE_COUNT).keys()]);
-  n.unplugged = { kinds, colors, sockets, plugged: Array(CABLE_COUNT).fill(false) };
+  n.unplugged = { kinds, colors, sockets, plugged: Array(CABLE_COUNT).fill(false), t0: n.threat, flow: n.flow };
   n.monitorOff = 1;
   sfx.sting();
   toast('The dog slams into the desk. The monitor cables are out! Plug them back in.', '#ff8a80');
@@ -73,7 +79,12 @@ export function plugIn(plug: number, slot: number): boolean {
   if (!u || u.plugged[plug]) return false;
   if (u.sockets[slot] !== plug) { sfx.bad(); return false; }
   u.plugged[plug] = true; sfx.plug();
-  if (u.plugged.every(Boolean)) { n.unplugged = null; n.monitorOff = 0; sfx.good(); toast('Signal back. Good as new.', '#6fcf7f'); }
+  if (u.plugged.every(Boolean)) {
+    const fast = u.t0 !== undefined && n.threat - u.t0 <= T.CABLE_FAST_SEC;
+    n.unplugged = null; n.monitorOff = 0; sfx.good();
+    if (fast && u.flow !== undefined) { n.flow = Math.max(n.flow, u.flow); toast(`Signal back in ${Math.round(n.threat - u.t0!)} s. Flow restored.`, '#6fcf7f'); }   // payout: a fast fix
+    else toast('Signal back. Good as new.', '#6fcf7f');
+  }
   return true;
 }
 

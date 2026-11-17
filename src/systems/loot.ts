@@ -175,6 +175,15 @@ export function updateDrops(dt: number) {
   else n.dropPopup = { entry: e, t: T.DROP_WAIT_SEC };
 }
 
+/** Echo: a legendary makes him yell. Noise (less into the headset mic); she asks if she is awake. */
+function legendaryYell() {
+  const n = N();
+  const v = n.headset ? T.ECHO_YELL_HEADSET : T.ECHO_YELL_NOISE;
+  n.noise = Math.min(100, n.noise + v);
+  toast(`You: "LET'S GOOOO!" Noise +${v}.`, '#ff9a4d');
+  if (!n.apt.asleep && !n.headset) toast('[Her] "what was that??"', '#ff9ab8');
+}
+
 function announce(e: BagEntry) {
   const n = N();
   const color = entryColor(e);
@@ -182,6 +191,7 @@ function announce(e: BagEntry) {
     const ri = RARITIES.indexOf(e.item.rarity);
     sfx.loot(ri);
     if (!e.item.identified) n.unidentifiedFound++;
+    if (e.item.rarity === 'legendary') legendaryYell();
   } else sfx.loot(1);
   toast(entryName(e), color);
 }

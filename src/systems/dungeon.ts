@@ -9,7 +9,8 @@ import { chance } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
-import { planCurios, curioDue, startCurio, updateCurio, curioFloorEnd } from './curios';
+import { planCurios, curioDue, startCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
+import { triggerDog } from './pets';
 
 export const isBossBattle = () => { const n = N(); return !n.curioFight && n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
 
@@ -89,6 +90,7 @@ export function updateDungeon(realDt: number) {
     }
   } else if (n.phase === 'battle') {
     const r = updateBattle(dt);
+    if (r === 'victory') battleEnded();
     if (r === 'victory' && n.curioFight) {   // the troll: extra loot, then the walk goes on (not one of the floor's battles)
       rollBattleDrops(n.floor, { at: [ENEMY_X[0] + 30] });
       rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true });
@@ -98,7 +100,7 @@ export function updateDungeon(realDt: number) {
       const boss = isBossBattle();
       rollBattleDrops(n.floor, { boss, elite: n.floorMap === 'elite', at: n.enemies.map((e, i) => e.boss ? 542 : ENEMY_X[i] + 30) });
       if (boss) { n.checkpoint = n.floor + 1; toast(`Checkpoint: floor ${n.checkpoint}`, '#8fb3ff'); }
-      if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); }
+      if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE * (n.goodDog > 0 ? T.GOOD_BOY_GOBLIN : 1)))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); }
       n.phase = 'loot'; n.phaseT = 0;
     } else if (r === 'wipe') wipe();
   } else if (n.phase === 'loot') {
@@ -114,6 +116,10 @@ export function updateDungeon(realDt: number) {
 function wipe() {
   const n = N();
   sfx.bad();
+  battleEnded();
+  n.noise = Math.min(100, n.noise + T.ECHO_SLAM_NOISE);   // echo: he slams the desk, the dog comes to see
+  if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
+  toast(`You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
   const lostGold = Math.floor(S.g.gold * T.WIPE_GOLD_PCT);
   S.g.gold -= lostGold;
   n.clock += T.WIPE_TIME_MIN;

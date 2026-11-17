@@ -37,7 +37,7 @@ export interface Enemy {
   shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
   per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
   windMax?: number; evict?: number;                  // boss: length of the current wind-up; EVICTION's target hero
-  wind?: number; acts?: number; braced?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
+  wind?: number; acts?: number; braced?: boolean; enraged?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
 }
 
 export type MarkId = 'stagger' | 'chill' | 'judged' | 'taunted';
@@ -100,7 +100,7 @@ export interface CuddleGame { kind: 'cuddle'; t: number; max: number; warmth: nu
 export type MiniGame = PhoneGame | MonsterGame | CuddleGame;
 
 /** The dog (docs/design/desk.md): pops up at the desk for attention. */
-export interface DogState { stage: 'away' | 'up' | 'happy'; t: number; next: number; ignores: number; limit: number; pet: number; sweet: number; flinch: number }
+export interface DogState { stage: 'away' | 'up' | 'happy'; t: number; next: number; ignores: number; limit: number; pet: number; sweet: number; flinch: number; sweetPet?: number }   // sweetPet: petting done on his favourite spot
 /** She sits on the desk in front of the monitor (docs/design/her.md). */
 export interface LapState { stage: 'arrive' | 'ask' | 'react' | 'leave'; t: number; q: number; asked: number; order: number[]; sweet: number; rude: number; face: 'smile' | 'neutral' | 'pout' | 'blush' | 'wink'; line: string; outfit: string }
 
@@ -115,7 +115,7 @@ export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
 /** A timed party buff or debuff (curios, the friends' raid buff). floor: lasts until the next floor instead of t. */
-export interface PartyBuff { name: string; dmg: number; speed: number; t: number; max: number; icon: string; floor?: boolean }
+export interface PartyBuff { name: string; dmg: number; speed: number; t: number; max: number; icon: string; floor?: boolean; crit?: number; fights?: number }   // fights: lasts this many battles instead of t
 
 export interface Night {
   clock: number; threat: number;
@@ -149,7 +149,7 @@ export interface Night {
   momCallback: number;                     // threat time Mom calls again (0 = none)
   switching: { to: 'rpg' | 'excel'; t: number; max: number } | null;   // alt-tab blackout in progress
   dog: DogState;
-  unplugged: { kinds: number[]; colors: number[]; sockets: number[]; plugged: boolean[] } | null;   // cable minigame: per cable plug type + colour; sockets[slot] = cable index
+  unplugged: { kinds: number[]; colors: number[]; sockets: number[]; plugged: boolean[]; t0?: number; flow?: number } | null;   // cable minigame: per cable plug type + colour; sockets[slot] = cable index
   lap: LapState | null;
   cansHidden: boolean;
   interrupts: Interrupt[]; nextInterruptAt: number;
@@ -160,7 +160,7 @@ export interface Night {
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
-  goodBoy: number; excused: boolean;   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
+  goodBoy: number; excused: boolean; goodDog: number;   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   moodDrift: number;
   selected: string | null; heroTab: number;

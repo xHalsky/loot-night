@@ -3,6 +3,21 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.29.0 (2026-11-17)
+
+Synergy, part 1 of 3 (#29): cross-layer echoes and payouts.
+
+- **RPG → life:** a legendary makes him yell "LET'S GOOOO" (Noise +15, +5 into the headset mic; she asks "what
+  was that??" if she can hear). A boss below 25% HP is ENRAGED: Flow builds x1.5 for the fight, and alt-tabbing
+  out of it resets Flow. A wipe makes him slam the desk (Noise +10) and the dog comes over.
+- **Life → RPG:** a good cuddle gives **Loved** (+15% damage, +10% crit for the next fight). Tired 70+ makes
+  the party **Drowsy**: 10% of hero hits miss ("zzz"). Every catch now brings Guilt, not only the second.
+- **The dog pays:** petting him mostly on his favourite spot gives **Good Boy** (loot goblins x2 for 60 s).
+  Cables back in within 6 s restore your Flow.
+- Party buffs can last "the next fight" (Loved) and add crit. New buff icons: Loved, Good Boy.
+- `test/echoes.ts`: 14 checks pass. Sims (10 good runs): depth 9.9, visits 4.7, wakes 2.1, 0 catches,
+  average Noise 34 (28 in 0.28: the yells and desk slams). Not tuned yet; the balance pass (#2) owns it.
+
 ## 0.28.0 (2026-11-17)
 
 - **Two new calls** (#23), both short dialogues on the phone:

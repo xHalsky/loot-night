@@ -29,7 +29,8 @@ export function updateMeters(dt: number) {
   // Zone: headset on without a break fills it; taking the headset off empties it.
   n.zone = n.headset ? Math.min(1, n.zone + dt / T.ZONE_FILL_SEC) : 0;
   if (n.game?.kind === 'cuddle') { /* cuddling: Flow frozen */ }
-  else if (building) n.flow += rate * dt * (n.tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_FLOW_MULT : 1) * (n.zone >= 1 ? T.ZONE_FLOW_MULT : 1);
+  else if (building) n.flow += rate * dt * (n.tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_FLOW_MULT : 1) * (n.zone >= 1 ? T.ZONE_FLOW_MULT : 1)
+    * (n.phase === 'battle' && n.enemies.some(e => e.enraged && e.hp > 0) ? T.ECHO_ENRAGE_FLOW : 1);   // an enraged boss: the fight of the night
   else n.flow -= rate * T.FLOW_DECAY_MULT * dt;
   n.flow = clamp(n.flow, T.FLOW_MIN, T.FLOW_MAX);
 
@@ -40,6 +41,7 @@ export function updateMeters(dt: number) {
   n.taunt = Math.max(0, n.taunt - dt);
   n.rally = Math.max(0, n.rally - dt);
   n.goodBoy = Math.max(0, n.goodBoy - dt);
+  n.goodDog = Math.max(0, n.goodDog - dt);
   n.ward = Math.max(0, n.ward - dt);
   n.guilt = Math.max(0, n.guilt - dt);
   n.monitorOff = Math.max(0, n.monitorOff - dt);
