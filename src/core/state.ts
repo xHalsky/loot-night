@@ -63,6 +63,7 @@ export interface Apartment {
   heard: Room | null; heardWhat: string; heardAt: number;
   showerUsed: boolean; lastVisitEnd: number; forceDoor: boolean;
   asleep: boolean; wake: number; textSent: boolean; cued: boolean;   // cued: the end-of-activity sound has played
+  calm: number; forceKind: VisitKind | null;   // pre-emptive: seconds with no visit roll; the next visit's type
 }
 
 // Everything that reaches you through the phone (one device on the desk).
@@ -104,6 +105,9 @@ export interface LapState { stage: 'arrive' | 'ask' | 'react' | 'leave'; t: numb
 export interface ExcelPiece { k: number; cells: [number, number][]; x: number; y: number }
 export interface ExcelState { board: number[][]; piece: ExcelPiece | null; next: number; fallT: number; rows: number; pay: number; clearFx: number; crashFx: number }
 
+/** A pre-emptive action in progress. stage: doing it; ask = her "stay for one episode?"; episode = staying.
+ *  away: you are not at the desk. withHer: her apartment routine pauses (she is with you). */
+export interface PreState { id: string; stage: 'doing' | 'ask' | 'episode'; t: number; max: number; away: boolean; withHer: boolean; mult: number; outcome: string }
 export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
@@ -118,7 +122,7 @@ export interface Night {
   mood: number; noise: number; catches: number; flow: number;
   bossQuiet: number; bossCallback: number;   // threat time until the boss stays quiet; when he pings again after a flip (0 = none)
   monitor: 'rpg' | 'excel';
-  action: 'none' | 'miniGame';
+  action: 'none' | 'miniGame' | 'pre';   // pre: busy with a pre-emptive action (systems/preemptive.ts)
   dropQueue: BagEntry[];
   floorLoot: { entry: BagEntry; x: number; t: number }[];   // drops lying on the dungeon floor (screen x)
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
@@ -147,6 +151,8 @@ export interface Night {
   interrupts: Interrupt[]; nextInterruptAt: number;
   game: MiniGame | null;
   excel: ExcelState;
+  pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
+  towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; curioBuffs: CurioBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean;   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used

@@ -10,6 +10,7 @@ import { maxHp } from './stats';
 import { updateApartment, afterVisit, sendHerSoon, hearsApartment, hearsHallway, initApartment } from './apartment';
 import { hasLife } from './affixes';
 import { startCuddle } from './cuddle';
+import { towelSteps } from './preemptive';
 
 // Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
 // Each visit type asks for a different answer:
@@ -53,7 +54,8 @@ export function startVisit(woken = false, kind?: VisitKind) {
   if (v.stage !== 'idle') return;
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
   v.from = woken ? 'sleep' : N().apt.activity;
-  v.kind = kind ?? pickKind(v.from, woken);
+  v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
+  if (!kind) N().apt.forceKind = null;
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
   if (v.kind === 'snack' && !v.fake && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
 }
@@ -69,7 +71,7 @@ function telegraphSounds(dt: number) {
   if (stepTimer <= 0) {
     stepTimer = slow ? 0.8 : 0.45;
     const loud = (v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35) * (slow ? 0.6 : 1);
-    sfx.step(loud);
+    sfx.step(loud * towelSteps());   // a towel under the door muffles her steps too
     if (n.headset && hasLife('earplugs')) sfx.stepClear(loud);   // Earplugs of Peace: the steps come through the headset
     if (hearsHallway()) { n.apt.heard = 'hallway'; n.apt.heardWhat = 'STEPS'; n.apt.heardAt = n.threat; }
   }
@@ -114,6 +116,8 @@ function updateIn(dt: number) {
   const v = n.visit;
   if (!v.checked) {
     v.checked = true;
+    if (n.towel) { addMood(T.PRE_TOWEL_SEEN_MOOD); toast(`"Why is there a towel under the door?" Mood +${T.PRE_TOWEL_SEEN_MOOD}.`, '#ffb07a'); }
+    if (n.pre?.away) { emptyChair(); return; }
     if (v.lean) lookOnly();
     else if (v.kind === 'snack') snackArrive();
     else if (v.kind === 'cuddle') { v.result = 'ask'; v.t = T.CUDDLE_ASK_SEC; sfx.kiss(); }
@@ -138,6 +142,20 @@ function leave() {
   if (v.result === 'ask') { cuddleAnswer(false); return; }
   if ((v.result === 'pass' || v.result === 'chatGood') && maybeLap()) { afterVisit(); v.stage = 'idle'; v.checked = false; n.cansHidden = false; return; }
   endVisit();
+}
+
+/** She comes in while you are out of the room: the screen speaks for you. */
+function emptyChair() {
+  const v = N().visit;
+  if (screenPasses()) { v.result = 'pass'; toast('She finds your chair empty. Excel is open. "Hm. Working, I guess."', '#6fcf7f'); return; }
+  v.result = 'caught'; toast('She finds your chair empty, and the game running.', '#ff8a80'); caught();
+}
+
+/** Outside a visit: she passes and looks at your screen (a pre-emptive backfire). */
+export function screenGlance(why: string) {
+  if (screenPasses()) { toast(`${why} She glances at your screen: Excel. Fine.`, '#ffb07a'); return; }
+  toast(`${why} She glances at your screen.`, '#ff8a80');
+  caught();
 }
 
 /** She just leans on the door frame and looks at you: no check, a little warmth. */

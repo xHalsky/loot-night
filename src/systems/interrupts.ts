@@ -88,6 +88,7 @@ function nextMomBeat(g: PhoneGame, advance: boolean) {
 export function openPhone() {
   const n = N();
   if (n.game || n.phoneDown > 0) return;
+  if (!n.interrupts.length) { n.preMenu = n.preMenu === 'phone' ? null : 'phone'; sfx.click(); return; }   // idle phone: its pre-emptive actions
   const it = n.interrupts.shift();
   if (!it) return;
   n.action = 'miniGame';

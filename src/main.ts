@@ -5,7 +5,7 @@ import { S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, DOOR_W, DOOR_H } from './ui/door';
-import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml  } from './ui/panels';
+import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx } from './ui/audio';
 import { HOTKEYS } from './data/heroes';
@@ -15,6 +15,8 @@ import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } f
 import { chooseNextFloor, returnToTown, travelToDungeon, catchGoblin } from './systems/dungeon';
 import { chooseCurio, endCurio } from './systems/curios';
 import { toast } from './core/fx';
+import { startPre, cancelPre, episodeAnswer } from './systems/preemptive';
+import type { PreId } from './data/preemptive';
 import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction } from './systems/town';
 import { monUiHtml } from './ui/town';
 import { deskPileHtml } from './ui/monsterArt';
@@ -57,6 +59,7 @@ stage.innerHTML = `
       <div id="canPile"></div>
       <canvas id="deskFx" width="680" height="720"></canvas>
       <div id="lapUi"></div>
+      <div id="preUi"></div>
     </div>
   </div>
   <div id="ui"></div>
@@ -111,6 +114,10 @@ const actions: Record<string, (arg: string) => void> = {
   skipDrop: () => skipDrop(),
   nextFloor: a => chooseNextFloor(a || null),
   curio: a => chooseCurio(a),
+  pre: a => startPre(a as PreId),
+  preMenu: () => { N().preMenu = null; },
+  preCancel: () => cancelPre(),
+  episode: a => episodeAnswer(a === '1'),
   curioLeave: () => { toast('The party walks past.', '#a999bd'); endCurio(); },
   toTown: () => returnToTown(),
   gate: () => travelToDungeon(),
@@ -138,6 +145,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgMom: () => spawnInterrupt('mom'),
   dbgBoss: () => spawnInterrupt('boss'),
   dbgGoblin: () => { N().goblin = { t: T.GOBLIN_SEC }; },
+  dbgCalm: () => { N().apt.calm += 30; toast(`Debug: her next visit waits (calm ${Math.round(N().apt.calm)} s).`, '#a999bd'); },   // the framework's debug action (#19)
   dbgEpic: () => dbgDrop(itemEntry(genItem(N().floor, 3))),
   dbgLeg: () => dbgDrop(itemEntry(genItem(N().floor, 4))),
   dbgMap: () => N().dropQueue.push(mapEntry('vault')),
@@ -304,6 +312,11 @@ monCanvas.addEventListener('pointerdown', ev => {
   if (g && Math.abs(x - (g.x + 18)) < 34 && Math.abs(y - (g.y + 20)) < 34) catchGoblin();
 });
 
+// Away from the desk (a pre-emptive action): nothing on the desk reacts, only the away card.
+window.addEventListener('pointerdown', ev => {
+  const t = ev.target as HTMLElement;
+  if (S.g.night?.pre?.away && !S.g.paused && !t.closest('#preUi') && !t.closest('#debug') && !t.closest('#pause')) { ev.preventDefault(); ev.stopImmediatePropagation(); }
+}, true);
 // Alt-tab blackout: no input reaches anything until the switch finishes (window capture runs before every other listener).
 window.addEventListener('pointerdown', ev => {
   if (S.g.night?.switching && !(ev.target as HTMLElement).closest('#debug')) { ev.preventDefault(); ev.stopImmediatePropagation(); }
@@ -318,6 +331,7 @@ window.addEventListener('keydown', ev => {
   if (ev.key === 'Escape') { g.paused = !g.paused; return; }
   if (g.paused) return;
   if (n.switching) { ev.preventDefault(); return; }
+  if (n.pre) { ev.preventDefault(); return; }     // busy with a pre-emptive action: hands full
   if (wakeUp()) { ev.preventDefault(); return; }
   if (ev.key === 'Tab') { ev.preventDefault(); altTab(); return; }
   const k = ev.key.toLowerCase();
@@ -364,6 +378,7 @@ function render() {
     applyPhoneDrag();
     drawDeskFx();
     setHtml('lapUi', lapUiHtml());
+    setHtml('preUi', preBusyHtml());
     const lid = n.blink.state === 'open' ? 0 : n.blink.lid;
     const eye = el('eyelids');
     eye.style.setProperty('--lid', `${lid * 50}%`);

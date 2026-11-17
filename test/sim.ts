@@ -16,6 +16,7 @@ import { hideCans, takePlate, chatAnswer, cuddleAnswer } from '../src/systems/vi
 import { cuddleDot, cuddlePointer } from '../src/systems/cuddle';
 import { skipDrop } from '../src/systems/loot';
 import { chooseCurio, curioBlocked } from '../src/systems/curios';
+import { startPre, preBlocked, episodeAnswer } from '../src/systems/preemptive';
 import { CURIO_BY_ID } from '../src/data/curios';
 import { T } from '../src/config/tuning';
 import { endNight } from '../src/systems/night';
@@ -41,7 +42,8 @@ const dt = 1 / 60;
 let t = 0, caught = 0, visits = 0, wipes = 0;
 const kinds: Record<string, number> = {}; const outcomes: Record<string, number> = {};
 const lvlAt: number[] = []; let lastFloor = 1;
-const curioPicks: Record<string, number> = {}; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
+const curioPicks: Record<string, number> = {};
+const preUsed: Record<string, number> = {}; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
 while (S.g.screen === 'night' && t < 2000) {
   const n = N();
   if (mode === 'good') {
@@ -49,7 +51,10 @@ while (S.g.screen === 'night' && t < 2000) {
     const v = n.visit.stage;
     const k = n.visit.kind;   // a perfect listener knows the visit type from the hallway cue
     const coming = v === 'far' || v === 'hall' || v === 'handle' || v === 'in';
-    const wantExcel = (coming && (k === 'peek' || k === 'chat'));
+    const a0 = n.apt;
+    const preTea = !!process.env.PRE && v === 'idle' && !a0.asleep && a0.moving <= 0 && a0.calm <= 0 && n.location === 'dungeon'
+      && (a0.room === 'living' || a0.room === 'bedroom') && (n.preUses.tea ?? 0) < 2;
+    const wantExcel = (coming && (k === 'peek' || k === 'chat')) || preTea || !!n.pre?.away;   // PRE: Excel up before going away
     if (coming && k === 'snack' && !n.game) hideCans();
     if (v === 'in' && n.visit.result === 'offer') takePlate();
     if (v === 'in' && n.visit.result === 'chat') chatAnswer(0);
@@ -82,6 +87,13 @@ while (S.g.screen === 'night' && t < 2000) {
     if (n.dropPopup) skipDrop();
     if (gearBot && n.phase === 'loot') tryEquip();
     // Abilities when ready.
+    // PRE=1: a bot that knows where she is and uses pre-emptive actions where they work (an upper bound):
+    // tea when she is in the living room or bedroom (Excel up first, above), else a text while she is busy; 2 of each.
+    if (process.env.PRE && v === 'idle' && !n.pre && !n.switching && n.apt.calm <= 0) {
+      if (preTea && n.monitor === 'excel' && !preBlocked('tea')) { startPre('tea'); preUsed.tea = (preUsed.tea ?? 0) + 1; }
+      else if (!preTea && !n.apt.asleep && n.apt.moving <= 0 && n.apt.activity !== 'shower' && (n.preUses.text ?? 0) < 2 && !preBlocked('text')) { startPre('text'); preUsed.text = (preUsed.text ?? 0) + 1; }
+    }
+    if (n.pre?.stage === 'ask') episodeAnswer(process.env.PRE !== 'decline');
     // curios: the first choice (usually the quiet one), else the second; a curio counts how often each was taken
     if (n.phase === 'curio' && n.curio?.stage === 'ask' && n.monitor === 'rpg' && !n.switching) {
       const ch = process.env.CURIO === 'loud' ? CURIO_BY_ID[n.curio.id].reckless : CURIO_BY_ID[n.curio.id].choices.map(c => c.id).find(c => !curioBlocked(c));
@@ -104,4 +116,4 @@ while (S.g.screen === 'night' && t < 2000) {
   if (S.g.night) { lastTired = N().tired; lastFloor = N().floor; const a = N().apt; maxWake = Math.max(maxWake, a.wake); noiseSum += N().noise; noiseN++; for (const tt of N().toasts) { if (tt.t > 3.99 && tt.text.startsWith('Text from')) texts++; if (tt.t > 3.99 && tt.text.startsWith('You woke')) wakes++; } }
 }
 const r = S.g.results!; const N0tired = lastTired;
-console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, near: r.nearMisses }));
+console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, near: r.nearMisses }));

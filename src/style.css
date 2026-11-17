@@ -804,3 +804,35 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .dstat span { color: #6a4a2a; } .dstat b { font-size: 12px; color: #2a180c; }
 .dstat em { font-style: normal; font-size: 9px; } .dstat em.up { color: #2f8a3a; } .dstat em.down { color: #b03a2a; }
 .rp.feed { height: 116px !important; }
+
+/* ---------- Pre-emptive actions (#19) ---------- */
+#door .pre-row { display: flex; align-items: stretch; gap: 5px; }
+#door .pre-row > small { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 11px; line-height: 1; color: #d9a9b4; text-align: center; }
+#door .pre-btns { flex: 1; display: flex; gap: 5px; }
+.pre-btn { flex: 1; position: relative; text-align: left; font-family: 'Patrick Hand', sans-serif; line-height: 1.05; padding: 2px 6px 3px; border-radius: 8px; border: 1.5px solid #c9708a; background: #fff4f2; color: #5a2d3c; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.pre-btn:hover { background: #fff; border-color: #e75480; }
+.pre-btn b { display: block; font-size: 14px; font-weight: 400; color: #b0305a; white-space: nowrap; }
+.pre-btn span { display: block; font-size: 11px; color: #8a5a66; white-space: nowrap; }
+.pre-btn em { position: absolute; right: 4px; top: -7px; font-style: normal; font-size: 10px; padding: 0 3px; border-radius: 4px; background: #ffe7b0; color: #8a5a10; }
+.pre-btn em.sus { color: #d02a2a; }
+.pre-btn.off { opacity: .5; cursor: not-allowed; }
+/* the idle phone's menu: iOS sheet next to the phone */
+.pre-phone { position: absolute; left: 116px; top: 520px; width: 168px; padding: 8px; background: rgba(242,242,247,.97); border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.55); font-family: Inter, sans-serif; pointer-events: auto; z-index: 6; }
+.pre-phone .pp-app { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #6e6e73; margin-bottom: 6px; }
+.pre-phone .pp-app i { width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(#5fe07a, #2fb84e); }
+.pre-btn.ios { font-family: Inter, sans-serif; border: none; border-radius: 10px; background: #fff; box-shadow: none; padding: 7px 9px; width: 100%; }
+.pre-btn.ios b { font-size: 13px; font-weight: 600; color: #007aff; }
+.pre-btn.ios span { font-size: 11px; color: #6e6e73; }
+/* busy: a small card; away: the desk dims to an empty chair */
+#preUi { position: absolute; inset: 0; z-index: 9; pointer-events: none; font-family: 'Patrick Hand', 'Inter', sans-serif; }
+#preUi .busy-wrap { position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%); pointer-events: auto; }
+#preUi .away-layer { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 70%, rgba(20,10,18,.55), rgba(10,6,12,.88)); pointer-events: auto; }
+#preUi .empty-chair { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); opacity: .95; filter: drop-shadow(0 6px 10px rgba(0,0,0,.6)); }
+#preUi .away-layer .pre-card { position: absolute; left: 50%; top: 230px; transform: translateX(-50%); }
+.pre-card { position: relative; width: 300px; background: #fff4f2; color: #5a2d3c; border-radius: 12px; padding: 8px 12px 10px; box-shadow: 0 6px 18px rgba(0,0,0,.5); text-align: center; }
+.pre-card small { display: block; font-size: 13px; color: #b0305a; }
+.pre-card b { display: block; font-size: 20px; font-weight: 400; }
+.pre-card span { display: block; font-size: 13px; color: #8a5a66; }
+.pre-card .pa-btns { display: flex; gap: 6px; justify-content: center; margin-top: 6px; }
+.pre-card .pa-bar { height: 4px; margin-top: 7px; background: #f0d4da; border-radius: 2px; overflow: hidden; }
+.pre-card .pa-bar i { display: block; height: 100%; background: #e75480; }

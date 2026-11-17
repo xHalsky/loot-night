@@ -7,6 +7,7 @@ import { toast } from '../core/fx';
 import { sfx, setHeadset } from '../ui/audio';
 import { spawnInterrupt } from './interrupts';
 import { hasLife } from './affixes';
+import { towelNoise, towelPace, towelSteps } from './preemptive';
 
 // Where she is between visits (docs/design/her.md, FNAF layer).
 // You track her by sound; the headset muffles it (and costs your Zone to take off); after midnight she sleeps.
@@ -15,7 +16,7 @@ export function initApartment() {
   const n = N();
   n.apt = { room: 'living', activity: 'tv', t: rand(...ACT_BY_ID.tv.dur), moving: 0, soundT: 1,
     heard: 'living', heardWhat: 'TV', heardAt: 0, showerUsed: false, lastVisitEnd: 0, forceDoor: false,
-    asleep: false, wake: 0, textSent: false, cued: false };
+    asleep: false, wake: 0, textSent: false, cued: false, calm: 0, forceKind: null };
 }
 
 /** Called by visits.ts when she leaves your door or walks past it. */
@@ -62,7 +63,7 @@ function pickActivity() {
 export function hearing(): number {
   const a = N().apt;
   const room = a.moving > 0 ? 'hallway' : a.room;
-  return T.HEAR_DISTANCE[ROOM_DISTANCE[room]] * (a.moving > 0 ? 1 : T.HEAR_MASK[a.activity] ?? 1);
+  return T.HEAR_DISTANCE[ROOM_DISTANCE[room]] * (a.moving > 0 ? 1 : T.HEAR_MASK[a.activity] ?? 1) * towelNoise();
 }
 export const heardNoise = () => N().noise * hearing();
 
@@ -70,10 +71,13 @@ export const heardNoise = () => N().noise * hearing();
 export function updateApartment(dt: number): 'door' | 'wake' | null {
   const n = N();
   const a = n.apt;
+  a.calm = Math.max(0, a.calm - dt);
+  if (a.calm > 0 && !a.asleep && heardNoise() > T.PRE_CALM_BREAK_NOISE) { a.calm = 0; a.forceDoor = true; hear(a.room, 'HUH?'); }   // too loud: the calm is over
+  if (n.pre?.withHer) return null;               // you brought her tea: she is with you, her routine waits
   if (a.moving > 0) {
     a.moving -= dt;
     a.soundT -= dt;
-    if (a.soundT <= 0) { a.soundT = 0.5; sfx.step(0.15); hear('hallway', 'STEPS', hearsHallway()); }
+    if (a.soundT <= 0) { a.soundT = 0.5; sfx.step(0.15 * towelSteps()); hear('hallway', 'STEPS', hearsHallway()); }
     if (a.moving <= 0) a.soundT = 0.3;
     return null;
   }
@@ -87,13 +91,14 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.asleep) return updateSleep(dt);
 
   // High Noise makes her wrap up whatever she is doing (except the shower).
-  a.t -= dt * (heardNoise() > 70 ? 2 : 1);
+  a.t -= dt * (heardNoise() > 70 ? 2 : 1) * towelPace();   // the towel: she gets up less often
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
     a.cued = true; sfx.endCue(act.id); hear(act.room, act.end);
   }
   const gap = n.threat - a.lastVisitEnd;
   if (a.t > 0 && !(a.forceDoor && gap >= T.DOOR_MIN_GAP_SEC)) return null;
   if (n.clock >= T.BED_FROM) { goToBed(); return null; }
+  if (a.calm > 0 && !a.forceDoor) { pickActivity(); return null; }   // a pre-emptive action bought some quiet
   let p = T.DOOR_BASE_CHANCE + Math.min(100, heardNoise()) * T.DOOR_NOISE_CHANCE + (moodZone(n.mood) === 'red' ? T.DOOR_RED_CHANCE : 0);
   if (n.tired >= T.TIRED_WRECKED) p += 0.15;
   if (gap > T.DOOR_MAX_GAP_SEC || a.forceDoor) p = 1;
@@ -108,7 +113,7 @@ function updateSleep(dt: number): 'wake' | null {
   const n = N();
   const a = n.apt;
   const owl = hasLife('owl') ? 1 - T.AFFIX_OWL : 1;   // of the Night Owl
-  a.wake = clamp(a.wake + Math.max(0, n.noise - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
+  a.wake = clamp(a.wake + Math.max(0, n.noise * towelNoise() - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
   if (a.wake >= T.WAKE_TEXT && !a.textSent) {
     if (spawnInterrupt('text')) {
       a.textSent = true;

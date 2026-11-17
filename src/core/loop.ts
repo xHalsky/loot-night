@@ -5,6 +5,7 @@ import { updateDog } from '../systems/pets';
 import { S } from './state';
 import { updateMeters } from '../systems/meters';
 import { updateVisits } from '../systems/visits';
+import { updatePre } from '../systems/preemptive';
 import { updateInterrupts } from '../systems/interrupts';
 import { updateMonster } from '../systems/monster';
 import { updateCuddle } from '../systems/cuddle';
@@ -20,6 +21,7 @@ export function step(dt: number) {
   const g = S.g;
   if (g.screen !== 'night' || g.paused || !g.night) return;
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
+  updatePre(dt);
   updateVisits(dt);
   updatePeek(dt);
   updateLap(dt);

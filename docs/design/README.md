@@ -21,7 +21,7 @@ section in place; never append "round N" notes.
 | [her.md](her.md) | The girlfriend: apartment, visits, the door, peeking, bed phase, the desk visit |
 | [desk.md](desk.md) | The phone and interrupts, Excel and alt-tab, Monster, the dog and cables, buffs |
 | [screen.md](screen.md) | Screen layout, the three UI flavours, art direction, audio |
-| [preemptive.md](preemptive.md) | Planned: actions before a visit (framework and action list) |
+| [preemptive.md](preemptive.md) | Actions before a visit: the framework, Text her, Make her tea, the towel; the rest planned |
 | [eye-candy.md](eye-candy.md) | Her moments: built and planned, with tone rules |
 | [campaign.md](campaign.md) | Planned: 7 nights, star gates, desk shop, milestones, ending |
 | [synergy.md](synergy.md) | Planned: the synergy pass, audit of what feeds what, slice vs. arc split |

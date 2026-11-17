@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.27.0 (2026-11-17)
+
+- **Pre-emptive actions** (#19): verbs used before she comes, to shape her next visit. The framework: hands
+  busy or away from the desk (empty chair, reckless autopilot, a visit then sees whatever is on screen), a
+  hidden condition on where she is (wrong = backfire), half effect the 2nd time a night, suspicion on the 3rd
+  (her next visit is a check). A calm (no visits) ends if you get loud. Debug: F1 → Calm +30s.
+  - **Text her** (tap the idle phone, 3 s): her next visit waits 40 s, Mood -5, and her reply tells you what
+    she is doing. On her way somewhere: she comes to chat. Shower: chat after.
+  - **Make her tea** (door panel, 15 s away): Mood -15, 60 s calm; watching TV she asks you to stay for one
+    episode (60 s more away, 120 s calm). Kitchen: a long hug. Hallway: she glances at your screen.
+  - **Towel under the door** (door panel, toggle): your Noise reaches her 40% quieter, she gets up 30% less
+    often; you lose the light under the door and her steps are half as loud, and she asks about it every visit.
+- Tea calm cut from the plan's 2 min to 60 s and the episode's 4 min to 120 s: at the planned numbers a bot
+  using tea and the episode twice a night got 0 to 1 visits.
+- Sims, 10 good runs each: no actions depth 9.7, visits 5.1, wakes 2.1 (batch-to-batch range 3.6 to 5.1);
+  tea and episode twice a night, 1.0 visits, depth 5.4, 0.7 wipes; tea but declining the episode, 3.3 visits,
+  depth 8.8. `test/preemptive.ts`: 21 checks pass. Idle still unplugged.
+
 ## 0.26.0 (2026-11-17)
 
 - **Curios in the corridor** (#30), the RPG's third verb. On battle floors, 1 or 2 walks stop at a curio with

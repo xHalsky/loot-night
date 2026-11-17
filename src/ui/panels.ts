@@ -6,6 +6,8 @@ import { S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type 
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
 import { specialText } from '../systems/affixes';
+import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
+import { preBlocked, nextMult } from '../systems/preemptive';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
@@ -86,11 +88,66 @@ export function doorInfoHtml(): string {
   void tiredFx; void tired;
   return `${aptMapHtml()}
   <div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div>
+  ${preRowHtml()}
   <div class="her-stats">
     <div class="her-row"><span>Patience</span><div class="hearts">${hearts(patience)}</div><b>${Math.round(patience)}</b></div>
     <div class="her-row"><span>Caught</span><div class="bhearts">${caught}</div><b>${n.catches}/3</b></div>
     ${wakeRow}
   </div>`;
+}
+
+// ---------------- Pre-emptive actions (#19) ----------------
+/** Button text: cost, and how strong the next use is (2nd = half, 3rd = she gets suspicious). */
+function preUseNote(id: PreId): string {
+  const used = N().preUses[id] ?? 0;
+  if (PRE_BY_ID[id].toggle || !used) return '';
+  const m = nextMult(id);
+  return m === 0 ? '<em class="sus">suspicious next</em>' : '<em>next: half</em>';
+}
+function preBtn(id: PreId, cls = ''): string {
+  const d = PRE_BY_ID[id], why = preBlocked(id);
+  const name = id === 'towel' ? (N().towel ? 'Towel out' : 'Towel under door') : d.name;
+  return `<button class="pre-btn ${cls} ${why ? 'off' : ''}" data-act="pre" data-arg="${id}" data-tip="pre:${id}"><b>${name}</b><span>${why || preText(d.cost)}</span>${preUseNote(id)}</button>`;
+}
+function preRowHtml(): string {
+  const n = N();
+  void n;
+  return `<div class="pre-row"><small>before</small><div class="pre-btns">${PRE_ACTIONS.filter(a => a.where === 'door').map(a => preBtn(a.id)).join('')}</div></div>`;
+}
+export function preText(s: string): string {
+  return s.replace('{text}', String(T.PRE_TEXT_SEC)).replace('{textCalm}', String(T.PRE_TEXT_CALM)).replace('{textMood}', String(T.PRE_TEXT_MOOD))
+    .replace('{tea}', String(T.PRE_TEA_SEC)).replace('{teaMood}', String(T.PRE_TEA_MOOD)).replace('{teaCalm}', String(T.PRE_TEA_CALM))
+    .replace('{towel}', String(T.PRE_TOWEL_SEC)).replace('{towelNoise}', String(Math.round(T.PRE_TOWEL_NOISE * 100))).replace('{towelSlow}', String(Math.round(T.PRE_TOWEL_SLOW * 100)));
+}
+function preTip(id: PreId): string {
+  const d = PRE_BY_ID[id];
+  return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs: ${preText(d.cost)}${d.away ? '. The party is on autopilot, and if she comes in, she sees whatever is on your screen.' : ''}</div>
+    <div>Works when ${d.works}: ${preText(d.effect)}</div><div style="color:#ff8a80;margin-top:3px">Otherwise: ${preText(d.backfire)}</div>
+    ${d.toggle ? '' : `<div class="dim" style="margin-top:3px">The 2nd time in a night does half. The 3rd time she gets suspicious and her next visit is a check.</div>`}`;
+}
+/** The idle phone's menu (tap the phone with nothing on it). */
+export function prePhoneHtml(): string {
+  const n = N();
+  if (n.preMenu !== 'phone') return '';
+  return `<div class="pre-phone"><button class="mg-close" data-act="preMenu" title="Close" style="right:-9px;top:-9px;width:20px;height:20px;font-size:11px">\u2715</button>
+    <div class="pp-app"><i></i>Messages</div>${PRE_ACTIONS.filter(a => a.where === 'phone').map(a => preBtn(a.id, 'ios')).join('')}</div>`;
+}
+/** Your desk chair, nobody in it (placeholder art until #26). */
+const EMPTY_CHAIR = `<svg class="empty-chair" viewBox="0 0 160 220" width="160" height="220"><rect x="30" y="4" width="100" height="112" rx="22" fill="#2b2230" stroke="#120c16" stroke-width="3"/><rect x="42" y="16" width="76" height="88" rx="16" fill="#352a3c"/><rect x="72" y="114" width="16" height="16" fill="#1c1620"/><rect x="16" y="128" width="128" height="24" rx="10" fill="#3a2f42" stroke="#120c16" stroke-width="3"/><rect x="74" y="150" width="12" height="42" fill="#1c1620"/><path d="M28 206 L80 190 L132 206" stroke="#1c1620" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="28" cy="210" r="7" fill="#120c16"/><circle cx="132" cy="210" r="7" fill="#120c16"/><circle cx="80" cy="206" r="7" fill="#120c16"/></svg>`;
+/** Busy with an action: a small card; away from the desk: the empty chair over everything. */
+export function preBusyHtml(): string {
+  const n = N();
+  const p = n.pre;
+  if (!p) return '';
+  const d = PRE_BY_ID[p.id as PreId];
+  const pct = Math.round((1 - p.t / p.max) * 100);
+  const what = p.id === 'text' ? 'Typing...' : p.id === 'towel' ? (n.towel ? 'Pulling the towel away...' : 'Pushing a towel under the door...')
+    : p.stage === 'ask' ? '"Stay for one episode?"' : p.stage === 'episode' ? 'Watching one episode with her...' : p.outcome === 'kitchen' ? 'Stuck in a kitchen hug...' : 'Making her tea...';
+  const btns = p.stage === 'ask'
+    ? `<div class="pa-btns"><button class="her-btn big" data-act="episode" data-arg="1">Stay (+${T.PRE_EPISODE_SEC} s away, a long calm)</button><button class="her-btn" data-act="episode" data-arg="0">Back to the PC</button></div>` : '';
+  const card = `<div class="pre-card"><button class="mg-close" data-act="preCancel" title="${p.stage === 'ask' ? 'Back to the PC' : 'Stop and go back'}" style="right:-9px;top:-9px;width:22px;height:22px;font-size:12px">\u2715</button>
+    <small>${d.name}</small><b>${what}</b><span>${Math.ceil(p.t)} s${p.away ? ' · the party is on autopilot' : ''}</span>${btns}<div class="pa-bar"><i style="width:${pct}%"></i></div></div>`;
+  return p.away ? `<div class="away-layer">${EMPTY_CHAIR}${card}</div>` : `<div class="busy-wrap">${card}</div>`;
 }
 
 // ---------------- Apartment map (FNAF layer) ----------------
@@ -176,9 +233,10 @@ function phoneObjHtml(): string {
     const banners = it.msgs.slice(-3).reverse().map((m, i) => `<div class="ios-ban ${i === 0 && it.max - it.t - it.pingAt < 0.4 ? 'new' : ''}"><i style="background:${col}"></i><div><b>${who}</b><small>${app}</small><span>${esc(m)}</span></div></div>`).join('');
     screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div>${banners}${it.msgs.length > 3 ? `<div class="ios-more">+${it.msgs.length - 3} more</div>` : ''}</div>`;
   } else if (it) screen = '<div class="ios off"></div>';
+  else if (n.herReply && n.herReply.wait <= 0) screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div><div class="ios-ban new"><i style="background:#34c759"></i><div><b>Babe \u2665</b><small>Messages</small><span>${esc(n.herReply.msg)}</span></div></div></div>`;
   const label = down
     ? (it ? '<b style="color:#ffb07a">Bzzz! swipe to flip up</b>' : 'Face-down: messages<br>only buzz')
-    : it ? (it.kind === 'mom' ? 'tap: pick up<br><span style="color:#ff8a80">red: decline</span>' : 'tap: read<br><span style="color:#ffb07a">swipe: flip it over</span>') : 'swipe to flip';
+    : it ? (it.kind === 'mom' ? 'tap: pick up<br><span style="color:#ff8a80">red: decline</span>' : 'tap: read<br><span style="color:#ffb07a">swipe: flip it over</span>') : 'tap: text her<br>swipe: flip it over';
   return `<div class="phone-wrap">
     <div class="phone3d ${down ? 'down' : ''} ${it ? 'active' : ''}" data-phone="1">
       <div class="pface front">${screen}</div>
@@ -199,6 +257,7 @@ export function deskHtml(): string {
   <div class="obj headset-obj ${hs ? 'on' : ''}" data-act="headset">${hs ? `<div class="hs-on"><div class="hs-waves"><i></i><i></i><i></i></div>on your head</div>` : headsetSvg()}</div>
   <div class="obj-label hs-label" style="color:${hs ? '#f2b84b' : '#c9b8a8'}">${hs ? (n.zone >= 1 ? 'In the Zone, deaf (H)' : 'Zone building, deaf (H)') : 'Headset (H): you hear her'}</div>
   ${phoneObjHtml()}
+  ${prePhoneHtml()}
   ${n.cansHidden ? '<div class="obj-label mon-label">cans hidden under the desk</div>' : `<div class="obj monster-obj ${canDrink ? 'ready' : 'off'} ${coming && S.g.monsters > 0 ? 'hideable' : ''}" ${coming && S.g.monsters > 0 ? 'data-act="hideCans"' : canDrink ? 'data-act="openMonster"' : ''}>${monsterStockSvg(n.game?.kind === 'monster' ? Math.max(0, S.g.monsters - 1) : S.g.monsters)}</div>
   <div class="obj-label mon-label">${coming && S.g.monsters > 0 ? '<b style="color:#ffb07a">click: hide the cans</b>' : boostTxt}</div>`}`;
 }
@@ -357,7 +416,8 @@ export function tooltipHtml(): string {
   if (!n || !hover.key) return '';
   const parts = hover.key.split(':');
   let body = '';
-  if (parts[0] === 'skill' || parts[0] === 'hero') {
+  if (parts[0] === 'pre') return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 270)}px;bottom:${Math.max(8, 720 - hover.y + 14)}px">${preTip(parts[1] as PreId)}</div>`;   // low on screen: open upwards
+  else if (parts[0] === 'skill' || parts[0] === 'hero') {
     const h = S.g.heroes[Number(parts[1])];
     if (!h) return '';
     const st = heroStats(h);
@@ -381,7 +441,8 @@ export function tooltipHtml(): string {
     const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 150, 720 - 200));
     return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
   }
-  if (parts[0] === 'bag') {
+  if (parts[0] === 'pre') { /* body set above */ }
+  else if (parts[0] === 'bag') {
     const e = S.g.bag.find(x => x.id === parts[1]);
     if (!e) return '';
     if (e.kind === 'item') {
@@ -693,7 +754,7 @@ export function debugHtml(): string {
     <div><b>DEBUG</b> · speed x${g.timeScale}</div>
     ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
-    <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}</div>
+    <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
     <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
   </div>`;

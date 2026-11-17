@@ -1,36 +1,63 @@
-# Pre-emptive actions (planned, not built)
+# Pre-emptive actions
 
-Framework #19, actions #20. Depends on reckless autopilot (#15) for the "away" cost.
+Framework #19 (built in 0.27 with three actions), the rest of the list #20. Content `src/data/preemptive.ts`,
+rules `src/systems/preemptive.ts`, numbers `PRE_*` in `tuning.ts`, acceptance test `test/preemptive.ts`.
 
 ## Why
 
-Today the player can only react once she is already coming. The blueprint, peeking and listening give
+Without them the player can only react once she is already coming. The blueprint, peeking and listening give
 information but no way to act on it early. Pre-emptive actions turn knowing where she is into prevention,
 and give the map a job between visits.
 
-## Framework
+## Now
 
-Verbs used **before** a visit to shape it. Each action can push the visit scheduler's next-visit timer,
-change the visit-type weights, or lower Mood.
+**Framework.** Verbs used **before** a visit to shape it. An action can push her next visit (a *calm*: no
+visit roll while it runs), set the next visit's type, change Mood, or change a rule (the towel).
 
-**Every action costs at least one of:**
-- **Time away from the PC.** The desk shows the empty chair; the RPG runs on (reckless) autopilot; no
-  alt-tab, no input. If a visit lands while you are away, she sees whatever is on screen: RPG = catch,
-  Excel = pass.
-- **A per-night charge**, shown on the action button.
-- **A condition on where she is.** Never shown as met or unmet; the player has to know (sounds, blueprint,
-  peeking). Wrong condition = that action's backfire.
+- **Costs.** Every action costs at least one of:
+  - *Hands busy* at the desk (Text her 3 s, the towel 2 s). Skills say "Hands busy", alt-tab is blocked, the
+    party is on the reckless autopilot.
+  - *Time away from the PC* (Make her tea). Everything above, plus no input at all: the desk dims to an empty
+    chair with a card (✕ = come back early, no effect). If a visit lands while you are away she sees
+    whatever is on screen: Excel = pass, the game = caught.
+  - *A condition on where she is.* Read when you start (you text her now, you walk over now). The tooltip
+    states the rule; the game never says whether it is met. Wrong = that action's backfire.
+- **Diminishing returns per night.** The 2nd use of the same action does `PRE_SECOND_MULT` (half). From
+  the `PRE_SUSPICIOUS_AT` (3rd) use she gets suspicious ("why are you being so nice? what did you do?"):
+  no effect, Mood +5, and her next visit is a Peek. Toggles (the towel) are exempt. The button shows
+  "next: half" or "suspicious next".
+- **Calm.** No visit roll while it runs, even past the guaranteed-visit gap. Heard Noise above
+  `PRE_CALM_BREAK_NOISE` (70) ends it and she comes to check, so a calm does not make loud play free.
+- **Where they live.** Door actions in a "before" row on the door panel, under her note. Phone actions:
+  tap the phone while nothing is on it (its label says "tap: text her"); an iOS card opens next to it. Only
+  allowed while no visit is under way and your hands are free.
+- **Debug:** F1 → "Calm +30s" (the framework's test action).
 
-**Diminishing returns per night.** The 2nd use of the same action has half effect. On the 3rd she gets
-suspicious ("why are you being so nice? what did you do?") and the next visit becomes a Peek.
+| Action | Cost | Works when she is | Effect | Backfire |
+|---|---|---|---|---|
+| Text her (phone) | 3 s hands busy | Busy with something (TV, kitchen, bedroom, bathroom) | Next visit +`PRE_TEXT_CALM` (40) s (adds up), Mood -5. 2 to 4 s later her reply lights the phone with what she is doing (the tell) | Walking somewhere: a Chat visit within 10 s ("omw to you"). Shower: Chat right after. Asleep: the buzz wakes her a bit (+25) |
+| Make her tea (door) | 15 s away | Living room or bedroom | Mood -15, calm `PRE_TEA_CALM` (60 s); she waits with you (her routine pauses). Watching TV: "Stay for one episode?" Stay = 60 s more away, then calm `PRE_EPISODE_CALM` (120 s); no = Mood +10, half the calm | Kitchen: a long hug, +12 s away, Mood -5, no calm. Hallway: she glances at your screen now (game = caught). Bathroom: the tea goes cold, Mood -5. Asleep: you drink it |
+| Towel under the door (door, toggle) | 2 s hands busy | Always | Your Noise reaches her 40% quieter (awake and asleep); her routine runs 30% slower, so she gets up less often | The light gap is gone: no toes, no passing shadows; her steps are half as loud. Every visit: "Why is there a towel under the door?" Mood +5 |
 
-**Where they live.** A small menu on the door panel; phone actions on the phone desk object.
+## Decisions
 
-**Data.** Each action is a data entry with cost, condition, effect and backfire (`src/data/`); every number
-in `tuning.ts`. Build the framework with one debug action ("push the timer +30 s") first; real actions
-come one per round.
+- **Numbers cut from the plan** (0.27): tea calm 2 min → 60 s, episode 4 min → 120 s. A night is about
+  7.7 real minutes; at the planned numbers a bot that knew where she was and always stayed for the episode
+  got 0 to 1 visits a night, so the dread was gone. At 60 / 120 s (10 good-bot nights each): no actions
+  3.6 to 5.1 visits; tea twice and always staying for the episode, 1.0 visits but depth 5.4 instead of 9.3
+  and 0.7 wipes a night (2.5 minutes on the reckless autopilot); declining the episode, 3.3 visits and
+  depth 8.8. The episode is the real trade: her calm for your dungeon.
+- **Loud play breaks a calm** (0.27): without it, a calm made skill spam free.
+- **Text calm adds up, tea calm is a floor**: "her next visit waits 40 s longer" pushes; "no visits for a
+  minute" holds.
+- **The condition is read when you start**, not when the effect lands: you decide on what you heard.
+- **Kitchen backfire is a hug, not the cuddle minigame**: the cuddle is a visit; outside a visit it would
+  need its own flow for one backfire. The cost (more time away) is the same.
+- **The towel has no diminishing returns**: halving a toggle means nothing, and suspicion about a towel is
+  covered by "she notices it on every visit".
+- **Raid pass** (below) is decided but needs Goodwill (#29).
 
-## Actions (ideas, pick per round)
+## Planned: the rest of the list (#20)
 
 | Action | Cost | Works when she is | Effect | Backfire |
 |---|---|---|---|---|
@@ -54,7 +81,5 @@ Decided 2026-11-16 (option A): Goodwill pays only for the Raid pass. Rejected: G
 action (snowballs, and turns "do I know where she is?" into "can I afford it?"); a separate Raid pass button
 outside the action menu (two places for one kind of decision). Forgiveness stays automatic and is not an action.
 
-## Open questions
-
-- Away time needs a visible "away" state on the desk (empty chair art) and the reckless autopilot (#15).
-- Several actions need visit types that are not built yet (Chat, Cuddle, Snack run: #12).
+Built: Text her, Make her tea, Towel under the door (rows above are the original ideas; the built versions
+are described under Now). Every other row is still a plan.

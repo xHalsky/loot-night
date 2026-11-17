@@ -58,26 +58,32 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     c.strokeRect(X0 + 14 * k, TOP + 18, (DW - 28) * k, 130); c.strokeRect(X0 + 14 * k, TOP + 168, (DW - 28) * k, 146);
     c.fillStyle = '#d9a441'; c.fillRect(X0 + w - 20 * k, stage === 'handle' ? TOP + 164 : TOP + 156, 14 * k + 2, 7);
   }
-  // light gap under the door
-  c.fillStyle = '#ffcf7a'; c.fillRect(X0, BOT, DW, 6);
-  const rg = c.createRadialGradient(140, BOT + 6, 4, 140, BOT + 6, 100);
-  rg.addColorStop(0, 'rgba(255,207,122,0.35)'); rg.addColorStop(1, 'rgba(255,207,122,0)');
-  c.fillStyle = rg; c.fillRect(20, BOT + 6, 240, DOOR_H - BOT - 6);
-  if (stage === 'hall' || stage === 'handle') {
-    // her bare toes in the light gap under the door
-    for (const fx of [104, 150]) {
-      c.fillStyle = 'rgba(17,13,23,.55)'; c.fillRect(fx - 4, BOT, 34, 6);
-      for (let i = 0; i < 5; i++) {
-        const tw = i === 0 ? 8 : 6, tx = fx + (fx < 140 ? 20 - i * 6 - (i ? 2 : 0) : i * 6);
-        c.fillStyle = '#e9ad96'; c.fillRect(tx, BOT + 2 - (i === 0 ? 0 : i > 2 ? -1 : 0), tw, 4);
-        c.fillStyle = '#f9d8c2'; c.fillRect(tx, BOT + 2, tw - 2, 2);
-        c.fillStyle = '#f3a2ab'; c.fillRect(tx + 1, BOT + 4, tw - 4, 2);
+  if (n?.towel) {   // a towel blocks the gap: no light, so no toes and no shadows (docs/design/preemptive.md)
+    c.fillStyle = '#7a8aa8'; c.fillRect(X0 - 10, BOT - 2, DW + 20, 9);
+    for (let i = 0; i < DW + 20; i += 14) { c.fillStyle = '#5a6a88'; c.fillRect(X0 - 10 + i, BOT - 2, 6, 9); }
+    c.fillStyle = '#9aaac8'; c.fillRect(X0 - 10, BOT - 2, DW + 20, 2);
+  } else {
+    // light gap under the door
+    c.fillStyle = '#ffcf7a'; c.fillRect(X0, BOT, DW, 6);
+    const rg = c.createRadialGradient(140, BOT + 6, 4, 140, BOT + 6, 100);
+    rg.addColorStop(0, 'rgba(255,207,122,0.35)'); rg.addColorStop(1, 'rgba(255,207,122,0)');
+    c.fillStyle = rg; c.fillRect(20, BOT + 6, 240, DOOR_H - BOT - 6);
+    if (stage === 'hall' || stage === 'handle') {
+      // her bare toes in the light gap under the door
+      for (const fx of [104, 150]) {
+        c.fillStyle = 'rgba(17,13,23,.55)'; c.fillRect(fx - 4, BOT, 34, 6);
+        for (let i = 0; i < 5; i++) {
+          const tw = i === 0 ? 8 : 6, tx = fx + (fx < 140 ? 20 - i * 6 - (i ? 2 : 0) : i * 6);
+          c.fillStyle = '#e9ad96'; c.fillRect(tx, BOT + 2 - (i === 0 ? 0 : i > 2 ? -1 : 0), tw, 4);
+          c.fillStyle = '#f9d8c2'; c.fillRect(tx, BOT + 2, tw - 2, 2);
+          c.fillStyle = '#f3a2ab'; c.fillRect(tx + 1, BOT + 4, tw - 4, 2);
+        }
       }
     }
-  }
-  if (stage === 'passing' && n) { const x = X0 + (1 - n.visit.t / 2) * DW; c.fillStyle = '#110d17'; c.fillRect(x - 12, BOT, 16, 6); c.fillRect(x + 8, BOT, 16, 6); }
-  if (n && stage === 'idle' && n.apt.moving > 0 && !n.headset) {   // she walks by in the hallway: a shadow crosses the light
-    const x = X0 + ((t * 70) % (DW + 40)) - 20; c.fillStyle = 'rgba(17,13,23,.75)'; c.fillRect(x, BOT, 18, 6); c.fillRect(x + 22, BOT, 18, 6);
+    if (stage === 'passing' && n) { const x = X0 + (1 - n.visit.t / 2) * DW; c.fillStyle = '#110d17'; c.fillRect(x - 12, BOT, 16, 6); c.fillRect(x + 8, BOT, 16, 6); }
+    if (n && stage === 'idle' && n.apt.moving > 0 && !n.headset) {   // she walks by in the hallway: a shadow crosses the light
+      const x = X0 + ((t * 70) % (DW + 40)) - 20; c.fillStyle = 'rgba(17,13,23,.75)'; c.fillRect(x, BOT, 18, 6); c.fillRect(x + 22, BOT, 18, 6);
+    }
   }
   c.fillStyle = '#1b1520'; c.fillRect(0, BOT + 6, DOOR_W, 2);
   // suspicion: she is noticing the door

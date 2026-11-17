@@ -135,6 +135,17 @@ export const T = {
   CURIO_SNEAK_SEC: 6, CURIO_ROAR_NOISE: 15, CURIO_TROLL_DROPS: 2,
   CURIO_BANK_NOTICE_SEC: [40, 90] as [number, number], CURIO_SULK_DMG: 0.2, CURIO_SULK_SEC: 45,   // Rafał sulks: mage damage down
   CURIO_VEND_GOLD: 12, CURIO_VEND_HEAL: 0.3, CURIO_KICK_NOISE: 15,   // vend gold is per floor
+  // Pre-emptive actions (docs/design/preemptive.md, #19). Content: data/preemptive.ts.
+  PRE_SECOND_MULT: 0.5,           // the 2nd use of the same action in a night has this much effect
+  PRE_SUSPICIOUS_AT: 3,           // ...from this use on she gets suspicious: no effect, the next visit is a Peek
+  PRE_SUSPICIOUS_MOOD: 5,
+  PRE_TEXT_SEC: 3, PRE_TEXT_CALM: 40, PRE_TEXT_MOOD: -5, PRE_TEXT_SOON: 10, PRE_TEXT_WAKE: 25,
+  PRE_REPLY_SEC: [2, 4] as [number, number], PRE_REPLY_SHOW: 7,   // her reply lights the phone (the tell)
+  PRE_TEA_SEC: 15, PRE_TEA_MOOD: -15, PRE_TEA_CALM: 60,
+  PRE_EPISODE_ASK_SEC: 8, PRE_EPISODE_SEC: 60, PRE_EPISODE_CALM: 120, PRE_EPISODE_DECLINE_MOOD: 10,
+  PRE_CALM_BREAK_NOISE: 70,       // heard Noise above this ends a calm: she comes to check
+  PRE_TEA_HUG_SEC: 12, PRE_TEA_HUG_MOOD: -5, PRE_TEA_COLD_MOOD: -5,
+  PRE_TOWEL_SEC: 2, PRE_TOWEL_NOISE: 0.4, PRE_TOWEL_SLOW: 0.3, PRE_TOWEL_STEPS: 0.5, PRE_TOWEL_SEEN_MOOD: 5,
   CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
   GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,

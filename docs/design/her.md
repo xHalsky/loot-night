@@ -151,7 +151,7 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 - **More visit types** (rest of #12, later nights): Hug from behind, Help me, Coming to bed?, How do I look?
 - **Bias for the later visit types**: Hug from behind joins the shower row, Coming to bed? joins the bedroom
   (#18 follow-up, with #12).
-- **Pre-emptive actions** (#19, #20): verbs used before a visit: [preemptive.md](preemptive.md).
+- **More pre-emptive actions** (#20): the framework and three are built ([preemptive.md](preemptive.md)).
 - **Eye-candy moments** (#22): shower panel, "Wanna join?", hoodie walk-by and more: [eye-candy.md](eye-candy.md).
 - Room ideas (#25): audible end cues per activity (credits music, kettle whistle, flush and tap, shower →
   hair dryer → silence), a quiet run while she sleeps (snoring stops 3 s before she wakes), her phone
