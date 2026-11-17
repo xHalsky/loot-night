@@ -7,7 +7,7 @@ import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } 
 import { drawDoor, DOOR_W, DOOR_H } from './ui/door';
 import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
-import { initAudio, sfx } from './ui/audio';
+import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS } from './data/heroes';
 import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip } from './systems/bag';
@@ -39,7 +39,7 @@ import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
 
-(window as unknown as Record<string, unknown>).__lootnight = { S };   // test hook for the Playwright scripts
+(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints } };   // test hook for the Playwright scripts
 
 // ---------- DOM skeleton: three panels (docs/design/screen.md) ----------
 const stage = document.getElementById('stage')!;
@@ -147,7 +147,8 @@ const actions: Record<string, (arg: string) => void> = {
   dbgMom: () => spawnInterrupt('mom'),
   dbgBoss: () => spawnInterrupt('boss'),
   dbgCall: a => spawnInterrupt(a as 'courier'),
-  dbgGoblin: () => { N().goblin = { t: T.GOBLIN_SEC }; },
+  dbgGoblin: () => { N().goblin = { t: T.GOBLIN_SEC }; sfx.goblin(); },
+  dbgSfx: a => audition(a),
   dbgCalm: () => { N().apt.calm += 30; toast(`Debug: her next visit waits (calm ${Math.round(N().apt.calm)} s).`, '#a999bd'); },   // the framework's debug action (#19)
   dbgEpic: () => dbgDrop(itemEntry(genItem(N().floor, 3))),
   dbgLeg: () => dbgDrop(itemEntry(genItem(N().floor, 4))),
@@ -170,7 +171,7 @@ function dbgDrop(e: ReturnType<typeof itemEntry>) { const n = N(); if (n.locatio
 // ---------- Tactile input: drag (slide, lift, pull) and hold (face unlock, drink) ----------
 let drag: { id: string; axis: string; dir: number; dist: number; x0: number; y0: number; t0: number; p: number } | null = null;
 function setDrag(p: number) { const g = S.g.night?.game; if (g && g.kind !== 'cuddle') g.drag = p; }
-function setHold(on: boolean) { setPhoneHold(on); setMonsterHold(on); }
+function setHold(on: boolean) { if (!S.g.night) return; setPhoneHold(on); setMonsterHold(on); }
 
 // ---------- Inventory: hover tooltips, drag to equip / unequip, right-click to equip ----------
 let inv: { key: string; x0: number; y0: number; moved: boolean } | null = null;
@@ -237,7 +238,7 @@ document.addEventListener('pointermove', ev => {
   if (Math.abs(pswipe.dx) > 6) pswipe.moved = true;
 });
 document.addEventListener('pointerup', () => {
-  setDeclineHold(false);
+  if (S.g.night) setDeclineHold(false);   // (a click on the title screen has no night yet)
   if (!pswipe) return;
   const { dx, moved } = pswipe; pswipe = null;
   if (Math.abs(dx) >= 45) { if (!(S.g.night && S.g.night.phoneDown > 0)) downSign = dx > 0 ? 1 : -1; togglePhoneDown(); }
@@ -406,6 +407,7 @@ function render() {
     el('desk').classList.toggle('yawn', n.yawn > 0);
     el('ui').classList.toggle('dimmed', n.monitor === 'excel');
   }
+  if (g.screen !== 'night' || g.paused) stopAmbience();   // her TV does not follow you to the title or the morning
   setHtml('screens', screenHtml());
   const ma = document.getElementById('morningArt') as HTMLCanvasElement | null;
   if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());

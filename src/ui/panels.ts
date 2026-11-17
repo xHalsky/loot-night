@@ -2,6 +2,7 @@ import { VERSION } from '../config/version';
 // HTML renderers for the DOM parts of the screen. Every clickable element carries
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
+import { soundCues, soundStatus } from './audio';
 import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
@@ -786,6 +787,8 @@ export function debugHtml(): string {
     <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgCall', 'Courier', 'courier', 'sm')}${btn('dbgCall', 'Boys', 'friends', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
     <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
+    <div class="dim">Sounds (${soundStatus().loaded}/${soundStatus().files} loaded${soundStatus().failed ? `, ${soundStatus().failed} failed` : ''}; loops toggle)</div>
+    <div class="row sfx-board">${soundCues().map(c => btn('dbgSfx', c, c, 'sm')).join('')}</div>
   </div>`;
 }
 

@@ -13,6 +13,7 @@ Birthday-gift browser game: a loot-heavy idle RPG on the monitor while the playe
 | Rules (no drawing) | `src/systems/*.ts` |
 | Drawing + DOM | `src/ui/*.ts`, `src/style.css`, `src/ios.css` |
 | Content tables (enemies, items, lines) | `src/data/*.ts` |
+| Sounds | files `src/assets/sfx/` (baked by `tools/sfx/make.py`; your own in `own/` win), mix `src/data/sounds.ts` |
 | Design bible (one file per system) | `docs/design/` (start at `README.md`) |
 | Old design mockups | `design/mockups/` |
 | Tests | `test/` (see below) |
@@ -29,6 +30,8 @@ Birthday-gift browser game: a loot-heavy idle RPG on the monitor while the playe
     npx tsx test/autopilot.ts        # reckless autopilot: present vs 40 s away (wipes, party HP)
     npx tsx test/noise.ts            # Noise by distance and masking
     python3 test/<name>.py           # Playwright screenshot scripts (Chrome at /usr/bin/google-chrome)
+    python3 test/sound.py            # after a build: every sound decodes in Chrome, her loops behave
+    python3 tools/sfx/make.py [cue]  # re-bake sound files (Kenney CC0 + synthesis), needs ffmpeg
 
 Debug overlay in game: F1.
 

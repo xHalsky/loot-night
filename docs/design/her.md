@@ -12,9 +12,9 @@ through the flat doing activities, each with a room, a sound and a duration:
 
 | Activity | Room | Sound | Seconds |
 |---|---|---|---|
-| Watching TV | Living room | TV laughter | 20 to 35 (most common) |
-| Making tea | Kitchen | Kettle | 10 to 18 |
-| Bathroom | Bathroom | Flush | 8 to 12 |
+| Watching TV | Living room | A show (two voices), a laugh track now and then | 20 to 35 (most common) |
+| Making tea | Kitchen | Kettle, louder towards the boil | 10 to 18 |
+| Bathroom | Bathroom | Flush (once, as she goes in) | 8 to 12 |
 | On her phone | Bedroom | silent | 15 to 25 |
 | Shower | Bathroom | Running water | 90 to 120, once per night after 21:30 (`SHOWER_CHANCE`): the safe window for greed |
 
@@ -71,13 +71,14 @@ rely on the sound.
 | She was | End cue (`END_CUE_SEC` before she moves) | Likely visit (about 75% bias + 25% flat) |
 |---|---|---|
 | Watching TV | Credits music | Chat or Cuddle (about 43% each in green; Chat 80% otherwise) |
-| Making tea | Kettle whistle and a click | Snack run (80%) |
+| Making tea | The boil peaks and the switch clicks off | Snack run (80%) |
 | Bathroom | Running tap | Peek (85%) |
 | On her phone | A short goodbye jingle ("ok bye love you") | Peek (85%) |
 | Shower | Hair dryer | Cuddle 55%, Peek 35% (Peek 88% when she is not green) |
 
 Each cue plays once per activity, from the room she is in, so distance and the headset mute it like any
-other sound. Listening now tells you that she is about to come *and* what to clear.
+other sound (`APT_ROOM_GAIN`, `APT_ROOM_LOWPASS`: the TV next door is clear, the bedroom goodbye is faint).
+The activity's loop stops when its cue starts. Sounds and files: [screen.md](screen.md), Audio. Listening now tells you that she is about to come *and* what to clear.
 
 | Type | Hallway cue | She checks | Your answer | Outcome |
 |---|---|---|---|---|

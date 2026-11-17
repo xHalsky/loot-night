@@ -4,7 +4,7 @@ import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE } from '../data/apartment';
 import { rand, weighted, chance, clamp } from '../core/rng';
 import { moodZone, addMood } from './meters';
 import { toast } from '../core/fx';
-import { sfx, setHeadset } from '../ui/audio';
+import { sfx, setHeadset, ambienceFor } from '../ui/audio';
 import { spawnInterrupt } from './interrupts';
 import { hasLife } from './affixes';
 import { towelNoise, towelPace, towelSteps } from './preemptive';
@@ -68,6 +68,18 @@ export function hearing(): number {
 }
 export const heardNoise = () => N().noise * hearing();
 
+/** Her continuous sound right now (TV, kettle, shower) and how loud: null while she moves, visits or sleeps.
+ *  The loop stops at the end cue, which takes over (credits, the kettle clicking off, the hair dryer). */
+export function aptAmbience(): { cue: string; room: Room; level: number } | null {
+  const n = N();
+  const a = n.apt;
+  if (!n || n.visit.stage !== 'idle' || n.lap || n.pre?.withHer || a.asleep || a.moving > 0 || a.cued) return null;
+  const cue = ambienceFor(a.activity);
+  if (!cue) return null;
+  const level = a.activity === 'tea' ? clamp(1.1 - a.t / 20, 0.5, 1) : 1;   // the kettle gets louder towards the boil
+  return { cue, room: a.room, level };
+}
+
 /** Returns true when she decides to come to your door (visits.ts starts the telegraph). */
 export function updateApartment(dt: number): 'door' | 'wake' | null {
   const n = N();
@@ -80,14 +92,14 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
     a.moving -= dt;
     a.soundT -= dt;
     if (a.soundT <= 0) { a.soundT = 0.5; sfx.step(0.15 * towelSteps()); hear('hallway', 'STEPS', hearsHallway()); }
-    if (a.moving <= 0) a.soundT = 0.3;
+    if (a.moving <= 0) { a.soundT = 0.3; sfx.aptStart(a.activity, a.room); }
     return null;
   }
   const act = ACT_BY_ID[a.activity];
   a.soundT -= dt;
   if (a.soundT <= 0) {
     a.soundT = act.id === 'shower' ? 1.5 : act.id === 'sleep' ? 3 : 2.5;
-    if (act.sound) { sfx.apt(act.id); hear(act.room, act.sound); }
+    if (act.sound) { sfx.aptTick(act.id, a.room); hear(act.room, act.sound); }
   }
 
   if (a.asleep) return updateSleep(dt);
@@ -95,7 +107,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   // High Noise makes her wrap up whatever she is doing (except the shower).
   a.t -= dt * (heardNoise() > 70 ? 2 : 1) * towelPace();   // the towel: she gets up less often
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
-    a.cued = true; sfx.endCue(act.id); hear(act.room, act.end);
+    a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end);
   }
   const gap = n.threat - a.lastVisitEnd;
   if (a.t > 0 && !(a.forceDoor && gap >= T.DOOR_MIN_GAP_SEC)) return null;

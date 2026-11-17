@@ -203,7 +203,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   }
   e.hp -= dmg; e.flash = 0.15;
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * T.ECHO_ENRAGE_HP) {   // enrage: the fight of the night, don't look away
-    e.enraged = true; sfx.sting();
+    e.enraged = true; sfx.enrage();
     toast(`${e.name} is ENRAGED! Flow builds faster. Alt-tab now and you lose it.`, '#ff5a3a');
   }
   const idx = n.enemies.indexOf(e);
@@ -291,7 +291,7 @@ function attackHero(e: Enemy, atk: number) {
   floatText(HERO_X[i] + 18 + rand(-8, 8), UNIT_Y - 30, `-${dmg}`, '#ff8a80');
   reflect(e, dmg);
   if (isAway() && target.hp < maxHp(target) * T.AUTOPILOT_HEAL_BELOW) autopilotHurt();
-  if (target.hp <= 0) { target.hp = 0; target.downed = true; target.queued = null; toast(`${target.name} is down!`, '#ff8a80'); sfx.bad(); }
+  if (target.hp <= 0) { target.hp = 0; target.downed = true; target.queued = null; toast(`${target.name} is down!`, '#ff8a80'); sfx.down(); }
 }
 
 /** A boss's telegraphed move starts instead of a normal action. Returns true when it did. */
@@ -366,7 +366,7 @@ function eviction(e: Enemy) {
     floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
     reflect(e, dmg);
     toast(taunted ? `${knight.name} takes the EVICTION for ${v.name}.` : `EVICTION! ${h.name} is out on the street.`, '#ff8a80');
-    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); }
+    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); sfx.down(); }
   }
   if (e.hp > 0) { e.shield = true; toast(`${e.name} takes a new deposit. Bash it off.`, '#8fd8ff'); }
 }
@@ -409,7 +409,7 @@ function bossSlam(e: Enemy) {
     const i = S.g.heroes.indexOf(h);
     vfx('claw', heroCenter(i), undefined, 0.5);
     floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
-    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); }
+    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); sfx.down(); }
     reflect(e, dmg);
   }
   toast(n.taunt > 0 && !knight.downed ? `FINAL NOTICE hits ${knight.name} (taunted).` : ward < 1 ? 'FINAL NOTICE, softened by Ward.' : 'FINAL NOTICE hits everyone!', '#ff8a80');

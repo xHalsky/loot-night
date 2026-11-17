@@ -21,11 +21,9 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
-   generated beeps undersell it. Includes audio-first loot cues. Music can wait.
-2. **#28 first-night onboarding.**
-3. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
-   Repeat 3 until it passes.
+1. **#28 first-night onboarding.**
+2. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
+   Repeat 2 until it passes.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
 
 ## Phase 2: the arc (p2)
@@ -34,6 +32,7 @@ The bot sims (good + idle) still run every round, but these four criteria come f
   by content (3 to 7 nights), ending with the birthday level-up screen and credits, then endless free play
   with escalating her behaviour.
 - **#5 Final sprites** once the slice's screens are stable.
+- **#32 Background music**, under her sounds, ducking when she is at the door.
 - **#4 Real-life upgrade store** (the zł sink).
 - **#14 Synergy pass, arc set:** combo floors, party sets, overtime zł, bag tools, banter, unfolding city,
   bounties, the ending.

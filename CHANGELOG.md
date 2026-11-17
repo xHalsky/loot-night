@@ -3,6 +3,52 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.33.0 (2026-11-17)
+
+Real audio for her cues and audio-first loot (#13). Music moved to #32.
+
+- **Her sounds are recordings and models now, not beeps:**
+  - Wooden-floor steps (soft ones when she moves between rooms), the door latch, the door opening and closing
+    behind her when she leaves.
+  - **Continuous loops while she is at it:** a TV show with two people talking and a laugh track now and then,
+    a kettle that gets louder towards the boil, the shower. Each loop stops when its end cue takes over.
+  - **End cues:**
+    - TV: credits music.
+    - Tea: the boil peaks and the switch clicks off.
+    - Toilet: the flush, then the tap and a squeak.
+    - Shower: the hair dryer.
+    - Phone: a muffled "ok, bye, love you".
+  - **Visit cues:** plates clink on a snack run; she hums on her way to a chat.
+  - **Distance:** her sounds now get quieter and more muffled the further away she is (`APT_ROOM_GAIN`,
+    `APT_ROOM_LOWPASS`). The bedroom is faint, the living room is right through the wall. Before this, every
+    room sounded the same. The headset still muffles all of it (`HEADSET_APT_LOWPASS`).
+- **Audio-first loot (synergy.md):** each of these has its own sound and a Feed line, so you know what happened
+  while Excel covers the screen:
+  - **Legendary:** a fanfare with drums. The other rarities are a ladder of bell pings.
+  - **Full bag:** a thump and "nuh-uh", plus a new Feed line.
+  - **Goblin:** it giggles over jingling coins; caught, it squeals; escaped, it taunts and its coins fade away.
+  - **Downed hero:** a body thud and three sad notes.
+  - **Boss enrage:** a roar. It used to share the sting with getting caught; the sting is hers alone now.
+  - **Party wipe:** wah wah wah waaah, then he slams the desk.
+- **The desk:**
+  - A phone that rattles on wood, the Monster can's crack and fizz, gulps, a fridge (it used to be the room
+    door), cans clanking in the bin, keyboard clicks and a real-sounding dog.
+- **How the sounds are made (`tools/sfx/`):**
+  - Kenney CC0 recordings (steps, doors, latch, creaks, plates, tins, coins, impacts; thanks, kenney.nl) plus seeded Python synthesis
+    for everything with no free recording (TV voices, laugh track, credits, kettle, shower, dryer, flush, tap,
+    her voice, phone, can, dog, the RPG cues).
+  - 72 MP3 files, inlined into the single-file build: 361 KB → 928 KB (482 KB gzipped).
+  - Your own recordings go in `src/assets/sfx/own/` and replace a cue by name. The F1 debug panel has a sound
+    board to audition every cue.
+- **Fix:** a mouse-up on the title screen threw two errors (no night yet).
+- **Tests:**
+  - New `test/sound.py`: in Chrome, all 72 files decode; the loop points are exact; the TV, kettle and shower
+    follow her activity and stop at the end cue and on a visit; the headset muffles them without stopping them.
+  - Sims unchanged (12 good runs each, v0.32.0 → v0.33.0): depth 9.4 → 9.6, visits 5.4 → 5.3, 0 catches,
+    wakes 1.7 → 1.9, all within noise.
+  - Idle (6 runs): caught 0.8 → 0.5, visits 2.7 → 3.2.
+  - All headless tests pass.
+
 ## 0.32.0 (2026-11-17)
 
 Eye-candy (#22), the three small moments.

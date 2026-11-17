@@ -12,7 +12,7 @@ import { moodZone } from './meters';
 import { CITY } from '../data/city';
 import { save } from './save';
 import { toast } from '../core/fx';
-import { sfx, setHeadset } from '../ui/audio';
+import { sfx, setHeadset, stopAmbience } from '../ui/audio';
 
 export function newNight(): Night {
   return {
@@ -41,7 +41,7 @@ export function startNight() {
   initVisits();
   S.g.night.tired = startTired();
   S.g.monsters = Math.max(S.g.monsters ?? 0, T.MONSTER_PER_NIGHT);
-  setHeadset(false);
+  setHeadset(false); stopAmbience();
   scheduleInterrupt(true);
   S.g.screen = 'night';
   S.g.paused = false;
@@ -58,6 +58,7 @@ export function checkNightEnd() {
 export function canSleep() { const n = N(); return n.clock >= T.EARLIEST_SLEEP && (n.location === 'town' || n.phase !== 'battle'); }
 
 export function endNight(ending: Results['ending']) {
+  stopAmbience();
   const n = N();
   if (ending === 'sleep' && !canSleep()) { toast(n.clock < T.EARLIEST_SLEEP ? 'Too early to sleep. Play until at least 23:00.' : 'Finish the battle first.', '#a999bd'); return; }
   // Pending drops land in the bag where possible.

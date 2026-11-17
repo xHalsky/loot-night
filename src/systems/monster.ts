@@ -20,10 +20,10 @@ export function openMonster() {
 
 const G = () => { const g = N().game; return g && g.kind === 'monster' ? g : null; };
 
-export function monsterOpenFridge() { const g = G(); if (g?.stage === 'fridge') { g.stage = 'grab'; sfx.door(); } }
+export function monsterOpenFridge() { const g = G(); if (g?.stage === 'fridge') { g.stage = 'grab'; sfx.fridge(); } }
 
 /** The can was put down on the desk at x. */
-export function monsterPlaced(x: number) { const g = G(); if (g?.stage === 'grab') { g.canX = x; g.stage = 'open'; sfx.key(); } }
+export function monsterPlaced(x: number) { const g = G(); if (g?.stage === 'grab') { g.canX = x; g.stage = 'open'; sfx.clank(0.1); } }
 
 /** One click: tab up and back, the hiss. */
 export function monsterOpenCan() {

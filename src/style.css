@@ -179,6 +179,8 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #debug { position: absolute; left: 6px; bottom: 6px; z-index: 30; }
 .debug { width: 268px; background: rgba(0,0,0,.9); border: 2px solid #6fe0ff; padding: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
 .debug .row .btn { flex: 1; }
+.debug .sfx-board { flex-wrap: wrap; max-height: 132px; overflow-y: auto; gap: 2px; }
+.debug .sfx-board .btn { flex: 0 0 auto; padding: 1px 4px; font-size: 10px; }
 
 /* Apartment map */
 .apt { border: 2px solid #3a2f47; background: #0f0b14; padding: 5px; }

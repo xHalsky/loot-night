@@ -214,6 +214,13 @@ export const T = {
   ZONE_FLOW_MULT: 1.25,           // full Zone: Flow builds 25% faster...
   ZONE_LUCK: 0.10,                // ...and +10% loot luck. Headset off empties Zone instantly.
   HEADSET_APT_VOLUME: 0.15,       // ...but apartment sounds are muffled and the map stops updating
+  HEADSET_APT_LOWPASS: 500,       // Hz: what is left of her through the headset
+  // What you hear of her by distance (her sounds, not your Noise): volume and the walls' low-pass (Hz).
+  APT_ROOM_GAIN: { next: 1, middle: 0.65, far: 0.45 } as Record<string, number>,
+  APT_ROOM_LOWPASS: { next: 2800, middle: 1600, far: 1000 } as Record<string, number>,
+  AMB_FADE_SEC: 0.6,              // her TV, kettle and shower fade in and out this fast
+  TV_LAUGH_CHANCE: 0.35,          // at each TV sound tick (2.5 s): the laugh track
+  SLEEP_BREATH_CHANCE: 0.25,      // at each sleep tick (3 s): you hear her breathe (bedroom, very quiet)
   APT_MOVE_SEC: 2,
   APT_STALE_SEC: 15,              // map shows "last heard" as stale after this
   DOOR_MIN_GAP_SEC: 40,           // no visit sooner than this after the last one

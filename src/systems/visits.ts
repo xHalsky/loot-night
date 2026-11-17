@@ -3,11 +3,11 @@ import { S, N, type VisitKind } from '../core/state';
 import { chance, pick, weighted } from '../core/rng';
 import { addMood, moodZone } from './meters';
 import { toast } from '../core/fx';
-import { sfx } from '../ui/audio';
+import { sfx, ambience } from '../ui/audio';
 import { PEEK_PASS, PEEK_CAUGHT, FAKEOUT_LINES, CHAT_QS } from '../data/content';
 import { maybeLap } from './lap';
 import { maxHp } from './stats';
-import { updateApartment, afterVisit, sendHerSoon, hearsApartment, hearsHallway, initApartment } from './apartment';
+import { updateApartment, afterVisit, sendHerSoon, hearsApartment, hearsHallway, initApartment, aptAmbience } from './apartment';
 import { hasLife } from './affixes';
 import { startCuddle } from './cuddle';
 import { towelSteps } from './preemptive';
@@ -35,6 +35,7 @@ export function initVisits() {
 function endVisit() {
   const n = N();
   const v = n.visit;
+  if (v.stage === 'in') sfx.doorClose();      // she pulls the door shut behind her
   v.stage = 'idle'; v.checked = false; v.chat = null;
   n.cansHidden = false;                       // you pull the cans back out
   afterVisit();
@@ -91,6 +92,8 @@ export function updateVisits(dt: number) {
   const n = N();
   const v = n.visit;
   n.scare = Math.max(0, n.scare - dt);
+  const amb = aptAmbience();
+  ambience(amb?.cue ?? null, amb?.room, amb?.level);   // her TV, kettle or shower, while she is at it
   if (n.lap) return;                 // she is on your desk: the apartment waits
   if (v.stage === 'idle') {
     const r = updateApartment(dt);

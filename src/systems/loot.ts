@@ -174,7 +174,7 @@ export function updateDrops(dt: number) {
   }
   announce(e);
   if (bagFree() > 0) { S.g.bag.push(e); n.fresh.push({ id: e.id, t: 1.1 }); }
-  else n.dropPopup = { entry: e, t: T.DROP_WAIT_SEC };
+  else { n.dropPopup = { entry: e, t: T.DROP_WAIT_SEC }; sfx.bagFull(); toast('Bag full! The drop waits on the floor.', '#ff8a80'); }
 }
 
 /** Echo: a legendary makes him yell. Noise (less into the headset mic); she asks if she is awake. */

@@ -75,7 +75,7 @@ export function updateDungeon(realDt: number) {
   const n = N();
   if (n.location !== 'dungeon') return;
   const dt = realDt * (menuOpen() ? T.BATTLE_MENU_SPEED : 1);
-  if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); } }
+  if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); sfx.goblinLost(); } }
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt * (isAway() && n.phase !== 'battle' ? T.AUTOPILOT_PACE - 1 : 0);   // no resting without you
   n.phaseT += dt;
@@ -100,7 +100,7 @@ export function updateDungeon(realDt: number) {
       const boss = isBossBattle();
       rollBattleDrops(n.floor, { boss, elite: n.floorMap === 'elite', at: n.enemies.map((e, i) => e.boss ? 542 : ENEMY_X[i] + 30) });
       if (boss) { n.checkpoint = n.floor + 1; toast(`Checkpoint: floor ${n.checkpoint}`, '#8fb3ff'); }
-      if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE * (n.goodDog > 0 ? T.GOOD_BOY_GOBLIN : 1)))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); }
+      if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE * (n.goodDog > 0 ? T.GOOD_BOY_GOBLIN : 1)))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); sfx.goblin(); }
       n.phase = 'loot'; n.phaseT = 0;
     } else if (r === 'wipe') wipe();
   } else if (n.phase === 'loot') {
@@ -115,7 +115,7 @@ export function updateDungeon(realDt: number) {
 
 function wipe() {
   const n = N();
-  sfx.bad();
+  sfx.wipe();
   battleEnded();
   n.noise = Math.min(100, n.noise + T.ECHO_SLAM_NOISE);   // echo: he slams the desk, the dog comes to see
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
@@ -142,7 +142,7 @@ export function catchGoblin() {
   const den = n.floorMap === 'goblin';
   rollBattleDrops(n.floor, { count: den ? T.GOBLIN_DEN_DROPS : T.GOBLIN_DROPS, minRare: true });
   if (den) n.noise = Math.min(100, n.noise + T.GOBLIN_DEN_NOISE);
-  toast(den ? 'Goblin caught! (it squeals)' : 'Goblin caught!', '#f2b84b'); sfx.good();
+  toast(den ? 'Goblin caught! (it squeals)' : 'Goblin caught!', '#f2b84b'); sfx.goblinCatch();
 }
 
 export function useFeather(id: string) {

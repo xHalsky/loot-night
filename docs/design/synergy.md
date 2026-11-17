@@ -28,7 +28,7 @@ The principle is vital, so the slice gets every item whose inputs exist on Monda
 |---|---|
 | Cross-layer echoes, interrupts and the dog always pay, Goodwill, Witching Hour | Slice: #29 |
 | Ability marks, cross-system affixes | Slice: built in RPG depth #27 (0.23, 0.25) |
-| Audio-first loot cues | Slice: inside real audio #13 |
+| Audio-first loot cues | Slice: built in real audio #13 (0.33) |
 | A city upgrade every night | Slice: inside the balance pass #2 |
 | Combo floors, party sets, overtime zł, bag tools, banter, unfolding city, bounties, the ending | Arc: #14 |
 
@@ -113,8 +113,9 @@ dangerous); Taunted reflects 50% with Ward, not 20% (20% was too small to see).
 
 ## Tweaks
 
-- **Audio-first loot:** a legendary, a full bag, a goblin, a downed hero and a boss enrage are all
-  distinguishable by ear while Excel covers the screen; each also has a Feed line.
+- **Audio-first loot (built 0.33):** a legendary, a full bag, a goblin, a downed hero, a boss enrage and a wipe
+  each have their own sound (table in [screen.md](screen.md), Audio) and a Feed line, so you can follow the
+  RPG by ear while Excel covers the screen.
 - **A city upgrade every night:** tune costs so a normal night (bed at 01:00, floor 8 to 10) always affords
   the cheapest next building.
 - **Bag tools:** auto-salvage threshold (Off / Common / Uncommon / Rare); Reroll one affix at the Salvage
