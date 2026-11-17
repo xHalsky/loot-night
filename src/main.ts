@@ -1,7 +1,7 @@
 import './style.css';
 import './ios.css';
 import { T } from './config/tuning';
-import { S, N, initialState } from './core/state';
+import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, DOOR_W, DOOR_H } from './ui/door';
@@ -21,7 +21,7 @@ import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction 
 import { monUiHtml } from './ui/town';
 import { deskPileHtml } from './ui/monsterArt';
 import { altTab, excelInput } from './systems/excel';
-import { openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
+import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, setMonsterHold, cancelMonster } from './systems/monster';
 import { drawMonsterScene } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
@@ -132,6 +132,7 @@ const actions: Record<string, (arg: string) => void> = {
   cancelMonster: () => cancelMonster(),
   textReply: () => textReply(),
   mom: a => momReply(Number(a)),
+  talk: a => talkPick(Number(a)),
   boss: a => bossPick(Number(a)),
   closeGame: () => closeGame(false),
   // Debug (F1)
@@ -144,6 +145,7 @@ const actions: Record<string, (arg: string) => void> = {
   cuddleQuit: () => endCuddle(null),
   dbgMom: () => spawnInterrupt('mom'),
   dbgBoss: () => spawnInterrupt('boss'),
+  dbgCall: a => spawnInterrupt(a as 'courier'),
   dbgGoblin: () => { N().goblin = { t: T.GOBLIN_SEC }; },
   dbgCalm: () => { N().apt.calm += 30; toast(`Debug: her next visit waits (calm ${Math.round(N().apt.calm)} s).`, '#a999bd'); },   // the framework's debug action (#19)
   dbgEpic: () => dbgDrop(itemEntry(genItem(N().floor, 3))),
@@ -256,7 +258,7 @@ function applyPhoneDrag() {
   if (it && !pswipe) {
     const e = it.max - it.t, now = performance.now() / 1000;
     const d = e - it.pingAt;     // each message: one short double buzz, in sync with its banner popping in
-    const on = it.kind === 'mom' ? e % 1.4 < 0.75 : d < 0.14 || (d > 0.2 && d < 0.34);
+    const on = isCall(it.kind) ? e % 1.4 < 0.75 : d < 0.14 || (d > 0.2 && d < 0.34);
     if (on) { vx = Math.sin(now * 90) * 2.2; vr = Math.sin(now * 70) * 1.4; }
   }
   const wrap = ph.parentElement as HTMLElement;

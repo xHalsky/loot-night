@@ -6,6 +6,7 @@ import { S } from './state';
 import { updateMeters } from '../systems/meters';
 import { updateVisits } from '../systems/visits';
 import { updatePre } from '../systems/preemptive';
+import { updateCurioTimers } from '../systems/curios';
 import { updateInterrupts } from '../systems/interrupts';
 import { updateMonster } from '../systems/monster';
 import { updateCuddle } from '../systems/cuddle';
@@ -22,6 +23,7 @@ export function step(dt: number) {
   if (g.screen !== 'night' || g.paused || !g.night) return;
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
   updatePre(dt);
+  updateCurioTimers(dt);   // party buffs, Rafał's sulk
   updateVisits(dt);
   updatePeek(dt);
   updateLap(dt);

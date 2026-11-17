@@ -1,5 +1,5 @@
 import { T } from '../config/tuning';
-import { S, N, type InterruptKind, type PhoneGame } from '../core/state';
+import { S, N, isCall, type InterruptKind, type PhoneGame } from '../core/state';
 import { rand, randi, pick } from '../core/rng';
 import { addMood } from './meters';
 import { visitSooner } from './visits';
@@ -7,7 +7,10 @@ import { replyText } from './apartment';
 import { maxHp } from './stats';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
-import { MOM_LINES, MOM_REPLIES } from '../data/content';
+import { MOM_LINES, MOM_REPLIES, COURIER_TALKS, FRIENDS_TALKS, type TalkStep } from '../data/content';
+import { weighted } from '../core/rng';
+import { deliverPackage, entryName } from './loot';
+import { addBuff } from './curios';
 
 export const BOSS_MSGS = ['you there?', 'quick question', 'need the Q4 totals for the deck', 'asap pls', 'hello??'];
 export const HER_MSGS = ['are you coming to bed?', 'babe', 'its really late', 'hello??'];
@@ -27,18 +30,24 @@ export function spawnInterrupt(kind?: InterruptKind) {
   const n = N();
   if (phoneBusy()) return false;
   const quiet = n.threat < n.bossQuiet;   // you answered him recently
-  const kinds: InterruptKind[] = (n.clock >= T.BED_FROM ? ['boss'] : ['mom', 'boss']).filter(k => !(k === 'boss' && quiet)) as InterruptKind[];   // Mom sleeps after midnight
+  const kinds = (['mom', 'boss', 'courier', 'friends'] as InterruptKind[]).filter(k =>
+    !(k === 'mom' && n.clock >= T.BED_FROM) &&               // Mom sleeps after midnight
+    !(k === 'boss' && quiet) &&
+    !(k === 'courier' && n.clock >= T.COURIER_UNTIL) &&       // no deliveries late at night
+    (n.callsTonight[k] ?? 0) < (T.INTERRUPT_PER_NIGHT[k] ?? 99));
   if (!kinds.length && !kind) return false;
-  const k = kind ?? pick(kinds);
-  const max = (k === 'mom' ? T.MOM_TIMER : k === 'boss' ? T.BOSS_TIMER : T.TEXT_TIMER) * timerMult();
+  const k = kind ?? kinds[weighted(kinds.map(x => T.INTERRUPT_WEIGHTS[x] ?? 1))];
+  const base = { mom: T.MOM_TIMER, boss: T.BOSS_TIMER, text: T.TEXT_TIMER, courier: T.COURIER_TIMER, friends: T.FRIENDS_TIMER }[k];
+  const max = base * timerMult();
   // messages come in bursts of 1-3 (each one buzzes once); the boss may follow up mid-way
   const pend: number[] = [];
-  if (k !== 'mom') {
+  if (!isCall(k)) {
     const a = randi(1, 3); for (let i = 0; i < a; i++) pend.push(i * 0.8);
     if (k === 'boss' && Math.random() < 0.7) { const b = randi(1, 2); for (let i = 0; i < b; i++) pend.push(max * 0.5 + i * 0.8); }
   }
   n.interrupts.push({ kind: k, t: max, max, msgs: [], pend, pingAt: -9 });
-  if (k === 'mom') sfx.vibCall();
+  n.callsTonight[k] = (n.callsTonight[k] ?? 0) + 1;
+  if (isCall(k)) sfx.vibCall();
   return true;
 }
 
@@ -51,11 +60,11 @@ export function updateInterrupts(dt: number) {
   for (const i of n.interrupts) i.t -= dt;
   const expired = n.interrupts.filter(i => i.t <= 0);
   n.interrupts = n.interrupts.filter(i => i.t > 0);
-  expired.forEach(i => fail(i.kind, n.phoneDown > 0 && i.kind !== 'mom' ? 'unseen' : 'ignored'));
+  expired.forEach(i => fail(i.kind, n.phoneDown > 0 && !isCall(i.kind) ? 'unseen' : 'ignored'));
   // the phone keeps vibrating: calls every 1.4 s, messages every 3 s (same rhythm as the shake on the desk)
   for (const i of n.interrupts) {
     const e = i.max - i.t;
-    if (i.kind === 'mom') { if (Math.floor(e / 1.4) !== Math.floor((e - dt) / 1.4)) sfx.vibCall(); continue; }
+    if (isCall(i.kind)) { if (Math.floor(e / 1.4) !== Math.floor((e - dt) / 1.4)) sfx.vibCall(); continue; }
     while (i.pend.length && e >= i.pend[0]) {
       i.pend.shift(); i.pingAt = e;
       const pool = i.kind === 'boss' ? BOSS_MSGS : HER_MSGS;
@@ -66,6 +75,7 @@ export function updateInterrupts(dt: number) {
 
   const g = n.game;
   if (!g || g.kind !== 'phone') return;
+  if (g.stage === 'talk' && g.app === 'friends' && !n.headset) n.noise = Math.min(100, n.noise + T.FRIENDS_SPEAKER_NOISE * dt);   // on speaker
   if (g.stage === 'locked' && g.holding) {
     g.unlock += dt / T.FACE_UNLOCK_SEC;
     if (g.unlock >= 1) { sfx.good(); g.stage = 'chat'; g.t = g.app === 'boss' ? T.BOSS_WINDOW_SEC : T.TEXT_CHAT_SEC; g.max = g.t; g.feedback = ''; }
@@ -94,7 +104,7 @@ export function openPhone() {
   n.action = 'miniGame';
   sfx.click();
   const g: PhoneGame = {
-    kind: 'phone', app: it.kind, stage: it.kind === 'mom' ? 'ringing' : 'locked',
+    kind: 'phone', app: it.kind, stage: isCall(it.kind) ? 'ringing' : 'locked',
     t: it.t, max: it.max, unlock: 0, holding: false, drag: 0,
     beat: 0, misses: 0, sweep: 0, zone: 0.5, need: 0, line: '', read: 0, row: 0, rows: [], feedback: '',
     msgs: it.msgs.length ? [...it.msgs] : [(it.kind === 'boss' ? BOSS_MSGS : HER_MSGS)[0]],
@@ -115,8 +125,42 @@ export function answerSlide(progress: number) {
   if (!g || g.kind !== 'phone' || g.stage !== 'ringing') return;
   if (progress < 0.9) { g.drag = 0; return; }
   sfx.good();
+  if (g.app === 'courier' || g.app === 'friends') { startTalk(g); return; }
   g.stage = 'call'; g.t = 0; g.drag = 0; g.feedback = 'Reply when the marker is inside the box.';
   nextMomBeat(g, false);
+}
+
+// ---------- Courier and the boys: a two-step dialogue (#23) ----------
+const talkSteps = (g: PhoneGame): TalkStep[] => (g.app === 'courier' ? COURIER_TALKS : FRIENDS_TALKS)[g.talk ?? 0];
+function startTalk(g: PhoneGame) {
+  g.stage = 'talk'; g.talk = randi(0, (g.app === 'courier' ? COURIER_TALKS : FRIENDS_TALKS).length - 1);
+  g.t = g.max = g.app === 'courier' ? T.COURIER_TALK_SEC : T.FRIENDS_TALK_SEC;
+  g.beat = 0; g.misses = 0; g.feedback = g.app === 'friends' && !N().headset ? 'On speaker!' : '';
+  talkStep(g);
+}
+function talkStep(g: PhoneGame) {
+  const st = talkSteps(g)[g.beat];
+  g.line = st.line;
+  g.opts = [st.right, ...st.wrong].sort(() => Math.random() - 0.5);
+  g.need = g.opts.indexOf(st.right) as 0 | 1 | 2;
+}
+/** A reply in the courier / friends dialogue. */
+export function talkPick(i: number) {
+  const n = N();
+  const g = n.game;
+  if (!g || g.kind !== 'phone' || g.stage !== 'talk') return;
+  if (i === g.need) {
+    sfx.good(); g.beat++;
+    if (g.beat >= talkSteps(g).length) { closeGame(true); return; }
+    talkStep(g); g.feedback = '';
+    return;
+  }
+  sfx.bad();
+  if (g.app === 'courier') { g.feedback = `"${g.opts?.[i]}"?`; closeGame(false); return; }   // he gives up
+  g.misses++; n.noise = Math.min(100, n.noise + (n.headset ? 0 : T.FRIENDS_RUDE_NOISE));
+  g.feedback = 'Rude. They get louder.';
+  if (g.misses >= T.FRIENDS_MAX_MISSES) { closeGame(false); return; }
+  talkStep(g);
 }
 
 export function setPhoneHold(on: boolean) {
@@ -171,6 +215,12 @@ function succeed(kind: InterruptKind) {
   } else if (kind === 'boss') {
     S.g.gold += T.BOSS_GOLD; n.bossQuiet = n.threat + T.BOSS_QUIET_SEC;
     toast(`Report fixed. Overtime bonus +${T.BOSS_GOLD} gold, and he leaves you alone for a while.`, '#6fcf7f'); sfx.good();
+  } else if (kind === 'courier') {
+    const e = deliverPackage();
+    toast(`"Okay, flat 12." The parcel is yours: ${entryName(e)}.`, '#6fcf7f'); sfx.good();
+  } else if (kind === 'friends') {
+    addBuff({ name: 'Raid buff', dmg: T.FRIENDS_BUFF_DMG, speed: T.FRIENDS_BUFF_SPD, t: T.FRIENDS_BUFF_SEC, max: T.FRIENDS_BUFF_SEC, icon: 'raid' });
+    toast(`Rafał: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage for ${T.FRIENDS_BUFF_SEC} s.`, '#6fcf7f'); sfx.good();
   } else replyText(true);
 }
 
@@ -182,6 +232,8 @@ function fail(kind: InterruptKind, how: string) {
     return;
   }
   if (kind === 'text') { replyText(false); return; }
+  if (kind === 'courier') { toast(how === 'declined' ? 'Declined. The courier leaves a note. No parcel tonight.' : 'Missed delivery. The parcel goes back to the depot.', '#ffb07a'); return; }
+  if (kind === 'friends') { friendsBlast(how); return; }
   if (kind === 'mom') {
     addMood(T.MOM_FAIL_MOOD); visitSooner();
     toast(`Mom call ${how}. She called your girlfriend. Mood +${T.MOM_FAIL_MOOD}.`, '#ff8a80');
@@ -192,17 +244,29 @@ function fail(kind: InterruptKind, how: string) {
   sfx.bad();
 }
 
+/** The boys did not get a polite no: Discord on the PC rings at full volume (declined: the group chat spam pings).
+ *  With the headset on it all goes into your ears. */
+function friendsBlast(how: string) {
+  const n = N();
+  const declined = how === 'declined';
+  const v = n.headset ? 0 : declined ? T.FRIENDS_DECLINE_NOISE : T.FRIENDS_FAIL_NOISE;
+  n.noise = Math.min(100, n.noise + v);
+  if (n.headset) toast(declined ? 'The group chat pings into your headset. Ow.' : 'Discord rings straight into your headset. Ow. At least she did not hear.', '#ffb07a');
+  else toast(declined ? `Declined. They spam the group chat: ping ping ping. Noise +${v}.` : `They call Discord on the PC instead. FULL VOLUME. Noise +${v}.`, '#ff8a80');
+  sfx.bad();
+}
+
 // ---------- Declining without picking up (docs/design/desk.md) ----------
 // A call: hold the red Decline button (slower than ignoring, much faster than talking to Mom).
 // A message: drag the phone down to flip it face-down. It stays face-down for a while: new notifications only buzz.
 
 export function setDeclineHold(on: boolean) {
   const n = N();
-  n.declineHold = on && n.interrupts[0]?.kind === 'mom' && !n.game;
+  n.declineHold = on && !!n.interrupts[0] && isCall(n.interrupts[0].kind) && !n.game;
 }
 
 /** Swipe the desk phone over. Face-down: a waiting message is dismissed (cheaper than ignoring it),
- *  later messages only buzz and cost half if they run out unseen. Mom's call keeps ringing. */
+ *  later messages only buzz and cost half if they run out unseen. Calls keep ringing. */
 export function togglePhoneDown() {
   const n = N();
   if (n.game?.kind === 'phone') return;
@@ -210,7 +274,7 @@ export function togglePhoneDown() {
   if (n.phoneDown > 0) { n.phoneDown = 0; return; }
   n.phoneDown = 1;
   const it = n.interrupts[0];
-  if (it && it.kind !== 'mom') {
+  if (it && !isCall(it.kind)) {
     n.interrupts.shift();
     if (it.kind === 'boss') { n.bossCallback = n.threat + rand(...T.BOSS_FLIP_FOLLOWUP_SEC); toast('Phone face-down. The boss can wait. He will ping again soon.', '#ffb07a'); }
     else {
@@ -222,23 +286,25 @@ export function togglePhoneDown() {
 
 function updateDeclines(dt: number) {
   const n = N();
-  if (n.declineHold && n.interrupts[0]?.kind === 'mom' && n.phoneDown <= 0) {
+  if (n.declineHold && n.interrupts[0] && isCall(n.interrupts[0].kind) && n.phoneDown <= 0) {
     n.decline += dt / T.DECLINE_SEC;
-    if (n.decline >= 1) {
-      n.interrupts.shift(); n.decline = 0; n.declineHold = false;
-      addMood(T.MOM_DECLINE_MOOD);
-      n.momCallback = n.threat + rand(...T.MOM_CALLBACK_SEC);
-      toast(`Declined. Mom texts: "CALL ME BACK!!" She will try again. Mood +${T.MOM_DECLINE_MOOD}.`, '#ffb07a'); sfx.click();
-    }
+    if (n.decline >= 1) { n.decline = 0; n.declineHold = false; declined(n.interrupts.shift()!.kind); }
   } else n.decline = Math.max(0, n.decline - dt * 2);
 }
 
 /** Tap the red button on the ringing desk phone: the call is declined at once. */
 export function declineCall() {
   const n = N();
-  if (n.interrupts[0]?.kind !== 'mom' || n.game) return;
-  n.interrupts.shift(); n.decline = 0;
+  if (!n.interrupts[0] || !isCall(n.interrupts[0].kind) || n.game) return;
+  n.decline = 0;
+  declined(n.interrupts.shift()!.kind);
+}
+/** A call declined from the desk: Mom calls back, the courier leaves, the boys spam the chat. */
+function declined(kind: InterruptKind) {
+  const n = N();
+  sfx.click();
+  if (kind === 'courier' || kind === 'friends') { fail(kind, 'declined'); return; }
   addMood(T.MOM_DECLINE_MOOD);
   n.momCallback = n.threat + rand(...T.MOM_CALLBACK_SEC);
-  toast(`Declined. Mom texts: "CALL ME BACK!!" She will try again. Mood +${T.MOM_DECLINE_MOOD}.`, '#ffb07a'); sfx.click();
+  toast(`Declined. Mom texts: "CALL ME BACK!!" She will try again. Mood +${T.MOM_DECLINE_MOOD}.`, '#ffb07a');
 }

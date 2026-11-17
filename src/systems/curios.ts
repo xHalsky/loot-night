@@ -1,5 +1,5 @@
 import { T } from '../config/tuning';
-import { S, N, type CurioState } from '../core/state';
+import { S, N, type CurioState, type PartyBuff } from '../core/state';
 import { CURIOS, CURIO_BY_ID, CURIO_LINES, TROLL, type CurioDef } from '../data/curios';
 import { chance, pick, randi, rand } from '../core/rng';
 import { toast } from '../core/fx';
@@ -77,16 +77,16 @@ export function chooseCurio(choice: string) {
       const r = Math.random(), [g, rare] = T.CURIO_MAIL_ODDS;
       if (r < g) { const gold = T.CURIO_MAIL_GOLD * n.floor; S.g.gold += gold; toast(`A refund cheque! +${gold} gold.`, '#f2b84b'); sfx.coin(); }
       else if (r < g + rare) { toast('A parcel. With your name on it.', '#f2b84b'); rollBattleDrops(n.floor, { count: 1, minRare: true }); }
-      else { addBuff({ name: 'Late fee', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, floor: true }); toast(CURIO_LINES.lateFee.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
+      else { addBuff({ name: 'Late fee', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'fee', floor: true }); toast(CURIO_LINES.lateFee.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
       break;
     }
     case 'offer':
       S.g.monsters--;
-      addBuff({ name: 'Monster blessing', dmg: T.CURIO_CAN_DMG, speed: T.CURIO_CAN_SPD, t: T.CURIO_CAN_SEC });
+      addBuff({ name: 'Monster blessing', dmg: T.CURIO_CAN_DMG, speed: T.CURIO_CAN_SPD, t: T.CURIO_CAN_SEC, max: T.CURIO_CAN_SEC, icon: 'blessing' });
       toast(`You give up a real can. The shrine glows. Party +${Math.round(T.CURIO_CAN_DMG * 100)}% damage, +${Math.round(T.CURIO_CAN_SPD * 100)}% speed.`, '#6ef06e'); sfx.heal();
       break;
     case 'pray':
-      if (chance(0.5)) { addBuff({ name: 'Small blessing', dmg: T.CURIO_PRAY_DMG, speed: 0, t: T.CURIO_PRAY_SEC }); toast(`A small blessing. Party +${Math.round(T.CURIO_PRAY_DMG * 100)}% damage.`, '#6ef06e'); sfx.heal(); }
+      if (chance(0.5)) { addBuff({ name: 'Small blessing', dmg: T.CURIO_PRAY_DMG, speed: 0, t: T.CURIO_PRAY_SEC, max: T.CURIO_PRAY_SEC, icon: 'blessing' }); toast(`A small blessing. Party +${Math.round(T.CURIO_PRAY_DMG * 100)}% damage.`, '#6ef06e'); sfx.heal(); }
       else { noise(T.CURIO_BURP_NOISE); toast(`The shrine burps. Loudly. Noise +${T.CURIO_BURP_NOISE}.`, '#ff9a4d'); sfx.bad(); }
       break;
     case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking. Stay on this screen.', '#8fd0ff'); return;
@@ -127,15 +127,16 @@ export function endCurio() {
   if (n.phase === 'curio') n.phase = 'walk';
 }
 
-function addBuff(b: { name: string; dmg: number; speed: number; t: number; floor?: boolean }) {
+/** Adds a party buff (replaces one with the same name). Also used by the friends' raid buff. */
+export function addBuff(b: PartyBuff) {
   const n = N();
-  n.curioBuffs = [...n.curioBuffs.filter(x => x.name !== b.name), b];
+  n.partyBuffs = [...n.partyBuffs.filter(x => x.name !== b.name), b];
 }
 
 /** Every frame: buffs tick, the bank log gets read. */
 export function updateCurioTimers(dt: number) {
   const n = N();
-  n.curioBuffs = n.curioBuffs.filter(b => b.floor || (b.t -= dt) > 0);
+  n.partyBuffs = n.partyBuffs.filter(b => b.floor || (b.t -= dt) > 0);
   n.sulk = Math.max(0, n.sulk - dt);
   if (n.bankNotice > 0) {
     n.bankNotice -= dt;
@@ -147,10 +148,10 @@ export function updateCurioTimers(dt: number) {
   }
 }
 /** A new floor: "until the next floor" buffs (the late fee) end. */
-export function curioFloorEnd() { const n = N(); n.curioBuffs = n.curioBuffs.filter(b => !b.floor); }
+export function curioFloorEnd() { const n = N(); n.partyBuffs = n.partyBuffs.filter(b => !b.floor); }
 
-export const curioDmgMult = () => N().curioBuffs.reduce((m, b) => m * (1 + b.dmg), 1);
-export const curioSpeedMult = () => N().curioBuffs.reduce((m, b) => m * (1 + b.speed), 1);
+export const curioDmgMult = () => N().partyBuffs.reduce((m, b) => m * (1 + b.dmg), 1);
+export const curioSpeedMult = () => N().partyBuffs.reduce((m, b) => m * (1 + b.speed), 1);
 export const curioDef = (c: CurioState | null): CurioDef | undefined => c ? CURIO_BY_ID[c.id] : undefined;
 
 /** Button text with the numbers filled in. */

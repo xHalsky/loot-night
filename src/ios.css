@@ -63,6 +63,8 @@
 #phTime { font-size: 10px; color: #8e8e93; text-align: right; }
 .ios-thread { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; overflow: hidden; }
 .ph-screen.chat .ph-bubble.in { background: #e9e9eb; color: #111; align-self: flex-start; max-width: 88%; border-radius: 16px 16px 16px 4px; font-size: 12px; padding: 6px 10px; }
+.ios-replies.talk { flex-direction: column; gap: 5px; }
+.ios-replies.talk .btn.chip { width: 100%; padding: 6px 8px; font-size: 12px; line-height: 1.2; }
 .ios-replies .btn.chip { background: #007aff; color: #fff; border: 0; border-radius: 16px; font-family: Inter, sans-serif; }
 .ph-screen.chat .feedback { color: #ff3b30 !important; }
 .ph-screen.chat .timebar { height: 3px; background: #e5e5ea; }

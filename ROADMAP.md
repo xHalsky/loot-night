@@ -21,16 +21,15 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **#23 two more interrupts:** courier call (pays a gear drop), friends' group call (Noise).
-2. **#29 Synergy, slice set:** cross-layer echoes (Loved after a Cuddle, legendary yell, wipe desk slam),
+1. **#29 Synergy, slice set:** cross-layer echoes (Loved after a Cuddle, legendary yell, wipe desk slam),
    interrupts and the dog always pay, Goodwill (with the Raid pass as a pre-emptive action),
    Witching Hour. Closes the dead ends: the dog, Tiredness and her visits stop only punishing.
-3. **#22 cheap eye-candy:** shower panel, hoodie walk-by, results vignette by Mood.
-4. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
+2. **#22 cheap eye-candy:** shower panel, hoodie walk-by, results vignette by Mood.
+3. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
    generated beeps undersell it. Includes audio-first loot cues. Music can wait.
-5. **#28 first-night onboarding.**
-6. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
-   Repeat 6 until it passes.
+4. **#28 first-night onboarding.**
+5. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
+   Repeat 5 until it passes.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
 
 ## Phase 2: the arc (p2)

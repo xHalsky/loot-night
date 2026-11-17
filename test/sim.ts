@@ -7,7 +7,7 @@ import { step } from '../src/core/loop';
 import { startNight } from '../src/systems/night';
 import { travelToDungeon, chooseNextFloor } from '../src/systems/dungeon';
 import { altTab } from '../src/systems/excel';
-import { openPhone, momReply, bossPick, answerSlide, setPhoneHold, textReply } from '../src/systems/interrupts';
+import { openPhone, momReply, bossPick, answerSlide, setPhoneHold, textReply, talkPick } from '../src/systems/interrupts';
 import { petStroke, plugIn } from '../src/systems/pets';
 import { answer as lapAnswer } from '../src/systems/lap';
 import { openMonster, monsterOpenFridge, monsterPlaced, monsterOpenCan, setMonsterHold, monsterBinned } from '../src/systems/monster';
@@ -43,7 +43,8 @@ let t = 0, caught = 0, visits = 0, wipes = 0;
 const kinds: Record<string, number> = {}; const outcomes: Record<string, number> = {};
 const lvlAt: number[] = []; let lastFloor = 1;
 const curioPicks: Record<string, number> = {};
-const preUsed: Record<string, number> = {}; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
+const preUsed: Record<string, number> = {};
+const calls: Record<string, number> = {}; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
 while (S.g.screen === 'night' && t < 2000) {
   const n = N();
   if (mode === 'good') {
@@ -72,6 +73,7 @@ while (S.g.screen === 'night' && t < 2000) {
       else if (g.stage === 'call' && g.sweep > g.zone + 0.1) momReply(g.need);
       else if (g.stage === 'chat' && g.app === 'boss' && g.t < g.max - 1.5) { const r = g.rows[g.row]; bossPick(r.a + r.b); }
       else if (g.stage === 'chat' && g.app === 'text') textReply();
+      else if (g.stage === 'talk' && g.t < g.max - 1.2) { calls[g.app] = (calls[g.app] ?? 0) + (g.beat === 0 ? 1 : 0); talkPick(g.need); }
     }
     if (n.dog.stage === 'up' && mode === 'good') petStroke(40, 400, false);
     if (n.unplugged) n.unplugged.sockets.forEach((k, slot) => plugIn(k, slot));
@@ -116,4 +118,4 @@ while (S.g.screen === 'night' && t < 2000) {
   if (S.g.night) { lastTired = N().tired; lastFloor = N().floor; const a = N().apt; maxWake = Math.max(maxWake, a.wake); noiseSum += N().noise; noiseN++; for (const tt of N().toasts) { if (tt.t > 3.99 && tt.text.startsWith('Text from')) texts++; if (tt.t > 3.99 && tt.text.startsWith('You woke')) wakes++; } }
 }
 const r = S.g.results!; const N0tired = lastTired;
-console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, near: r.nearMisses }));
+console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, calls, near: r.nearMisses }));

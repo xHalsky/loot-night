@@ -36,6 +36,12 @@ time (`INTERRUPT_CAP`), every `INTERRUPT_INTERVAL_SEC`. The screen stays off unt
 | Mom (call, before midnight) | 3 lines; her line's ending (… ? !) tells the reply (mhm / really?! / wow), tapped while a marker sweeps through a zone; `MOM_MAX_MISSES` | Full party heal | Mood +`MOM_FAIL_MOOD` and she calls your girlfriend (next visit soon) | Mood +`MOM_DECLINE_MOOD`, she calls back in 40 to 60 s |
 | Boss (messages) | Two easy sums in a chat, `BOSS_WINDOW_SEC`; wrong total −2 s | Overtime bonus `BOSS_GOLD` gold, and no boss messages for `BOSS_QUIET_SEC` | Mood +`BOSS_FAIL_MOOD` | Flip: he pings again in `BOSS_FLIP_FOLLOWUP_SEC` |
 | Her (bedtime text) | Tap "Five more minutes, love" | Waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | Flip: Waking +`TEXT_FLIP_WAKE` |
+| Courier (call, until `COURIER_UNTIL` 22:00, 2 a night) | Two steps: his line, three replies, get him to leave the parcel with a neighbour; one wrong reply and he leaves; `COURIER_TALK_SEC` | The parcel: one rare-or-better item at your depth, into the bag | Parcel lost (nothing else) | Parcel lost ("he leaves a note") |
+| The Boys (group call, 3 a night) | On speaker: Noise +`FRIENDS_SPEAKER_NOISE`/s while open (none with the headset on). Two steps of declining politely; a rude reply = Noise +8 and a miss, `FRIENDS_MAX_MISSES` misses = fail | **Raid buff**: party +20% damage, +10% speed for 30 s | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: it rings in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
+
+Which interrupt comes is weighted (`INTERRUPT_WEIGHTS`: Mom 3, boss 3, courier 2, the boys 2), with per-night caps
+(`INTERRUPT_PER_NIGHT`). Calls (Mom, courier, the boys) ring with the long buzz, show the incoming-call screen on the
+desk and in your hand, can be declined with red, and keep ringing face-down. F1 has a button for each.
 
 Sluggish (Tired 70+) shortens every phone timer to `SLUGGISH_TIMER_MULT`.
 
@@ -123,7 +129,15 @@ multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
 - **Monster is a boost you operate, not an interrupt.** Hands busy = danger if she peeks.
 - **Alt-tab lag 1.0 to 2.5 s** (0.14) against a 0.9 s handle stage: last-second saves are impossible
   by construction.
-- **Decline costs less than ignoring, more than answering.**
+- **Decline costs less than ignoring, more than answering.** Holds for the new calls too: the boys declined =
+  chat spam (15), ignored = Discord at full volume (30).
+- **One reward call, one threat call** (0.28, #23): the courier only pays (a parcel, nothing lost but the
+  parcel), so answering him is greed; the boys only cost (Noise) unless you handle them, and they reward the
+  headset, the one time being deaf to her pays twice. Both are short dialogues instead of new verbs: the
+  phone already has enough of those. Caps (2 couriers, 3 group calls a night) because once couriers stop at
+  22:00 and Mom at midnight, the boys took most of the late slots (6 to 9 calls a night in the sim).
+- **The courier is unforgiving, the boys forgive one rude line**: one wrong word and a courier leaves; your
+  friends get louder first.
 
 ## Planned
 
@@ -133,7 +147,8 @@ multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
 - **Monster stash in the kitchen fridge** (idea, #25): the desk holds 2 cans; a "Fridge run" pre-emptive
   action restocks, and backfires if she is in the kitchen or hallway.
 
-- More interrupts (courier, car alarm, drilling, verification SMS, friends' call, dinner shout, laundry request): #23.
+- More interrupts (car alarm, drilling, verification SMS, dinner shout, laundry request): #23, by night ([campaign.md](campaign.md)).
+- The boys' call revealing the next node row (an interrupt payout): #29.
 - Zyn as a second stimulant: #10.
 - Desk upgrades (phone stand, quieter keyboard, shorter lag): #4. Choose a pet: #7.
 - Every interrupt success pays out: [synergy.md](synergy.md).

@@ -2,7 +2,7 @@ import { VERSION } from '../config/version';
 // HTML renderers for the DOM parts of the screen. Every clickable element carries
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
-import { S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
+import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
 import { specialText } from '../systems/affixes';
@@ -209,8 +209,11 @@ function ring(t: number, max: number) {
   return `<div class="ring" style="background:conic-gradient(#f2b84b ${deg}deg,#3a2f47 0)"><span>${Math.ceil(t)}</span></div>`;
 }
 const PHONE_NOTE: Record<string, [string, string]> = {
-  mom: ['MOM', 'calling...'], boss: ['BOSS', '"you there?"'], text: ['BABE', 'coming to bed?'],
+  mom: ['MOM', 'calling...'], boss: ['BOSS', '"you there?"'], text: ['BABE', 'coming to bed?'], courier: ['COURIER', 'calling...'], friends: ['THE BOYS', 'group call'],
 };
+void PHONE_NOTE;
+/** Who is calling: name and the line under it on the incoming-call screen. */
+const CALLER: Record<string, [string, string]> = { mom: ['Mom', 'mobile'], courier: ['Courier', '+48 22 555 0199'], friends: ['The Boys (3)', 'group call'] };
 // The desk phone: a 3D card you grab and swipe sideways to flip. iOS look: the screen is off until something
 // arrives; messages wake it with stacked lock-screen banners (one per buzz), a call shows the incoming-call screen.
 const APP: Record<string, [string, string, string]> = { boss: ['Work', 'Boss', '#2f6fed'], text: ['Messages', 'Babe \u2665', '#34c759'] };
@@ -222,9 +225,9 @@ function phoneObjHtml(): string {
   let screen = '<div class="ios off"></div>';
   // picked up: the phone leaves the desk until the minigame ends or its window is closed
   if (inPhone) return '<div class="obj-label phone-label" style="color:#8a7a6a">phone in your hand</div>';
-  else if (it && it.kind === 'mom') {
+  else if (it && isCall(it.kind)) {
     // same incoming-call screen as in your hand: tap red to decline at once, tap anywhere else to pick up
-    screen = `<div class="ios call"><div class="ios-di"></div><div class="ios-cname">Mom</div><div class="ios-csub">mobile</div>
+    screen = `<div class="ios call"><div class="ios-di"></div><div class="ios-cname">${CALLER[it.kind][0]}</div><div class="ios-csub">${CALLER[it.kind][1]}</div>
       <div class="ios-mrow"><span>\u23F0<br>Remind</span><span>\u2709<br>Message</span></div>
       <div class="ios-mslide"><i>&#9742;</i><span>slide to answer</span></div>
       <div class="ios-cbtn red" data-decline="1"><span>&#9742;</span></div><div class="ios-clab">Decline</div></div>`;
@@ -236,7 +239,7 @@ function phoneObjHtml(): string {
   else if (n.herReply && n.herReply.wait <= 0) screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div><div class="ios-ban new"><i style="background:#34c759"></i><div><b>Babe \u2665</b><small>Messages</small><span>${esc(n.herReply.msg)}</span></div></div></div>`;
   const label = down
     ? (it ? '<b style="color:#ffb07a">Bzzz! swipe to flip up</b>' : 'Face-down: messages<br>only buzz')
-    : it ? (it.kind === 'mom' ? 'tap: pick up<br><span style="color:#ff8a80">red: decline</span>' : 'tap: read<br><span style="color:#ffb07a">swipe: flip it over</span>') : 'tap: text her<br>swipe: flip it over';
+    : it ? (isCall(it.kind) ? 'tap: pick up<br><span style="color:#ff8a80">red: decline</span>' : 'tap: read<br><span style="color:#ffb07a">swipe: flip it over</span>') : 'tap: text her<br>swipe: flip it over';
   return `<div class="phone-wrap">
     <div class="phone3d ${down ? 'down' : ''} ${it ? 'active' : ''}" data-phone="1">
       <div class="pface front">${screen}</div>
@@ -273,7 +276,7 @@ function phoneHtml(g: PhoneGame): string {
   let body = '';
   const quit = (label: string) => `<button class="ios-quit" data-act="closeGame">${label}</button>`;
   if (g.stage === 'ringing') {
-    body = `<div class="ios-incoming"><div class="ios-cname big">Mom</div><div class="ios-csub">mobile</div></div>
+    body = `<div class="ios-incoming"><div class="ios-cname big">${CALLER[g.app][0]}</div><div class="ios-csub">${CALLER[g.app][1]}</div></div>
       <div class="ios-row2"><div class="ios-mini"><span>\u23F0</span>Remind Me</div><div class="ios-mini"><span>\u2709</span>Message</div></div>
       <div class="ph-slide"><div id="dragEl" class="ph-knob" data-drag="answer" data-axis="x" data-dir="1" data-dist="${T.SLIDE_DIST}">&#9742;</div><span>slide to answer</span></div>
       <button class="ios-endbtn" data-act="closeGame"><span>&#9742;</span></button><div class="ios-sub2">Decline</div>`;
@@ -284,6 +287,14 @@ function phoneHtml(g: PhoneGame): string {
       <div class="ph-face" data-hold="unlock"><div class="ph-face-ring"><div id="holdFill"></div></div><span class="faceid">\u{1F642}</span></div>
       <div class="ph-hint">Face ID: hold the phone to your face</div>
       ${quit('Put down')}`;
+  } else if (g.stage === 'talk') {
+    const st = g.app === 'friends' ? `misses ${g.misses}/${T.FRIENDS_MAX_MISSES}${N().headset ? ' \u00B7 in your headset' : ' \u00B7 ON SPEAKER'}` : 'one wrong word and he leaves';
+    body = `<div class="ios-incall"><b>${CALLER[g.app][0]}</b><span>${st}</span></div>
+      <div class="ph-bubble in">${esc(g.line)}</div>
+      <div class="timebar"><div id="phBar" style="width:${Math.max(0, g.t / g.max) * 100}%"></div></div>
+      <div class="ph-hint">${g.app === 'courier' ? 'Get him to leave it with a neighbour.' : 'Say no, nicely. Quickly.'}</div>
+      <div class="ph-chips ios-replies talk">${(g.opts ?? []).map((o, i) => btn('talk', esc(o), String(i), 'chip')).join('')}</div>
+      <div class="feedback">${esc(g.feedback)}</div>`;   // leave with the X or the home bar (hanging up = failing)
   } else if (g.stage === 'call') {
     const reading = g.read > 0;
     const mark = ['...', '?', '!'][g.need];
@@ -754,7 +765,7 @@ export function debugHtml(): string {
     <div><b>DEBUG</b> · speed x${g.timeScale}</div>
     ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
-    <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
+    <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgCall', 'Courier', 'courier', 'sm')}${btn('dbgCall', 'Boys', 'friends', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
     <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
   </div>`;

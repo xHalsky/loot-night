@@ -9,7 +9,7 @@ import { chance } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
-import { planCurios, curioDue, startCurio, updateCurio, updateCurioTimers, curioFloorEnd } from './curios';
+import { planCurios, curioDue, startCurio, updateCurio, curioFloorEnd } from './curios';
 
 export const isBossBattle = () => { const n = N(); return !n.curioFight && n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
 
@@ -75,7 +75,6 @@ export function updateDungeon(realDt: number) {
   if (n.location !== 'dungeon') return;
   const dt = realDt * (menuOpen() ? T.BATTLE_MENU_SPEED : 1);
   if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); } }
-  updateCurioTimers(dt);
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt * (isAway() && n.phase !== 'battle' ? T.AUTOPILOT_PACE - 1 : 0);   // no resting without you
   n.phaseT += dt;

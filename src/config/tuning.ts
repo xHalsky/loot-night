@@ -222,6 +222,15 @@ export const T = {
   INTERRUPT_INTERVAL_SEC: [20, 35] as [number, number],
   INTERRUPT_FIRST_DELAY_SEC: 18,
   INTERRUPT_CAP: 1,               // one phone: one notification at a time
+  // Which interrupt comes next (weights; Mom sleeps after midnight, couriers stop at COURIER_UNTIL).
+  INTERRUPT_WEIGHTS: { mom: 3, boss: 3, courier: 2, friends: 2 } as Record<string, number>,
+  INTERRUPT_PER_NIGHT: { courier: 2, friends: 3 } as Record<string, number>,   // at most this many a night
+  // Courier (#23): pick the right reply twice; the parcel is a rare+ item in your bag. Lost if not.
+  COURIER_TIMER: 8, COURIER_TALK_SEC: 8, COURIER_UNTIL: 22 * 60,
+  // The boys' group call (#23): on speaker while open (Noise per second, none with the headset on); decline them
+  // politely twice for a raid buff. Ignored or rude twice: Discord rings at full volume. Declined: chat spam.
+  FRIENDS_TIMER: 8, FRIENDS_TALK_SEC: 8, FRIENDS_SPEAKER_NOISE: 4, FRIENDS_RUDE_NOISE: 8, FRIENDS_MAX_MISSES: 2,
+  FRIENDS_FAIL_NOISE: 30, FRIENDS_DECLINE_NOISE: 15, FRIENDS_BUFF_DMG: 0.2, FRIENDS_BUFF_SPD: 0.1, FRIENDS_BUFF_SEC: 30,
   MOM_TIMER: 8, MOM_FAIL_MOOD: 10, MOM_BEATS: 3, MOM_MAX_MISSES: 4, MOM_SWEEP_SEC: 2.4, MOM_ZONE: 0.3, MOM_READ_SEC: 1.6,   // she talks first (marker waits), then you reply
   BOSS_TIMER: 12, BOSS_WINDOW_SEC: 15, BOSS_FAIL_MOOD: 8, BOSS_ROWS: 2,
   BOSS_GOLD: 40, BOSS_QUIET_SEC: 150,   // answering the boss: an overtime bonus, and he leaves you alone for a while

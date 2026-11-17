@@ -132,6 +132,14 @@ export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: b
   out.forEach((e, i) => n.floorLoot.push({ entry: e, x: at[i % at.length] + (Math.floor(i / at.length) * 22) + (Math.random() - 0.5) * 14, t: 0 }));
 }
 
+/** The courier's parcel (#23): one rare-or-better item at your current depth, straight to the bag queue. */
+export function deliverPackage(): BagEntry {
+  const n = N();
+  const e = itemEntry(genItem(Math.max(n.floor, n.checkpoint), 2));
+  n.dropQueue.push(e);
+  return e;
+}
+
 /** Everything still lying on the floor goes straight to the bag queue (leaving the floor). */
 export function sweepFloorLoot() { const n = N(); n.dropQueue.push(...n.floorLoot.map(l => l.entry)); n.floorLoot = []; }
 

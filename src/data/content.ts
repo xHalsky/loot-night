@@ -52,3 +52,20 @@ export const NPCS = [
   { tag: 'Wiktor', x: 470, y: 290, color: '#6aa8ff' },
   { tag: 'GoldSeller99', x: 70, y: 300, color: '#8e8a99' },
 ];
+
+// Calls with a short dialogue (#23): each step shows the caller's line and three replies; one is right.
+export interface TalkStep { line: string; right: string; wrong: [string, string] }
+// The courier wants to hand the parcel over; you want it left with a neighbour (you can't leave the desk).
+export const COURIER_TALKS: TalkStep[][] = [
+  [{ line: '"Parcel for you, I\'m downstairs. You coming down?"', right: 'Can you leave it with a neighbour?', wrong: ['Coming down now!', 'Throw it up to the window?'] },
+   { line: '"Which neighbour?"', right: 'Mrs. Krysia, flat 12. She is always home.', wrong: ['Whoever opens', 'The guy with the drill'] }],
+  [{ line: '"Hi, courier. Intercom is broken. Can you come out?"', right: 'Can a neighbour take it?', wrong: ['Leave it on the street', 'One sec, boss fight'] },
+   { line: '"Okay, who?"', right: 'Flat 12, the lady with the cat.', wrong: ['Anyone, really', 'Me, but downstairs'] }],
+];
+// The boys call on speaker, loud. Decline politely; rude replies make them louder.
+export const FRIENDS_TALKS: TalkStep[][] = [
+  [{ line: 'Jacek: "YOOO are you on?? We need a tank!"', right: 'Can\'t talk, she\'s home. Text me?', wrong: ['YES LET\'S GOOO', 'Who is this?'] },
+   { line: 'Rafał: "Just one boss, come ooon."', right: 'I\'m already in your party. Check. Muting!', wrong: ['Shut up, she\'ll hear you!', 'Ask my mom'] }],
+  [{ line: 'Rafał: "BRO. Raid. Now. Bring snacks."', right: 'Shh, she\'s next door. Text only, love you guys.', wrong: ['WHAT? I CAN\'T HEAR YOU', 'Nah'] },
+   { line: 'Jacek: "Is she listening? HI BABE!"', right: 'Bye lads, see you in guild chat.', wrong: ['Say hi louder', '*hang up*'] }],
+];

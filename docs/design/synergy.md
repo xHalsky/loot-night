@@ -15,7 +15,7 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift | Her visits give the RPG nothing positive |
 | Noise | Visit timing, waking her | Combat, dog, Monster, loud curio choices | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
-| Interrupts | Mom heals, boss pays gold and goes quiet | Timers | Bedtime text only avoids a penalty |
+| Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise | Timers, the headset (the boys) | Bedtime text only avoids a penalty |
 | Dog and cables | Noise, NO SIGNAL | A timer | Only punishes |
 | Tiredness | Yawns, microsleeps, sluggish | Clock, sleep debt, Monster | Only punishes; staying up has no upside |
 

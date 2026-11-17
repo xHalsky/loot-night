@@ -67,7 +67,9 @@ export interface Apartment {
 }
 
 // Everything that reaches you through the phone (one device on the desk).
-export type InterruptKind = 'mom' | 'boss' | 'text';
+export type InterruptKind = 'mom' | 'boss' | 'text' | 'courier' | 'friends';
+/** Calls ring and can be declined; the rest are messages (lock-screen banners). */
+export const isCall = (k: InterruptKind) => k === 'mom' || k === 'courier' || k === 'friends';
 export interface Interrupt {
   kind: InterruptKind; t: number; max: number;
   msgs: string[];      // messages that already arrived (each one buzzed and popped on the lock screen)
@@ -77,11 +79,12 @@ export interface Interrupt {
 
 export interface PhoneGame {
   kind: 'phone'; app: InterruptKind;
-  stage: 'ringing' | 'locked' | 'call' | 'chat';
+  stage: 'ringing' | 'locked' | 'call' | 'chat' | 'talk';   // talk: courier / friends dialogue
   t: number; max: number;            // time left in the current stage (0 = untimed)
   unlock: number; holding: boolean; drag: number;
   beat: number; misses: number; sweep: number; zone: number; need: 0 | 1 | 2; line: string; read: number;   // Mom
   row: number; rows: { a: number; b: number; options: number[] }[];                          // Boss
+  opts?: string[]; talk?: number;    // courier / friends: the replies shown (shuffled) and which talk script
   feedback: string;
   msgs: string[];                    // chat history shown above the question
 }
@@ -111,7 +114,8 @@ export interface PreState { id: string; stage: 'doing' | 'ask' | 'episode'; t: n
 export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
-export interface CurioBuff { name: string; dmg: number; speed: number; t: number; floor?: boolean }   // floor: until the next floor
+/** A timed party buff or debuff (curios, the friends' raid buff). floor: lasts until the next floor instead of t. */
+export interface PartyBuff { name: string; dmg: number; speed: number; t: number; max: number; icon: string; floor?: boolean }
 
 export interface Night {
   clock: number; threat: number;
@@ -151,9 +155,10 @@ export interface Night {
   interrupts: Interrupt[]; nextInterruptAt: number;
   game: MiniGame | null;
   excel: ExcelState;
+  callsTonight: Record<string, number>;   // interrupts spawned tonight, per kind (INTERRUPT_PER_NIGHT caps)
   pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
-  curio: CurioState | null; curioPlan: number[]; curioFight: boolean; curioBuffs: CurioBuff[];   // curios (#30)
+  curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean;   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;

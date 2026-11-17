@@ -3,6 +3,23 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.28.0 (2026-11-17)
+
+- **Two new calls** (#23), both short dialogues on the phone:
+  - **Courier** (until 22:00, at most 2 a night): talk him into leaving the parcel with a neighbour (two
+    steps, three replies each, one wrong word and he leaves). The parcel is a rare-or-better item in your
+    bag. Ignored or declined: the parcel is lost, nothing else.
+  - **The Boys** (group call, at most 3 a night): they are on speaker, Noise every second the call is open.
+    Decline them politely twice for a **Raid buff** (party +20% damage, +10% speed, 30 s); a rude reply makes
+    them louder, two and they hang up. Ignored: Discord rings on the PC at full volume (Noise +30). Declined:
+    group chat spam (Noise +15). With the headset on it all goes into your ears: no Noise.
+- Interrupts are now weighted (Mom 3, boss 3, courier 2, the boys 2) with per-night caps. Calls share the
+  ringing, decline and face-down rules Mom had. F1: Courier and Boys buttons.
+- Party buffs are one list now (curio buffs, the raid buff), each with its own icon and duration, and they
+  count down in town too.
+- `test/calls.ts`: 14 checks pass. Sims (10 good runs): depth 9.5, visits 5.0, wakes 1.7, 0 catches; the bot
+  answers both calls (2 couriers and 3 group calls a night). Idle still unplugged and caught.
+
 ## 0.27.0 (2026-11-17)
 
 - **Pre-emptive actions** (#19): verbs used before she comes, to shape her next visit. The framework: hands
