@@ -3,7 +3,7 @@
 Slice set #29, arc set #14.
 
 **Rule:** every system takes input from at least two others and feeds at least two others; a system that
-only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23), cross-system affixes (0.25), cross-layer echoes and the dog and cable payouts (0.29). Everything else below is planned.
+only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23), cross-system affixes (0.25), cross-layer echoes and the dog and cable payouts (0.29), Goodwill with Forgiveness and the Raid pass (0.30). Everything else below is planned.
 All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 
 ## Audit of the current build (2026-11-16)
@@ -12,10 +12,11 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 |---|---|---|---|
 | RPG combat | Noise, loot, XP | Flow, Zone, Monster, buildings, gear, Tiredness; curios (a real can, Noise, standing still) | Fine |
 | Loot | Gold, scraps, zł, party power; real-life affixes change headset, alt-tab, Tiredness, excuses, waking, cans | Flow, Zone, green Mood; cross-system affixes read headset, Monster, Noise, Mood, the dog, Excel | zł is a dead end until the store (#4) |
-| Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift | Her visits give the RPG nothing positive |
+| Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift, pre-emptive actions | Fine: good visits now pay Goodwill and Loved (0.29, 0.30) |
+| Goodwill | Forgiveness, the Raid pass (calm, Noise allowed) | Cuddle, good chat, lean visit, sweet answers on the desk, her text answered; catches take it | New in 0.30 |
 | Noise | Visit timing, waking her | Combat, dog, Monster, loud curio choices, a legendary yell, a wipe slam | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
-| Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise | Timers, the headset (the boys) | Bedtime text only avoids a penalty |
+| Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise, her text Goodwill | Timers, the headset (the boys) | Fine |
 | Dog and cables | Noise, NO SIGNAL; Good Boy (goblins x2), a fast fix keeps Flow; a wipe calls him over | A timer, a wipe | Fine (0.29) |
 | Tiredness | Yawns, microsleeps, sluggish | Clock, sleep debt, Monster | Only punishes; staying up has no upside |
 
@@ -46,13 +47,25 @@ per-night charge. One system for "act before she comes", not two.
 | Life → RPG | Tiredness 70+ | Drowsy: 10% of hero hits miss ("zzz") | Built |
 | Life → RPG | Caught (any rung) | Guilt on every rung, not only the 2nd | Built |
 
-## Goodwill
+## Goodwill (built 0.30, `src/systems/goodwill.ts`, numbers `GOODWILL_*`)
 
-A 0 to 100 bank under her patience; no decay in a night; half carries over. Earned: Cuddle +20, Hug +15,
-Help me +15, two sweet answers on the desk +20, Chat visit +8, text answered +5, lean visit +3.
-Spent: **Raid pass** (40), a pre-emptive action: no visits for 2.5 real minutes ([preemptive.md](preemptive.md)). **Forgiveness** (60,
-automatic, once per night): the next catch drops one rung. 70+: Help me gifts the better desk item.
-Catches cost 15.
+A 0 to 100 bank on the door panel under Patience and Caught (a bar with marks at 40 and 60); no decay in a
+night; half carries over to the next. A toast names every gain and loss.
+
+- **Earned:** a good cuddle +20, two sweet answers when she sits on your desk +20, a good chat +8, her
+  bedtime text answered +5, a lean visit +3. Later: Hug +15, Help me +15 (#12).
+- **Lost:** every catch -15.
+- **Raid pass** (40): a phone action, "Raid night?" (3 s). No visits for `RAID_CALM_SEC` (150 s), and Noise
+  does not end this calm, unlike the others: she knows. No diminishing returns or suspicion. Not after
+  midnight, not during a visit ([preemptive.md](preemptive.md)).
+- **Forgiveness** (60, automatic, once a night): a catch does not count (no heart, no rung, keeps the
+  3-star night) and she leaves: "I know, I know. Raid night." It spends the 60.
+- Later: 70+ makes Help me give the better desk item (#12).
+
+Decisions (0.30): Forgiveness makes the catch not count rather than "drop one rung": one rung below the
+first catch is no catch, and a single clear rule reads better than a partial one. It spends the full 60 so it
+stays rare (about one good cuddle, one good chat and a lap visit). Rejected: Goodwill paying for every
+pre-emptive action (decided 2026-11-16, see preemptive.md).
 
 ## Excel produces something
 

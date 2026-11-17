@@ -1,6 +1,6 @@
 # Pre-emptive actions
 
-Framework #19 (built in 0.27 with three actions), the rest of the list #20. Content `src/data/preemptive.ts`,
+Framework #19 (built in 0.27 with three actions; the Raid pass in 0.30), the rest of the list #20. Content `src/data/preemptive.ts`,
 rules `src/systems/preemptive.ts`, numbers `PRE_*` in `tuning.ts`, acceptance test `test/preemptive.ts`.
 
 ## Why
@@ -37,6 +37,7 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
 |---|---|---|---|---|
 | Text her (phone) | 3 s hands busy | Busy with something (TV, kitchen, bedroom, bathroom) | Next visit +`PRE_TEXT_CALM` (40) s (adds up), Mood -5. 2 to 4 s later her reply lights the phone with what she is doing (the tell) | Walking somewhere: a Chat visit within 10 s ("omw to you"). Shower: Chat right after. Asleep: the buzz wakes her a bit (+25) |
 | Make her tea (door) | 15 s away | Living room or bedroom | Mood -15, calm `PRE_TEA_CALM` (60 s); she waits with you (her routine pauses). Watching TV: "Stay for one episode?" Stay = 60 s more away, then calm `PRE_EPISODE_CALM` (120 s); no = Mood +10, half the calm | Kitchen: a long hug, +12 s away, Mood -5, no calm. Hallway: she glances at your screen now (game = caught). Bathroom: the tea goes cold, Mood -5. Asleep: you drink it |
+| Raid night? (phone, Goodwill) | 40 Goodwill, 3 s hands busy | Awake, before midnight | No visits for 150 s; Noise does not end this calm. No diminishing returns, no suspicion | Below 40 Goodwill the button is blocked |
 | Towel under the door (door, toggle) | 2 s hands busy | Always | Your Noise reaches her 40% quieter (awake and asleep); her routine runs 30% slower, so she gets up less often | The light gap is gone: no toes, no passing shadows; her steps are half as loud. Every visit: "Why is there a towel under the door?" Mood +5 |
 
 ## Decisions
@@ -55,7 +56,7 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
   need its own flow for one backfire. The cost (more time away) is the same.
 - **The towel has no diminishing returns**: halving a toggle means nothing, and suspicion about a towel is
   covered by "she notices it on every visit".
-- **Raid pass** (below) is decided but needs Goodwill (#29).
+- **Raid pass** built in 0.30 with Goodwill ([synergy.md](synergy.md)).
 
 ## Planned: the rest of the list (#20)
 

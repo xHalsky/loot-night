@@ -18,14 +18,16 @@ export function preBlocked(id: PreId): string {
   if (n.pre) return 'Busy';
   if (n.visit.stage !== 'idle' && n.visit.stage !== 'passing') return 'Too late, she is coming';
   if (n.game || n.lap || n.unplugged || n.switching) return 'Hands full';
-  if (id === 'text' && n.phoneDown > 0) return 'The phone is face-down';
+  if ((id === 'text' || id === 'raid') && n.phoneDown > 0) return 'The phone is face-down';
+  if (id === 'raid' && S.g.goodwill < T.GOODWILL_RAID) return `Needs ${T.GOODWILL_RAID} Goodwill (${Math.floor(S.g.goodwill)})`;
+  if (id === 'raid' && (n.clock >= T.BED_FROM || n.apt.asleep)) return 'She is in bed';
   return '';
 }
 
 /** Uses tonight → how strong this use is: 1, PRE_SECOND_MULT, or 0 (suspicious). Toggles always 1. */
 export function nextMult(id: PreId): number {
   const used = N().preUses[id] ?? 0;
-  if (PRE_BY_ID[id].toggle) return 1;
+  if (PRE_BY_ID[id].toggle || PRE_BY_ID[id].goodwill) return 1;
   return used + 1 >= T.PRE_SUSPICIOUS_AT ? 0 : used >= 1 ? T.PRE_SECOND_MULT : 1;
 }
 
@@ -42,7 +44,7 @@ export function startPre(id: PreId) {
   let outcome = 'ok';
   if (id === 'text') outcome = a.asleep ? 'asleep' : moving ? 'moving' : a.activity === 'shower' ? 'shower' : 'ok';
   if (id === 'tea') outcome = a.asleep ? 'asleep' : moving ? 'hallway' : a.room === 'kitchen' ? 'kitchen' : a.room === 'bathroom' ? 'cold' : 'ok';
-  const sec = id === 'text' ? T.PRE_TEXT_SEC : id === 'tea' ? T.PRE_TEA_SEC + (outcome === 'kitchen' ? T.PRE_TEA_HUG_SEC : 0) : T.PRE_TOWEL_SEC;
+  const sec = id === 'text' || id === 'raid' ? T.PRE_TEXT_SEC : id === 'tea' ? T.PRE_TEA_SEC + (outcome === 'kitchen' ? T.PRE_TEA_HUG_SEC : 0) : T.PRE_TOWEL_SEC;
   n.pre = { id, stage: 'doing', t: sec, max: sec, away: !!def.away, withHer: id === 'tea' && outcome === 'ok' && mult > 0, mult, outcome };
   n.action = 'pre';
   sfx.click();
@@ -75,7 +77,7 @@ function land(id: PreId) {
   const n = N();
   const p = n.pre!;
   const a = n.apt;
-  if (p.mult === 0 && !PRE_BY_ID[id].toggle) {   // the 3rd time: she gets suspicious
+  if (p.mult === 0 && !PRE_BY_ID[id].toggle && !PRE_BY_ID[id].goodwill) {   // the 3rd time: she gets suspicious
     finishPre(); a.forceKind = 'peek'; addMood(T.PRE_SUSPICIOUS_MOOD);
     toast(`${pick(SUSPICIOUS_LINES)} Her next visit is a check. Mood +${T.PRE_SUSPICIOUS_MOOD}.`, '#ff8a80'); sfx.bad();
     return;
@@ -100,6 +102,15 @@ function land(id: PreId) {
     else if (p.outcome === 'kitchen') toast('She finally lets go. The tea is somewhere.', '#ffb07a');
     else toast('You bring the tea back to your own desk. Hm.', '#a999bd');
     finishPre();
+    return;
+  }
+  if (id === 'raid') {   // paid with Goodwill: the strongest calm, and noise does not end it
+    finishPre();
+    if (S.g.goodwill < T.GOODWILL_RAID || a.asleep) { toast('"Not tonight."', '#ffb07a'); return; }
+    S.g.goodwill -= T.GOODWILL_RAID;
+    a.calm = Math.max(a.calm, T.RAID_CALM_SEC); a.calmHard = true;
+    n.herReply = { msg: 'ok go raid, nerd \u2665 i\'ll watch my show', t: T.PRE_REPLY_SHOW, wait: 1.5 };
+    toast(`Raid pass: no visits for ${T.RAID_CALM_SEC} s. Get loud. (Goodwill -${T.GOODWILL_RAID})`, '#ff9ab8'); sfx.good();
     return;
   }
   if (id === 'towel') { n.towel = !n.towel; finishPre(); toast(n.towel ? 'Towel in. Quieter, but you can\'t see under the door.' : 'Towel out. You can see under the door again.', '#c9b8a8'); }

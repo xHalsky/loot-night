@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.30.0 (2026-11-17)
+
+Synergy, part 2 of 3 (#29): Goodwill.
+
+- **Goodwill**, a 0-100 bank of good moments with her, on the door panel (Patience and Caught now share one
+  line above it). Earned: a good cuddle +20, sweet answers on the desk +20, a good chat +8, her bedtime text
+  answered +5, a lean visit +3. Every catch costs 15. Half carries over to the next night.
+- **Forgiveness** (automatic at 60, once a night, spends 60): a catch does not count and she lets it go.
+- **Raid night?** on the phone (40 Goodwill): no visits for 150 s, and Noise does not end this calm: she knows.
+  No diminishing returns, no suspicion. Not after midnight.
+- `test/goodwill.ts`: 9 checks pass. Sims (8 good runs): depth 9.8, visits 5.0, wakes 2.1, 0 catches.
+
 ## 0.29.0 (2026-11-17)
 
 Synergy, part 1 of 3 (#29): cross-layer echoes and payouts.

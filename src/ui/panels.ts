@@ -78,6 +78,7 @@ export function doorInfoHtml(): string {
     if (v.result === 'cuddleGood') { kicker = 'cuddle'; txt = '"Okay, go play. Love you."'; cls = 'calm'; }
     if (v.result === 'cuddleMeh') { kicker = 'cuddle'; txt = '"You are so restless."'; }
     if (v.result === 'refused') { kicker = 'cuddle'; txt = 'She sighs and leaves.'; cls = 'alarm'; }
+    if (v.result === 'forgiven') { kicker = 'forgiven'; txt = '"I know, I know. Raid night." She lets it go.'; cls = 'warn'; }
   }
   const patience = 100 - n.mood;
   const tired = n.tired;
@@ -90,8 +91,8 @@ export function doorInfoHtml(): string {
   <div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div>
   ${preRowHtml()}
   <div class="her-stats">
-    <div class="her-row"><span>Patience</span><div class="hearts">${hearts(patience)}</div><b>${Math.round(patience)}</b></div>
-    <div class="her-row"><span>Caught</span><div class="bhearts">${caught}</div><b>${n.catches}/3</b></div>
+    <div class="her-row pc" title="Patience ${Math.round(patience)} · caught ${n.catches}/3"><span>Patience</span><div class="hearts">${hearts(patience)}</div><span class="sm">Caught</span><div class="bhearts">${caught}</div></div>
+    <div class="her-row gw" title="Goodwill: from good moments with her. ${T.GOODWILL_RAID}: you can ask for a Raid night (tap the phone). ${T.GOODWILL_FORGIVE}: she forgives one catch (once a night). Half carries over to tomorrow."><span>Goodwill</span><div class="gwbar"><i style="width:${S.g.goodwill}%"></i><em style="left:${T.GOODWILL_RAID}%"></em><em style="left:${T.GOODWILL_FORGIVE}%"></em></div><b>${Math.floor(S.g.goodwill)}</b></div>
     ${wakeRow}
   </div>`;
 }
@@ -100,7 +101,7 @@ export function doorInfoHtml(): string {
 /** Button text: cost, and how strong the next use is (2nd = half, 3rd = she gets suspicious). */
 function preUseNote(id: PreId): string {
   const used = N().preUses[id] ?? 0;
-  if (PRE_BY_ID[id].toggle || !used) return '';
+  if (PRE_BY_ID[id].toggle || PRE_BY_ID[id].goodwill || !used) return '';
   const m = nextMult(id);
   return m === 0 ? '<em class="sus">suspicious next</em>' : '<em>next: half</em>';
 }
@@ -117,13 +118,14 @@ function preRowHtml(): string {
 export function preText(s: string): string {
   return s.replace('{text}', String(T.PRE_TEXT_SEC)).replace('{textCalm}', String(T.PRE_TEXT_CALM)).replace('{textMood}', String(T.PRE_TEXT_MOOD))
     .replace('{tea}', String(T.PRE_TEA_SEC)).replace('{teaMood}', String(T.PRE_TEA_MOOD)).replace('{teaCalm}', String(T.PRE_TEA_CALM))
+    .replace(/\{raidCost\}/g, String(T.GOODWILL_RAID)).replace('{raidSec}', String(T.RAID_CALM_SEC))
     .replace('{towel}', String(T.PRE_TOWEL_SEC)).replace('{towelNoise}', String(Math.round(T.PRE_TOWEL_NOISE * 100))).replace('{towelSlow}', String(Math.round(T.PRE_TOWEL_SLOW * 100)));
 }
 function preTip(id: PreId): string {
   const d = PRE_BY_ID[id];
   return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs: ${preText(d.cost)}${d.away ? '. The party is on autopilot, and if she comes in, she sees whatever is on your screen.' : ''}</div>
     <div>Works when ${d.works}: ${preText(d.effect)}</div><div style="color:#ff8a80;margin-top:3px">Otherwise: ${preText(d.backfire)}</div>
-    ${d.toggle ? '' : `<div class="dim" style="margin-top:3px">The 2nd time in a night does half. The 3rd time she gets suspicious and her next visit is a check.</div>`}`;
+    ${d.toggle || d.goodwill ? '' : `<div class="dim" style="margin-top:3px">The 2nd time in a night does half. The 3rd time she gets suspicious and her next visit is a check.</div>`}`;
 }
 /** The idle phone's menu (tap the phone with nothing on it). */
 export function prePhoneHtml(): string {

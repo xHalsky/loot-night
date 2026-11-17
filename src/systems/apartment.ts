@@ -8,6 +8,7 @@ import { sfx, setHeadset } from '../ui/audio';
 import { spawnInterrupt } from './interrupts';
 import { hasLife } from './affixes';
 import { towelNoise, towelPace, towelSteps } from './preemptive';
+import { addGoodwill } from './goodwill';
 
 // Where she is between visits (docs/design/her.md, FNAF layer).
 // You track her by sound; the headset muffles it (and costs your Zone to take off); after midnight she sleeps.
@@ -72,7 +73,8 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   const n = N();
   const a = n.apt;
   a.calm = Math.max(0, a.calm - dt);
-  if (a.calm > 0 && !a.asleep && heardNoise() > T.PRE_CALM_BREAK_NOISE) { a.calm = 0; a.forceDoor = true; hear(a.room, 'HUH?'); }   // too loud: the calm is over
+  if (a.calm <= 0) a.calmHard = false;
+  if (a.calm > 0 && !a.calmHard && !a.asleep && heardNoise() > T.PRE_CALM_BREAK_NOISE) { a.calm = 0; a.forceDoor = true; hear(a.room, 'HUH?'); }   // too loud: the calm is over
   if (n.pre?.withHer) return null;               // you brought her tea: she is with you, her routine waits
   if (a.moving > 0) {
     a.moving -= dt;
@@ -136,6 +138,7 @@ export function replyText(ok: boolean) {
   if (ok) {
     a.wake = clamp(a.wake + T.TEXT_REPLY_WAKE, 0, T.WAKE_UP); addMood(T.TEXT_REPLY_MOOD);
     toast('You: "Five more minutes, love." She dozes off.', '#6fcf7f'); sfx.good();
+    addGoodwill(T.GOODWILL_TEXT, 'answered her text');
   } else {
     a.wake = clamp(a.wake + T.TEXT_IGNORE_WAKE, 0, T.WAKE_UP); addMood(T.TEXT_IGNORE_MOOD);
     a.textSent = false;

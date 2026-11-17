@@ -154,6 +154,11 @@ export const T = {
   ECHO_DROWSY_MISS: 0.1,                        // hero hits miss this often at Tired TIRED_SLUGGISH+
   GOOD_BOY_SEC: 60, GOOD_BOY_GOBLIN: 2, GOOD_BOY_SWEET_SHARE: 0.5,   // petted mostly on his favourite spot
   CABLE_FAST_SEC: 6,                            // cables back in this fast: Flow comes back too
+  // Goodwill (docs/design/synergy.md, #29): earned from good moments with her, spent on the Raid pass and Forgiveness.
+  GOODWILL_MAX: 100, GOODWILL_CARRY: 0.5,
+  GOODWILL_CUDDLE: 20, GOODWILL_LAP: 20, GOODWILL_CHAT: 8, GOODWILL_TEXT: 5, GOODWILL_LEAN: 3, GOODWILL_CATCH: -15,
+  GOODWILL_FORGIVE: 60,           // automatic, once a night: the next catch does not count (spends this much)
+  GOODWILL_RAID: 40, RAID_CALM_SEC: 150,   // the Raid pass: no visits for 2.5 real minutes, even if you get loud
   CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
   GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,

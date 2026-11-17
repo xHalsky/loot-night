@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { addGoodwill } from './goodwill';
 import { N } from '../core/state';
 import { chance } from '../core/rng';
 import { addMood, moodZone } from './meters';
@@ -82,6 +83,7 @@ function leave() {
   if (l.sweet >= 2) {
     addMood(T.LAP_HAPPY_MOOD); l.face = 'blush'; l.line = '"Okay, I will let you play. Love you!" *kiss*';
     toast(`She kisses your cheek and leaves happy. Patience +${-T.LAP_HAPPY_MOOD}. She will leave you alone for a while.`, '#ff9ab8'); sfx.kiss();
+    addGoodwill(T.GOODWILL_LAP, 'sweet answers');
   } else if (l.rude >= 2) {
     addMood(T.LAP_SULK_MOOD); l.face = 'pout'; l.line = '"Fine. Enjoy your elf."';
     toast(`She sulks off. Patience -${T.LAP_SULK_MOOD}.`, '#ff8a80');

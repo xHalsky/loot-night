@@ -64,6 +64,7 @@ export interface Apartment {
   showerUsed: boolean; lastVisitEnd: number; forceDoor: boolean;
   asleep: boolean; wake: number; textSent: boolean; cued: boolean;   // cued: the end-of-activity sound has played
   calm: number; forceKind: VisitKind | null;   // pre-emptive: seconds with no visit roll; the next visit's type
+  calmHard?: boolean;   // the Raid pass: she knows you are raiding, Noise does not end this calm
 }
 
 // Everything that reaches you through the phone (one device on the desk).
@@ -160,7 +161,7 @@ export interface Night {
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
-  goodBoy: number; excused: boolean; goodDog: number;   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
+  goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   moodDrift: number;
   selected: string | null; heroTab: number;
@@ -193,6 +194,7 @@ export interface GameState {
   bestStars: number; record: number; nightsPlayed: number;
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back
+  goodwill: number;              // her Goodwill bank, 0-100 (systems/goodwill.ts); half carries over
   pendingListings: { name: string; zl: number }[];
   pity: number; uid: number;
   night: Night | null;
@@ -212,7 +214,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, seen: [], curiosSeen: [],
+    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, seen: [], curiosSeen: [], goodwill: 0,
     pendingListings: [], pity: 0, uid: 1,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1,
     results: null, morning: null,

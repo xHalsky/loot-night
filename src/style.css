@@ -836,3 +836,11 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .pre-card .pa-btns { display: flex; gap: 6px; justify-content: center; margin-top: 6px; }
 .pre-card .pa-bar { height: 4px; margin-top: 7px; background: #f0d4da; border-radius: 2px; overflow: hidden; }
 .pre-card .pa-bar i { display: block; height: 100%; background: #e75480; }
+
+/* Goodwill (#29) and the merged Patience + Caught row */
+#door .her-row.pc { grid-template-columns: 62px auto 44px auto; gap: 4px; }
+#door .her-row.pc .hearts .heart { font-size: 15px; }
+#door .her-row.pc .sm { font-size: 13px; color: #d9a9b4; text-align: right; }
+#door .gwbar { position: relative; height: 9px; background: rgba(255,255,255,.12); border-radius: 5px; overflow: visible; }
+#door .gwbar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #ff9ab8, #ffd36b); }
+#door .gwbar em { position: absolute; top: -2px; width: 2px; height: 13px; background: #fff4f2; opacity: .7; }

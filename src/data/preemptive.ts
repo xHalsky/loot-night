@@ -5,8 +5,9 @@
 //   away:   you leave the desk (empty chair, no input, she sees whatever is on screen if she comes).
 //   toggle: on/off (no diminishing returns, no suspicion).
 
-export type PreId = 'text' | 'tea' | 'towel';
-export interface PreDef { id: PreId; name: string; where: 'door' | 'phone'; cost: string; works: string; effect: string; backfire: string; away?: boolean; toggle?: boolean }
+export type PreId = 'text' | 'tea' | 'towel' | 'raid';
+//   goodwill: paid with Goodwill instead (no diminishing returns, no suspicion: you ask her openly).
+export interface PreDef { id: PreId; name: string; where: 'door' | 'phone'; cost: string; works: string; effect: string; backfire: string; away?: boolean; toggle?: boolean; goodwill?: boolean }
 
 export const PRE_ACTIONS: PreDef[] = [
   { id: 'text', name: 'Text her', where: 'phone', cost: '{text} s on the phone',
@@ -17,6 +18,10 @@ export const PRE_ACTIONS: PreDef[] = [
     works: 'she is in the living room or the bedroom',
     effect: 'Mood {teaMood}, no visits for {teaCalm} s (unless you get loud). If she is watching TV, she may ask you to stay for an episode.',
     backfire: 'Already in the kitchen: she hugs you and won\'t let go. On her way somewhere: she glances at your screen.' },
+  { id: 'raid', name: 'Raid night?', where: 'phone', cost: '{raidCost} Goodwill · {text} s', goodwill: true,
+    works: 'she is awake (before midnight)',
+    effect: 'No visits for {raidSec} s, even if you get loud: you asked her openly, so she does not get suspicious.',
+    backfire: 'Without {raidCost} Goodwill she will not say yes.' },
   { id: 'towel', name: 'Towel under the door', where: 'door', cost: '{towel} s', toggle: true,
     works: 'always',
     effect: 'Your Noise reaches her {towelNoise}% quieter and she gets up {towelSlow}% less often.',

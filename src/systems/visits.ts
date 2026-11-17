@@ -12,6 +12,7 @@ import { hasLife } from './affixes';
 import { startCuddle } from './cuddle';
 import { towelSteps } from './preemptive';
 import { addBuff } from './curios';
+import { addGoodwill, tryForgive } from './goodwill';
 
 // Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
 // Each visit type asks for a different answer:
@@ -164,6 +165,7 @@ function lookOnly() {
   const v = N().visit;
   v.result = 'look';
   addMood(T.LEAN_MOOD);
+  addGoodwill(T.GOODWILL_LEAN, 'she just wanted to look at you');
   toast(pick(['She leans on the door frame, barefoot, watching you. "Nothing. Carry on."', '"Just checking on my nerd." She smiles and stays a moment.', 'She leans in the doorway, rubbing one foot against her calf. "...Hi."']), '#ff9ab8');
 }
 
@@ -238,7 +240,7 @@ export function chatAnswer(kind: number, timeout = false) {
   c.asked++;
   if (c.asked >= T.CHAT_QUESTIONS || c.bad >= 2) {
     v.chat = null; v.t = 1.6;
-    if (c.good >= 2) { v.result = 'chatGood'; addMood(T.CHAT_PASS_MOOD); toast(`Nice talk. "Okay, back to your spreadsheets, cutie." Mood ${T.CHAT_PASS_MOOD}.`, '#6fcf7f'); }
+    if (c.good >= 2) { v.result = 'chatGood'; addMood(T.CHAT_PASS_MOOD); toast(`Nice talk. "Okay, back to your spreadsheets, cutie." Mood ${T.CHAT_PASS_MOOD}.`, '#6fcf7f'); addGoodwill(T.GOODWILL_CHAT, 'good chat'); }
     else if (c.bad >= 2) { v.result = 'chatBad'; addMood(T.CHAT_BAD_MOOD); toast(`"Wow. Okay." She leaves. Mood +${T.CHAT_BAD_MOOD}.`, '#ff8a80'); }
     else { v.result = 'chatMeh'; addMood(T.CHAT_MEH_MOOD); toast('"Mhm. Talk later."', '#ffb07a'); }
     return;
@@ -265,6 +267,7 @@ export function cuddleDone(score: number | null) {
   if (score === null) { v.result = 'refused'; addMood(T.CUDDLE_REFUSE_MOOD); toast(`You pulled away for the game. Mood +${T.CUDDLE_REFUSE_MOOD}.`, '#ff8a80'); return; }
   if (score >= T.CUDDLE_PASS) {
     v.result = 'cuddleGood'; addMood(T.CUDDLE_PASS_MOOD); toast(`Warm. "Okay, go play, I love you." Mood ${T.CUDDLE_PASS_MOOD}.`, '#ff9ab8'); sfx.kiss();
+    addGoodwill(T.GOODWILL_CUDDLE, 'cuddle');
     addBuff({ name: 'Loved', dmg: T.ECHO_LOVED_DMG, speed: 0, crit: T.ECHO_LOVED_CRIT, t: 1, max: 1, icon: 'loved', fights: 1 });   // echo: life feeds the RPG
     toast(`Loved: party +${Math.round(T.ECHO_LOVED_DMG * 100)}% damage, +${T.ECHO_LOVED_CRIT}% crit for the next fight.`, '#ff9ab8');
   }
@@ -279,8 +282,14 @@ function caught() {
     toast(`"It's a team-building exercise, for work." She squints. She buys it. Once. Mood +${T.AFFIX_EXCUSE_MOOD}.`, '#ff7ab8'); sfx.good();
     return;
   }
+  if (tryForgive()) {   // Goodwill 60+: once a night she lets it go (and leaves: no second look)
+    n.visit.result = 'forgiven'; n.visit.chat = null; n.visit.t = 1.8;
+    toast(`She sees the game. Sighs. "I know, I know. Raid night." Forgiven (Goodwill -${T.GOODWILL_FORGIVE}).`, '#ff9ab8'); sfx.kiss();
+    return;
+  }
   n.everCaught = true;
   n.catches++;
+  addGoodwill(T.GOODWILL_CATCH, 'caught');
   n.scare = T.SCARE_SEC;
   sfx.sting();
   const step = Math.min(n.catches, 3);
