@@ -159,6 +159,10 @@ export const T = {
   GOODWILL_CUDDLE: 20, GOODWILL_LAP: 20, GOODWILL_CHAT: 8, GOODWILL_TEXT: 5, GOODWILL_LEAN: 3, GOODWILL_CATCH: -15,
   GOODWILL_FORGIVE: 60,           // automatic, once a night: the next catch does not count (spends this much)
   GOODWILL_RAID: 40, RAID_CALM_SEC: 150,   // the Raid pass: no visits for 2.5 real minutes, even if you get loud
+  // Witching Hour (docs/design/synergy.md, #29): from WITCHING_FROM to dawn, staying up pays.
+  WITCHING_FROM: 25 * 60, WITCHING_UPGRADE: 0.35,   // each drop: chance to shift up one rarity
+  WITCHING_INSOMNIAC: 0.5,        // a cross-system affix rolled in the Witching Hour is insomniac this often
+  DAWN_CHASER_FROM: 27 * 60,      // Dawn Chaser counts from 03:00
   CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
   GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,

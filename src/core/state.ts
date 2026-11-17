@@ -13,6 +13,7 @@ export interface Item {
   affixes: Affix[]; value: number; identified: boolean;
   locked?: boolean;              // locked items can't be sold, salvaged, listed or dropped
   special?: string; specialAmt?: number;   // a special affix id (src/data/affixes.ts) and its stat or gold amount
+  witched?: boolean;             // the Witching Hour shifted it up a rarity
 }
 export type BagEntry =
   | { kind: 'item'; id: string; item: Item }
@@ -161,7 +162,7 @@ export interface Night {
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
-  goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
+  goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   moodDrift: number;
   selected: string | null; heroTab: number;

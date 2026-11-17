@@ -44,7 +44,8 @@ const kinds: Record<string, number> = {}; const outcomes: Record<string, number>
 const lvlAt: number[] = []; let lastFloor = 1;
 const curioPicks: Record<string, number> = {};
 const preUsed: Record<string, number> = {};
-const calls: Record<string, number> = {}; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
+const calls: Record<string, number> = {};
+let epicFound = 0; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
 while (S.g.screen === 'night' && t < 2000) {
   const n = N();
   if (mode === 'good') {
@@ -102,6 +103,7 @@ while (S.g.screen === 'night' && t < 2000) {
       if (ch) { curioPicks[ch] = (curioPicks[ch] ?? 0) + 1; chooseCurio(ch); }
     }
     S.g.heroes.forEach((h, i) => { [1, 2, 3].forEach(s => { if (n.action === 'none' && n.monitor === 'rpg' && h.cd[s] <= 0 && h.level >= T.ABILITY_UNLOCK[s] && n.phase === 'battle' && !h.downed && n.enemies.some(e => e.hp > 0)) queueAbility(i, s); }); });
+    epicFound = n.unidentifiedFound;
     if (n.clock >= sleepAt && n.phase !== 'battle') { endNight('sleep'); break; }
   } else {
     if (n.phase === 'mapChoice') chooseNextFloor(null);
@@ -118,4 +120,4 @@ while (S.g.screen === 'night' && t < 2000) {
   if (S.g.night) { lastTired = N().tired; lastFloor = N().floor; const a = N().apt; maxWake = Math.max(maxWake, a.wake); noiseSum += N().noise; noiseN++; for (const tt of N().toasts) { if (tt.t > 3.99 && tt.text.startsWith('Text from')) texts++; if (tt.t > 3.99 && tt.text.startsWith('You woke')) wakes++; } }
 }
 const r = S.g.results!; const N0tired = lastTired;
-console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, calls, near: r.nearMisses }));
+console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses }));

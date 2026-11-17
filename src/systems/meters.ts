@@ -2,6 +2,7 @@ import { T } from '../config/tuning';
 import { S, N } from '../core/state';
 import { clamp } from '../core/rng';
 import { updateTired } from './tired';
+import { toast } from '../core/fx';
 
 /** Night clock speed in game minutes per real second (docs/design/night.md). */
 export function clockRate(): number {
@@ -34,6 +35,10 @@ export function updateMeters(dt: number) {
   else n.flow -= rate * T.FLOW_DECAY_MULT * dt;
   n.flow = clamp(n.flow, T.FLOW_MIN, T.FLOW_MAX);
 
+  if (!n.witchingSaid && n.clock >= T.WITCHING_FROM) {   // the Witching Hour (docs/design/synergy.md)
+    n.witchingSaid = true;
+    toast('01:00. The Witching Hour: drops can shift up a rarity, and insomniac affixes are out. Bed can wait?', '#c77dff');
+  }
   n.moodDrift += dt;
   if (n.moodDrift >= T.MOOD_DRIFT_EVERY_SEC) { n.moodDrift = 0; addMood(1); }
   n.noise = clamp(n.noise - T.NOISE_DECAY_PER_SEC * dt, 0, 100);

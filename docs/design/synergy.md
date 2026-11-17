@@ -1,9 +1,9 @@
-# Synergy pass (mostly planned)
+# Synergy pass
 
 Slice set #29, arc set #14.
 
 **Rule:** every system takes input from at least two others and feeds at least two others; a system that
-only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23), cross-system affixes (0.25), cross-layer echoes and the dog and cable payouts (0.29), Goodwill with Forgiveness and the Raid pass (0.30). Everything else below is planned.
+only punishes or only rewards is a dead end (Loop Hero's rule). The slice set (#29) is built: ability marks (0.23), cross-system affixes (0.25), cross-layer echoes and the dog and cable payouts (0.29), Goodwill with Forgiveness and the Raid pass (0.30), the Witching Hour (0.31). The arc set (#14) below is planned.
 All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 
 ## Audit of the current build (2026-11-16)
@@ -18,7 +18,7 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
 | Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise, her text Goodwill | Timers, the headset (the boys) | Fine |
 | Dog and cables | Noise, NO SIGNAL; Good Boy (goblins x2), a fast fix keeps Flow; a wipe calls him over | A timer, a wipe | Fine (0.29) |
-| Tiredness | Yawns, microsleeps, sluggish | Clock, sleep debt, Monster | Only punishes; staying up has no upside |
+| Tiredness | Yawns, microsleeps, sluggish, Drowsy misses; Red Eyes affix | Clock, sleep debt, Monster | Fine: the Witching Hour gives staying up a reward side (0.31) |
 
 ## Slice set vs. arc set (decided 2026-11-16)
 
@@ -73,11 +73,24 @@ pre-emptive action (decided 2026-11-16, see preemptive.md).
 
 **Overtime zł:** a 4-row clear pays 2 zł, capped at 20 per night.
 
-## Witching Hour
+## Witching Hour (built 0.31, numbers `WITCHING_*`)
 
-From 01:00: the clock turns purple, the fog violet; every drop has a 35% chance to upgrade one rarity;
-insomniac affixes roll only then (Night Shift, Red Eyes, Second Wind, Dawn Chaser). Staying up becomes
-a greedy choice, not only a penalty.
+From 01:00 (bedtime) to dawn: the taskbar clock turns purple ("witching hour"), the dungeon fog violet, and a
+toast announces it. Every drop has `WITCHING_UPGRADE` (35%) to shift up one rarity (stacks with a Cursed
+Floor; the drop line says so). Insomniac affixes, cross-system, roll only then (half of the cross-system
+rolls after 01:00):
+
+| Affix | Bonus | While |
+|---|---|---|
+| of the Night Shift | Attack | after 01:00 |
+| of Red Eyes | Crit % | Tired 70+ |
+| of the Second Wind | Max HP | after 01:00 |
+| of the Dawn Chaser | Luck | after 03:00 |
+
+Staying up becomes a greedy choice, not only a penalty. Measured (6 good-bot nights each): bed at 01:00,
+4.8 epic-or-better drops, 1.5 wakes, sleep debt 1.3; bed at 02:00, 6.7 drops, 5.5 wakes, sleep debt 7.0
+(Tired 50 the next night). Their effects only show on later nights, so the insomniac affixes are mostly a
+promise on night 1.
 
 ## Interrupts always pay
 

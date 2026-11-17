@@ -683,7 +683,7 @@ export function taskbarHtml(): string {
     <span class="tb-hint">Tab = switch</span>
     <span class="tb-tray">
       <span class="tb-wallet">${S.g.zl} zł</span>
-      <span class="tb-clock ${late ? 'late' : ''}"><b>${fmtClock(n.clock)}</b><small>${late ? 'past bedtime' : 'bed 01:00'}</small></span>
+      <span class="tb-clock ${late ? 'late witching' : ''}" title="${late ? 'The Witching Hour: drops can shift up a rarity, insomniac affixes roll. Sleep debt grows.' : ''}"><b>${fmtClock(n.clock)}</b><small>${late ? 'witching hour' : 'bed 01:00'}</small></span>
       <button class="tb-power ${canSleep() ? '' : 'off'}" data-act="sleep" title="Log off and sleep">⏻ ${n.clock < T.EARLIEST_SLEEP ? 'Sleep (23:00+)' : 'Sleep'}</button>
     </span>`;
 }

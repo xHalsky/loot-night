@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.31.0 (2026-11-17)
+
+Synergy, part 3 of 3 (#29, done): the Witching Hour.
+
+- From 01:00: the clock turns purple, the dungeon fog violet. Every drop has a 35% chance to shift up one
+  rarity (the drop line says so). Insomniac affixes roll only then: of the Night Shift (attack after 01:00),
+  of Red Eyes (crit at Tired 70+), of the Second Wind (max HP after 01:00), of the Dawn Chaser (luck after
+  03:00).
+- Staying up is a greed choice now (6 good-bot nights each): bed at 01:00, 4.8 epic+ drops, 1.5 wakes, sleep
+  debt 1.3; bed at 02:00, 6.7 epic+, 5.5 wakes, sleep debt 7.0.
+- `test/witching.ts`: 5 checks pass. The synergy audit has no dead ends left among the slice systems.
+- Not built from #29's list, on purpose: Alibi stacks (cut with Looks busy in 0.20); Fed (needs the dinner
+  shout, #23); Hug and Help me Goodwill (#12).
+
 ## 0.30.0 (2026-11-17)
 
 Synergy, part 2 of 3 (#29): Goodwill.

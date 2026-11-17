@@ -5,7 +5,7 @@ import type { Stat } from '../core/state';
 //   cross: the wearer gets a stat bonus while something in real life is true (rare and up).
 // Numbers are in tuning.ts (AFFIX_*); `when` is the condition id read by systems/affixes.ts.
 export type LifeId = 'earplugs' | 'quick' | 'fiveMore' | 'excuses' | 'owl' | 'cans';
-export type CrossId = 'headset' | 'caffeine' | 'spreadsheet' | 'library' | 'dogs' | 'sweet';
+export type CrossId = 'headset' | 'caffeine' | 'spreadsheet' | 'library' | 'dogs' | 'sweet' | 'nightShift' | 'redEyes' | 'secondWind' | 'dawnChaser';
 export interface LifeAffix { kind: 'life'; id: LifeId; suffix: string; desc: string }
 export interface CrossAffix { kind: 'cross'; id: CrossId; suffix: string; when: string; stat?: Stat; desc: string }
 export type SpecialAffix = LifeAffix | CrossAffix;
@@ -26,4 +26,11 @@ export const CROSS_AFFIXES: CrossAffix[] = [
   { kind: 'cross', id: 'dogs', suffix: 'of the Good Boy', when: 'dog', stat: 'luck', desc: '+{n} Luck for {dogSec} s after you pet the dog.' },
   { kind: 'cross', id: 'sweet', suffix: 'of the Sweet Talker', when: 'green', stat: 'atk', desc: '+{n} Attack while her Mood is green.' },
 ];
-export const SPECIAL_BY_ID: Record<string, SpecialAffix> = Object.fromEntries([...LIFE_AFFIXES, ...CROSS_AFFIXES].map(a => [a.id, a]));
+// Insomniac affixes: cross-system, roll only during the Witching Hour (after 01:00), and pay for staying up.
+export const INSOMNIAC_AFFIXES: CrossAffix[] = [
+  { kind: 'cross', id: 'nightShift', suffix: 'of the Night Shift', when: 'late', stat: 'atk', desc: '+{n} Attack after 01:00.' },
+  { kind: 'cross', id: 'redEyes', suffix: 'of Red Eyes', when: 'drowsy', stat: 'crit', desc: '+{n} Crit % while you are Tired 70+.' },
+  { kind: 'cross', id: 'secondWind', suffix: 'of the Second Wind', when: 'late', stat: 'hp', desc: '+{n} Max HP after 01:00.' },
+  { kind: 'cross', id: 'dawnChaser', suffix: 'of the Dawn Chaser', when: 'dawn', stat: 'luck', desc: '+{n} Luck after 03:00.' },
+];
+export const SPECIAL_BY_ID: Record<string, SpecialAffix> = Object.fromEntries([...LIFE_AFFIXES, ...CROSS_AFFIXES, ...INSOMNIAC_AFFIXES].map(a => [a.id, a]));

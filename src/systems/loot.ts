@@ -3,8 +3,8 @@ import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type
 import { pick, weighted, chance, rand } from '../core/rng';
 import { ADJECTIVES, NOUNS, SUFFIXES, SLOT_STATS, STAT_BASE, RARITY_MULT, POSITIVE_AFFIXES, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
 import { toast } from '../core/fx';
-import { LIFE_AFFIXES, CROSS_AFFIXES, type SpecialAffix } from '../data/affixes';
-import { crossBonus } from './affixes';
+import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, type SpecialAffix } from '../data/affixes';
+import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
@@ -34,13 +34,15 @@ export function rollRarity(floor: number, minIdx = 0): Rarity {
 function rollSpecial(rarity: Rarity): SpecialAffix | null {
   const r = Math.random(), life = T.AFFIX_LIFE_CHANCE[rarity] ?? 0, cross = T.AFFIX_CROSS_CHANCE[rarity] ?? 0;
   if (r < life) return pick(LIFE_AFFIXES);
-  if (r < life + cross) return pick(CROSS_AFFIXES);
+  if (r < life + cross) return isWitching() && chance(T.WITCHING_INSOMNIAC) ? pick(INSOMNIAC_AFFIXES) : pick(CROSS_AFFIXES);
   return null;
 }
 
 export function genItem(ilvl: number, minRarity = 0): Item {
   let rarity = rollRarity(ilvl, minRarity);
   if (S.g.night?.floorMap === 'cursed' && S.g.night.location === 'dungeon') rarity = RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(rarity) + 1)];
+  let witched = false;
+  if (isWitching() && rarity !== 'legendary' && chance(T.WITCHING_UPGRADE)) { rarity = RARITIES[RARITIES.indexOf(rarity) + 1]; witched = true; }   // the Witching Hour shifts it up
   const slot = pick(SLOTS);
   const mult = RARITY_MULT[rarity];
   const pool = [...SLOT_STATS[slot]];
@@ -70,7 +72,7 @@ export function genItem(ilvl: number, minRarity = 0): Item {
   if (sp) name += ` ${sp.suffix}`;
   else if (ri >= 3) name += ` ${pick(SUFFIXES)}`;
   const value = Math.round(6 * ilvl * mult * mult + positives * 3 + (sp ? 10 * mult : 0));
-  return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3, ...(sp ? { special: sp.id, specialAmt } : {}) };
+  return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3, ...(sp ? { special: sp.id, specialAmt } : {}), ...(witched ? { witched } : {}) };
 }
 
 export const itemEntry = (item: Item): BagEntry => ({ kind: 'item', id: item.id, item });
@@ -192,6 +194,7 @@ function announce(e: BagEntry) {
     sfx.loot(ri);
     if (!e.item.identified) n.unidentifiedFound++;
     if (e.item.rarity === 'legendary') legendaryYell();
+    if (e.item.witched) toast(`The Witching Hour shifts it up: ${e.item.rarity}.`, '#c77dff');
   } else sfx.loot(1);
   toast(entryName(e), color);
 }

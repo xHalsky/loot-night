@@ -287,7 +287,8 @@ function lighting(c: CanvasRenderingContext2D, t: number, torchW: { x: number; y
 function fog(c: CanvasRenderingContext2D, t: number) {
   const n = N();
   const k = n.phase === 'battle' ? 0.55 : 1;
-  const fc = n.floorMap === 'cursed' ? '70,24,92' : '40,30,52', fl = n.floorMap === 'cursed' ? '120,50,150' : '70,58,88';   // Cursed Floor: violet fog
+  const violet = n.floorMap === 'cursed' || n.clock >= T.WITCHING_FROM;   // Cursed Floor or the Witching Hour: violet fog
+  const fc = violet ? '70,24,92' : '40,30,52', fl = violet ? '120,50,150' : '70,58,88';
   const g = c.createLinearGradient(400, 0, W, 0);
   g.addColorStop(0, `rgba(${fc},0)`); g.addColorStop(1, `rgba(${fc},${0.85 * k})`);
   c.fillStyle = g; c.fillRect(380, 0, W - 380, H);

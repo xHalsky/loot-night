@@ -328,6 +328,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .tb-clock { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.05; }
 .tb-clock b { font-size: 13px; } .tb-clock small { font-size: 9px; color: #8a8a96; }
 .tb-clock.late b { color: #ff8a80; } .tb-clock.late small { color: #ff8a80; }
+.tb-clock.witching b { color: #c77dff; text-shadow: 0 0 6px rgba(199,125,255,.7); } .tb-clock.witching small { color: #c77dff; }
 .tb-power { height: 26px; border: none; border-radius: 4px; background: #2f6fed; color: #fff; font-family: 'Inter', sans-serif; font-size: 12px; padding: 0 10px; }
 .tb-power.off { background: #3a3a46; color: #8a8a96; }
 #winLayer .monster-win, #winLayer .phone-win { font-family: 'Inter', sans-serif; }

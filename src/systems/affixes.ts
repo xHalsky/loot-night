@@ -9,6 +9,9 @@ const worn = (): Item[] => S.g.heroes.flatMap(h => Object.values(h.gear)).filter
 /** A real-life affix is on: anyone in the party wears an identified item with it. */
 export const hasLife = (id: LifeId) => worn().some(it => it.special === id);
 
+/** The Witching Hour: after 01:00 (docs/design/synergy.md). */
+export const isWitching = () => !!S.g.night && S.g.night.clock >= T.WITCHING_FROM;
+
 /** Whether a cross-system affix's real-life condition holds right now. */
 export function crossActive(a: CrossAffix): boolean {
   const n = S.g.night;
@@ -20,6 +23,9 @@ export function crossActive(a: CrossAffix): boolean {
     case 'quiet': return n.noise < T.AFFIX_QUIET_NOISE;
     case 'dog': return n.goodBoy > 0;
     case 'green': return moodZone(n.mood) === 'green';
+    case 'late': return n.clock >= T.WITCHING_FROM;
+    case 'drowsy': return n.tired >= T.TIRED_SLUGGISH;
+    case 'dawn': return n.clock >= T.DAWN_CHASER_FROM;
   }
   return false;
 }
