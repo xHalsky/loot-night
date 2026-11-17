@@ -281,6 +281,7 @@ export const T = {
 
   // --- Economy ---
   START_GOLD: 100, START_ZL: 50,
+  FLOOR_GOLD_BASE: 5, FLOOR_GOLD_PER: 3,   // a cleared floor pays BASE + PER x floor: steady income besides selling drops (#2)
   // Alt-tab lag: every switch between the game and Excel blacks out the screen like a fullscreen game
   ALT_TAB_LAG_SEC: [1.0, 2.5] as [number, number],
   IDENTIFY_COST: { epic: 40, legendary: 100 },

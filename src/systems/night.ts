@@ -9,10 +9,10 @@ import { newExcel } from './excel';
 import { startTired } from './tired';
 import { scheduleInterrupt } from './interrupts';
 import { moodZone } from './meters';
-import { CITY } from '../data/city';
 import { save } from './save';
 import { toast } from '../core/fx';
 import { sfx, setHeadset, stopAmbience } from '../ui/audio';
+import { cityOutlook } from './town';
 
 export function newNight(): Night {
   return {
@@ -27,7 +27,7 @@ export function newNight(): Night {
     excel: newExcel(),
     taunt: 0, ward: 0, rally: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
     callsTonight: {}, pre: null, preUses: {}, preMenu: null, towel: false, herReply: null,
-    curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null,
+    curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null, goldStart: S.g.gold,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,
     market: Math.round(rand(...T.MARKET_RANGE) * 100) / 100, reveal: null,
@@ -88,11 +88,12 @@ export function endNight(ending: Results['ending']) {
   if (depth > prevRecord && prevRecord > 0) near.push(`New depth record: floor ${depth}!`);
   if (survived && !twoStar) near.push(`2nd star missed by ${Math.ceil(n.mood - T.MOOD_RED + 1)} Mood.`);
   if (n.everCaught) near.push(`3rd star needs a night with no catches (caught ${n.catches}x).`);
-  const cheapest = CITY.filter(f => S.g.furniture[f.id] < 3).map(f => ({ f, g: f.gold[S.g.furniture[f.id]], m: f.mats[S.g.furniture[f.id]] }))
-    .sort((a, b) => a.g - b.g)[0];
-  if (cheapest) {
-    const needG = Math.max(0, cheapest.g - S.g.gold), needM = Math.max(0, cheapest.m - S.g.mats);
-    if (needG || needM) near.push(`${cheapest.f.name} ${S.g.furniture[cheapest.f.id] ? 'upgrade' : 'build'}: ${needG ? needG + ' gold' : ''}${needG && needM ? ' and ' : ''}${needM ? needM + ' scraps' : ''} short.`);
+  const city = cityOutlook();   // counts what your bag sells and salvages for, like you would in the city
+  if (city.next) {
+    const what = `${city.next.name} ${city.next.upgrade ? 'upgrade' : ''}`.trim();
+    if (city.now) near.push(`You can afford the ${what} in the city (${city.next.gold} gold, ${city.next.mats} scraps).`);
+    else if (city.withBag) near.push(`Sell and salvage your bag in the city: it pays for the ${what}.`);
+    else if (city.short) near.push(`${what}: ${city.short.gold ? city.short.gold + ' gold' : ''}${city.short.gold && city.short.mats ? ' and ' : ''}${city.short.mats ? city.short.mats + ' scraps' : ''} short, even selling your bag.`);
   }
   const unidentified = S.g.bag.filter(e => e.kind === 'item' && !e.item.identified).length;
 

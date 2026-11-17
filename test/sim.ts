@@ -22,6 +22,8 @@ import { T } from '../src/config/tuning';
 import { endNight } from '../src/systems/night';
 import { heroStats } from '../src/systems/stats';
 import { equipOn } from '../src/systems/bag';
+import { salvage, vendor, buildCity, salvageYield } from '../src/systems/town';
+import { CITY } from '../src/data/city';
 const gearBot = process.argv[4] === 'gear';
 function score(st: any) { return st.atk * 3 + st.hp * 0.3 + st.armor * 2 + st.speed * 3 + st.crit; }
 function tryEquip() {
@@ -35,8 +37,39 @@ function tryEquip() {
 
 const mode = process.argv[2] ?? 'good';   // good | idle
 const sleepAt = Number(process.argv[3] ?? T.BEDTIME);
+// NIGHTS=n plays n nights in a row (the save carries over). Before each later night the bot does what a player does
+// at 20:00 in the city: equip upgrades, salvage the cheapest items for the cheapest building's scraps, sell the rest,
+// then build every building it can afford, cheapest first (docs/design/city.md, #2).
+const NIGHTS = Number(process.env.NIGHTS ?? 1);
+const cheapestNext = () => CITY.filter(c => (S.g.furniture[c.id] ?? 0) < 3).map(c => ({ c, lvl: S.g.furniture[c.id] ?? 0 }))
+  .map(x => ({ ...x, gold: x.c.gold[x.lvl], mats: x.c.mats[x.lvl] })).sort((a, b) => a.gold - b.gold)[0];
+let bagValue = 0;
+function cityRound(): string[] {
+  tryEquip();
+  const sellOf = (e: any) => Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT));
+  const loose = () => S.g.bag.filter((e: any) => e.kind === 'item' && !e.item.locked);
+  bagValue = loose().reduce((a, e: any) => a + sellOf(e), 0);
+  if (process.env.DBG_CITY) console.error('city: gold', S.g.gold, 'mats', S.g.mats, 'bag value', bagValue, 'items', loose().length);
+  const built: string[] = [];
+  for (let k = 0; k < 40; k++) {
+    const next = cheapestNext();
+    if (!next) break;
+    if (S.g.gold >= next.gold && S.g.mats >= next.mats) { buildCity(next.c.id); built.push(`${next.c.id}${next.lvl + 1}`); continue; }
+    const items = loose().sort((a: any, b: any) => sellOf(a) - sellOf(b));
+    if (!items.length) break;
+    N().selected = (S.g.mats < next.mats ? items[0] : items[items.length - 1]).id;   // short of scraps: salvage the cheapest; of gold: sell the best
+    if (S.g.mats < next.mats) salvage(); else vendor();
+  }
+  return built;
+}
+void salvageYield;
 S.g = initialState();
+for (let night = 1; night <= NIGHTS; night++) {
+let built: string[] = [];
 startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */
+if (night > 1) built = cityRound();
+const goldAfterCity = S.g.gold;
+const next = cheapestNext();
 travelToDungeon();
 const dt = 1 / 60;
 let t = 0, caught = 0, visits = 0, wipes = 0;
@@ -120,4 +153,5 @@ while (S.g.screen === 'night' && t < 2000) {
   if (S.g.night) { lastTired = N().tired; lastFloor = N().floor; const a = N().apt; maxWake = Math.max(maxWake, a.wake); noiseSum += N().noise; noiseN++; for (const tt of N().toasts) { if (tt.t > 3.99 && tt.text.startsWith('Text from')) texts++; if (tt.t > 3.99 && tt.text.startsWith('You woke')) wakes++; } }
 }
 const r = S.g.results!; const N0tired = lastTired;
-console.log(JSON.stringify({ mode, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses }));
+console.log(JSON.stringify({ mode, night, built, bagValue, city: { ...S.g.furniture }, goldAfterCity, nextCost: next ? [next.gold, next.mats] : null, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, mats: S.g.mats, sell: S.g.bag.map(e => e.kind === 'item' ? Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)) : 15), bagRar: S.g.bag.map(e => e.kind === 'item' ? ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity) : -1), salvage: S.g.bag.reduce((a, e) => a + (e.kind === 'item' ? T.SALVAGE_YIELD[['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity)] : 0), 0), bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses }));
+}

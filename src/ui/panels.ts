@@ -8,6 +8,7 @@ import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
 import { specialText, hasLife } from '../systems/affixes';
 import { END_HINT } from '../data/tips';
+import { cityOutlook } from '../systems/town';
 import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
 import { preBlocked, nextMult } from '../systems/preemptive';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
@@ -807,6 +808,7 @@ export function debugHtml(): string {
   const n = g.night;
   return `<div class="debug">
     <div><b>DEBUG</b> · speed x${g.timeScale}</div>
+    ${n ? (() => { const c = cityOutlook(); return `<div class="dim">income tonight ${S.g.gold - n.goldStart >= 0 ? '+' : ''}${S.g.gold - n.goldStart} g · bag ${c.bagGold} g / ${c.bagScraps} scraps · next ${c.next ? `${c.next.name} ${c.next.gold} g + ${c.next.mats}` : 'none'} ${c.now ? '(now)' : c.withBag ? '(with the bag)' : '(short)'}</div>`; })() : ''}
     ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
     <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgCall', 'Courier', 'courier', 'sm')}${btn('dbgCall', 'Boys', 'friends', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>

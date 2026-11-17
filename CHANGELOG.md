@@ -3,6 +3,37 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.40.0 (2026-11-17)
+
+Balance pass, round 1 (#2). Numbers from new tools; outside playtests are next (docs/playtest.md).
+
+- **Measured first:**
+  - `test/balance.py` runs many bot nights and reports visits, how many visit types two nights show, catches,
+    Noise and income against the cheapest building.
+  - `test/campaign.py` runs `NIGHTS=n` campaigns in `test/sim.ts`: the save carries over, and at 20:00 the bot
+    equips, salvages, sells and builds like a player.
+- **What the numbers say:**
+  - Visits are fine: 5.1 to 5.6 a night, and 82 to 86% of two-night pairs show 3+ types that need different
+    answers. The issue's old "only 2 to 4 visits" is out of date.
+  - The skill pace is fine: floor 9 to 10 by 01:00, 1.4 to 1.6 wakes a night. Decision: instant skills stay
+    (dungeon.md).
+  - The city was not: gold came only from selling drops, so a third of campaigns could not afford a single
+    building before night 2.
+- **Floor bounty:** clearing a floor pays 5 + 3 × floor gold (`FLOOR_GOLD_BASE`, `FLOOR_GOLD_PER`; about 180 a
+  normal night), with a feed line.
+  - Campaigns (12 × 3 nights), before → after: a building before night 2 in 8/12 → 12/12 runs; builds before
+    night 2 0.8 → 1.6, before night 3 1.7 → 1.7.
+  - The city grows one or two buildings a night, and a 7-night campaign does not finish it.
+- **The results screen counts your bag:** "Sell and salvage your bag in the city: it pays for the Inn." It used
+  to say "6 scraps short" while the bag held 50 scraps' worth.
+- **F1 line:** income tonight, what the bag sells and salvages for, and the next build ("now", "with the bag",
+  "short").
+- **Sims:**
+  - 16 good nights, before → after: depth 9.6 → 9.9, visits 5.6 → 5.1, caught 0 → 0, wipes 0.25 → 0.12,
+    wakes 1.6 → 1.4, Noise 30 → 28, gold in hand at the end 162 → 364.
+  - 8 idle nights: caught 0.88 → 0.62, unplugged before midnight either way.
+- New `docs/playtest.md`: a one-page protocol for outside playtests against the five slice criteria.
+
 ## 0.39.0 (2026-11-17)
 
 First-night onboarding (#28): the first night teaches by happening, no walls of text.

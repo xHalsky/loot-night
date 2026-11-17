@@ -4,7 +4,7 @@ import { removeEntry, entryName } from './loot';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
 import { isLocked } from './loot';
-import { CITY_BY_ID, BAG_PLUS, type CityId } from '../data/city';
+import { CITY, CITY_BY_ID, BAG_PLUS, type CityId } from '../data/city';
 import { maxHp } from './stats';
 import { save } from './save';
 
@@ -117,4 +117,20 @@ export function serviceAction(kind: 'identify' | 'vendor' | 'salvage' | 'list', 
   N().selected = id;
   if (kind === 'identify') identify(); else if (kind === 'vendor') vendor(); else if (kind === 'salvage') salvage(); else list();
   N().selected = null;
+}
+
+/** The cheapest next city build and whether tonight's bag pays for it: salvage the cheapest items until the
+ *  scraps are there, sell the rest (docs/design/city.md; results screen and the F1 line, #2). */
+export function cityOutlook() {
+  const next = CITY.filter(c => (S.g.furniture[c.id] ?? 0) < 3).map(c => ({ c, lvl: S.g.furniture[c.id] ?? 0 }))
+    .map(x => ({ name: x.c.name, upgrade: x.lvl > 0, gold: x.c.gold[x.lvl], mats: x.c.mats[x.lvl] })).sort((a, b) => a.gold - b.gold)[0];
+  const loose = S.g.bag.filter(e => e.kind === 'item' && !e.item.locked)
+    .map(e => e.kind === 'item' ? { sell: Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)), scraps: T.SALVAGE_YIELD[RARITIES.indexOf(e.item.rarity)] } : { sell: 0, scraps: 0 })
+    .sort((a, b) => a.sell - b.sell);
+  const bagGold = loose.reduce((a, x) => a + x.sell, 0), bagScraps = loose.reduce((a, x) => a + x.scraps, 0);
+  let gold = S.g.gold, mats = S.g.mats;
+  for (const x of loose) { if (next && mats < next.mats) mats += x.scraps; else gold += x.sell; }
+  const now = !!next && S.g.gold >= next.gold && S.g.mats >= next.mats;
+  const withBag = !!next && gold >= next.gold && mats >= next.mats;
+  return { next, bagGold, bagScraps, now, withBag, short: next ? { gold: Math.max(0, next.gold - gold), mats: Math.max(0, next.mats - mats) } : null };
 }

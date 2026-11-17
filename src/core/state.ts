@@ -166,6 +166,7 @@ export interface Night {
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
+  goldStart: number;   // gold when the night began: the F1 line shows tonight's income (#2)
   moodDrift: number;
   selected: string | null; heroTab: number;
   everCaught: boolean; unidentifiedFound: number;

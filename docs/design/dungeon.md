@@ -163,7 +163,17 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
 **City portal.** A button at the top left of the dungeon screen (between battles): back to the city,
 15 min. In the city, the Dungeon Portal returns to the checkpoint, 15 min.
 
+**Floor bounty** (0.40): clearing a floor pays `FLOOR_GOLD_BASE` + `FLOOR_GOLD_PER` × floor gold (floor 1: 8,
+floor 10: 35; about 180 a normal night), shown in the feed. Steady income besides selling drops
+([city.md](city.md)).
+
 ## Decisions
+
+- **Instant skills stay instant** (decided in the balance pass, 0.40, #2): with no global cooldown the bot
+  reaches floor 9 to 10 by 01:00, which is the depth a normal night is tuned for; the noise from skill spam is
+  already priced (`NOISE_ABILITY` 3.5, loud multi-hit skills once per cast) and wakes her 1 to 2 times a
+  night. Rejected: longer cooldowns (the party would feel slow on the screen you are risking it all for) and
+  more Noise per skill (the bed phase would end in a wake-up every time).
 
 - **Instant skills, no GCD** (0.13). Waiting for the hero's turn felt unresponsive. Side effect: the bot
   reaches about floor 10 by bedtime (was 5 to 7) and skill spam can wake her. Open: #2.

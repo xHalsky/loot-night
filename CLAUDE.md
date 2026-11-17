@@ -29,6 +29,8 @@ Birthday-gift browser game: a loot-heavy idle RPG on the monitor while the playe
     npx tsx test/alttab.ts           # alt-tab timing acceptance test
     npx tsx test/autopilot.ts        # reckless autopilot: present vs 40 s away (wipes, party HP)
     npx tsx test/noise.ts            # Noise by distance and masking
+    python3 test/balance.py 16 good  # balance report: visits, variety, catches, Noise, income vs the cheapest building
+    python3 test/campaign.py 8 4     # NIGHTS=4 bot campaigns: city builds per night (sim.ts NIGHTS=n)
     python3 test/<name>.py           # Playwright screenshot scripts (Chrome at /usr/bin/google-chrome)
     python3 test/sound.py            # after a build: every sound decodes in Chrome, her loops behave
     python3 tools/sfx/make.py [cue]  # re-bake sound files (Kenney CC0 + synthesis), needs ffmpeg

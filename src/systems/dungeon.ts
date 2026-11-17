@@ -52,6 +52,8 @@ function floorEnd() {
   const n = N();
   S.g.heroes.forEach(h => reviveHero(h, T.DOWNED_REVIVE_PCT));
   sweepFloorLoot();
+  const pay = T.FLOOR_GOLD_BASE + T.FLOOR_GOLD_PER * n.floor;   // floor bounty: depth pays, not only lucky drops
+  S.g.gold += pay; toast(`Floor ${n.floor} cleared: +${pay} gold.`, '#f2b84b');
   n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; tip('map');
 }
 

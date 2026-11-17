@@ -29,7 +29,7 @@ The principle is vital, so the slice gets every item whose inputs exist on Monda
 | Cross-layer echoes, interrupts and the dog always pay, Goodwill, Witching Hour | Slice: #29 |
 | Ability marks, cross-system affixes | Slice: built in RPG depth #27 (0.23, 0.25) |
 | Audio-first loot cues | Slice: built in real audio #13 (0.33) |
-| A city upgrade every night | Slice: inside the balance pass #2 |
+| A city upgrade every night | Slice: built in the balance pass #2 (0.40: floor bounty; 1 to 2 builds a night) |
 | Combo floors, party sets, overtime zł, bag tools, banter, unfolding city, bounties, the ending | Arc: #14 |
 | Poker face: his grin at a big drop while she is in the doorway | Arc: #39 (idea) |
 

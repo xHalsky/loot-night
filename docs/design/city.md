@@ -40,11 +40,19 @@ with stock MMO lines ("LF2M healer", "brb gf", "my wife thinks I am working").
 
 | Currency | From | Spent on |
 |---|---|---|
-| Gold | Selling, Excel overtime | Identifying, buildings, wipe repairs |
+| Gold | Selling, a bounty per cleared floor (`FLOOR_GOLD_BASE` + `FLOOR_GOLD_PER` × floor), Excel overtime, answering the boss | Identifying, buildings, wipe repairs |
 | Scraps | Salvage, auto-salvage | Buildings |
 | zł | Auction house only, paid in the morning | Nothing yet (see #4) |
 
 Start: `START_GOLD` 100, `START_ZL` 50.
+
+**The pace of the city** (measured with `NIGHTS=4` bot campaigns, `python3 test/campaign.py`; the bot
+salvages the cheapest items for the scraps it needs and sells the rest at 20:00, then builds what it can):
+a normal night (bed at 01:00, floor about 10) always pays for at least one building. Before night 2 every
+run built the first one, 7 in 12 built two; before night 3, 1.7 on average. So the city grows one or two
+buildings a night and a 7-night campaign does not finish it (all three levels cost about 10,000 gold).
+`python3 test/balance.py` reports one night's income; F1 shows "income tonight" and the next build. The
+results screen counts your bag too: "Sell and salvage your bag in the city: it pays for the Inn."
 
 ## Decisions
 
@@ -54,6 +62,11 @@ Start: `START_GOLD` 100, `START_ZL` 50.
   Bed, Bookshelf, Loot Chest, Altar...) became four city buildings; old saves migrate Dummy → Training
   Grounds and Bed → Inn.
 - **Sell-only auction house**, permanently (see [loot.md](loot.md)).
+- **A floor bounty, not cheaper buildings** (0.40, #2): gold came only from selling drops, so a night with bad
+  drops or a wipe could not pay for anything (a third of bot runs built nothing before night 2). A bounty per
+  cleared floor (about 180 gold for a normal night) sets a floor under the income and makes depth, which
+  means staying hidden longer, pay into the city. Rejected: cheaper buildings (the city would be done in
+  three nights); gold from every kill (noise in the feed, and drops already carry the excitement).
 - **No wandering merchant** (rejected 2026-11-16, #21). The idea was a 30 s merchant to pull the player back
   into the game, but it sold gear (breaking the sell-only rule) and added a system for little gain. Kept simple.
 - **Borderless window upgrade removed** (0.14): real-life upgrades need their own store, not the
