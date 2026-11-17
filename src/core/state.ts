@@ -32,9 +32,11 @@ export interface Enemy {
   uid: number; defId: string; name: string; hp: number; maxHp: number;
   atk: number; armor: number; speed: number; atb: number;
   turnsAlive: number; stunned: number; boss: boolean; flash: number; lunge?: number;
+  marks?: Partial<Record<MarkId, number>>;          // seconds left per ability mark (docs/design/dungeon.md)
   wind?: number; acts?: number; braced?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
 }
 
+export type MarkId = 'stagger' | 'chill' | 'judged' | 'taunted';
 export interface FloatFx { x: number; y: number; text: string; color: string; t: number }
 export interface Toast { text: string; color: string; t: number }
 export type VfxKind = 'slash' | 'claw' | 'bolt' | 'fire' | 'frost' | 'heal' | 'taunt' | 'bash' | 'smite' | 'ward';
@@ -138,7 +140,7 @@ export interface Night {
   interrupts: Interrupt[]; nextInterruptAt: number;
   game: MiniGame | null;
   excel: ExcelState;
-  taunt: number; ward: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
+  taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   moodDrift: number;
   selected: string | null; heroTab: number;
   everCaught: boolean; unidentifiedFound: number;

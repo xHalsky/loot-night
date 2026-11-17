@@ -391,6 +391,16 @@ function monUiInner(n: NonNullable<typeof S.g.night>): string {
   return `<button class="tbtn tportal ${ok ? '' : 'off'}" data-act="toTown">Town portal <small>${ok ? '15 min' : 'after battle'}</small></button>${skillBarHtml()}`;
 }
 
+/** A mark on the field that this skill cashes in: the button glows gold (docs/design/dungeon.md, ability marks). */
+function comboReady(id: string, si: number): string {
+  const alive = N().enemies.filter(e => e.hp > 0);
+  const has = (e: { marks?: Record<string, number | undefined> } | undefined, m: string) => !!e && (e.marks?.[m] ?? 0) > 0;
+  if (id === 'mage' && si === 1 && alive.some(e => has(e, 'stagger'))) return `x${T.MARK_STAGGER_FIRE}`;
+  if (id === 'knight' && si === 2 && has(alive.find(e => (e.wind ?? 0) > 0) ?? alive[0], 'chill')) return `x${T.MARK_CHILL_BASH}`;
+  if (id === 'healer' && si === 2 && alive.some(e => has(e, 'taunted'))) return '\u21a9';
+  return '';
+}
+
 // ---------- Infinity Engine style action bar on the dungeon screen: portrait + 5 skills per hero ----------
 function skillBarHtml(): string {
   const n = N();
@@ -406,13 +416,14 @@ function skillBarHtml(): string {
       const [gname, gcol] = ABILITY_GLYPHS[h.id][si];
       let cls = 'ie-sk', over = '';
       if (si === 0) cls += ' auto';
-      else if (!unlocked) { cls += ' locked'; over = `<b class="ie-tag">${si <= 2 ? `Lv${T.ABILITY_UNLOCK[si]}` : '--'}</b>`; }
+      else if (!unlocked) { cls += ' locked'; over = `<b class="ie-tag">${si <= 3 ? `Lv${T.ABILITY_UNLOCK[si]}` : '--'}</b>`; }
       else if (cd > 0) { cls += ' cd'; over = `<i class="ie-sweep" style="--p:${Math.round((cd / ABILITIES[h.id][si].cd) * 36) * 10}deg"></i><b class="ie-cd">${Math.ceil(cd)}</b>`; }
       else cls += ' ready';
       if (h.queued === si) cls += ' queued';
       if (lock && si > 0) cls += ' blocked';
       const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
       if (wind && unlocked && cd <= 0 && ((h.id === 'knight' && (si === 1 || (si === 2 && !wind.braced))) || (h.id === 'healer' && si === 2))) cls += ' answer';
+      else if (unlocked && cd <= 0 && !h.downed && comboReady(h.id, si)) { cls += ' combo'; over += `<b class="ie-combo">${comboReady(h.id, si)}</b>`; }
       return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" data-tip="skill:${hi}:${si}">${glyph(gname, unlocked ? gcol : '#4a4440', 20)}${over}<span class="ie-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
     }).join('');
     return `<div class="ie-grp ${h.downed ? 'downed' : ''}">${por}<div class="ie-sks">${sk}</div></div>`;

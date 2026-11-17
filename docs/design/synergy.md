@@ -1,9 +1,9 @@
-# Synergy pass (planned, not built)
+# Synergy pass (mostly planned)
 
 Slice set #29, arc set #14.
 
 **Rule:** every system takes input from at least two others and feeds at least two others; a system that
-only punishes or only rewards is a dead end (Loop Hero's rule). Nothing below is in the build yet.
+only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23). Everything else below is planned.
 All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 
 ## Audit of the current build (2026-11-16)
@@ -77,8 +77,9 @@ the bin gives a small Flow bonus (exists).
 **Combo floors:** two map floors in a row inside a checkpoint segment add a gold combo node
 (Elite + Cursed = Nightmare; Vault + Goblin Den = Goblin Hoard; Shrine + Elite = Blessed Hunt;
 Cursed + Shrine = Purified; Goblin Den + Elite = Goblin King).
-**Ability marks** (2 turns): Bash → Staggered (Fire ×2 and spreads); Frost → Chilled (Bash shatters ×2.5);
-Smite → Judged (next auto attack heals 30%); Taunt → Taunted (Ward reflects 20%).
+**Ability marks:** built in 0.23 ([dungeon.md](dungeon.md)). Changed from this plan: marks last 6 s, not
+2 turns; Fire's Stagger payoff does not spread; Judged heals on skill hits, not auto attacks (away stays
+dangerous); Taunted reflects 50% with Ward, not 20% (20% was too small to see).
 **Cross-system affixes:** Spreadsheet Warrior (+overtime gold per kill), Library Voice, Headset Hero, Sweet
 Talker, Caffeinated, Good with Dogs. **Party sets** worn across different heroes (Guild Tabard, Ledger Plate).
 

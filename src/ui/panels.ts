@@ -4,6 +4,7 @@ import { VERSION } from '../config/version';
 import { T } from '../config/tuning';
 import { S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
+import { markText } from '../data/marks';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
@@ -360,12 +361,14 @@ export function tooltipHtml(): string {
       const si = Number(parts[2]); const a = ABILITIES[h.id][si];
       const unlocked = abilityUnlocked(h, si);
       const cd = a.cd * (1 - CD_PCT[S.g.furniture.library ?? 0]);
-      const desc = a.desc.replace('{dmg}', `<b>${Math.round(st.atk * (a.power ?? 1))}</b> damage`).replace('{heal}', `<b>${Math.round(st.atk * (a.power ?? 0) + (a.flat ?? 0))}</b> HP`).replace('{dur}', String(a.dur ?? 0));
+      const desc = markText(a.desc.replace('{dmg}', `<b>${Math.round(st.atk * (a.power ?? 1))}</b> damage`).replace('{heal}', `<b>${Math.round(st.atk * (a.power ?? 0) + (a.flat ?? 0))}</b> HP`)
+        .replace(/\{pct\}/g, String(Math.round((a.power ?? 0) * 100))).replace('{dur}', String(a.dur ?? 0)).replace('{hits}', String(a.hits ?? 1))
+        .replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{shatter}', String(T.MARK_CHILL_BASH)).replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))));
       body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${h.name} · key ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
         <div>${desc}</div>
-        ${a.use ? `<div class="tt-sub">Use it when: ${a.use}</div>` : ''}
+        ${a.use ? `<div class="tt-sub">Use it when: ${markText(a.use)}</div>` : ''}
         <div class="dim">Cooldown ${cd.toFixed(cd % 1 ? 1 : 0)} s · casts at once · Noise +${T.NOISE_ABILITY}</div>
-        ${unlocked ? '' : `<div class="tt-hint" style="color:#f2c46b">${si <= 2 ? `Unlocks at level ${T.ABILITY_UNLOCK[si]}` : 'Not in this build yet'}.</div>`}`;
+        ${unlocked ? '' : `<div class="tt-hint" style="color:#f2c46b">${si <= 3 ? `Unlocks at level ${T.ABILITY_UNLOCK[si]}` : 'Later nights'}.</div>`}`;
     }
     const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 150, 720 - 200));
     return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
@@ -488,12 +491,12 @@ export function uiPanelHtml(): string {
       const [gname, gcol] = ABILITY_GLYPHS[h.id][si];
       let cls = 'sk', over = '';
       if (si === 0) { cls += ' auto'; over = '<b class="sk-tag">AUTO</b>'; }
-      else if (!unlocked) { cls += ' locked'; over = `<b class="sk-tag">${si <= 2 ? `Lv${T.ABILITY_UNLOCK[si]}` : 'soon'}</b>`; }
+      else if (!unlocked) { cls += ' locked'; over = `<b class="sk-tag">${si <= 3 ? `Lv${T.ABILITY_UNLOCK[si]}` : 'soon'}</b>`; }
       else if (cd > 0) { cls += ' cd'; const pct = cd / ABILITIES[h.id][si].cd; over = `<i class="sk-sweep" style="--p:${Math.round(pct * 360)}deg"></i><b class="sk-cd">${Math.ceil(cd)}</b>`; }
       else cls += ' ready';
       if (h.queued === si) cls += ' queued';
       if (lock && si > 0) cls += ' blocked';
-      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" title="${esc(a.name + ': ' + a.desc)}">${glyph(gname, unlocked ? gcol : '#4a4440', 26)}${over}<span class="sk-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
+      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" title="${esc(a.name + ': ' + markText(a.desc, false))}">${glyph(gname, unlocked ? gcol : '#4a4440', 26)}${over}<span class="sk-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
     }).join('');
     return `<div class="sk-row ${h.downed ? 'downed' : ''}"><button class="sk-por" style="background:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${hi}">${h.name[0]}</button>${buttons}</div>`;
   }).join('');

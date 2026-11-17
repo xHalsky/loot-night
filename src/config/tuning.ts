@@ -71,7 +71,13 @@ export const T = {
   INTEREST_PER_TURN: 0.10,
   HERO_LEVEL_SCALE: 0.10,
   XP_PER_KILL: 5, XP_PER_BOSS: 40, XP_PER_LEVEL: 40, XP_LEVEL_EXP: 1.7,
-  ABILITY_UNLOCK: [1, 1, 4, 8, 12],
+  ABILITY_UNLOCK: [1, 1, 3, 5, 99],   // slot 4 (ultimates) is for later nights
+  // Ability marks (docs/design/dungeon.md): a skill marks an enemy, another skill cashes the mark in.
+  MARK_SEC: 6,                    // how long a mark stays on an enemy (Taunted lasts as long as the taunt)
+  MARK_STAGGER_FIRE: 2,           // Fire on a Staggered enemy (Bash marks it)
+  MARK_CHILL_BASH: 2.5,           // Bash on a Chilled enemy shatters it (Frost marks it)
+  MARK_JUDGED_HEAL: 0.3,          // every skill hit (not auto attacks) on a Judged enemy heals the most hurt hero for this share (Smite marks it)
+  MARK_TAUNT_REFLECT: 0.5,        // with Ward up, a Taunted enemy takes back this share of the damage it deals
   DOWNED_REVIVE_PCT: 0.3,
   FEATHER_REVIVE_PCT: 0.5,
   WIPE_TIME_MIN: 60, WIPE_GOLD_PCT: 0.10, WIPE_BAG_LEFT: 0.5,
@@ -112,7 +118,7 @@ export const T = {
   MOOD_GREEN: 40, MOOD_RED: 75, MOOD_MAX: 100,
   NOISE_DECAY_PER_SEC: 2,
   NOISE_ACTION: 0.3,              // every hero action (keyboard clacking)
-  NOISE_CRIT: 3, NOISE_ABILITY: 4, NOISE_BOSS_KILL: 20, NOISE_VAULT: 30, NOISE_LEVEL: 6,
+  NOISE_CRIT: 3, NOISE_ABILITY: 3.5, NOISE_BOSS_KILL: 20, NOISE_VAULT: 30, NOISE_LEVEL: 6,
 
   // --- Visits (night 1: Peek only) ---
   VISIT_INTERVAL_SEC: [60, 90] as [number, number],

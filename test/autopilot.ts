@@ -22,7 +22,8 @@ function calm() {
   n.apt.lastVisitEnd = n.threat; n.visit.stage = 'idle'; n.tired = 0; n.mood = 0;
   S.g.night!.dropPopup = null; n.selected = null;
 }
-/** A careful player: Bash saved for the wind-up (else Taunt, else Ward), Mend when hurt, damage skills freely. */
+/** A careful player: Bash saved for the wind-up on bosses (else Taunt, else Ward), Rally and Frost first so Bash
+ *  shatters and Fire hits Staggered enemies, Mend when hurt, Revive when someone is down or nearly. */
 function castSmart() {
   const n = N();
   if (n.phase !== 'battle' || !n.enemies.some(e => e.hp > 0)) return;
@@ -32,10 +33,16 @@ function castSmart() {
   const boss = n.enemies.some(e => e.boss && e.hp > 0);
   const braced = n.enemies.some(e => e.hp > 0 && (e.wind ?? 0) > 0 && e.braced);
   if (winding) { if (ok(k, 2) && !braced) queueAbility(0, 2); else if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
-  if (ok(m, 1)) queueAbility(1, 1); if (ok(m, 2)) queueAbility(1, 2);
+  const alive = n.enemies.filter(e => e.hp > 0);
+  if (ok(k, 3)) queueAbility(0, 3);
+  if (ok(m, 2)) queueAbility(1, 2);
+  if (!boss && ok(k, 2)) queueAbility(0, 2);
+  if (ok(m, 1) && (!boss || alive.some(e => (e.marks?.stagger ?? 0) > 0))) queueAbility(1, 1);
+  if (ok(m, 3)) queueAbility(1, 3);
   const hp = S.g.heroes.reduce((a, x) => a + x.hp, 0) / S.g.heroes.reduce((a, x) => a + maxHp(x), 0);
   if (hp < 0.8 && ok(h, 1)) queueAbility(2, 1);
-  if (!boss) { if (ok(k, 2)) queueAbility(0, 2); if (ok(k, 1)) queueAbility(0, 1); }
+  if (ok(h, 3) && S.g.heroes.some(x => x.downed || x.hp < maxHp(x) * 0.35)) queueAbility(2, 3);
+  if (!boss && ok(k, 1)) queueAbility(0, 1);
 }
 function castReady() {
   const n = N();

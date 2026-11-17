@@ -1,5 +1,5 @@
 import { T } from '../config/tuning';
-import { S, N, type Enemy, type Hero, type VfxKind } from '../core/state';
+import { S, N, type Enemy, type Hero, type VfxKind, type MarkId } from '../core/state';
 import { ENEMIES, BOSS, type EnemyDef } from '../data/enemies';
 import { ABILITIES } from '../data/heroes';
 import { pick, randi, rand, chance } from '../core/rng';
@@ -9,11 +9,14 @@ import { sfx } from '../ui/audio';
 import { speedMult } from './tired';
 import { CD_PCT } from '../data/city';
 import { isAway, autopilotPull, autopilotHurt } from './autopilot';
+import { MARKS } from '../data/marks';
 
 export const HERO_X = [208, 124, 40];   // knight in front (right), healer at the back
 export const ENEMY_X = [380, 457, 534];
 export const UNIT_Y = 212;
 let enemyUid = 1;
+// A multi-hit skill (Storm, Rally) is one noisy moment: its crits add Noise once, its extra actions don't clack.
+let loudOnce = false, critHeard = false;
 
 // Visual effects on the monitor (docs/design/dungeon.md: every action must be visible).
 export const heroCenter = (i: number) => ({ x: HERO_X[i] + 30, y: UNIT_Y + 40 });
@@ -40,7 +43,7 @@ export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
 }
 
 export const aliveHeroes = () => S.g.heroes.filter(h => !h.downed);
-export const abilityUnlocked = (h: Hero, slot: number) => slot <= 2 && h.level >= T.ABILITY_UNLOCK[slot];
+export const abilityUnlocked = (h: Hero, slot: number) => slot <= 3 && h.level >= T.ABILITY_UNLOCK[slot];
 
 export function abilitiesLocked(): string | null {
   const n = S.g.night;
@@ -75,37 +78,94 @@ function castAbility(h: Hero, slot: number) {
   n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);
   sfx.ability();
   const A = ABILITIES[h.id][slot];
-  if (h.id === 'knight' && slot === 1) { n.taunt = A.dur!; vfx('taunt', me, undefined, 0.7); toast(`${h.name}: TAUNT`, '#6aa8ff'); return; }
+  if (h.id === 'knight' && slot === 1) {
+    n.taunt = A.dur!; vfx('taunt', me, undefined, 0.7); toast(`${h.name}: TAUNT`, '#6aa8ff');
+    n.enemies.filter(e => e.hp > 0).forEach(e => mark(e, 'taunted', A.dur!));
+    return;
+  }
   if (h.id === 'knight' && slot === 2) {
     const e = n.enemies.find(x => x.hp > 0 && (x.wind ?? 0) > 0) ?? frontEnemy();   // Bash goes for a winding-up boss first
     if (e) {
-      hitEnemy(e, st.atk * A.power! * mult, st.crit, 'bash');
+      const shatter = cashIn(e, 'chill', `SHATTER x${T.MARK_CHILL_BASH}`) ? T.MARK_CHILL_BASH : 1;
+      hitEnemy(e, st.atk * A.power! * mult * shatter, st.crit, 'bash');
+      if (e.hp > 0) mark(e, 'stagger');
       if ((e.wind ?? 0) > 0 && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
       else { e.stunned = 1; if ((e.wind ?? 0) > 0) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts FINAL NOTICE! He braces for the next one.`, '#8fb3ff'); sfx.good(); } }
     }
     return;
   }
-  if (h.id === 'mage' && slot === 1) { n.enemies.filter(e => e.hp > 0).forEach(e => hitEnemy(e, st.atk * A.power! * mult, st.crit, 'fire', me)); return; }
-  if (h.id === 'mage' && slot === 2) { const e = frontEnemy(); if (e) hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); return; }
+  if (h.id === 'knight' && slot === 3) {
+    n.rally = A.dur!; toast(`${h.name}: RALLY! Everyone, now!`, '#f2b84b');
+    loudOnce = true; critHeard = false;
+    aliveHeroes().forEach(x => { vfx('taunt', heroCenter(S.g.heroes.indexOf(x)), undefined, 0.5); heroAct(x, true); });
+    loudOnce = false;
+    return;
+  }
+  if (h.id === 'mage' && slot === 1) {
+    n.enemies.filter(e => e.hp > 0).forEach(e => {
+      const m = cashIn(e, 'stagger', `STAGGER x${T.MARK_STAGGER_FIRE}`) ? T.MARK_STAGGER_FIRE : 1;
+      hitEnemy(e, st.atk * A.power! * mult * m, st.crit, 'fire', me);
+    });
+    return;
+  }
+  if (h.id === 'mage' && slot === 2) { const e = frontEnemy(); if (e) { hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); if (e.hp > 0) mark(e, 'chill'); } return; }
+  if (h.id === 'mage' && slot === 3) {
+    loudOnce = true; critHeard = false;
+    for (let i = 0; i < A.hits!; i++) {
+      const alive = n.enemies.filter(e => e.hp > 0);
+      if (!alive.length) break;
+      const e = pick(alive), c = enemyCenter(e);
+      hitEnemy(e, st.atk * A.power! * mult, st.crit, 'bolt', { x: c.x + rand(-40, 40), y: 30 });
+    }
+    loudOnce = false;
+    return;
+  }
   if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, st.atk * A.power! + A.flat!)); return; }
   if (h.id === 'healer' && slot === 2) { n.ward = A.dur!; vfx('ward', heroCenter(1), undefined, 0.8); toast(`${h.name}: WARD`, '#6fcf7f'); return; }
+  if (h.id === 'healer' && slot === 3) {
+    const down = S.g.heroes.find(x => x.downed);
+    sfx.heal();
+    if (down) { reviveHero(down, A.power!); vfx('heal', heroCenter(S.g.heroes.indexOf(down)), undefined, 1); toast(`${h.name}: REVIVE! ${down.name} is back.`, '#6fcf7f'); return; }
+    const low = mostHurt();
+    if (low) healHero(low, maxHp(low) * A.power!);
+    return;
+  }
 }
+
+/** Puts a mark on an enemy (docs/design/dungeon.md). Shows its name once over the enemy. */
+function mark(e: Enemy, id: MarkId, sec = T.MARK_SEC) {
+  e.marks ??= {};
+  const fresh = !(e.marks[id]! > 0);
+  e.marks[id] = Math.max(e.marks[id] ?? 0, sec);
+  if (fresh) { const c = enemyCenter(e); floatText(c.x, UNIT_Y - 46, MARKS[id].tag, MARKS[id].color); }
+}
+/** Spends a mark if the enemy has it. Returns true when the combo fires. */
+function cashIn(e: Enemy, id: MarkId, label: string): boolean {
+  if (!(e.marks?.[id]! > 0)) return false;
+  delete e.marks![id];
+  const c = enemyCenter(e); floatText(c.x, UNIT_Y - 58, label + '!', MARKS[id].color);
+  sfx.crit();
+  return true;
+}
+const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
 
 function heroDamageMult(): number {
   const n = N();
-  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1);
+  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * (n.rally > 0 ? 1 + ABILITIES.knight[3].power! : 1);
 }
 
-function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', from?: { x: number; y: number }) {
+function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', from?: { x: number; y: number }, skill = true): number {
   const n = N();
   vfx(kind, enemyCenter(e), from, kind === 'bolt' ? 0.35 : kind === 'fire' ? 0.6 : 0.35);
   const isCrit = chance(crit / 100);
   let dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - e.armor * 0.5));
-  if (isCrit) { dmg *= 2; n.noise += T.NOISE_CRIT; }
+  if (isCrit) { dmg *= 2; if (!loudOnce || !critHeard) n.noise += T.NOISE_CRIT; critHeard = true; }
   e.hp -= dmg; e.flash = 0.15;
   const idx = n.enemies.indexOf(e);
   floatText(ENEMY_X[Math.max(0, idx)] + 18, UNIT_Y - 30, isCrit ? `-${dmg}!` : `-${dmg}`, isCrit ? '#f2b84b' : '#ff8a80');
   if (isCrit) sfx.crit(); else sfx.hit();
+  if (skill && e.marks?.judged! > 0) { const low = mostHurt(); if (low && low.hp < maxHp(low)) healHero(low, dmg * T.MARK_JUDGED_HEAL); }
+  return dmg;
 }
 
 function healHero(h: Hero, amount: number) {
@@ -121,11 +181,12 @@ function healHero(h: Hero, amount: number) {
 function frontEnemy(): Enemy | undefined { return N().enemies.find(e => e.hp > 0); }
 function weakestEnemy(): Enemy | undefined { return [...N().enemies].filter(e => e.hp > 0).sort((a, b) => a.hp - b.hp)[0]; }
 
-function heroAct(h: Hero) {
+/** A hero's auto action. skill: it came from Rally (counts as a skill hit for Judged). */
+function heroAct(h: Hero, skill = false) {
   const n = N();
   h.lunge = 0.3;
   const me = heroCenter(S.g.heroes.indexOf(h));
-  n.noise = Math.min(100, n.noise + T.NOISE_ACTION);
+  if (!loudOnce) n.noise = Math.min(100, n.noise + T.NOISE_ACTION);
   const st = heroStats(h);
   const mult = heroDamageMult();
   // Auto attack (slot 0).
@@ -134,7 +195,9 @@ function heroAct(h: Hero) {
     if (hurt) { sfx.heal(); healHero(hurt, st.atk * 1.6 + 8); return; }
   }
   const target = h.id === 'mage' ? weakestEnemy() : frontEnemy();
-  if (target) hitEnemy(target, st.atk * mult, st.crit, h.id === 'mage' ? 'bolt' : h.id === 'healer' ? 'smite' : 'slash', me);
+  if (!target) return;
+  hitEnemy(target, st.atk * mult, st.crit, h.id === 'mage' ? 'bolt' : h.id === 'healer' ? 'smite' : 'slash', me, skill);
+  if (h.id === 'healer' && target.hp > 0) mark(target, 'judged');
 }
 
 function enemyAct(e: Enemy) {
@@ -166,6 +229,7 @@ function enemyAct(e: Enemy) {
   const i = S.g.heroes.indexOf(target);
   vfx('claw', heroCenter(i), undefined, 0.35);
   floatText(HERO_X[i] + 18, UNIT_Y - 30, `-${dmg}`, '#ff8a80');
+  reflect(e, dmg);
   if (isAway() && target.hp < maxHp(target) * T.AUTOPILOT_HEAL_BELOW) autopilotHurt();
   if (target.hp <= 0) { target.hp = 0; target.downed = true; target.queued = null; toast(`${target.name} is down!`, '#ff8a80'); sfx.bad(); }
 }
@@ -182,6 +246,14 @@ function grantXp(amount: number) {
       if (h.level === T.ABILITY_UNLOCK[2]) toast(`${h.name} unlocked ${ABILITIES[h.id][2].name}`, '#f2b84b');
     }
   }
+}
+
+/** Ward up and the attacker is Taunted: part of the hit bounces back. */
+function reflect(e: Enemy, dmg: number) {
+  if (!(N().ward > 0) || !(e.marks?.taunted! > 0)) return;
+  const back = Math.max(1, Math.round(dmg * T.MARK_TAUNT_REFLECT));
+  e.hp -= back; e.flash = 0.15;
+  const c = enemyCenter(e); floatText(c.x, UNIT_Y - 30, `-${back} bounced`, MARKS.taunted.color);
 }
 
 /** The boss's telegraphed big attack lands. */
@@ -201,6 +273,7 @@ function bossSlam(e: Enemy) {
     vfx('claw', heroCenter(i), undefined, 0.5);
     floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
     if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); }
+    reflect(e, dmg);
   }
   toast(n.taunt > 0 && !knight.downed ? `FINAL NOTICE hits ${knight.name} (taunted).` : ward < 1 ? 'FINAL NOTICE, softened by Ward.' : 'FINAL NOTICE hits everyone!', '#ff8a80');
 }
@@ -209,7 +282,10 @@ function bossSlam(e: Enemy) {
 export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   const n = N();
   for (const h of S.g.heroes) h.cd = h.cd.map(c => Math.max(0, c - dt));
-  for (const e of n.enemies) e.flash = Math.max(0, e.flash - dt);
+  for (const e of n.enemies) {
+    e.flash = Math.max(0, e.flash - dt);
+    if (e.marks) for (const k of Object.keys(e.marks) as MarkId[]) { e.marks[k]! -= dt; if (e.marks[k]! <= 0) delete e.marks[k]; }
+  }
   for (const h of S.g.heroes) {
     if (h.downed) continue;
     h.atb += heroStats(h).speed * T.ATB_RATE * dt * speedMult();

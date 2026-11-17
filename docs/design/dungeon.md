@@ -10,7 +10,7 @@ ring, trinket). Old saves are renamed on load.
 **Floors.** Endless. A floor is a walk, then `BATTLES_PER_FLOOR` (3) battles. Every
 `CHECKPOINT_EVERY` (5th) floor ends in a boss and sets the checkpoint. Enemies scale per floor
 (`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Dungeon of Overdue Bills:
-Debt Skeleton, Late-Fee Bat, The Collector, boss The Bailiff (1100 HP, 28 attack at floor 1 scale).
+Debt Skeleton, Late-Fee Bat, The Collector, boss The Bailiff (1700 HP, 28 attack at floor 1 scale).
 
 **Boss big attack: FINAL NOTICE.** Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
 a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
@@ -31,17 +31,36 @@ the front enemy, Mage bolts the weakest, Healer heals an ally under 60% HP or sm
 numbers, crits in gold, every action has a visible effect (lunge, slash arc, bolt, beam, claw marks,
 shockwaves, sparks).
 
-**Skills.** Two per hero in the prototype (slots 3 and 4 show as locked):
+**Skills.** Three per hero, unlocked at levels 1, 3 and 5 (`ABILITY_UNLOCK`), so a first night reaches the
+whole kit: level 3 comes before the first boss, level 5 with a few minutes left. Slot 4 (ultimates) is shown
+locked as "later nights".
 
-| Hero | Skill (unlock level) | Effect |
-|---|---|---|
-| Knight (1, 2) | Taunt (1), Bash (4) | All enemies hit the knight for 5 s; 2x damage + stun the front enemy |
-| Mage (Q, W) | Fire (1), Frost (4) | Hits every enemy; 2.6x to one enemy |
-| Healer (A, S) | Mend (1), Ward (4) | Heals the party; party takes 40% less damage for 6 s |
+| Hero | Level 1 | Level 3 | Level 5 |
+|---|---|---|---|
+| Knight (1, 2, 3) | Taunt: enemies hit the knight for 5 s, marks them Taunted | Bash: 2x to the front enemy, stun, Stagger; interrupts FINAL NOTICE | Rally: every hero acts right now, +25% party damage for 6 s |
+| Mage (Q, W, E) | Fire: 1x to every enemy | Frost: 2.6x to the front enemy, Chill | Storm: 6 bolts at random enemies, 0.6x each |
+| Healer (A, S, D) | Mend: heals the party | Ward: 40% less damage for 6 s | Revive: a downed hero back at 50%, else heals the most hurt for 50% |
+
+**Ability marks** (`src/data/marks.ts`, numbers `MARK_*`). One skill marks an enemy, another cashes the mark
+in, so the order you fire skills in matters:
+
+| Mark | Put on by | Cashed in by | Payoff |
+|---|---|---|---|
+| Staggered | Bash | Fire | That enemy takes x`MARK_STAGGER_FIRE` (2) from Fire |
+| Chilled | Frost | Bash | Shatter: x`MARK_CHILL_BASH` (2.5), then Bash staggers it |
+| Judged | the healer's auto Smite | any skill hit (Rally's actions count) | Heals the most hurt hero for `MARK_JUDGED_HEAL` (30%) of the damage |
+| Taunted | Taunt (all enemies, as long as the taunt) | Ward | With Ward up, its hits bounce `MARK_TAUNT_REFLECT` (50%) back |
+
+Marks last `MARK_SEC` (6 s). So the long chain is Rally → Frost → Bash (shatter, stagger) → Fire (x2). On a boss
+it collides with the wind-up: Bash spent on a shatter is not there for FINAL NOTICE. A mark shows as a small
+coloured tag above the enemy's HP bar, its line shrinking as it runs out; its name floats up when it lands
+and the payoff floats up when it is cashed in. A skill that would cash in a mark right now glows gold on the
+skill bar with a badge (x2, x2.5, ↩).
 
 Skills **cast instantly** on click or key, with no global cooldown; only their own cooldown applies
 (shortened by the Library). Outside a fight the key says "No enemies in reach". Each cast adds
-`NOISE_ABILITY`. Skills are blocked while switching screens, while a minigame has your hands, and
+`NOISE_ABILITY` (3.5). A multi-hit skill (Storm, Rally) is one noisy moment: its crits add Noise once and its
+extra actions make no keyboard Noise. Skills are blocked while switching screens, while a minigame has your hands, and
 during microsleeps.
 
 **Teaching the skills.** Hovering a skill shows a tooltip with what it does in this hero's current numbers
@@ -116,7 +135,16 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
   floor-10 boss, a player using skills on cooldown dips to ~49% with some close calls and no wipes;
   a player who saves Taunt and Ward only for the wind-up wipes about half the time; 40 s on Excel always wipes.
   The floor-5 boss is milder (~66 to 70%); RPG depth (#27) will give floors 5/10/15 their own bosses.
-  Bailiff history: 700/16 → 850/24 (0.15) → 1100/28 (0.18).
+  Bailiff history: 700/16 → 850/24 (0.15) → 1100/28 (0.18) → 1700/28 (0.23, the full kit halved kill times).
+- **Marks reward order, not speed** (0.23): two skills that are fine alone are better in sequence, so the
+  player has a reason to look at the fight between alt-tabs. Judged pays off only on skill hits: when it
+  also healed off auto attacks, the party healed itself while you sat on Excel and the reckless autopilot
+  lost its teeth (floor 8, 40 s away: 0 wipes and 44% HP, back to 2/15 wipes and 22% after the change).
+  Rejected: a combo meter (one more bar to watch), marks from auto attacks other than Smite (passive, no
+  decision).
+- **Noise per cast went from 4 to 3.5** with the third skill (0.23): a bot casting everything on cooldown
+  drew 5.9 visits and 3.6 wakes a night at 4, against 4.5 and 2.0 before the kit; at 3.5 it is 3.8 and 1.3
+  with the same average Noise (26). The design wants few visits and real dread, not more of them.
 - **No permadeath.** Progress is never wiped (pillar 4); a wipe costs time, gold and half the bag.
 - Rejected: a 12-slot bag inside the battle UI and drag-to-equip mid-fight as the main loop. Equipping
   happens in the right panel; the fight slows while you look.
@@ -146,7 +174,7 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
   won [Legendary]"), a 10 s floor vote on the node map (away = the riskiest floor), a ready check before
   bosses, a Party Patience meter that vote-kicks you at 100.
 
-- Skill slots 3 and 4 (Rally, Storm, Revive) and ultimates; trainer in the city. Not scheduled.
-- Ability marks and combo floors: [synergy.md](synergy.md).
+- Ultimates (slot 4) for later nights. Not scheduled.
+- Combo floors: [synergy.md](synergy.md).
 - One dungeon type and mechanic per night: [campaign.md](campaign.md), #3.
 - Balance of instant skills: #2.

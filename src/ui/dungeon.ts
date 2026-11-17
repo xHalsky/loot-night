@@ -5,9 +5,10 @@
 // The camera acts: dollies while walking, pushes in when a fight starts, pulls back on heavy hits,
 // shakes on crits and slowly zooms onto legendary drops.
 import { T } from '../config/tuning';
-import { S, N, RARITIES, type Vfx, type FloatFx } from '../core/state';
+import { S, N, RARITIES, type Vfx, type FloatFx, type MarkId } from '../core/state';
 import { HERO_SPRITES } from '../data/heroes';
 import { ENEMY_BY_ID } from '../data/enemies';
+import { MARKS } from '../data/marks';
 import { HERO_X, ENEMY_X, UNIT_Y } from '../systems/battle';
 import { maxHp } from '../systems/stats';
 import { entryColor } from '../systems/loot';
@@ -207,6 +208,22 @@ function units(c: CanvasRenderingContext2D, t: number) {
   });
 }
 
+/** Ability marks: small tags stacked above each enemy's HP bar, drawn above the darkness so they read at a glance.
+ *  The line under a tag shrinks as the mark runs out. */
+function markTags(c: CanvasRenderingContext2D) {
+  N().enemies.forEach((e, i) => {
+    if (e.hp <= 0 || !e.marks) return;
+    const x = e.boss ? 500 : ENEMY_X[i], y = e.boss ? UNIT_Y - 32 : UNIT_Y;
+    const ms = (Object.keys(e.marks) as MarkId[]).filter(k => e.marks![k]! > 0);
+    ms.forEach((k, j) => {
+      const cx = x + (e.boss ? 42 : 30), my = y - 54 - j * 13 - (e.boss ? 8 : 0), M = MARKS[k], w = 62;   // stacked above the HP bar and Interest
+      c.fillStyle = 'rgba(8,4,12,.85)'; c.fillRect(cx - w / 2, my, w, 12);
+      text(c, M.tag, cx, my + 9, 9, M.color, 'center', 700);
+      c.fillStyle = M.color; c.fillRect(cx - w / 2, my + 11, w * Math.min(1, e.marks![k]! / T.MARK_SEC), 1);
+    });
+  });
+}
+
 /** Darkness with holes: the torch, a dim glow around the enemies, beams and spell effects. */
 function lighting(c: CanvasRenderingContext2D, t: number, torchW: { x: number; y: number }) {
   const n = N();
@@ -293,5 +310,6 @@ export function drawDungeonScene(c: CanvasRenderingContext2D) {
   c.globalAlpha = 1;
   c.restore();
   c.save(); camApply(c, 1.35); foreground(c, scroll, toScreen(torch.x, torch.y)); c.restore();
+  c.save(); camApply(c, 1); markTags(c); c.restore();   // above the foreground pillars and chains
   windupHud(c);
 }

@@ -3,6 +3,27 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.23.0 (2026-11-17)
+
+RPG depth, part 1 of 3 (#27).
+
+- **Third skill per hero**: Rally (knight, key 3: every hero acts now, +25% damage for 6 s), Storm (mage, E:
+  6 bolts at random enemies), Revive (healer, D: a downed hero back at 50%, otherwise a 50% heal on the most
+  hurt). Unlocks moved to levels 1 / 3 / 5, so one night reaches the whole kit (level 3 before the first boss).
+  Ultimates stay locked as "later nights".
+- **Ability marks**: Bash Staggers (Fire x2), Frost Chills (Bash shatters x2.5), the healer's Smite Judges
+  (skill hits on it heal), Taunt marks enemies Taunted (with Ward up, half their hits bounce back). Tags above
+  the enemies' HP bars; a skill that would cash in a mark glows gold on the bar with a badge (x2, x2.5, ↩).
+  Tooltips colour the mark words.
+- Judged pays off only on skill hits. Healing off auto attacks made 40 s on Excel safe (floor 8: 0 wipes and
+  44% HP), which undid the reckless autopilot.
+- Noise per cast 4 → 3.5; Storm and Rally count as one noisy moment. The Bailiff 1100 → 1700 HP.
+- Sims, 10 good runs averaged (before → after): depth 9.6 → 9.6, visits 4.5 → 3.8, wakes 2.0 → 1.3, average
+  Noise 26 → 26, 0 catches. Idle still unplugged and caught.
+- Autopilot test, lowest party HP (before → after): floor-5 boss smart 67% → 69%, spam 72% → 66%, fight
+  33-37 s → 44-56 s; floor-10 boss smart 5/15 wipes, 22% → 0 wipes, 62%; spam 3/15, 43% → 0, 56%;
+  40 s away still wipes on every boss; normal floor 8 away 2/15 wipes, 18% → 2/15, 22%.
+
 ## 0.22.0 (2026-11-17)
 
 - **Her activity predicts the next visit type** (#18). The type now depends on what she was doing: TV → Chat

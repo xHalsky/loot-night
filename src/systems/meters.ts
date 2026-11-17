@@ -38,6 +38,7 @@ export function updateMeters(dt: number) {
   n.noise = clamp(n.noise - T.NOISE_DECAY_PER_SEC * dt, 0, 100);
 
   n.taunt = Math.max(0, n.taunt - dt);
+  n.rally = Math.max(0, n.rally - dt);
   n.ward = Math.max(0, n.ward - dt);
   n.guilt = Math.max(0, n.guilt - dt);
   n.monitorOff = Math.max(0, n.monitorOff - dt);
