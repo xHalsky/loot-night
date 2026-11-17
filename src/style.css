@@ -523,6 +523,20 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #monUi .tbtn.max { cursor: default; color: #f2c46b; }
 #monUi .tbtn.portal { background: linear-gradient(#6a3ab8, #3a1a78); border-color: #c9a0ff; font-size: 12px; box-shadow: 0 2px 0 #12062a, 0 0 12px rgba(170,120,255,.7); }
 #monUi .tbtn.portal small { color: #e2d0ff; }
+/* Curios in the corridor (#30): a parchment card above the party */
+#monUi .curio { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); width: 400px; padding: 9px 12px 10px; background: linear-gradient(#efe1c0, #d9c49a); color: #2a1a10; border: 2px solid #6a4a28; border-radius: 3px; box-shadow: 0 3px 0 #1a1008, 0 0 0 1px #000, 0 8px 20px rgba(0,0,0,.6); }
+#monUi .cu-name { font-size: 15px; color: #5a2a10; }
+#monUi .cu-line { font-size: 11px; color: #6a5030; margin: 1px 0 7px; }
+#monUi .cu-row { display: flex; gap: 8px; }
+#monUi .cu-btn { flex: 1; font: inherit; text-align: left; padding: 5px 7px; cursor: pointer; background: linear-gradient(#5a4028, #3a2814); color: #f2e9d8; border: 2px solid #c9a46a; border-radius: 3px; }
+#monUi .cu-btn:hover { border-color: #ffd98a; background: linear-gradient(#7a5838, #4a3420); }
+#monUi .cu-btn b { display: block; font-size: 12px; font-weight: 400; color: #ffd98a; }
+#monUi .cu-btn small { display: block; font-size: 10px; line-height: 1.2; color: #d9c8a8; margin-top: 2px; }
+#monUi .cu-btn.off { opacity: .45; cursor: not-allowed; }
+#monUi .cu-prog { font-size: 12px; margin: 2px 0 6px; } #monUi .cu-prog b { color: #8a2a10; }
+#monUi .cu-timer { height: 4px; margin-top: 8px; background: rgba(42,26,16,.25); }
+#monUi .cu-timer i { display: block; height: 100%; background: #8a5a2a; }
+#monUi .cu-timer.work i { background: #3a8a4a; }
 #monUi .tbtn.tportal { left: auto; right: 8px; top: 28px; transform: none; background: linear-gradient(#6a3ab8, #3a1a78); border-color: #c9a0ff; }
 #monUi .tbtn.row, #monUi .tbtn.x { position: static; transform: none; }
 #monUi .tbtn.green { border-color: #6fcf7f; }

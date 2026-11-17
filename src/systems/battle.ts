@@ -11,6 +11,7 @@ import { CD_PCT } from '../data/city';
 import { isAway, autopilotPull, autopilotHurt } from './autopilot';
 import { MARKS } from '../data/marks';
 import { overtimeGold } from './affixes';
+import { curioDmgMult, curioSpeedMult } from './curios';
 
 export const HERO_X = [208, 124, 40];   // knight in front (right), healer at the back
 export const ENEMY_X = [380, 457, 534];
@@ -59,6 +60,15 @@ export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
 }
 export { BOSSES };
 
+/** A curio's fight (the troll): one mini-boss, scaled like the floor. */
+export function spawnCurioFight(def: EnemyDef) {
+  const n = N();
+  n.enemies = [makeEnemy(def, n.floor, n.floorMap === 'elite')];
+  if (isAway()) { n.enemies[0].atb = rand(...T.AUTOPILOT_AMBUSH_ATB); autopilotPull(); }
+}
+/** Heals every living hero for a share of their max HP. */
+export function healParty(pct: number) { aliveHeroes().forEach(h => healHero(h, maxHp(h) * pct)); }
+
 export const aliveHeroes = () => S.g.heroes.filter(h => !h.downed);
 export const abilityUnlocked = (h: Hero, slot: number) => slot <= 3 && h.level >= T.ABILITY_UNLOCK[slot];
 
@@ -89,7 +99,7 @@ function castAbility(h: Hero, slot: number) {
   const n = N();
   const me = heroCenter(S.g.heroes.indexOf(h));
   const st = heroStats(h);
-  const mult = heroDamageMult();
+  const mult = heroDamageMult(h);
   h.queued = null;
   h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]);
   n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);
@@ -169,9 +179,10 @@ function cashIn(e: Enemy, id: MarkId, label: string): boolean {
 }
 const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
 
-function heroDamageMult(): number {
+function heroDamageMult(h?: Hero): number {
   const n = N();
-  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * (n.rally > 0 ? 1 + ABILITIES.knight[3].power! : 1);
+  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * (n.rally > 0 ? 1 + ABILITIES.knight[3].power! : 1) * curioDmgMult()
+    * (h?.id === 'mage' && n.sulk > 0 ? 1 - T.CURIO_SULK_DMG : 1);   // Rafał read the guild bank log
 }
 
 function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', from?: { x: number; y: number }, skill = true): number {
@@ -219,7 +230,7 @@ function heroAct(h: Hero, skill = false) {
   const me = heroCenter(S.g.heroes.indexOf(h));
   if (!loudOnce) n.noise = Math.min(100, n.noise + T.NOISE_ACTION);
   const st = heroStats(h);
-  const mult = heroDamageMult();
+  const mult = heroDamageMult(h);
   // Auto attack (slot 0).
   if (h.id === 'healer') {
     const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * (isAway() ? T.AUTOPILOT_HEAL_BELOW : 0.6)).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
@@ -406,7 +417,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   }
   for (const h of S.g.heroes) {
     if (h.downed) continue;
-    h.atb += heroStats(h).speed * T.ATB_RATE * dt * speedMult();
+    h.atb += heroStats(h).speed * T.ATB_RATE * dt * speedMult() * curioSpeedMult();
     if (h.atb >= 100) { h.atb -= 100; heroAct(h); }
   }
   for (const e of n.enemies) {

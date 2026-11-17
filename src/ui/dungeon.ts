@@ -10,6 +10,7 @@ import { HERO_SPRITES } from '../data/heroes';
 import { ENEMY_BY_ID, ENVELOPE } from '../data/enemies';
 import { bodies, moveOf } from '../systems/battle';
 import { MARKS } from '../data/marks';
+import { curioDef } from '../systems/curios';
 import { HERO_X, ENEMY_X, UNIT_Y } from '../systems/battle';
 import { maxHp } from '../systems/stats';
 import { entryColor } from '../systems/loot';
@@ -227,6 +228,16 @@ function units(c: CanvasRenderingContext2D, t: number) {
   });
 }
 
+/** The curio the party stopped at, on the floor ahead of them (Zzz over the troll, a shake while picking). */
+function curioProp(c: CanvasRenderingContext2D, t: number) {
+  const cu = N().curio, d = curioDef(cu);
+  if (!cu || !d) return;
+  const s = 4, h = Math.max(...d.sprite.map(r => r[1] + r[3])), x = 372 - (d.w * s) / 2 + (cu.stage === 'pick' ? Math.sin(t * 40) * 1.5 : 0), y = FEET - h * s;
+  c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(372, FEET, d.w * s * 0.55, 6, 0, 0, Math.PI * 2); c.fill();
+  drawPx(c, d.sprite, x, y, s);
+  if (cu.id === 'troll') text(c, 'z'.repeat(1 + Math.floor(t * 1.5) % 3), x + d.w * s - 4, y - 6 - (t * 8) % 10, 13, '#cfd6e4', 'left', 700);
+}
+
 /** Ability marks: small tags stacked above each enemy's HP bar, drawn above the darkness so they read at a glance.
  *  The line under a tag shrinks as the mark runs out. */
 function markTags(c: CanvasRenderingContext2D) {
@@ -321,6 +332,7 @@ export function drawDungeonScene(c: CanvasRenderingContext2D) {
   c.save(); camApply(c, 1);
   floor(c, scroll);
   floorLoot(c, t);
+  curioProp(c, t);
   units(c, t);
   for (const v of n.vfx) drawVfx(c, v);
   const gp = goblinPos();

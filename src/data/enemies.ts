@@ -1,4 +1,5 @@
 import type { Px } from './heroes';
+import { TROLL } from './curios';
 
 /** role: what answer the enemy asks for (docs/design/dungeon.md). healer: heals friends; shield: takes
  *  SHIELD_TAKEN damage until Bash breaks it; swarm: `stacks` small bodies, one per single-target hit.
@@ -42,4 +43,4 @@ export const BOSSES: EnemyDef[] = [
     meet: 'Boss: The Landlord. Bash his deposit off. EVICTION hits one hero hard: Taunt or Ward.' },
 ];
 export const bossFor = (floor: number, every: number) => BOSSES[(Math.max(1, Math.floor(floor / every)) - 1) % BOSSES.length];
-export const ENEMY_BY_ID: Record<string, EnemyDef> = Object.fromEntries([...ENEMIES, ...BOSSES].map(e => [e.id, e]));
+export const ENEMY_BY_ID: Record<string, EnemyDef> = Object.fromEntries([...ENEMIES, ...BOSSES, TROLL].map(e => [e.id, e]));

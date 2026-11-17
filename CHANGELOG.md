@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.26.0 (2026-11-17)
+
+- **Curios in the corridor** (#30), the RPG's third verb. On battle floors, 1 or 2 walks stop at a curio with
+  two choices, each costing something from real life: locked strongbox (pick 8 s quiet / smash, Noise +25),
+  overdue mailbox (gold, a rare or a late fee), energy-drink shrine (offer a real can from the desk for a big
+  buff / pray, coin flip), snoring troll (sneak 6 s on the RPG screen, alt-tab wakes him / fight a mini-boss),
+  guild bank vault (a free rare; Rafał reads the log later and sulks), vending machine (pay gold / kick it).
+  The party waits 7 s, then walks past; ✕ leaves. Away, the party does the loud thing half the time.
+- New buffs on the monitor: Monster blessing, Small blessing, Late fee, Rafał sulks.
+- Sims, 10 good runs (quiet choices): depth 9.6, 0 catches, visits 4.6, wakes 1.1, Noise 27 (0.25: 5.0, 2.2,
+  29). Always the loud choice: visits 5.8, wakes 3.1, Noise 44. Idle still unplugged and caught.
+
 ## 0.25.0 (2026-11-17)
 
 RPG depth, part 3 of 3 (#27, done).

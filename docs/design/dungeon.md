@@ -63,6 +63,27 @@ locked as "later nights".
 | Mage (Q, W, E) | Fire: 1x to every enemy | Frost: 2.6x to the front enemy, Chill | Storm: 6 bolts at random enemies, 0.6x each |
 | Healer (A, S, D) | Mend: heals the party | Ward: 40% less damage for 6 s | Revive: a downed hero back at 50%, else heals the most hurt for 50% |
 
+**Curios in the corridor** (#30, the RPG's third verb; content `src/data/curios.ts`, rules
+`src/systems/curios.ts`, numbers `CURIO_*`). On a battle floor, `CURIO_PER_FLOOR` (1 or 2) of the walks stop
+halfway at a curio (none on vault or shrine floors, no repeats among the last three). A parchment card names
+it and offers two choices, each with its real-life cost on the button, so the question is "can I afford
+this right now, given where she is?". The party waits `CURIO_WAIT_SEC` (7 real seconds), then walks past;
+the ✕ or "walk past" leaves at once. Curio time is your time: the night clock runs, the battle does not.
+
+| Curio | Choice A | Choice B |
+|---|---|---|
+| Locked strongbox | Pick the lock: 8 s standing still, quiet | Smash it: instant, Noise +25 |
+| Overdue mailbox | Open: Noise +5; 50% gold (20 x floor), 30% a rare, 20% a late fee (party -15% damage until the next floor) | Leave it |
+| Energy-drink shrine | Offer a real Monster can from the desk: party +30% damage, +20% speed for 60 s | Pray: 50% +15% damage for 30 s, 50% it burps (Noise +10) |
+| Snoring troll on a loot pile | Sneak: 6 s on the RPG screen; alt-tab (or the monitor going off) wakes him | Fight: a mini-boss (330 HP at floor 1 scale), Noise +15 |
+| Guild bank vault | Withdraw "just one thing": a free rare; 40 to 90 s later Rafał reads the log in guild chat and sulks (mage -20% damage for 45 s) | Close it |
+| Unpaid vending machine | Pay 12 gold x floor: party heals 30% | Kick it: Noise +15, 50% the same heal |
+
+Strongbox and troll both pay 2 items (the first rare or better); the troll fight adds normal battle drops.
+His fight is not one of the floor's three battles and never counts as the boss. Away when the party reaches
+a curio: `CURIO_AWAY_RECKLESS` (50%) of the time they do the loud thing themselves (smash, open, pray,
+fight, withdraw, kick, with a party line), otherwise they walk past.
+
 **Ability marks** (`src/data/marks.ts`, numbers `MARK_*`). One skill marks an enemy, another cashes the mark
 in, so the order you fire skills in matters:
 
@@ -162,6 +183,18 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
   a player who saves Taunt and Ward only for the wind-up wipes about half the time; 40 s on Excel always wipes.
   The floor-5 boss is milder (~66 to 70%); RPG depth (#27) will give floors 5/10/15 their own bosses.
   Bailiff history: 700/16 → 850/24 (0.15) → 1100/28 (0.18) → 1700/28 (0.23, the full kit halved kill times).
+- **Curios cost real life, not RPG resources** (0.26): every choice spends Noise, standing still, a real can
+  or gold, so the RPG's third verb is a stealth decision too. Out on purpose, so it does not become a pocket
+  Darkest Dungeon: no hero stress, no torch meter, no provisions. Curios are a garnish on the walk, not a
+  system to manage. Measured (10 good-bot nights each): taking the quiet choice, 4.6 visits, 1.1 wakes,
+  average Noise 27 (before curios: 5.0, 2.2, 29; the quiet stops are quiet time); taking the loud choice every
+  time, 5.8 visits, 3.1 wakes, Noise 44.
+  - The away party acting on a curio (half the time) keeps the reckless autopilot a character, and makes
+    "away" cost something even on a walk. Rejected: curios pausing until you come back (walking away from
+    the keyboard would be free).
+  - The sneak fails on alt-tab, so a troll and her steps at the same time is a real choice.
+  - Rejected alternatives for the third verb: standing orders for the autopilot, a Loop Hero floor deck, a
+    torch light meter, pull control, raid marks, loot council, playing only Paweł.
 - **Each new enemy asks one question** (0.24): heal (focus it), shield (Bash), swarm (area damage). Plain stat
   variants were rejected: they make fights longer without asking for a different button. The answers lean on
   skills, so a pack with a shield or a swarm is worse while you are away (floor 8, 40 s away: 4/12 wipes,
@@ -189,25 +222,6 @@ floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
   happens in the right panel; the fight slows while you look.
 
 ## Planned
-
-- **Curios in the corridor** (#30, the RPG's third verb, decided 2026-11-16). While the party walks, 1 or 2
-  objects per floor appear in the cave. Click one for a quick choice with a gamble outcome. Every choice
-  trades loot against a real-life currency, so the question is "can I afford this right now, given where
-  she is?":
-
-  | Curio (Overdue Bills) | Choices | Real-life cost |
-  |---|---|---|
-  | Locked strongbox | Pick the lock (8 s, quiet) / Smash it | Smash: Noise +25 |
-  | Overdue mailbox | Open / Leave | Gold, a "late fee" curse or a rare; opening makes him groan (a little Noise) |
-  | Energy-drink shrine | Offer a Monster can / Pray for free | Offering spends a real can from the desk: a big buff. Praying: a coin flip |
-  | Snoring troll on a loot pile | Sneak and grab / Fight | Sneak: 6 s on the RPG screen, no alt-tab. Fight: a mini-boss, lots of Noise |
-  | Guild bank vault | Withdraw "just one thing" | Free loot; Rafał notices later in guild chat |
-  | Unpaid vending machine | Pay gold / Kick it | Kick: Noise, 50/50 on a snack buff |
-
-  Each dungeon gets its own set (its own jokes). Out on purpose, so it does not become a pocket Darkest
-  Dungeon: no hero stress, no torch meter, no provisions. Curios are a garnish on the walk, not a system to
-  manage. Rejected alternatives for the third verb: standing orders for the autopilot, a Loop Hero floor deck,
-  a torch light meter, pull control, raid marks, loot council, playing only Paweł.
 
 - **Away-from-PC dangers** (ideas, #24): Need/Greed rolls on rare+ drops (away = auto-pass, "xX_Ninja_Xx
   won [Legendary]"), a 10 s floor vote on the node map (away = the riskiest floor), a ready check before

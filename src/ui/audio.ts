@@ -95,6 +95,7 @@ export const sfx = {
   good() { tone(660, 0.08, 'square', 0.12); tone(880, 0.12, 'square', 0.12, 0.07); },
   key() { tone(1200 + Math.random() * 200, 0.03, 'square', 0.05); },
   click() { tone(700, 0.03, 'square', 0.08); },
+  coin() { tone(1320, 0.05, 'square', 0.1); tone(1760, 0.12, 'square', 0.1, 0.06); },
   hiss(loud: boolean) { noise(loud ? 0.7 : 0.35, loud ? 0.5 : 0.12, loud ? 6000 : 2500, 0, 'game', 'highpass'); tone(1800, 0.05, 'square', 0.1); },
   /** Real-life can sounds: tab click, then the gas. */
   canOpen() { tone(2400, 0.02, 'square', 0.12); tone(1500, 0.03, 'square', 0.1, 0.03); noise(0.45, 0.16, 3000, 0.05, 'game', 'highpass'); },

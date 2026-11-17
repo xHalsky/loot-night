@@ -1,11 +1,12 @@
 // The MMO city hub, drawn on the monitor. All hub actions happen here (docs/design/city.md):
 // click the buttons by the buildings, build on empty plots, enter the dungeon portal.
 import { T } from '../config/tuning';
-import { S, N, RARITIES, type BagEntry } from '../core/state';
+import { type CurioState, S, N, RARITIES, type BagEntry } from '../core/state';
 import { CITY_BY_ID, type CityId } from '../data/city';
 import { TRADE_CHAT } from '../data/content';
 import { MAP_INFO } from '../data/items';
 import { bossFor, ENEMY_BY_ID } from '../data/enemies';
+import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { RARITY_COLOR } from '../data/items';
 import { entryName, entryValue } from '../systems/loot';
 import { vendorValue, salvageYield, listValue } from '../systems/town';
@@ -382,6 +383,26 @@ function nodeMapHtml(): string {
   </div>`;
 }
 
+/** A curio in the corridor (#30): two choices, each with its real-life cost on the button. Escapable. */
+function curioHtml(c: CurioState): string {
+  const d = curioDef(c);
+  if (!d) return '';
+  const pct = Math.max(0, Math.min(100, (c.t / c.max) * 100));
+  const head = `<button class="mg-close" data-act="curioLeave" title="Walk past" style="right:6px;top:6px;width:22px;height:22px;font-size:13px">\u2715</button>
+    <div class="cu-name">${d.name}</div><div class="cu-line">${d.line}</div>`;
+  if (c.stage === 'ask') {
+    const btns = d.choices.map(ch => {
+      const why = curioBlocked(ch.id);
+      return `<button class="cu-btn ${why ? 'off' : ''}" data-act="curio" data-arg="${ch.id}"><b>${curioText(ch.label)}</b><small>${why || curioText(ch.cost)}</small></button>`;
+    }).join('');
+    return `<div class="curio">${head}<div class="cu-row">${btns}</div>
+      <div class="cu-timer" title="The party walks on when this runs out"><i style="width:${pct}%"></i></div></div>`;
+  }
+  const what = c.stage === 'pick' ? 'Picking the lock. Quiet, but the clock runs.' : 'Sneaking. Stay on this screen: alt-tab and he wakes up.';
+  return `<div class="curio">${head}<div class="cu-prog">${what} <b>${Math.ceil(c.t)} s</b></div>
+    <div class="cu-timer work"><i style="width:${100 - pct}%"></i></div></div>`;
+}
+
 export function monUiHtml(): string {
   const n = S.g.night;
   if (!n || n.monitor === 'excel' || n.monitorOff > 0 || n.switching) return '';
@@ -390,6 +411,7 @@ export function monUiHtml(): string {
 function monUiInner(n: NonNullable<typeof S.g.night>): string {
   if (n.location === 'town') return townOverlayHtml();
   if (n.phase === 'mapChoice') return nodeMapHtml();
+  if (n.phase === 'curio' && n.curio) return curioHtml(n.curio);
   const ok = n.phase !== 'battle';
   return `<button class="tbtn tportal ${ok ? '' : 'off'}" data-act="toTown">Town portal <small>${ok ? '15 min' : 'after battle'}</small></button>${skillBarHtml()}`;
 }
@@ -455,6 +477,9 @@ function portrait(id: string): string {
 
 // ---------- Buffs and debuffs on you (WoW style: icon squares, timer under each) ----------
 const BI: Record<string, string> = {
+  blessing: '<rect x="7" y="4" width="8" height="15" rx="2" fill="#111"/><ellipse cx="11" cy="5" rx="4" ry="1.2" fill="#c9ced6"/><path d="M10 8 L10.5 15 M12 7.5 L12 16" stroke="#6ef06e" stroke-width="1.4"/><circle cx="11" cy="11" r="9" fill="none" stroke="#6ef06e" stroke-width="1" opacity=".6"/>',
+  fee: '<rect x="2" y="5" width="18" height="12" fill="#efe6cf"/><path d="M2 5 L11 12 L20 5" stroke="#9a8a6a" stroke-width="1.4" fill="none"/><rect x="14" y="12" width="5" height="4" fill="#e0524a"/>',
+  sulk: '<circle cx="11" cy="11" r="8" fill="#8a6ad8"/><circle cx="8" cy="9" r="1.2" fill="#1a1028"/><circle cx="14" cy="9" r="1.2" fill="#1a1028"/><path d="M7.5 15.5 Q11 12.5 14.5 15.5" stroke="#1a1028" stroke-width="1.5" fill="none"/>',
   monster: '<rect x="6" y="2" width="10" height="18" rx="2" fill="#111"/><ellipse cx="11" cy="3" rx="5" ry="1.4" fill="#c9ced6"/><path d="M8.5 6 L9.5 14 M11 5.5 L11 15 M13.5 6 L12.5 14" stroke="#6fe08a" stroke-width="1.6"/>',
   crash: '<rect x="6" y="5" width="10" height="15" rx="2" fill="#333"/><path d="M11 1 V9 M7.5 6 L11 10 L14.5 6" stroke="#ff8a80" stroke-width="2" fill="none"/>',
   zone: '<path d="M4 14 C4 4, 18 4, 18 14" stroke="#c9a8ff" stroke-width="2.4" fill="none"/><rect x="2" y="12" width="5" height="8" rx="2" fill="#9a7aff"/><rect x="15" y="12" width="5" height="8" rx="2" fill="#9a7aff"/>',
@@ -473,6 +498,10 @@ function buffsHtml(n: NonNullable<typeof S.g.night>): string {
   if (n.flow > 1.05) list.push({ k: 'flow', name: `Flow: party damage x${n.flow.toFixed(1)}`, label: `x${n.flow.toFixed(1)}` });
   if (n.taunt > 0) list.push({ k: 'taunt', name: 'Taunt: enemies hit the knight', left: n.taunt, max: 5 });
   if (n.ward > 0) list.push({ k: 'ward', name: 'Ward: party protected', left: n.ward, max: 6 });
+  for (const b of n.curioBuffs) list.push(b.floor
+    ? { k: 'fee', de: true, name: `${b.name}: party ${Math.round(b.dmg * 100)}% damage until the next floor`, label: 'floor' }
+    : { k: 'blessing', name: `${b.name}: party +${Math.round(b.dmg * 100)}% damage${b.speed ? `, +${Math.round(b.speed * 100)}% speed` : ''}`, left: b.t, max: b.speed ? T.CURIO_CAN_SEC : T.CURIO_PRAY_SEC });
+  if (n.sulk > 0) list.push({ k: 'sulk', de: true, name: `Rafał sulks about the guild bank: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage`, left: n.sulk, max: T.CURIO_SULK_SEC });
   if (n.guilt > 0) list.push({ k: 'guilt', name: 'Guilt: party -10% damage', de: true, left: n.guilt, max: T.GUILT_SEC });
   if (n.tired >= T.TIRED_YAWN) list.push({ k: 'tired', de: true, name: n.tired >= T.TIRED_SLUGGISH ? 'Sluggish: timers shorter, eyes closing' : n.tired >= T.TIRED_MICROSLEEP ? 'Microsleeps: your eyes close' : 'Yawning: the screen blurs now and then', label: n.tired >= T.TIRED_SLUGGISH ? 'III' : n.tired >= T.TIRED_MICROSLEEP ? 'II' : 'I' });
   if (!list.length) return '';

@@ -13,6 +13,8 @@ import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip } from './systems/bag';
 import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } from './systems/loot';
 import { chooseNextFloor, returnToTown, travelToDungeon, catchGoblin } from './systems/dungeon';
+import { chooseCurio, endCurio } from './systems/curios';
+import { toast } from './core/fx';
 import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction } from './systems/town';
 import { monUiHtml } from './ui/town';
 import { deskPileHtml } from './ui/monsterArt';
@@ -108,6 +110,8 @@ const actions: Record<string, (arg: string) => void> = {
   heroTab: a => setHeroTab(Number(a)),
   skipDrop: () => skipDrop(),
   nextFloor: a => chooseNextFloor(a || null),
+  curio: a => chooseCurio(a),
+  curioLeave: () => { toast('The party walks past.', '#a999bd'); endCurio(); },
   toTown: () => returnToTown(),
   gate: () => travelToDungeon(),
   sleep: () => endNight('sleep'),

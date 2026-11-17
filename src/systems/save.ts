@@ -3,7 +3,7 @@ import { applyCity } from './town';
 
 // localStorage save of persistent progress only (not a night in progress).
 const KEY = 'lootnight.save.v1';
-const PERSIST: (keyof GameState)[] = ['heroes', 'bag', 'bagSize', 'gold', 'mats', 'zl', 'furniture', 'sleepDebt', 'monsters', 'bestStars', 'record', 'nightsPlayed', 'pendingListings', 'pity', 'uid', 'autoSalvage', 'seen'];
+const PERSIST: (keyof GameState)[] = ['heroes', 'bag', 'bagSize', 'gold', 'mats', 'zl', 'furniture', 'sleepDebt', 'monsters', 'bestStars', 'record', 'nightsPlayed', 'pendingListings', 'pity', 'uid', 'autoSalvage', 'seen', 'curiosSeen'];
 
 export function save() {
   try {

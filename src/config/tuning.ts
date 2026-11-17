@@ -123,6 +123,18 @@ export const T = {
   AFFIX_CROSS_PCT: 0.6,           // a cross-system stat bonus = this share of a main stat line at the item's level and rarity
   AFFIX_SPREADSHEET_GOLD: 3,      // per kill while Excel is up, per item
   AFFIX_QUIET_NOISE: 30, AFFIX_DOG_SEC: 60,
+  // Curios in the corridor (docs/design/dungeon.md, #30). Content: data/curios.ts.
+  CURIO_PER_FLOOR: [1, 2] as [number, number],   // on battle floors; none on vault or shrine floors
+  CURIO_WAIT_SEC: 7,              // real seconds the party waits at a curio before walking past
+  CURIO_AWAY_RECKLESS: 0.5,       // away when the party reaches one: this often they do the loud thing, else walk past
+  CURIO_PICK_SEC: 8, CURIO_SMASH_NOISE: 25, CURIO_BOX_DROPS: 2,
+  CURIO_GROAN_NOISE: 5, CURIO_MAIL_GOLD: 20, CURIO_MAIL_ODDS: [0.5, 0.3] as [number, number],   // gold, rare; the rest a late fee
+  CURIO_FEE_DMG: 0.15,            // late fee: party damage down until the next floor
+  CURIO_CAN_DMG: 0.3, CURIO_CAN_SPD: 0.2, CURIO_CAN_SEC: 60,   // offering a real can
+  CURIO_PRAY_DMG: 0.15, CURIO_PRAY_SEC: 30, CURIO_BURP_NOISE: 10,
+  CURIO_SNEAK_SEC: 6, CURIO_ROAR_NOISE: 15, CURIO_TROLL_DROPS: 2,
+  CURIO_BANK_NOTICE_SEC: [40, 90] as [number, number], CURIO_SULK_DMG: 0.2, CURIO_SULK_SEC: 45,   // Rafał sulks: mage damage down
+  CURIO_VEND_GOLD: 12, CURIO_VEND_HEAL: 0.3, CURIO_KICK_NOISE: 15,   // vend gold is per floor
   CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
   GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,

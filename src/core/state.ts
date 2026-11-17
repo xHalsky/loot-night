@@ -104,7 +104,10 @@ export interface LapState { stage: 'arrive' | 'ask' | 'react' | 'leave'; t: numb
 export interface ExcelPiece { k: number; cells: [number, number][]; x: number; y: number }
 export interface ExcelState { board: number[][]; piece: ExcelPiece | null; next: number; fallT: number; rows: number; pay: number; clearFx: number; crashFx: number }
 
-export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice';
+export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
+/** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
+export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
+export interface CurioBuff { name: string; dmg: number; speed: number; t: number; floor?: boolean }   // floor: until the next floor
 
 export interface Night {
   clock: number; threat: number;
@@ -144,6 +147,8 @@ export interface Night {
   interrupts: Interrupt[]; nextInterruptAt: number;
   game: MiniGame | null;
   excel: ExcelState;
+  curio: CurioState | null; curioPlan: number[]; curioFight: boolean; curioBuffs: CurioBuff[];   // curios (#30)
+  sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean;   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   moodDrift: number;
@@ -176,6 +181,7 @@ export interface GameState {
   monsters: number;
   bestStars: number; record: number; nightsPlayed: number;
   seen: string[];                // enemy ids met before: the first meeting shows what they want
+  curiosSeen: string[];          // the last few curios, so they don't repeat back to back
   pendingListings: { name: string; zl: number }[];
   pity: number; uid: number;
   night: Night | null;
@@ -195,7 +201,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, seen: [],
+    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, seen: [], curiosSeen: [],
     pendingListings: [], pity: 0, uid: 1,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1,
     results: null, morning: null,

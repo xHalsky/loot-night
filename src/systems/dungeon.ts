@@ -9,8 +9,9 @@ import { chance } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
+import { planCurios, curioDue, startCurio, updateCurio, updateCurioTimers, curioFloorEnd } from './curios';
 
-export const isBossBattle = () => { const n = N(); return n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
+export const isBossBattle = () => { const n = N(); return !n.curioFight && n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
 
 export function enterDungeon(floor: number) {
   const n = N();
@@ -22,6 +23,7 @@ export function enterDungeon(floor: number) {
 function startFloor(map: MapKind | 'plain') {
   const n = N();
   n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.phaseT = 0;
+  n.curio = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
   n.deepest = Math.max(n.deepest, n.floor);
   if (n.corpse.length && n.floor === n.corpseFloor) {
     n.dropQueue.push(...n.corpse); n.corpse = [];
@@ -38,6 +40,7 @@ function startFloor(map: MapKind | 'plain') {
     toast('Treasure Vault! (loud)', '#ff9a4d');
     n.phase = 'loot'; n.battleIdx = T.BATTLES_PER_FLOOR - 1; return;
   }
+  planCurios();
   if (map === 'cursed') toast('Cursed Floor: your heals do half, every drop is one rarity better.', '#c77dff');
   if (map === 'goblin') toast('Goblin Den: a goblin after every battle. They squeal when caught.', '#9fe05a');
   n.phase = 'walk';
@@ -72,8 +75,11 @@ export function updateDungeon(realDt: number) {
   if (n.location !== 'dungeon') return;
   const dt = realDt * (menuOpen() ? T.BATTLE_MENU_SPEED : 1);
   if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); } }
+  updateCurioTimers(dt);
+  if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt * (isAway() && n.phase !== 'battle' ? T.AUTOPILOT_PACE - 1 : 0);   // no resting without you
   n.phaseT += dt;
+  if (n.phase === 'walk' && curioDue()) { startCurio(); return; }
   if (n.phase === 'walk') {
     const sp = n.floorLoot.length ? 75 : 40;     // hurry over to the loot
     n.walkScroll += dt * sp;
@@ -84,7 +90,12 @@ export function updateDungeon(realDt: number) {
     }
   } else if (n.phase === 'battle') {
     const r = updateBattle(dt);
-    if (r === 'victory') {
+    if (r === 'victory' && n.curioFight) {   // the troll: extra loot, then the walk goes on (not one of the floor's battles)
+      rollBattleDrops(n.floor, { at: [ENEMY_X[0] + 30] });
+      rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true });
+      toast('The troll is down. His pile is yours.', '#f2b84b');
+      n.phase = 'loot'; n.phaseT = 0;
+    } else if (r === 'victory') {
       const boss = isBossBattle();
       rollBattleDrops(n.floor, { boss, elite: n.floorMap === 'elite', at: n.enemies.map((e, i) => e.boss ? 542 : ENEMY_X[i] + 30) });
       if (boss) { n.checkpoint = n.floor + 1; toast(`Checkpoint: floor ${n.checkpoint}`, '#8fb3ff'); }
@@ -92,7 +103,8 @@ export function updateDungeon(realDt: number) {
       n.phase = 'loot'; n.phaseT = 0;
     } else if (r === 'wipe') wipe();
   } else if (n.phase === 'loot') {
-    if (n.phaseT >= T.LOOT_PAUSE_SEC) {
+    if (n.phaseT >= T.LOOT_PAUSE_SEC && n.curioFight) { n.curioFight = false; n.phase = 'walk'; n.phaseT = T.WALK_SEC * 0.5; }
+    else if (n.phaseT >= T.LOOT_PAUSE_SEC) {
       n.battleIdx++;
       if (n.battleIdx >= T.BATTLES_PER_FLOOR) floorEnd();
       else { n.phase = 'walk'; n.phaseT = 0; }

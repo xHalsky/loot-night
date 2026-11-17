@@ -21,20 +21,18 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **#30 Curios in the corridor:** the RPG's third verb. Each choice trades loot against Noise, time on the
-   RPG screen, a Monster can or her Mood.
-2. **#19 Pre-emptive framework + 3 actions** (from #20): Text her, Make her tea, Towel under the door.
+1. **#19 Pre-emptive framework + 3 actions** (from #20): Text her, Make her tea, Towel under the door.
    One phone verb, one away verb, one FNAF trade.
-3. **#23 two more interrupts:** courier call (pays a gear drop), friends' group call (Noise).
-4. **#29 Synergy, slice set:** cross-layer echoes (Loved after a Cuddle, legendary yell, wipe desk slam),
+2. **#23 two more interrupts:** courier call (pays a gear drop), friends' group call (Noise).
+3. **#29 Synergy, slice set:** cross-layer echoes (Loved after a Cuddle, legendary yell, wipe desk slam),
    interrupts and the dog always pay, Goodwill (with the Raid pass as a pre-emptive action),
    Witching Hour. Closes the dead ends: the dog, Tiredness and her visits stop only punishing.
-5. **#22 cheap eye-candy:** shower panel, hoodie walk-by, results vignette by Mood.
-6. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
+4. **#22 cheap eye-candy:** shower panel, hoodie walk-by, results vignette by Mood.
+5. **#13 real audio for her cues** (steps, kettle, TV, shower, door, phone). The stealth runs on listening;
    generated beeps undersell it. Includes audio-first loot cues. Music can wait.
-7. **#28 first-night onboarding.**
-8. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
-   Repeat 8 until it passes.
+6. **#28 first-night onboarding.**
+7. **#2 balance pass** (incl. a city upgrade every night) + outside playtests against the criteria above.
+   Repeat 7 until it passes.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
 
 ## Phase 2: the arc (p2)

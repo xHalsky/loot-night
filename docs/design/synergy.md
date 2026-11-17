@@ -10,10 +10,10 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 
 | System | Feeds | Fed by | Gap |
 |---|---|---|---|
-| RPG combat | Noise, loot, XP | Flow, Zone, Monster, buildings, gear, Tiredness | Fine |
+| RPG combat | Noise, loot, XP | Flow, Zone, Monster, buildings, gear, Tiredness; curios (a real can, Noise, standing still) | Fine |
 | Loot | Gold, scraps, zł, party power; real-life affixes change headset, alt-tab, Tiredness, excuses, waking, cans | Flow, Zone, green Mood; cross-system affixes read headset, Monster, Noise, Mood, the dog, Excel | zł is a dead end until the store (#4) |
 | Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift | Her visits give the RPG nothing positive |
-| Noise | Visit timing, waking her | Combat, dog, Monster | Only punishes; distance and masking (#17) add the read |
+| Noise | Visit timing, waking her | Combat, dog, Monster, loud curio choices | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
 | Interrupts | Mom heals, boss pays gold and goes quiet | Timers | Bedtime text only avoids a penalty |
 | Dog and cables | Noise, NO SIGNAL | A timer | Only punishes |
