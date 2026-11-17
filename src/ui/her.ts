@@ -388,6 +388,28 @@ export function drawHerBed(c: CanvasRenderingContext2D, t: number, scene: Mornin
   blit(c, sp, 0, 0, 2);
 }
 
+/** Her from behind (through the crack: at the kitchen counter). Head top at (x, y), s = output scale.
+ *  One small pose: long hair over her back, arms forward at the counter, bare legs and heels. */
+const BACK_TOP: Record<Outfit, string> = { lounge: 'tee', hoodie: 'hoodie', tank: 'tank', bighoodie: 'gamer', pajama: 'shirt', towel: 'towel' };
+export function drawHerBack(c: CanvasRenderingContext2D, x: number, y: number, s: number, outfit: Outfit) {
+  const W = Math.ceil(70 * s) + 4, H = Math.ceil(240 * s) + 4, ox = 35 * s + 2, oy = 6 * s + 2;
+  const sp = pixelSprite(`herback:${outfit}:${s.toFixed(3)}`, W, H, cc => {
+    LW = 0.9 / s; cc.translate(ox, oy); cc.scale(s, s);
+    const [cb, cs] = CLOTH[BACK_TOP[outfit]];
+    const long = outfit === 'hoodie' || outfit === 'bighoodie';
+    for (const k of [-1, 1]) {   // legs, bare, a little apart; heels lifted off the floor
+      cel(cc, smooth([[k * 4, 140], [k * 13, 140], [k * 12.5, 182], [k * 10.5, 222], [k * 9, 228, 1], [k * 4.5, 228, 1], [k * 4.5, 200], [k * 3.5, 170]]), C.skin, C.skinS, 1);
+      cel(cc, smooth([[k * 4.5, 224], [k * 10, 224], [k * 9.5, 231, 1], [k * 5, 231, 1]]), C.sole, C.skinS, 0.6);
+    }
+    cel(cc, smooth([[-18, 44], [-21, 70], [-19, 100], [-17, long ? 150 : 128], [0, long ? 152 : 130], [17, long ? 150 : 128], [19, 100], [21, 70], [18, 44], [0, 40]]), cb, cs, 1);   // top
+    for (const k of [-1, 1]) cel(cc, smooth([[k * 17, 46], [k * 24, 58], [k * 24, 92, 1], [k * 19, 94], [k * 18, 60]]), long ? cb : C.skin, long ? cs : C.skinS, 1);   // upper arms, forearms on the counter
+    cel(cc, smooth([[-12, 6], [-14, 28], [-11, 44], [0, 46], [11, 44], [14, 28], [12, 6], [0, -2]]), C.skin, C.skinS, 1);   // neck and head under the hair
+    cel(cc, smooth(BACK_HAIR.map(([px, py, k]) => [px * 0.95, py * 1.05 + 1, k ?? 0] as Pt)), C.hair, C.hairS, 1);
+    cc.fillStyle = '#e65a80'; cc.fill(smooth([[9, 6], [14, 3.5], [15, 7.5], [10.5, 9]]));   // the pink clip
+  });
+  blit(c, sp, x - ox, y - oy, 1);
+}
+
 /** Blurry shape behind frosted glass (peek during her shower). */
 export function drawHerFrosted(c: CanvasRenderingContext2D, x: number, y: number, s: number) {
   c.save();

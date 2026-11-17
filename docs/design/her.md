@@ -32,21 +32,44 @@ Moving between rooms counts as the hallway. This heard Noise drives her door cha
 early above 70. It is never shown; the player infers it from what they hear. `test/noise.ts`: a boss kill
 during her shower leaves the door chance at 35%; the same kill while she makes tea next door raises it to 85%.
 
-**The blueprint** (176 px, left panel). A blue architect's floor plan: white walls, door swings, furniture,
-a dashed line of sight from your door. It never marks where she is. With the headset off it shows what
-was last heard, where, and how long ago; stale after `APT_STALE_SEC`.
+**The blueprint** (168 px, left panel). A blue architect's floor plan: white walls, door swings, furniture,
+a dashed line of sight from your door. It never marks where she is. It teaches the layout: which rooms are
+next to yours (Noise by distance) and where the doorways in the crack lead. (Moving onto the wall in the
+webcam view, #35/#36.)
+
+**Last heard** (one line under it, above the her-note, `heardHtml()`): what you last heard of her, where,
+and how long ago: "♫ KETTLE · kitchen · 12 s ago", "♫ STEPS · hallway · now", "♫ ZZZ · bedroom". After
+`APT_STALE_SEC` without a new sound it dims behind a "?" (her phone is silent, so it goes stale). Headset on:
+"Headset on. You hear nothing. (H)", and it stops updating (Earplugs of Peace still let hallway steps
+through). It never shows where she is now, only the last sound.
 
 **Headset and Zone** (H, or click it on the desk). Headset on fills Zone over `ZONE_FILL_SEC`; full Zone
 gives Flow ×`ZONE_FLOW_MULT` and +`ZONE_LUCK` loot luck, a purple aura around the monitor and a ZONE
-badge. But she is muffled to `HEADSET_APT_VOLUME`, the blueprint stops updating, and the far-steps
+badge. But she is muffled to `HEADSET_APT_VOLUME`, the last-heard line stops updating, and the far-steps
 warning is gone. Headset off empties Zone instantly. Starts off each night; disappears from the desk while worn.
 
-**Peeking through your door.** Hold the door: it opens a crack, and the light gives a hint (TV flicker,
-kitchen light, bathroom steam, her silhouette in the hallway; a frosted silhouette in the shower). A pink
-cloud covers the whole flat on the blueprint and shrinks onto her over `PEEK_REVEAL_SEC` (7 s), never
-smaller than about a quarter of the living room; let go and it widens again over `PEEK_FORGET_SEC`.
-If she is in the hallway or living room she can notice (`PEEK_SEEN` rates); a red bar fills, and if it
-fills she rushes straight over: Mood +`PEEK_CAUGHT_MOOD`, Flow reset.
+**Peeking through your door** (`src/systems/peek.ts`, `drawHallway` in `src/ui/door.ts`). Hold the door: it
+opens to a narrow crack (`PEEK_CRACK_MIN` of its width) in `PEEK_OPEN_SEC`, then creeps wider to
+`PEEK_CRACK_MAX` over `PEEK_CREEP_SEC` (7 s). Let go and it closes. Behind it is one fixed picture of the
+hallway, laid out like the blueprint and seen from your door. The crack opens from the door's right edge, so
+the kitchen opening right across shows first, then the bathroom door, and the far end (bedroom door, the
+living-room opening on your side) only when wide. Lights are on only where she is.
+
+| She is | Through the crack | Crack | Can she see you |
+|---|---|---|---|
+| Kitchen, tea | Warm light, kettle steam, her at the counter from behind | Narrow | No |
+| Bathroom | Closed door, light strip under it | Medium | No |
+| Shower | Steam leaking out, frosted silhouette in the door glass | Medium | No |
+| Bedroom, phone | Far door ajar, cold blue glow on the ceiling | Wide | No |
+| Asleep | Far door ajar, dark | Wide | No |
+| Living room, TV | Blue flicker in the opening and on the wall, her bare feet on the armrest | Wide | A little |
+| Hallway / moving | Her, head to toe (big when she is at your door) | Any | Yes, fast |
+
+If she is in the hallway or living room she can notice (`PEEK_SEEN` rates, times how open the door is, so
+seeing the far end costs more risk); a red bar fills, and if it fills she rushes straight over: Mood
++`PEEK_CAUGHT_MOOD`, Flow reset. From the hallway she notices in about 2.5 s; with the TV on, the living room
+comes into view at 6.4 s and she notices at 8.7 s (`npx tsx test/peekcrack.ts`). `python3 test/peek.py`
+screenshots every row (`test/peek_sheet.png`).
 
 **Visit telegraph.**
 
@@ -142,6 +165,14 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 - **The headset replaces a Listen action.** Hold-Space-to-listen cost nothing in an idle game; taking the
   headset off for a moment empties Zone, so listening has a price.
 - **The blueprint never shows her exact position**, and peeking is risky; partial information is the FNAF part.
+- **Peeking shows the hallway, not a map marker** (0.34, replaces the pink cloud that shrank onto her on the
+  blueprint). What you learn depends on how long you dare to hold the door: the crack creeps wider, the near
+  kitchen shows at once, the far rooms only when the door is wide and easiest to notice. The picture is
+  hand-placed, not strict perspective: from your door the living-room opening (on your side) would be
+  invisible. Rejected: an "eyes adjusting" blur or mosaic reveal (mixes pixel sizes with the pixel art);
+  keeping the cloud on a smaller map (a marker in all but name).
+- **Last heard is one line of text** (0.34): the blueprint was meant to show it but never did. A line keeps
+  the sound-first rule (the last sound, never her position) and frees the blueprint for the layout.
 - **FNAF mechanics, not the horror look.** Her world is warm and sweet; danger shows through her face,
   the note colour and the sounds.
 - **Tone:** tasteful pin-up. Clothed adults, flattering poses, bare-feet moments (the friend likes feet).

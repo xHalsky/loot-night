@@ -3,6 +3,36 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.34.0 (2026-11-17)
+
+Left panel rework, part 1: two of the blueprint's jobs move out (#33, #34). The rework replaces the blueprint
+panel with a webcam view of him (#35 to #38, next); it comes before onboarding (#28).
+
+- **Last heard (#33):** one line between the map and the her-note: "♫ KETTLE · kitchen · 12 s ago",
+  "♫ STEPS · hallway · now", "♫ ZZZ · bedroom". After `APT_STALE_SEC` it dims behind a "?" (her phone is
+  silent). Headset on: "Headset on. You hear nothing. (H)". The data was tracked all along but nothing drew it;
+  her.md claimed the blueprint did. It replaces the map's footer line.
+- **Peek through the crack (#34), replaces the pink cloud:**
+  - Behind your door is now one fixed picture of the hallway, laid out like the blueprint. The crack opens from
+    the door's right edge: the kitchen right across shows first, then the bathroom door, then the far end
+    (bedroom door, living-room opening).
+  - Hold the door: a narrow crack in 0.5 s, then it creeps wider over 7 s (`PEEK_CRACK_MIN` 0.15,
+    `PEEK_CRACK_MAX` 0.66 of the door, `PEEK_CREEP_SEC`). The old fixed 0.34 is gone from door.ts.
+  - Her tells: her at the kitchen counter from behind with kettle steam; the bathroom light strip; steam and a
+    frosted shape in the bathroom door's glass; blue phone glow on the far ceiling; the far door ajar and dark
+    when she sleeps; TV flicker and her bare feet on the sofa armrest; her head to toe in the hallway.
+  - Detection is the same rule (`PEEK_SEEN` times how open the door is), so a narrow crack is safer now:
+    noticed from the hallway in about 2.5 s; the living room comes into view at 6.4 s and she notices at 8.7 s.
+  - Removed: the cloud, `peekReveal`, `peekOff`, `PEEK_REVEAL_SEC`, `PEEK_FORGET_SEC`.
+  - New art: her from behind (`drawHerBack`).
+- The blueprint shrinks to 168 px so the panel still fits; it moves onto the wall with the webcam view (#35).
+- **Tests:**
+  - `test/peek.py` is rewritten: it screenshots every row of the table at its crack width, plus each wide open
+    (`test/peek_sheet.png`).
+  - New `test/peekcrack.ts`: the crack timing and who can see you. Passes.
+  - Sims (4 good, 4 idle): good depth 9.8, visits 6.0, 0 catches; idle caught 0.5. Unchanged, since the bots
+    never peek.
+
 ## 0.33.0 (2026-11-17)
 
 Real audio for her cues and audio-first loot (#13). Music moved to #32.

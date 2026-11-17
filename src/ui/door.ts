@@ -1,16 +1,12 @@
 import { S } from '../core/state';
-import { drawHer, drawHerFrosted, OUTFIT_BY_ACTIVITY, type Face } from './her';
+import { drawHer, drawHerFrosted, drawHerBack, OUTFIT_BY_ACTIVITY, type Face } from './her';
+import { T } from '../config/tuning';
 
-// Your door, seen from your desk. Hold it to peek: it opens a crack, and the light in the gap hints where she is.
+// Your door, seen from your desk. Hold it to peek: it opens a crack onto the hallway (drawHallway).
 export const DOOR_W = 280, DOOR_H = 396;
 const TOP = 34, BOT = 370, X0 = 48, DW = 184;   // door opening
 
-const SIL: [number, number, number, number][] = [[5,0,5,2],[4,2,7,4],[3,2,2,7],[5,6,5,2],[3,8,9,9],[1,9,2,7],[12,9,2,5],[4,17,7,3],[4,20,3,9],[8,20,3,9],[3,29,4,1],[8,29,4,1]];
 
-function silhouette(c: CanvasRenderingContext2D, x: number, y: number, s: number, col = '#1a1220') {
-  c.fillStyle = col;
-  for (const [a, b, w, h] of SIL) c.fillRect(x + a * s, y + b * s, w * s, h * s);
-}
 
 export function drawDoor(c: CanvasRenderingContext2D) {
   const n = S.g.night;
@@ -46,9 +42,9 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     c.restore();
     emote(c, cx + 34, top - 6, face, t);
   } else {
-    const p = n?.peek ?? 0;
-    const gap = p * DW * 0.34;
-    if (gap > 0.5) drawGap(c, X0 + DW - gap, TOP, gap, H, t);
+    const p = n?.peek ?? 0;                       // 0 shut .. 1 = PEEK_CRACK_MAX of the door's width
+    const gap = p * DW * T.PEEK_CRACK_MAX;
+    if (gap > 0.5) drawHallway(c, X0 + DW - gap, TOP, gap, H, t);
     // the door panel swings toward you: narrower and darker as it opens
     const w = DW - gap;
     c.fillStyle = p > 0 ? `rgb(${74 - p * 20},${51 - p * 14},${36 - p * 10})` : '#4a3324';
@@ -93,36 +89,113 @@ export function drawDoor(c: CanvasRenderingContext2D) {
   if (n && n.peek <= 0 && stage === 'idle') { c.fillStyle = 'rgba(255,220,200,.35)'; c.font = '14px "Patrick Hand", sans-serif'; c.textAlign = 'center'; c.fillText('hold the door to peek', X0 + DW / 2, BOT + 20); }
 }
 
-/** What you see through the crack. Vague on purpose: light and shapes, not a map marker. */
-function drawGap(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, t: number) {
+// ---------- The hallway behind your door (docs/design/her.md, Peeking) ----------
+// One fixed picture, laid out like the blueprint and seen from your door: the crack opens from the door's right
+// edge, so the kitchen right across shows at a narrow crack, the bathroom door at a medium one, and the bedroom
+// door and the living-room opening at the far end only when wide. Lights and her tell where she is.
+const VP: [number, number] = [150, 160];                        // vanishing point
+const RW = 175, END_L = 100;                                     // right wall starts at x 175; far end wall x 100..175
+const yTop = (x: number) => VP[1] - 1.44 * (x - VP[0]);         // right wall: ceiling line
+const yBot = (x: number) => VP[1] + 2.16 * (x - VP[0]);         // right wall: floor line
+/** A door or opening on the right wall between x0 and x1, from `top` (0 = ceiling, 1 = floor) down to the floor. */
+function wallQuad(x0: number, x1: number, top: number): [number, number][] {
+  const t = (x: number) => yTop(x) + (yBot(x) - yTop(x)) * top;
+  return [[x0, t(x0)], [x1, t(x1)], [x1, yBot(x1)], [x0, yBot(x0)]];
+}
+function fillPoly(c: CanvasRenderingContext2D, pts: [number, number][], style: string | CanvasGradient) {
+  c.fillStyle = style; c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); c.fill();
+}
+
+function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, t: number) {
   const n = S.g.night!;
   const a = n.apt;
   const v = n.visit.stage;
+  const room = v === 'idle' && !n.pre?.withHer ? (a.moving > 0 ? 'hallway' : a.room) : 'hallway';
+  const act = a.activity;
+  const XR = X0 + DW;
   c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
-  // hallway: dim wall, floor
-  c.fillStyle = '#2a2230'; c.fillRect(x, y, w, h);
-  c.fillStyle = '#3a2e2a'; c.fillRect(x, y + h * 0.78, w, h * 0.22);
-  const room = v === 'idle' ? (a.moving > 0 ? 'hallway' : a.room) : 'hallway';
-  const near = v === 'hall' || v === 'handle';
-  if (a.asleep && v === 'idle') {
-    c.fillStyle = 'rgba(80,90,140,.25)'; c.fillRect(x, y, w, h);
-  } else if (room === 'living') {
-    const f = a.activity === 'tv' ? 0.35 + Math.sin(t * 9) * 0.1 + Math.sin(t * 23) * 0.08 : 0.3;
-    c.fillStyle = a.activity === 'tv' ? `rgba(110,150,255,${f})` : `rgba(255,210,140,${f})`; c.fillRect(x, y, w * 0.7, h * 0.8);
-  } else if (room === 'kitchen') {
-    c.fillStyle = 'rgba(255,230,160,.35)'; c.fillRect(x + w * 0.4, y, w * 0.6, h * 0.8);
-  } else if (room === 'bathroom') {
-    c.fillStyle = 'rgba(220,240,255,.22)'; c.fillRect(x + w * 0.2, y, w * 0.5, h * 0.8);
-    if (a.activity === 'shower') { c.fillStyle = 'rgba(210,230,245,.35)'; c.fillRect(x, y, w, h * 0.8); drawHerFrosted(c, x + w * 0.5, y + 20, 0.9); }
-    if (a.activity === 'shower') for (let i = 0; i < 5; i++) { c.fillStyle = 'rgba(240,240,255,.12)'; c.beginPath(); c.arc(x + w * 0.4 + Math.sin(t + i) * 8, y + 30 + i * 14 - (t * 10 % 14), 10, 0, Math.PI * 2); c.fill(); }
-  } else if (room === 'bedroom') {
-    if (a.activity === 'phone') { c.fillStyle = 'rgba(160,200,255,.18)'; c.fillRect(x + w * 0.5, y + h * 0.3, w * 0.3, h * 0.3); }
-  } else if (room === 'hallway') {
-    c.fillStyle = 'rgba(255,220,160,.25)'; c.fillRect(x, y, w, h);
-    if (near) {
-      const look = OUTFIT_BY_ACTIVITY[n.visit.from ?? 'tv'] ?? OUTFIT_BY_ACTIVITY.tv;
-      drawHer(c, x + w * 0.2, y + 18, 1.26, { outfit: look.outfit, item: look.item, face: 'neutral', pose: 'stand' });
-    } else silhouette(c, x + w * 0.25, y + h * 0.3, 5, '#1a1220');
+  // ceiling, walls, floor (a dim night light in the hallway)
+  fillPoly(c, [[X0, TOP], [XR, TOP], [XR, yTop(XR)], [RW, yTop(RW)], [END_L, yTop(RW)], [X0, 87]], '#211a24');
+  fillPoly(c, [[RW, yTop(RW)], [XR, yTop(XR)], [XR, yBot(XR)], [RW, yBot(RW)]], '#43363f');                 // right wall
+  fillPoly(c, [[X0, 87], [END_L, yTop(RW)], [END_L, yBot(RW)], [X0, 270]], '#3a2e37');                       // left wall (your side)
+  fillPoly(c, [[END_L, yTop(RW)], [RW, yTop(RW)], [RW, yBot(RW)], [END_L, yBot(RW)]], '#4a3c46');           // the far end
+  const fl = c.createLinearGradient(0, yBot(RW), 0, BOT); fl.addColorStop(0, '#3e2a1f'); fl.addColorStop(1, '#6a4630');
+  fillPoly(c, [[X0, 270], [END_L, yBot(RW)], [RW, yBot(RW)], [XR, yBot(XR)], [XR, BOT], [X0, BOT]], fl);
+  c.strokeStyle = 'rgba(30,18,12,.45)'; c.lineWidth = 1;
+  for (let i = -6; i <= 6; i++) { c.beginPath(); c.moveTo(VP[0] + i * 9, yBot(RW)); c.lineTo(VP[0] + i * 46, BOT + 40); c.stroke(); }
+  c.fillStyle = '#2c2128'; c.fillRect(END_L, yBot(RW) - 3, RW - END_L, 3);                                    // skirting at the end
+  const lamp = c.createRadialGradient(150, 70, 4, 150, 70, 150); lamp.addColorStop(0, 'rgba(255,200,140,.16)'); lamp.addColorStop(1, 'rgba(255,200,140,0)');
+  c.fillStyle = lamp; c.fillRect(X0, TOP, DW, BOT - TOP);
+
+  // --- kitchen opening, right across your door (narrow crack)
+  const kq = wallQuad(207, XR, 0.1);
+  const kitchen = room === 'kitchen';
+  if (kitchen) {
+    const kg = c.createLinearGradient(207, 0, XR, 0); kg.addColorStop(0, '#f5c27e'); kg.addColorStop(1, '#ffe2a8');
+    fillPoly(c, kq, kg);
+    c.fillStyle = '#c99a62'; c.fillRect(207, 214, XR - 207, 10); c.fillStyle = '#8a6440'; c.fillRect(207, 224, XR - 207, 70);   // the counter
+    c.fillStyle = '#d0d4dc'; c.fillRect(216, 198, 10, 16); c.fillStyle = '#2a2a30'; c.fillRect(215, 196, 12, 3);                  // the kettle
+    for (let i = 0; i < 4; i++) { const k = (t * 0.6 + i / 4) % 1; c.fillStyle = `rgba(255,255,255,${0.35 * (1 - k)})`; c.beginPath(); c.arc(221 + Math.sin(t * 2 + i) * 4, 192 - k * 50, 4 + k * 6, 0, Math.PI * 2); c.fill(); }
+    if (act === 'tea') {   // her at the counter, from behind (inside the opening)
+      c.save(); c.beginPath(); kq.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.clip();
+      drawHerBack(c, 224, 150, 0.6, OUTFIT_BY_ACTIVITY.tea.outfit); c.restore();
+    }
+    const spill = c.createLinearGradient(0, yBot(207), 0, BOT); spill.addColorStop(0, 'rgba(255,214,150,.35)'); spill.addColorStop(1, 'rgba(255,214,150,0)');
+    fillPoly(c, [[207, yBot(207)], [XR, yBot(XR)], [XR, BOT], [196, BOT]], spill);
+  } else {
+    fillPoly(c, kq, '#141016');
+    c.fillStyle = '#3aff9a'; c.fillRect(222, 205, 2, 2);   // the fridge's little LED
+  }
+  c.fillStyle = '#2c2128'; c.fillRect(205, yTop(205) + 2, 3, yBot(205) - yTop(205));   // door frame edge
+
+  // --- bathroom door, across and a bit further (medium crack)
+  const bq = wallQuad(182, 200, 0.2);
+  const bath = room === 'bathroom';
+  fillPoly(c, bq, bath ? '#cdbfa6' : '#a99c88');
+  const gl = wallQuad(185, 197, 0.28).map(([px, py], i) => [px, i < 2 ? py : py - (yBot(px) - yTop(px)) * 0.38] as [number, number]);   // the frosted glass panel
+  fillPoly(c, gl, bath ? 'rgba(235,240,250,.9)' : '#8d8b95');
+  if (bath && act === 'shower') {
+    c.save(); c.beginPath(); gl.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.clip();
+    drawHerFrosted(c, 191, gl[0][1] + 2, 0.36); c.restore();
+    for (let i = 0; i < 6; i++) { const k = (t * 0.35 + i / 6) % 1; c.fillStyle = `rgba(240,244,255,${0.32 * (1 - k)})`; c.beginPath(); c.arc(184 + Math.sin(t + i * 1.7) * 6 - k * 12, yTop(186) + 30 + i * 8 - k * 30, 5 + k * 9, 0, Math.PI * 2); c.fill(); }   // steam leaking out
+  }
+  if (bath) {   // light strip under the door, and its glow on the floor
+    c.fillStyle = '#ffe9a8'; c.beginPath(); c.moveTo(182, yBot(182) - 1); c.lineTo(200, yBot(200) - 1); c.lineTo(200, yBot(200) + 1); c.lineTo(182, yBot(182) + 1); c.fill();
+    const bgw = c.createRadialGradient(191, yBot(191) + 6, 1, 191, yBot(191) + 6, 26); bgw.addColorStop(0, 'rgba(255,233,168,.35)'); bgw.addColorStop(1, 'rgba(255,233,168,0)');
+    c.fillStyle = bgw; c.fillRect(160, yBot(182) - 10, 60, 40);
+  }
+
+  // --- the far end: living-room opening (your side) and the bedroom door (wide crack)
+  const tv = room === 'living' && act === 'tv';
+  c.fillStyle = '#120e15'; c.fillRect(106, 140, 32, yBot(RW) - 140);                      // living-room opening
+  if (room === 'living') {
+    const f = tv ? 0.55 + Math.sin(t * 9) * 0.15 + Math.sin(t * 23) * 0.1 : 0.4;
+    c.fillStyle = tv ? `rgba(90,140,255,${f})` : `rgba(255,200,130,${f})`; c.fillRect(106, 140, 32, yBot(RW) - 140);
+    if (tv) { c.fillStyle = `rgba(110,150,255,${f * 0.35})`; c.fillRect(END_L, yTop(RW), RW - END_L, yBot(RW) - yTop(RW)); }   // blue flicker on the wall
+    c.fillStyle = '#4a3a5a'; c.fillRect(110, 192, 28, 22); c.fillStyle = '#5c4a6e'; c.fillRect(110, 188, 28, 6);              // the sofa's armrest
+    for (const [fx, fy] of [[120, 182], [129, 184]]) {                                                                         // her bare feet on it
+      c.fillStyle = '#e9ad96'; c.fillRect(fx, fy, 7, 6); c.fillStyle = '#f9d8c2'; c.fillRect(fx, fy, 6, 5);
+      c.fillStyle = '#f7c4b2'; c.fillRect(fx + 1, fy + 1, 3, 3); c.fillStyle = '#f9d8c2'; c.fillRect(fx + 6, fy - 2, 2, 3);
+    }
+  }
+  c.fillStyle = '#2c2128'; c.fillRect(104, 138, 36, 3); c.fillRect(104, 140, 2, yBot(RW) - 140); c.fillRect(138, 140, 2, yBot(RW) - 140);
+  const inBed = room === 'bedroom';
+  const ajar = inBed ? 7 : 0;
+  c.fillStyle = '#2c2128'; c.fillRect(144, 136, 26, yBot(RW) - 136);                        // bedroom door frame
+  c.fillStyle = inBed && act === 'phone' && !a.asleep ? '#5a78c8' : '#0c0a10'; c.fillRect(146, 138, 22, yBot(RW) - 138);   // inside (seen when ajar)
+  c.fillStyle = '#9a8a78'; c.fillRect(146 + ajar, 138, 22 - ajar, yBot(RW) - 138);           // the door
+  c.fillStyle = '#c9a441'; c.fillRect(146 + ajar + 2, 178, 2, 3);
+  if (inBed && act === 'phone' && !a.asleep) {   // cold blue phone glow on the ceiling
+    const pg = c.createRadialGradient(150, yTop(RW) + 4, 2, 150, yTop(RW) + 4, 46); pg.addColorStop(0, 'rgba(140,180,255,.55)'); pg.addColorStop(1, 'rgba(140,180,255,0)');
+    c.fillStyle = pg; c.fillRect(100, 80, 100, 70);
+  }
+
+  // --- her in the hallway: head to toe, close when she is at your door
+  if (room === 'hallway' && v !== 'in') {
+    const near = v === 'hall' || v === 'handle';
+    const look = OUTFIT_BY_ACTIVITY[v === 'idle' ? a.activity : (n.visit.from ?? 'tv')] ?? OUTFIT_BY_ACTIVITY.tv;
+    const s = near ? 1.18 : 0.66, feet = near ? BOT - 4 : 300;
+    drawHer(c, near ? 214 : 210, feet - 239.5 * s, s, { outfit: look.outfit, item: look.item, face: near ? 'neutral' : 'smile', pose: 'stand' });
   }
   c.restore();
 }

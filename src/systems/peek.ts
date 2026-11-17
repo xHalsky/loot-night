@@ -1,17 +1,16 @@
 import { T } from '../config/tuning';
 import { N } from '../core/state';
-import { rand } from '../core/rng';
 import { addMood } from './meters';
 import { toast } from '../core/fx';
 import { sfx } from '../ui/audio';
 
-// Peeking through your door (docs/design/her.md). Hold the door: it opens a crack and the light gives a hint
-// of where she is; the map shows a vague blob only while you peek. If she is somewhere she can see your door
-// (hallway, living room), she may notice and come straight over: mood up, Flow reset.
+// Peeking through your door (docs/design/her.md). Hold the door: it opens to a narrow crack, then creeps wider;
+// the crack shows the hallway and her tells in the doorways (door.ts). If she is somewhere she can see your door
+// (hallway, living room), she may notice and come straight over: mood up, Flow reset. Wider = easier to notice.
 
 export function setPeeking(on: boolean) {
   const n = N();
-  if (on && !n.peeking && n.visit.stage !== 'in') { n.peekOff = [rand(-16, 16), rand(-8, 8)]; sfx.creak(); }
+  if (on && !n.peeking && n.visit.stage !== 'in') sfx.creak();
   n.peeking = on && n.visit.stage !== 'in';
 }
 
@@ -30,11 +29,11 @@ function seenRate(): number {
 
 export function updatePeek(dt: number) {
   const n = N();
-  const target = n.peeking ? 1 : 0;
-  n.peek += Math.sign(target - n.peek) * Math.min(Math.abs(target - n.peek), dt / T.PEEK_OPEN_SEC);
-  if (n.peek > 0.5) n.peekReveal = Math.min(1, n.peekReveal + dt / T.PEEK_REVEAL_SEC);
-  else n.peekReveal = Math.max(0, n.peekReveal - dt / T.PEEK_FORGET_SEC);
-  if (n.peek > 0.3) n.peekSus += seenRate() * dt * n.peek;
+  const narrow = T.PEEK_CRACK_MIN / T.PEEK_CRACK_MAX;
+  if (!n.peeking) n.peek = Math.max(0, n.peek - dt / T.PEEK_OPEN_SEC);                      // let go: it closes
+  else if (n.peek < narrow) n.peek = Math.min(narrow, n.peek + dt * narrow / T.PEEK_OPEN_SEC);   // quickly to a crack
+  else n.peek = Math.min(1, n.peek + dt * (1 - narrow) / T.PEEK_CREEP_SEC);                 // then it creeps wider
+  if (n.peek > 0.1) n.peekSus += seenRate() * dt * n.peek;
   else n.peekSus = Math.max(0, n.peekSus - dt * 0.4);
   if (n.peekSus >= 1) spotted();
 }

@@ -6,7 +6,7 @@
 
 | Column | Shows |
 |---|---|
-| Left (her) | The door (280 × 396, the eye-candy window), the blueprint, her stats |
+| Left (her) | The door (280 × 396, the eye-candy window; hold it to peek), the blueprint, the last-heard line, her note, her stats |
 | Centre (desk) | The monitor (game, city, Excel, minigames), and below it the desk: keyboard and mouse centred on a mat, phone, headset, Monster fridge, cans; the bin behind the monitor. The dog and her desk visit overlay it. |
 | Right (RPG) | Top to bottom: YOU (Noise, Tired), Feed, run progress (floor, checkpoint, Flow, Zone), Party (paper doll), Backpack |
 

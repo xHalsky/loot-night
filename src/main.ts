@@ -370,7 +370,7 @@ function showerPanel(n: NonNullable<typeof S.g.night>) {
   cv.style.display = on ? 'block' : 'none';
   if (!on) return;
   const bp = document.querySelector('#doorInfo .bp svg') as HTMLElement | null;
-  if (bp) { const d = el('door').getBoundingClientRect(), r = bp.getBoundingClientRect(); cv.style.left = `${(r.left - d.left) / stageScale}px`; cv.style.top = `${(r.top - d.top) / stageScale}px`; }
+  if (bp) { const d = el('door').getBoundingClientRect(), r = bp.getBoundingClientRect(); cv.style.left = `${(r.left - d.left) / stageScale}px`; cv.style.top = `${(r.top - d.top) / stageScale}px`; cv.style.width = cv.style.height = `${r.width / stageScale}px`; }
   const fog = Math.max(0, Math.min(1, 1 - a.t / ACT_BY_ID.shower.dur[1]));
   const clear = a.cued ? Math.max(0, Math.min(1, 1 - a.t / T.END_CUE_SEC)) : 0;   // the hair dryer: water off, the glass clears
   drawShowerPanel(showerCtx, performance.now() / 1000, fog, clear);

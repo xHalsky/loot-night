@@ -145,7 +145,7 @@ export interface Night {
   cans: number;                  // empty cans in the bin
   bin: BinCan[];                 // where they lie (persists all night)
   log: { text: string; color: string; time: string }[];   // the chat feed
-  peeking: boolean; peek: number; peekReveal: number; peekSus: number; peekOff: [number, number];   // door peek
+  peeking: boolean; peek: number; peekSus: number;   // peek: how open the door is, 0 shut .. 1 = PEEK_CRACK_MAX   // door peek
   declineHold: boolean; decline: number;   // holding Decline on a ringing call
   phoneDown: number; flipFx: number;       // phone face-down timer, flip animation
   momCallback: number;                     // threat time Mom calls again (0 = none)

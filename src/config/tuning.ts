@@ -45,7 +45,9 @@ export const T = {
   BOSS_FLIP_FOLLOWUP_SEC: [20, 30] as [number, number],   // flipping the phone on the boss: he pings again soon
   TEXT_FLIP_WAKE: 12, TEXT_FLIP_MOOD: 3,
   // Door peek (hold the door)
-  PEEK_OPEN_SEC: 0.5, PEEK_REVEAL_SEC: 7, PEEK_FORGET_SEC: 3,   // the cloud over the map shrinks to her over 7 s of peeking
+  // Peeking: hold the door. It opens to a narrow crack in PEEK_OPEN_SEC, then creeps wider to PEEK_CRACK_MAX over
+  // PEEK_CREEP_SEC (fractions of the door's width). Narrow shows the kitchen, medium the bathroom, wide the far end.
+  PEEK_OPEN_SEC: 0.5, PEEK_CRACK_MIN: 0.15, PEEK_CRACK_MAX: 0.66, PEEK_CREEP_SEC: 7,
   PEEK_SEEN: { hallway: 1.4, living: 0.45, tv: 0.18 } as Record<string, number>,
   PEEK_CAUGHT_MOOD: 8,
   LEAN_CHANCE: 0.25, LEAN_MOOD: -2,      // a visit where she only leans on the frame and looks

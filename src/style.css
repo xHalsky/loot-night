@@ -711,7 +711,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #doorCanvas { top: 0 !important; }
 #herHead { top: 6px !important; }
 #doorInfo { top: 400px !important; gap: 4px !important; }
-.bp { width: 176px !important; }
+.bp { width: 168px !important; }
 .bp .apt-foot { font-size: 11px !important; }
 #door .her-note div { font-size: 15px; }
 .rp.feed { display: flex; flex-direction: column; height: 150px; padding: 0 !important; overflow: hidden; background: rgba(8,6,12,.85); }
@@ -850,3 +850,9 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 
 /* the shower panel over the apartment map (#22) */
 #showerCanvas { position: absolute; display: none; width: 176px; height: 176px; border-radius: 4px; z-index: 3; pointer-events: none; image-rendering: auto; box-shadow: 0 0 0 2px #fff4f2; }
+/* Last-heard caption (#33): one line between the door and the her-note */
+.heard { font: 17px/1.1 'Patrick Hand', sans-serif; color: #ffd1dc; padding: 1px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .3px; }
+.heard i { font-style: normal; color: #ff9ab8; margin-right: 2px; }
+.heard.stale { opacity: .5; }
+.heard.stale b { font-weight: 400; color: #fff; margin-right: 2px; }
+.heard.muffled { color: #e0a070; }

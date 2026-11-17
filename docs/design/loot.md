@@ -27,7 +27,7 @@ changes how you handle her.
 
 | Suffix | Effect |
 |---|---|
-| of Peace | Headset on, you still hear her steps in the hallway (sound and blueprint) |
+| of Peace | Headset on, you still hear her steps in the hallway (sound and the last-heard line) |
 | of Quick Fingers | Alt-tab `AFFIX_QUICK` (30%) faster |
 | of Five More Minutes | Tiredness builds `AFFIX_TIRED` (20%) slower |
 | of Infinite Excuses | Once a night a catch becomes a pass, Mood +`AFFIX_EXCUSE_MOOD` |

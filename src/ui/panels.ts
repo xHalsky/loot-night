@@ -6,7 +6,7 @@ import { soundCues, soundStatus } from './audio';
 import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
-import { specialText } from '../systems/affixes';
+import { specialText, hasLife } from '../systems/affixes';
 import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
 import { preBlocked, nextMult } from '../systems/preemptive';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
@@ -27,7 +27,7 @@ import { fmtClock } from '../core/fx';
 import type { MorningScene } from './her';
 import { hasSave } from '../systems/save';
 import { canSleep } from '../systems/night';
-import { ROOM_SHORT } from '../data/apartment';
+import { ROOM_SHORT, ROOM_NAME } from '../data/apartment';
 import type { Room } from '../core/state';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -91,6 +91,7 @@ export function doorInfoHtml(): string {
     ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>` : '';
   void tiredFx; void tired;
   return `${aptMapHtml()}
+  ${heardHtml()}
   <div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div>
   ${preRowHtml()}
   <div class="her-stats">
@@ -159,23 +160,28 @@ export function preBusyHtml(): string {
 // Blueprint of the apartment (docs/design/her.md). No marker for her: you listen.
 // While you peek, a vague blob shows roughly where she is.
 const ROOM_C: Record<Room, [number, number]> = { bedroom: [46, 42], bathroom: [120, 40], kitchen: [174, 44], hallway: [96, 95], living: [58, 152] };
+/** The last sound you heard of her: what, where, how long ago. Never where she is now (docs/design/her.md). */
+export function heardHtml(): string {
+  const n = N();
+  const a = n.apt;
+  const ago = n.threat - a.heardAt;
+  const earplugs = n.headset && a.heardWhat === 'STEPS' && ago < 3 && hasLife('earplugs');
+  if (n.headset && !earplugs) return '<div class="heard muffled">Headset on. You hear nothing. (H)</div>';
+  const when = a.heardWhat === 'ZZZ' ? '' : ` · ${ago < 1.5 ? 'now' : `${Math.floor(ago)} s ago`}`;
+  if (!a.heard) return '<div class="heard stale"><b>?</b> Nothing yet. Listen.</div>';
+  const what = `${esc(a.heardWhat)} · ${ROOM_NAME[a.heard].toLowerCase()}${when}`;
+  return ago > T.APT_STALE_SEC && a.heardWhat !== 'ZZZ'
+    ? `<div class="heard stale"><b>?</b> ${what}</div>`
+    : `<div class="heard"><i>&#9835;</i> ${what}</div>`;
+}
+
 function aptMapHtml(): string {
   const n = N();
   const a = n.apt;
   const W = 'stroke="#eaf3ff" stroke-width="2.2" fill="none"', F = 'stroke="#cfe2ff" stroke-width="1" fill="none" opacity=".8"';
-  const room: Room = n.visit.stage !== 'idle' ? 'hallway' : a.moving > 0 ? 'hallway' : a.room;
-  // Peeking: a pink cloud covers the whole flat and slowly shrinks onto her (never smaller than ~1/4 of the living room).
-  const [hx, hy] = ROOM_C[room];
-  const k = Math.pow(n.peekReveal, 0.85);
-  const cx = 100 + (hx + n.peekOff[0] - 100) * k, cy = 100 + (hy + n.peekOff[1] - 100) * k, r = 150 - (150 - 30) * k;
-  const vis = Math.min(1, n.peek * 1.4);
-  const blob = vis > 0.02
-    ? `<g opacity="${vis.toFixed(2)}"><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="url(#bpBlob)"/>${k > 0.85 ? `<text x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle" font-size="12" fill="#ffd1dc">${a.asleep && n.visit.stage === 'idle' ? 'zzz' : '?'}</text>` : ''}</g>`
-    : '';
-  const foot = n.headset ? '<span class="muffled">Headset on: you hear nothing. (H)</span>' : 'Listen. Hold the door to peek.';
-  return `<div class="bp"><svg viewBox="0 0 200 200" width="176" height="176">
+  return `<div class="bp"><svg viewBox="0 0 200 200" width="168" height="168">
     <defs><pattern id="bpGrid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="rgba(255,255,255,.08)" stroke-width=".6"/></pattern>
-      <radialGradient id="bpBlob"><stop offset="0" stop-color="#ff7aa0" stop-opacity=".7"/><stop offset=".7" stop-color="#ff7aa0" stop-opacity=".5"/><stop offset="1" stop-color="#ff7aa0" stop-opacity="0"/></radialGradient></defs>
+</defs>
     <rect width="200" height="200" fill="#1d4f91"/><rect width="200" height="200" fill="url(#bpGrid)"/>
     <path d="M160 106 L4 92 M160 106 L40 196" fill="none" stroke="#ff9aa8" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>
     <rect x="2" y="2" width="196" height="196" ${W} stroke-width="3"/>
@@ -194,8 +200,7 @@ function aptMapHtml(): string {
       <text x="50" y="76" text-anchor="middle">BEDROOM</text><text x="120" y="78" text-anchor="middle" font-size="9">BATH</text>
       <text x="166" y="98" text-anchor="middle" font-size="9">KITCHEN</text><text x="62" y="99" font-size="9">HALLWAY</text>
       <text x="58" y="158" text-anchor="middle">LIVING</text><text x="150" y="150" font-size="11" fill="#ffd27a">YOU</text></g>
-    ${blob}
-  </svg><div class="apt-foot">${foot}</div></div>`;
+  </svg></div>`;
 }
 
 export function feedHtml(): string {
