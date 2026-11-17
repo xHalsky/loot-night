@@ -7,7 +7,8 @@ import { sfx } from '../ui/audio';
 import { PEEK_PASS, PEEK_CAUGHT, FAKEOUT_LINES, CHAT_QS } from '../data/content';
 import { maybeLap } from './lap';
 import { maxHp } from './stats';
-import { updateApartment, afterVisit, sendHerSoon, hearsApartment, initApartment } from './apartment';
+import { updateApartment, afterVisit, sendHerSoon, hearsApartment, hearsHallway, initApartment } from './apartment';
+import { hasLife } from './affixes';
 import { startCuddle } from './cuddle';
 
 // Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
@@ -54,6 +55,7 @@ export function startVisit(woken = false, kind?: VisitKind) {
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? pickKind(v.from, woken);
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
+  if (v.kind === 'snack' && !v.fake && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
 }
 export const visitSooner = () => sendHerSoon();
 export const triggerVisitNow = (kind?: VisitKind) => startVisit(false, kind);
@@ -66,8 +68,10 @@ function telegraphSounds(dt: number) {
   const slow = v.kind === 'cuddle' && v.stage !== 'passing';
   if (stepTimer <= 0) {
     stepTimer = slow ? 0.8 : 0.45;
-    sfx.step((v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35) * (slow ? 0.6 : 1));
-    if (hearsApartment()) { n.apt.heard = 'hallway'; n.apt.heardWhat = 'STEPS'; n.apt.heardAt = n.threat; }
+    const loud = (v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35) * (slow ? 0.6 : 1);
+    sfx.step(loud);
+    if (n.headset && hasLife('earplugs')) sfx.stepClear(loud);   // Earplugs of Peace: the steps come through the headset
+    if (hearsHallway()) { n.apt.heard = 'hallway'; n.apt.heardWhat = 'STEPS'; n.apt.heardAt = n.threat; }
   }
   if (v.stage !== 'hall' && v.stage !== 'far') return;
   cueTimer -= dt;
@@ -246,6 +250,12 @@ export function cuddleDone(score: number | null) {
 
 function caught() {
   const n = N();
+  if (hasLife('excuses') && !n.excused) {   // of Infinite Excuses: once a night she buys it
+    n.excused = true; n.visit.result = 'pass';
+    addMood(T.AFFIX_EXCUSE_MOOD);
+    toast(`"It's a team-building exercise, for work." She squints. She buys it. Once. Mood +${T.AFFIX_EXCUSE_MOOD}.`, '#ff7ab8'); sfx.good();
+    return;
+  }
   n.everCaught = true;
   n.catches++;
   n.scare = T.SCARE_SEC;

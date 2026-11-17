@@ -6,6 +6,7 @@ import { moodZone, addMood } from './meters';
 import { toast } from '../core/fx';
 import { sfx, setHeadset } from '../ui/audio';
 import { spawnInterrupt } from './interrupts';
+import { hasLife } from './affixes';
 
 // Where she is between visits (docs/design/her.md, FNAF layer).
 // You track her by sound; the headset muffles it (and costs your Zone to take off); after midnight she sleeps.
@@ -26,6 +27,8 @@ export function afterVisit() {
 }
 
 export const hearsApartment = () => !N().headset;
+/** Hallway steps: also heard through the headset with Earplugs of Peace. */
+export const hearsHallway = () => hearsApartment() || hasLife('earplugs');
 
 function hear(room: Room, what: string, force = false) {
   const n = N();
@@ -70,7 +73,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.moving > 0) {
     a.moving -= dt;
     a.soundT -= dt;
-    if (a.soundT <= 0) { a.soundT = 0.5; sfx.step(0.15); hear('hallway', 'STEPS'); }
+    if (a.soundT <= 0) { a.soundT = 0.5; sfx.step(0.15); hear('hallway', 'STEPS', hearsHallway()); }
     if (a.moving <= 0) a.soundT = 0.3;
     return null;
   }
@@ -104,7 +107,8 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
 function updateSleep(dt: number): 'wake' | null {
   const n = N();
   const a = n.apt;
-  a.wake = clamp(a.wake + Math.max(0, n.noise - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
+  const owl = hasLife('owl') ? 1 - T.AFFIX_OWL : 1;   // of the Night Owl
+  a.wake = clamp(a.wake + Math.max(0, n.noise - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
   if (a.wake >= T.WAKE_TEXT && !a.textSent) {
     if (spawnInterrupt('text')) {
       a.textSent = true;

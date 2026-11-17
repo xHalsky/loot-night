@@ -48,7 +48,7 @@ export function petStroke(dist: number, speed: number, sweet: boolean) {
   if (speed > T.DOG_FAST) { d.flinch = 0.4; d.pet = Math.max(0, d.pet - 0.04); return; }
   d.pet += dist * T.DOG_PET_RATE * (sweet ? T.DOG_SWEET_MULT : 1);
   if (d.pet >= 1) {
-    d.stage = 'happy'; d.t = 1.2; d.ignores = 0;
+    d.stage = 'happy'; d.t = 1.2; d.ignores = 0; N().goodBoy = T.AFFIX_DOG_SEC;   // Good Boy affixes count for a while
     toast('Good boy! He licks your hand and flops down at your feet.', '#6fcf7f'); sfx.heal();
   }
 }

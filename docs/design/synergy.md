@@ -3,7 +3,7 @@
 Slice set #29, arc set #14.
 
 **Rule:** every system takes input from at least two others and feeds at least two others; a system that
-only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23). Everything else below is planned.
+only punishes or only rewards is a dead end (Loop Hero's rule). Built so far: ability marks (0.23), cross-system affixes (0.25). Everything else below is planned.
 All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 
 ## Audit of the current build (2026-11-16)
@@ -11,7 +11,7 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | System | Feeds | Fed by | Gap |
 |---|---|---|---|
 | RPG combat | Noise, loot, XP | Flow, Zone, Monster, buildings, gear, Tiredness | Fine |
-| Loot | Gold, scraps, zł, party power | Flow, Zone, green Mood | zł is a dead end until the store (#4) |
+| Loot | Gold, scraps, zł, party power; real-life affixes change headset, alt-tab, Tiredness, excuses, waking, cans | Flow, Zone, green Mood; cross-system affixes read headset, Monster, Noise, Mood, the dog, Excel | zł is a dead end until the store (#4) |
 | Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift | Her visits give the RPG nothing positive |
 | Noise | Visit timing, waking her | Combat, dog, Monster | Only punishes; distance and masking (#17) add the read |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
@@ -26,7 +26,7 @@ The principle is vital, so the slice gets every item whose inputs exist on Monda
 | Item | Where |
 |---|---|
 | Cross-layer echoes, interrupts and the dog always pay, Goodwill, Witching Hour | Slice: #29 |
-| Ability marks, cross-system affixes | Slice: inside RPG depth #27 |
+| Ability marks, cross-system affixes | Slice: built in RPG depth #27 (0.23, 0.25) |
 | Audio-first loot cues | Slice: inside real audio #13 |
 | A city upgrade every night | Slice: inside the balance pass #2 |
 | Combo floors, party sets, overtime zł, bag tools, banter, unfolding city, bounties, the ending | Arc: #14 |
@@ -80,8 +80,8 @@ Cursed + Shrine = Purified; Goblin Den + Elite = Goblin King).
 **Ability marks:** built in 0.23 ([dungeon.md](dungeon.md)). Changed from this plan: marks last 6 s, not
 2 turns; Fire's Stagger payoff does not spread; Judged heals on skill hits, not auto attacks (away stays
 dangerous); Taunted reflects 50% with Ward, not 20% (20% was too small to see).
-**Cross-system affixes:** Spreadsheet Warrior (+overtime gold per kill), Library Voice, Headset Hero, Sweet
-Talker, Caffeinated, Good with Dogs. **Party sets** worn across different heroes (Guild Tabard, Ledger Plate).
+**Cross-system affixes:** built in 0.25 with real-life affixes ([loot.md](loot.md)). Caffeinated shipped as
+"of Caffeine" and Good with Dogs as "of the Good Boy" (luck for 60 s after petting). **Party sets** worn across different heroes (Guild Tabard, Ledger Plate).
 
 ## Tweaks
 

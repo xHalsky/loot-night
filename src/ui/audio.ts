@@ -64,6 +64,7 @@ function noise(dur: number, vol: number, cutoff: number, when = 0, bus: Bus = 'g
 export const sfx = {
   // Apartment bus (muffled by the headset).
   step(loud: number) { noise(0.09, 0.25 + loud * 0.6, 300 + loud * 300, 0, 'apt'); },
+  stepClear(loud: number) { noise(0.09, 0.15 + loud * 0.4, 300 + loud * 300, 0, 'game'); },   // a step that is not muffled by the headset
   handle() { tone(900, 0.05, 'square', 0.15, 0, undefined, 'apt'); tone(500, 0.08, 'square', 0.15, 0.06, undefined, 'apt'); },
   door() { tone(180, 0.5, 'sawtooth', 0.08, 0, 120, 'apt'); },
   apt(id: string) {

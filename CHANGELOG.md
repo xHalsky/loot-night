@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.25.0 (2026-11-17)
+
+RPG depth, part 3 of 3 (#27, done).
+
+- **Special affixes**, at most one per item, named by its suffix:
+  - Real-life (epic, legendary): of Peace (hear her steps through the headset), of Quick Fingers (alt-tab 30%
+    faster), of Five More Minutes (Tiredness 20% slower), of Infinite Excuses (once a night a catch becomes a
+    pass), of the Night Owl (Noise wakes her 30% slower), of Many Cans (cans hide themselves on a Snack run).
+  - Cross-system (rare and up), a stat while something in real life is true: Headset Hero (crit, headset on),
+    Caffeine (speed, Monster), Library Voice (attack, Noise under 30), Sweet Talker (attack, Mood green),
+    Good Boy (luck for 60 s after petting the dog), Spreadsheet Warrior (3 gold per kill on Excel).
+  - Roll rates: rares 30% cross; epics 35% real-life, 45% cross; every legendary has one. Hidden until
+    identified. Pink and teal tooltip lines; cross-system lines say Active or Inactive.
+- Random name suffixes that now are real affixes (Five More Minutes, Night Owl, Infinite Excuses) left the
+  random pool, so a name never promises an effect it does not have.
+- `test/affixes.ts`: roll rates and that the effects switch on. Sims unchanged (the bot does not equip):
+  8 good runs depth 9.6, 0 catches, visits 5.0, wakes 2.2. Alt-tab test 200/200 both ways.
+
 ## 0.24.0 (2026-11-17)
 
 RPG depth, part 2 of 3 (#27).

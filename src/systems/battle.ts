@@ -10,6 +10,7 @@ import { speedMult } from './tired';
 import { CD_PCT } from '../data/city';
 import { isAway, autopilotPull, autopilotHurt } from './autopilot';
 import { MARKS } from '../data/marks';
+import { overtimeGold } from './affixes';
 
 export const HERO_X = [208, 124, 40];   // knight in front (right), healer at the back
 export const ENEMY_X = [380, 457, 534];
@@ -418,6 +419,8 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   for (const e of n.enemies) {
     if (e.hp <= 0 && e.maxHp > 0) {
       grantXp((e.boss ? T.XP_PER_BOSS : T.XP_PER_KILL) * n.floor);
+      const ot = overtimeGold();   // Spreadsheet Warrior: kills while Excel is up pay overtime
+      if (ot) { S.g.gold += ot; const c = enemyCenter(e); floatText(c.x, UNIT_Y - 20, `+${ot}g overtime`, '#6fcf7f'); }
       if (e.boss) {
         n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b');
         n.enemies.forEach(x => { if (x !== e && x.hp > 0) { x.hp = 0; x.maxHp = 0; } });   // without the boss the rest run

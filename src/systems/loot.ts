@@ -3,6 +3,8 @@ import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type
 import { pick, weighted, chance, rand } from '../core/rng';
 import { ADJECTIVES, NOUNS, SUFFIXES, SLOT_STATS, STAT_BASE, RARITY_MULT, POSITIVE_AFFIXES, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
 import { toast } from '../core/fx';
+import { LIFE_AFFIXES, CROSS_AFFIXES, type SpecialAffix } from '../data/affixes';
+import { crossBonus } from './affixes';
 import { sfx } from '../ui/audio';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
@@ -18,7 +20,7 @@ export function rollRarity(floor: number, minIdx = 0): Rarity {
   }
   // Luck stat on gear: +1% rarer-drop weight per point across the party.
   const partyLuck = S.g.heroes.reduce((s, h) => s + Object.values(h.gear).reduce((a, it) =>
-    a + (it && it.identified ? it.affixes.filter(x => x.stat === 'luck').reduce((q, x) => q + x.amount, 0) : 0), 0), 0);
+    a + (it && it.identified ? it.affixes.filter(x => x.stat === 'luck').reduce((q, x) => q + x.amount, 0) + crossBonus(it, 'luck') : 0), 0), 0);
   luck += partyLuck * 0.01;
   for (let i = 1; i < w.length; i++) w[i] *= luck;
   for (let i = 0; i < minIdx; i++) w[i] = 0;
@@ -26,6 +28,14 @@ export function rollRarity(floor: number, minIdx = 0): Rarity {
   if (S.g.pity >= T.PITY_EPIC && idx < 3) idx = 3;
   if (idx >= 3) S.g.pity = 0; else S.g.pity++;
   return RARITIES[idx];
+}
+
+/** At most one special affix: a real-life one (epic+) or a cross-system one (rare+). */
+function rollSpecial(rarity: Rarity): SpecialAffix | null {
+  const r = Math.random(), life = T.AFFIX_LIFE_CHANCE[rarity] ?? 0, cross = T.AFFIX_CROSS_CHANCE[rarity] ?? 0;
+  if (r < life) return pick(LIFE_AFFIXES);
+  if (r < life + cross) return pick(CROSS_AFFIXES);
+  return null;
 }
 
 export function genItem(ilvl: number, minRarity = 0): Item {
@@ -51,9 +61,16 @@ export function genItem(ilvl: number, minRarity = 0): Item {
   }
   const ri = RARITIES.indexOf(rarity);
   let name = `${pick(ADJECTIVES[rarity])} ${pick(NOUNS[slot])}`;
-  if (ri >= 3) name += ` ${pick(SUFFIXES)}`;
-  const value = Math.round(6 * ilvl * mult * mult + positives * 3);
-  return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3 };
+  const sp = rollSpecial(rarity);
+  let specialAmt: number | undefined;
+  if (sp?.kind === 'cross') {
+    if (sp.stat) { const [a, b] = STAT_BASE[sp.stat]; specialAmt = Math.max(1, round1((a + b * ilvl) * mult * T.AFFIX_CROSS_PCT)); }
+    else specialAmt = T.AFFIX_SPREADSHEET_GOLD;
+  }
+  if (sp) name += ` ${sp.suffix}`;
+  else if (ri >= 3) name += ` ${pick(SUFFIXES)}`;
+  const value = Math.round(6 * ilvl * mult * mult + positives * 3 + (sp ? 10 * mult : 0));
+  return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3, ...(sp ? { special: sp.id, specialAmt } : {}) };
 }
 
 export const itemEntry = (item: Item): BagEntry => ({ kind: 'item', id: item.id, item });

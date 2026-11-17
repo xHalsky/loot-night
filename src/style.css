@@ -288,6 +288,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .tooltip { position: absolute; width: 234px; background: rgba(13,10,18,.96); border: 2px solid #4a3a5c; padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
 .tt-name { font-size: 14px; font-weight: 600; }
 .tt-sub { color: #a999bd; font-size: 11px; margin-bottom: 2px; }
+.tt-special { margin-top: 3px; padding-top: 3px; border-top: 1px dashed rgba(255,255,255,.15); font-size: 11px; line-height: 1.25; }
 .tt-val { color: #f2b84b; margin-top: 3px; }
 .tt-cmp { border-top: 1px solid #3a2f47; margin-top: 4px; padding-top: 4px; display: flex; flex-wrap: wrap; gap: 0 6px; }
 .tt-cmp .dim { width: 100%; }

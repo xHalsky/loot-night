@@ -5,6 +5,7 @@ import { T } from '../config/tuning';
 import { S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
+import { specialText } from '../systems/affixes';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
@@ -341,7 +342,14 @@ export function entryIcon(e: BagEntry, size: number): string {
 export const hover = { key: '', x: 0, y: 0 };
 
 function statLines(it: Item): string {
-  return it.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('');
+  return it.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('') + specialLine(it);
+}
+/** A special affix: real life in pink (changes a rule), cross-system in teal (a stat while something is true). */
+function specialLine(it: Item): string {
+  const sp = specialText(it);
+  if (!sp) return '';
+  const col = sp.life ? '#ff7ab8' : '#6fe0d0';
+  return `<div class="tt-special" style="color:${col};${sp.active ? '' : 'opacity:.6'}"><b>${sp.life ? 'Real life' : sp.active ? 'Active' : 'Inactive'}:</b> ${sp.text}</div>`;
 }
 
 export function tooltipHtml(): string {

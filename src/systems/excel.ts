@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { hasLife } from './affixes';
 import { S, N, type ExcelPiece, type ExcelState } from '../core/state';
 import { randi, rand } from '../core/rng';
 import { sfx } from '../ui/audio';
@@ -27,7 +28,7 @@ export function newExcel(): ExcelState {
 export function altTab() {
   const n = N();
   if (n.switching) return;
-  const lag = rand(...T.ALT_TAB_LAG_SEC);
+  const lag = rand(...T.ALT_TAB_LAG_SEC) * (hasLife('quick') ? 1 - T.AFFIX_QUICK : 1);   // of Quick Fingers
   n.switching = { to: n.monitor === 'rpg' ? 'excel' : 'rpg', t: lag, max: lag };
   sfx.monClick();
 }

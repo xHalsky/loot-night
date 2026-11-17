@@ -4,6 +4,7 @@ import { HERO_BASE } from '../data/heroes';
 import { RARITY_MULT } from '../data/items';
 import { SLOTS } from '../core/state';
 import { ATK_PCT, HP_PCT } from '../data/city';
+import { crossBonus } from './affixes';
 
 export function itemStat(item: Item | undefined, stat: Stat): number {
   if (!item || !item.identified) return 0;
@@ -17,7 +18,7 @@ export function heroStats(h: Hero, gearOverride?: Partial<Record<string, Item | 
   const out = {} as Record<Stat, number>;
   (Object.keys(base) as Stat[]).forEach(st => {
     let v = base[st] * (st === 'hp' || st === 'atk' ? lv : 1);
-    for (const it of Object.values(gear)) v += itemStat(it, st);
+    for (const it of Object.values(gear)) v += itemStat(it, st) + crossBonus(it, st);   // cross-system affixes count while their condition holds
     out[st] = v;
   });
   out.atk *= 1 + ATK_PCT[S.g.furniture.training ?? 0];

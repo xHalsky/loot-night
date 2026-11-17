@@ -12,6 +12,7 @@ export interface Item {
   id: string; name: string; slot: Slot; rarity: Rarity; ilvl: number;
   affixes: Affix[]; value: number; identified: boolean;
   locked?: boolean;              // locked items can't be sold, salvaged, listed or dropped
+  special?: string; specialAmt?: number;   // a special affix id (src/data/affixes.ts) and its stat or gold amount
 }
 export type BagEntry =
   | { kind: 'item'; id: string; item: Item }
@@ -143,6 +144,7 @@ export interface Night {
   interrupts: Interrupt[]; nextInterruptAt: number;
   game: MiniGame | null;
   excel: ExcelState;
+  goodBoy: number; excused: boolean;   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   moodDrift: number;
   selected: string | null; heroTab: number;

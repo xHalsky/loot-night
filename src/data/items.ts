@@ -39,7 +39,8 @@ export const ADJECTIVES: Record<Rarity, string[]> = {
   epic: ['Collector\'s', 'Bailiff\'s', 'Notarized', 'Gilded'],
   legendary: ['Eternal', 'Unpaid', 'Mythic', 'Final-Notice'],
 };
-export const SUFFIXES = ['of Many Lives', 'of Five More Minutes', 'of the Night Owl', 'of Infinite Excuses', 'of Compound Interest', 'of One More Floor', 'of the Raid Leader'];
+// Random name suffixes for epics and legendaries without a special affix (special ones bring their own: data/affixes.ts).
+export const SUFFIXES = ['of Many Lives', 'of Compound Interest', 'of One More Floor', 'of the Raid Leader', 'of Late Fees', 'of the Group Chat'];
 
 export const MAP_INFO: Record<MapKind, { name: string; desc: string; color: string; value: number }> = {
   elite: { name: 'Elite Pack', desc: 'Harder enemies, a guaranteed rare', color: '#f2b84b', value: 30 },

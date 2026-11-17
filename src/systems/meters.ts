@@ -39,6 +39,7 @@ export function updateMeters(dt: number) {
 
   n.taunt = Math.max(0, n.taunt - dt);
   n.rally = Math.max(0, n.rally - dt);
+  n.goodBoy = Math.max(0, n.goodBoy - dt);
   n.ward = Math.max(0, n.ward - dt);
   n.guilt = Math.max(0, n.guilt - dt);
   n.monitorOff = Math.max(0, n.monitorOff - dt);

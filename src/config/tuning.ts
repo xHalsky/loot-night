@@ -116,6 +116,13 @@ export const T = {
   RARITY_SHIFT_PER_FLOOR: [-1, 0.5, 0.3, 0.15, 0.05],
   PITY_EPIC: 40,
   GOBLIN_CHANCE: 0.03, GOBLIN_SEC: 6, GOBLIN_DROPS: 3,
+  // Special affixes (docs/design/loot.md): chance per rarity to roll one; life ones only from epic up.
+  AFFIX_CROSS_CHANCE: { rare: 0.3, epic: 0.45, legendary: 0.35 } as Record<string, number>,
+  AFFIX_LIFE_CHANCE: { epic: 0.35, legendary: 0.65 } as Record<string, number>,
+  AFFIX_QUICK: 0.3, AFFIX_TIRED: 0.2, AFFIX_OWL: 0.3, AFFIX_EXCUSE_MOOD: 10,
+  AFFIX_CROSS_PCT: 0.6,           // a cross-system stat bonus = this share of a main stat line at the item's level and rarity
+  AFFIX_SPREADSHEET_GOLD: 3,      // per kill while Excel is up, per item
+  AFFIX_QUIET_NOISE: 30, AFFIX_DOG_SEC: 60,
   CURSED_HEAL: 0.5,               // Cursed Floor: your heals do half; every drop is one rarity better
   GOBLIN_DEN_DROPS: 2, GOBLIN_DEN_NOISE: 8,   // Goblin Den: a goblin after every battle; catching one is loud
   MAP_DROP_CHANCE: 0.08,
