@@ -20,7 +20,7 @@ The town, second pass (#51), after Paweł's look at 0.47.
 - **Plots look unbuilt.** No more scaffolding: cleared ground with stakes and string, a notice board with the
   building's mark, and its own materials as the clue (crates of books, strongboxes and a vault door, practice
   swords and a target, kegs and the tankard sign). The build window says "Empty plot, materials ready."
-- **A town that's alive.** About 90 people. Adventurers crowd the portal court and some walk into the vortex (a
+- **A town that's alive.** 75 to 90 people (more as the plots get built). Adventurers crowd the portal court and some walk into the vortex (a
   violet flash); townsfolk fill the plaza (a bard, kids round the fountain, people on its rim, stall customers);
   walkers on every street. The plaza and the court get the most light: fire bowls, strings of lights, torches, a
   rune ring, the fountain lit from inside.
