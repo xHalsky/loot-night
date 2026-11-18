@@ -106,9 +106,10 @@ Skills **cast instantly** on click or key, with no global cooldown; only their o
 extra actions make no keyboard Noise. Skills are blocked while switching screens, while a minigame has your hands, and
 during microsleeps.
 
-**Teaching the skills.** Hovering a skill shows a tooltip with what it does in this hero's current numbers
-(damage, heal, duration), its cooldown (after the Library), Noise per cast, and a "use it when" line; locked
-skills show their unlock level. Hovering a portrait shows the hero's role and what their auto attack does.
+**Teaching the skills.** Hovering a skill shows its name and hotkey and one line on what it does in this hero's
+current numbers (`tip` in `src/data/heroes.ts`: damage, heal, duration and the one combo that matters); locked
+skills add their unlock level. The cooldown shows on the button itself. Hovering a portrait shows the hero's
+name, class and role in one line. (Tooltips carry only crucial information: [screen.md](screen.md).)
 During a boss wind-up, the skills that answer it pulse red (Taunt, Ward, and Bash unless the boss is braced),
 so the game teaches the answer in the moment. Skill numbers (`power`, `flat`, `dur`) live in
 `src/data/heroes.ts` and are read by both the battle code and the tooltip, so they cannot disagree.

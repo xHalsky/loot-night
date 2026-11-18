@@ -62,14 +62,15 @@ value in the corner, "?" for unidentified. When full, a popup offers swap or ski
 multiplier, the same scale that sets its stats (unidentified items count as 0 until identified). A hero's
 Power is the average of their 6 slots, an empty slot counting as 0, so filling an empty slot matters as much
 as upgrading. Shown as ◆ on the portraits (next to the level), in the equip window title, on every slot, on
-bag items (the sell value moved into the tooltip), and in item tooltips as the Power change for the selected
-hero ("◆ Power 3 → 33"). A hero under `POWER_BEHIND` (85%) of the party's best gets a pulsing red "!" on
+bag items, and in item tooltips as one line on the Power change for the selected hero ("▲ +4 power for
+Paweł"). Sell prices show in the Merchant's window, not in tooltips. A hero under `POWER_BEHIND` (85%) of the party's best gets a pulsing red "!" on
 their portrait: they deserve the next good item.
 
 **Paper doll.** Hero portraits with HP/XP; click one to show it on the doll (helm on the head, armor on the
 body, and so on, with faint icons for empty slots) and a stats line. Drag from the bag onto a slot or a
-portrait to equip; drag off to unequip; right-click to equip on the selected hero. Hover tooltips show
-stats and the comparison with what the selected hero wears. Under the doll, a stat block shows the selected
+portrait to equip; drag off to unequip; right-click to equip on the selected hero. Hover tooltips show the
+name, rarity, slot and power, the stats and special affix, and for bag items whether it is better for the
+selected hero; the detailed stat comparison is in the item's click panel. Under the doll, a stat block shows the selected
 hero's HP, ATK, ARM, SPD, CRIT and LUCK, with the share that comes from gear in green (red if gear lowers it).
 
 **Lock.** Hover an item and press L: a padlock; it cannot be sold, salvaged, listed, dropped or

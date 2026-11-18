@@ -3,7 +3,7 @@ import { VERSION } from '../config/version';
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
-import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGame, type MonsterGame } from '../core/state';
+import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
 import { specialText, hasLife } from '../systems/affixes';
@@ -98,7 +98,7 @@ export function doorInfoHtml(): string {
   ${v.stage === 'idle' ? preRowHtml() : ''}
   <div class="her-stats">
     <div class="her-row pc" title="Patience ${Math.round(patience)} · caught ${n.catches}/3"><span>Patience</span><div class="hearts">${hearts(patience)}</div><span class="sm">Caught</span><div class="bhearts">${caught}</div></div>
-    <div class="her-row gw" title="Goodwill: from good moments with her. ${T.GOODWILL_RAID}: you can ask for a Raid night (tap the phone). ${T.GOODWILL_FORGIVE}: she forgives one catch (once a night). Half carries over to tomorrow."><span>Goodwill</span><div class="gwbar"><i style="width:${S.g.goodwill}%"></i><em style="left:${T.GOODWILL_RAID}%"></em><em style="left:${T.GOODWILL_FORGIVE}%"></em></div><b>${Math.floor(S.g.goodwill)}</b></div>
+    <div class="her-row gw" title="Goodwill: earned with her. ${T.GOODWILL_RAID} buys a Raid night, ${T.GOODWILL_FORGIVE} forgives a catch."><span>Goodwill</span><div class="gwbar"><i style="width:${S.g.goodwill}%"></i><em style="left:${T.GOODWILL_RAID}%"></em><em style="left:${T.GOODWILL_FORGIVE}%"></em></div><b>${Math.floor(S.g.goodwill)}</b></div>
     ${wakeRow}
   </div>`;
 }
@@ -125,13 +125,12 @@ export function preText(s: string): string {
   return s.replace('{text}', String(T.PRE_TEXT_SEC)).replace('{textCalm}', String(T.PRE_TEXT_CALM)).replace('{textMood}', String(T.PRE_TEXT_MOOD))
     .replace('{tea}', String(T.PRE_TEA_SEC)).replace('{teaMood}', String(T.PRE_TEA_MOOD)).replace('{teaCalm}', String(T.PRE_TEA_CALM))
     .replace(/\{raidCost\}/g, String(T.GOODWILL_RAID)).replace('{raidSec}', String(T.RAID_CALM_SEC))
+    .replace('{raidSec}', String(T.RAID_CALM_SEC)).replace('{teaCalm}', String(T.PRE_TEA_CALM)).replace('{textCalm}', String(T.PRE_TEXT_CALM))
     .replace('{towel}', String(T.PRE_TOWEL_SEC)).replace('{towelNoise}', String(Math.round(T.PRE_TOWEL_NOISE * 100))).replace('{towelSlow}', String(Math.round(T.PRE_TOWEL_SLOW * 100)));
 }
 function preTip(id: PreId): string {
   const d = PRE_BY_ID[id];
-  return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs: ${preText(d.cost)}${d.away ? '. The party is on autopilot, and if she comes in, she sees whatever is on your screen.' : ''}</div>
-    <div>Works when ${d.works}: ${preText(d.effect)}</div><div style="color:#ff8a80;margin-top:3px">Otherwise: ${preText(d.backfire)}</div>
-    ${d.toggle || d.goodwill ? '' : `<div class="dim" style="margin-top:3px">The 2nd time in a night does half. The 3rd time she gets suspicious and her next visit is a check.</div>`}`;
+  return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs ${preText(d.cost)}</div><div>${preText(d.tip)}</div>`;
 }
 /** The idle phone's menu (tap the phone with nothing on it). */
 export function prePhoneHtml(): string {
@@ -469,19 +468,15 @@ export function tooltipHtml(): string {
     const st = heroStats(h);
     if (parts[0] === 'hero') {
       const r = HERO_ROLE[h.id];
-      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · Lv ${h.level} · <span style="color:#ffd27a">\u25c6 ${heroPower(h)}</span></div><div>${r.role}</div><div class="dim">Power = the average power of ${h.name}'s 6 gear slots (empty = 0).</div><div class="tt-sub">Auto attack (always on): ${r.auto}</div>
-        <div class="dim">ATK ${st.atk} · HP ${maxHp(h)} · ARM ${st.armor} · SPD ${st.speed} · CRIT ${st.crit}%</div><div class="tt-hint">Click: show on the paper doll.</div>`;
+      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · ${cap(h.id)}</div><div>${r.role}</div>`;
     } else {
       const si = Number(parts[2]); const a = ABILITIES[h.id][si];
       const unlocked = abilityUnlocked(h, si);
-      const cd = a.cd * (1 - CD_PCT[S.g.furniture.library ?? 0]);
-      const desc = markText(a.desc.replace('{dmg}', `<b>${Math.round(st.atk * (a.power ?? 1))}</b> damage`).replace('{heal}', `<b>${Math.round(st.atk * (a.power ?? 0) + (a.flat ?? 0))}</b> HP`)
+      const desc = markText((a.tip ?? a.desc).replace('{dmg}', `<b>${Math.round(st.atk * (a.power ?? 1))}</b> damage`).replace('{heal}', `<b>${Math.round(st.atk * (a.power ?? 0) + (a.flat ?? 0))}</b> HP`)
         .replace(/\{pct\}/g, String(Math.round((a.power ?? 0) * 100))).replace('{dur}', String(a.dur ?? 0)).replace('{hits}', String(a.hits ?? 1))
         .replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{shatter}', String(T.MARK_CHILL_BASH)).replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))));
-      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${h.name} · key ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
+      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
         <div>${desc}</div>
-        ${a.use ? `<div class="tt-sub">Use it when: ${markText(a.use)}</div>` : ''}
-        <div class="dim">Cooldown ${cd.toFixed(cd % 1 ? 1 : 0)} s · casts at once · Noise +${T.NOISE_ABILITY}</div>
         ${unlocked ? '' : `<div class="tt-hint" style="color:#f2c46b">${si <= 3 ? `Unlocks at level ${T.ABILITY_UNLOCK[si]}` : 'Later nights'}.</div>`}`;
     }
     const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 150, 720 - 200));
@@ -494,25 +489,20 @@ export function tooltipHtml(): string {
     if (e.kind === 'item') {
       const it = e.item;
       const h = S.g.heroes[n.heroTab];
-      const cur = h.gear[it.slot];
       body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
-        <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · item level ${it.ilvl} · <b style="color:#ffd27a">\u25c6 ${it.identified ? itemPower(it) : '?'} power</b></div>
-        ${it.identified ? statLines(it) : '<div class="dim">Unidentified. Identify at the Appraiser in town.</div>'}
-        <div class="tt-val">Sells for ${it.value} gold ${it.locked ? '· <b style="color:#f2c46b">LOCKED</b>' : ''}</div>
-        ${it.identified ? `<div class="tt-cmp"><div class="dim">On ${h.name} vs ${cur ? esc(cur.name) : 'empty slot'}:</div>${compareFor(n.heroTab, it)}</div>
-        <div class="tt-hint">Drag to the doll or a portrait to equip. Click for more. <b>L</b>: ${it.locked ? 'unlock' : 'lock'}.</div>` : ''}`;
+        <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · <b style="color:#ffd27a">\u25c6 ${it.identified ? itemPower(it) : '?'}</b>${it.locked ? ' · <b style="color:#f2c46b">locked</b>' : ''}</div>
+        ${it.identified ? statLines(it) + `<div class="tt-cmp">${powerCompare(h, it)}</div>` : '<div class="dim">Unidentified: identify it at the Appraiser.</div>'}`;
     } else if (e.kind === 'map') {
-      body = `<div class="tt-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div><div class="tt-hint">Choose it when the floor ends.</div>`;
+      body = `<div class="tt-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div>`;
     } else {
-      body = `<div class="tt-name" style="color:${FEATHER.color}">${FEATHER.name}</div><div>${FEATHER.desc}</div><div class="tt-hint">Click it, then Use.</div>`;
+      body = `<div class="tt-name" style="color:${FEATHER.color}">${FEATHER.name}</div><div>${FEATHER.desc}</div>`;
     }
   } else if (parts[0] === 'gear') {
     const h = S.g.heroes[Number(parts[1])];
     const it = h?.gear[parts[2] as Item['slot']];
     if (!it) return '';
     body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(it.name)}</div>
-      <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · equipped on ${h.name} · <b style="color:#ffd27a">\u25c6 ${itemPower(it)} power</b></div>${statLines(it)}
-      <div class="tt-val">Sells for ${it.value} gold</div><div class="tt-hint">Drag to the bag to unequip.</div>`;
+      <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · <b style="color:#ffd27a">\u25c6 ${itemPower(it)}</b></div>${statLines(it)}`;
   } else return '';
   const left = Math.min(hover.x + 16, 1280 - 250), top = Math.min(hover.y + 12, 720 - 200);
   return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
@@ -533,6 +523,12 @@ function entryStyle(e: BagEntry): string {
 function affixLines(item: Item): string {
   if (!item.identified) return `<div class="dim">Unidentified: stats hidden. Identify at the Appraiser in town.</div>`;
   return item.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('');
+}
+
+/** One line: better or worse for the hero you are looking at. */
+function powerCompare(h: Hero, item: Item): string {
+  const d = heroPower(h, { [item.slot]: item }) - heroPower(h);
+  return d > 0 ? `<span style="color:#6fcf7f">\u25b2 +${d} power for ${h.name}</span>` : d < 0 ? `<span style="color:#ff8a80">\u25bc ${d} power for ${h.name}</span>` : `<span class="dim">Same power for ${h.name}</span>`;
 }
 
 function compareFor(heroIdx: number, item: Item): string {
@@ -611,7 +607,7 @@ export function uiPanelHtml(): string {
       else cls += ' ready';
       if (h.queued === si) cls += ' queued';
       if (lock && si > 0) cls += ' blocked';
-      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" title="${esc(a.name + ': ' + markText(a.desc, false))}">${glyph(gname, unlocked ? gcol : '#4a4440', 26)}${over}<span class="sk-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
+      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" title="${esc(a.name)}">${glyph(gname, unlocked ? gcol : '#4a4440', 26)}${over}<span class="sk-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
     }).join('');
     return `<div class="sk-row ${h.downed ? 'downed' : ''}"><button class="sk-por" style="background:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${hi}">${h.name[0]}</button>${buttons}</div>`;
   }).join('');
@@ -716,7 +712,7 @@ export function taskbarHtml(): string {
     <span class="tb-hint">Tab = switch</span>
     <span class="tb-tray">
       <span class="tb-wallet">${S.g.zl} zł</span>
-      <span class="tb-clock ${late ? 'late witching' : ''}" title="${late ? 'The Witching Hour: drops can shift up a rarity, insomniac affixes roll. Sleep debt grows.' : ''}"><b>${fmtClock(n.clock)}</b><small>${late ? 'witching hour' : 'bed 01:00'}</small></span>
+      <span class="tb-clock ${late ? 'late witching' : ''}" title="${late ? 'Witching Hour: better drops, more sleep debt.' : ''}"><b>${fmtClock(n.clock)}</b><small>${late ? 'witching hour' : 'bed 01:00'}</small></span>
       <button class="tb-power ${canSleep() ? '' : 'off'}" data-act="sleep" title="Log off and sleep">⏻ ${n.clock < T.EARLIEST_SLEEP ? 'Sleep (23:00+)' : 'Sleep'}</button>
     </span>`;
 }
@@ -841,7 +837,7 @@ export function tonightHtml(): string {
   if (!n) return '';
   const zone = moodZone(n.mood);
   const mark = (s: 'ok' | 'risk' | 'lost') => `<b class="${s}">${s === 'ok' ? '✓' : s === 'risk' ? '!' : '✗'}</b>`;
-  return `<div class="sticky" title="Stars at the end of the night: 1 if she never pulls the plug, 2 if she is green or yellow when you log off, 3 if she never caught you.">
+  return `<div class="sticky" title="Your stars, counted when you log off.">
     <div class="st-h">Tonight <small>⏻ ${n.clock >= T.EARLIEST_SLEEP ? 'sleep any time' : '23:00+'}</small></div>
     <div>★ plug stays in ${mark(zone === 'red' ? 'risk' : 'ok')}</div>
     <div>★★ she's happy ${mark(zone === 'red' ? 'risk' : 'ok')}</div>

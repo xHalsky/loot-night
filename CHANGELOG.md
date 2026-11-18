@@ -3,6 +3,23 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.42.0 (2026-11-18)
+
+Tooltip pass (#43): every tooltip carries only what you need to decide, 2 to 6 lines instead of up to 12.
+
+- **Hero:** name, class and the class description. Gone: the power formula, auto attack, stat line, click hint.
+- **Pre-emptive actions** (towel, tea, text, raid): name, cost and one sentence on what it does.
+  - "Works when / Otherwise" and the repeat rule are gone. That also fixes the towel's "Works when always".
+  - A downside or condition stays when it would blindside you: the towel takes the light under the door; tea
+    only works while she is in the living room or bedroom.
+- **Skills:** name, hotkey and one line (a new `tip` per ability: numbers plus the one combo that matters), and
+  the unlock level while locked. Gone: cooldown and Noise line, "use it when". The cooldown shows on the button.
+- **Items:** name, rarity, slot and power, stats, special affix, and one line "▲ +4 power for Paweł". Gone: item
+  level, sell price, the full stat comparison (still in the click panel), control hints.
+- **Equipped gear, maps, the phoenix feather:** the same minus hints and prices.
+- **Native hover titles** (Goodwill, the Witching Hour, the sticky note, skill buttons): one short line each.
+- New `test/tooltips.py` hovers each kind and makes a sheet (`test/tips_sheet.png`). UI only, no rule changes.
+
 ## 0.41.0 (2026-11-18)
 
 Onboarding, part 2 (#42): a player now knows what a good night is, and the core loop is coached where it

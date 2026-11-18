@@ -114,7 +114,17 @@ front, below her: both read at once.
 - **Under the view:** the last-heard line (hidden while she stands in the doorway), her note, the "before" row
   (hidden during a visit: every action is "too late" then) and her stats.
 
+**Tooltips** carry only what you need to decide, because the screen is dense and a tooltip covers part of it:
+what it is, what it does in one line, and a cost, an unlock level or the one comparison that matters (an
+item: ▲ / ▼ power for the selected hero). Never formulas, prices, control hints or "use it when" advice;
+the click panels and the design docs hold the detail. `python3 test/tooltips.py` hovers each kind.
+
 ## Decisions
+
+- **Tooltips trimmed to the crucial** (0.42, #43): they had grown to 8 to 12 lines (formulas, auto attacks, stat
+  lines, prices, control hints, backfires, repeat rules) and covered the door, the skill bar or the bag. Now 2
+  to 6 lines. Rejected: a "more info" key (one more thing to learn); smaller text (the pixel font is already at
+  its smallest readable size).
 
 - **Webcam view instead of the blueprint panel** (0.35): the blueprint's jobs moved out (the last sound to one
   line, peeking to the crack, the layout to the sheet on the wall), and the 190 px it took went to his face, so

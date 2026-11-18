@@ -20,8 +20,9 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
   - *Time away from the PC* (Make her tea). Everything above, plus no input at all: the desk dims to an empty
     chair with a card (✕ = come back early, no effect). If a visit lands while you are away she sees
     whatever is on screen: Excel = pass, the game = caught.
-  - *A condition on where she is.* Read when you start (you text her now, you walk over now). The tooltip
-    states the rule; the game never says whether it is met. Wrong = that action's backfire.
+  - *A condition on where she is.* Read when you start (you text her now, you walk over now). The tooltip is
+    the cost and one sentence on what it does, with the condition when there is one (tea: only while she is
+    in the living room or bedroom); the game never says whether it is met. Wrong = that action's backfire.
 - **Diminishing returns per night.** The 2nd use of the same action does `PRE_SECOND_MULT` (half). From
   the `PRE_SUSPICIOUS_AT` (3rd) use she gets suspicious ("why are you being so nice? what did you do?"):
   no effect, Mood +5, and her next visit is a Peek. Toggles (the towel) are exempt. The button shows
