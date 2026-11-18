@@ -263,9 +263,12 @@ function applyPhoneDrag() {
   if (pswipe) { target = base + Math.max(-180, Math.min(180, pswipe.dx * 1.6)); lift = 1; }
   phoneAngle += (target - phoneAngle) * (pswipe ? 0.5 : 0.2);
   if (!pswipe && Math.abs(phoneAngle - base) < 0.5) phoneAngle = base;
-  let vx = 0, vr = 0;
+  let vx = 0, vr = 0, glow = 0;
   const it = n.interrupts[0];
-  if (it && !pswipe) {
+  if (it && n.phoneDown > 0) {   // face-down (#47): no shaking, the screen glows out from under the phone
+    const e = it.max - it.t, d = e - it.pingAt, now = performance.now() / 1000;
+    glow = isCall(it.kind) ? 0.55 + Math.sin(now * 4.5) * 0.12 : d < 4 ? 0.9 - d * 0.12 : 0.42;
+  } else if (it && !pswipe) {
     const e = it.max - it.t, now = performance.now() / 1000;
     const d = e - it.pingAt;     // each message: one short double buzz, in sync with its banner popping in
     const on = isCall(it.kind) ? e % 1.4 < 0.75 : d < 0.14 || (d > 0.2 && d < 0.34);
@@ -274,6 +277,8 @@ function applyPhoneDrag() {
   const wrap = ph.parentElement as HTMLElement;
   wrap.style.transform = `rotate(${-7 + vr}deg) translate(${vx}px, ${-lift * 10}px) scale(${1 + lift * 0.06})`;
   wrap.classList.toggle('held', !!pswipe);
+  const gl = wrap.querySelector('.ph-glow') as HTMLElement | null;
+  if (gl) gl.style.opacity = glow.toFixed(2);
   ph.style.transform = `perspective(600px) rotateY(${phoneAngle}deg)`;
 }
 // The webcam view: hold the door to peek; click the plan on the wall to open it (#35).

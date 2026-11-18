@@ -26,10 +26,17 @@ time (`INTERRUPT_CAP`), every `INTERRUPT_INTERVAL_SEC`. The screen stays off unt
 - **In your hand.** The phone leaves the desk and opens as a 186 × 398 window over the monitor with iOS
   screens: incoming call (slide to answer), lock screen with Face ID (hold `FACE_UNLOCK_SEC`), in-call
   screen, iMessage thread with blue quick-reply buttons. Every screen can be left (put down, Decline, red
-  end button, back chevron, home bar, the close X); leaving counts as ignoring.
-- **Flip it face-down.** Grab and swipe left or right, any time; it lifts and turns in 3D. Face-down
-  for `PHONE_DOWN_SEC`: new notifications only buzz; flipping a message face-down dismisses it (cheaper
-  than ignoring); messages that expire face-down count as unseen (half penalty).
+  end button, back chevron, home bar, the close X); leaving counts as ignoring. Layout rules (#45): the
+  lock screen shows the two newest banners and a "+N more" line, so the Face ID ring is always a full
+  76 px circle; every reply (Mom, the courier, the boys) is one full-width button per row that grows with
+  its text; chat threads fade out at the top instead of cutting a bubble; the instruction lives in the
+  feedback line. `python3 test/phone.py` shoots every stage of every phone game.
+- **Flip it face-down.** Grab and swipe left or right, any time; it lifts and turns in 3D. It stays face-down
+  until you flip it back. Face-down it is silent (#47): no buzz, no shake, no countdown ring; when a call or a
+  message comes in, its screen only lights the desk around it (a soft cool glow that flares on each new
+  message and pulses during a call). For players who want to ignore the phone and play. Flipping a message
+  face-down dismisses it (cheaper than ignoring); messages that expire face-down count as unseen (half
+  penalty). To answer anything, flip it back up.
 
 | Who | Minigame | Success | Ignore or fail | Decline |
 |---|---|---|---|---|
@@ -41,7 +48,7 @@ time (`INTERRUPT_CAP`), every `INTERRUPT_INTERVAL_SEC`. The screen stays off unt
 
 Which interrupt comes is weighted (`INTERRUPT_WEIGHTS`: Mom 3, boss 3, courier 2, the boys 2), with per-night caps
 (`INTERRUPT_PER_NIGHT`). Calls (Mom, courier, the boys) ring with the long buzz, show the incoming-call screen on the
-desk and in your hand, can be declined with red, and keep ringing face-down. F1 has a button for each.
+desk and in your hand, can be declined with red; face-down they ring silently (the glow) until they run out. F1 has a button for each.
 
 Sluggish (Tired 70+) shortens every phone timer to `SLUGGISH_TIMER_MULT`.
 
@@ -116,6 +123,10 @@ cooldown sweep and seconds. Monster boost, sugar crash, Zone (% while building, 
 multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
 
 ## Decisions
+
+- **Face-down means silent** (0.44, #47): it used to keep buzzing, so flipping the phone did not buy the quiet
+  the player asked for. Now the only sign is the glow under it, which you can watch or ignore. Rejected: no
+  sign at all (you would never know you are missing a call); a dimmer buzz (still a buzz).
 
 - **One phone, one notification at a time.** Several desk objects with countdown rings (the original plan)
   read as clutter; one phone is a real-world object you already know how to handle.

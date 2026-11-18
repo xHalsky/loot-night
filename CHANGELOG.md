@@ -3,6 +3,27 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.44.0 (2026-11-18)
+
+Playtest polish: phone screens, the her panel, a quiet face-down phone and a real dungeon map.
+
+- **Phone minigames, clean pass (#45).** Mom's replies are one per row. The lock screen shows the two newest
+  banners plus "+N more", so the Face ID ring stays a full circle and "Put down" stays on screen. "Slide to
+  answer" no longer hides under the knob (in your hand and on the desk). Courier and the boys: replies grow
+  with their text instead of spilling out. Chats fade older messages at the top. The idle phone menu no
+  longer slides under the Tonight note. New `test/phone.py` shoots every stage of every phone game.
+- **Her panel keeps its layout (#46).** The last-heard line, her note, the "before" row and the stats have
+  fixed slots; Patience and Goodwill no longer jump up when a row hides (a catch, a visit). A chat question
+  and its three replies fit the note slot. New `test/herpanel.py` checks ten states.
+- **Face-down phone is silent (#47).** No buzz, no shake, no countdown ring: an incoming call or message only
+  makes a soft glow on the desk around the phone (it flares on each message, pulses during a call).
+- **The dungeon map (#48).** Your whole descent on old parchment in faded ink, top to bottom: a row per level
+  (five floors, the boss room at the end), rooms joined by stairs, each room showing what that floor was.
+  "You are here", the checkpoint flag and your corpse are marked. The next floor is a pencil sketch; the
+  choices are path cards under the map (hover one to see it on the map). Floor types are saved
+  (`mapPath`), so the map keeps every night's descent. New `test/dmap.py`.
+- Sims unchanged (UI only): good bot floor 10, 0 catches, 3 stars.
+
 ## 0.43.0 (2026-11-18)
 
 The RPG plays it straight (#44): plain fantasy names and no real-life jokes in the game world, so the real-life

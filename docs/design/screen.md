@@ -111,8 +111,11 @@ front, below her: both read at once.
   turns to a magnifier) and it opens large over the panel: the same plan with the dashed line of sight and no
   marker for her, plus a line on which rooms are next to yours. The game keeps running. Close with ✕, Esc or a
   click outside.
-- **Under the view:** the last-heard line (hidden while she stands in the doorway), her note, the "before" row
-  (hidden during a visit: every action is "too late" then) and her stats.
+- **Under the view:** fixed slots that never move (#46): the last-heard line (20 px; blank while she stands in
+  the doorway), her note (64 px, two lines), the "before" row (33 px; hidden during a visit, when her note may
+  grow into its space for a chat question and its replies) and her stats (Patience and Caught, Goodwill, and
+  Waking up after midnight). An empty slot keeps its space, so Patience and Goodwill are always in the same
+  place. `python3 test/herpanel.py` checks ten states.
 
 **Tooltips** carry only what you need to decide, because the screen is dense and a tooltip covers part of it:
 what it is, what it does in one line, and a cost, an unlock level or the one comparison that matters (an
@@ -120,6 +123,11 @@ item: ▲ / ▼ power for the selected hero). Never formulas, prices, control hi
 the click panels and the design docs hold the detail. `python3 test/tooltips.py` hovers each kind.
 
 ## Decisions
+
+- **Fixed slots under the webcam** (0.44, #46): the stats jumped up whenever the last-heard line or the
+  "before" row hid (a catch, a visit), so your eye lost Patience exactly when it mattered. Every row now has a
+  fixed slot; a long note is clamped to two lines, a visit note with replies uses the empty "before" slot.
+  Rejected: moving the stats above the note (the note is the thing to read first); shrinking the webcam.
 
 - **Tooltips trimmed to the crucial** (0.42, #43): they had grown to 8 to 12 lines (formulas, auto attacks, stat
   lines, prices, control hints, backfires, repeat rules) and covered the door, the skill bar or the bag. Now 2

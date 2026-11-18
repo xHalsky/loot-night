@@ -27,6 +27,7 @@ function startFloor(map: MapKind | 'plain') {
   n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.phaseT = 0;
   n.curio = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
   n.deepest = Math.max(n.deepest, n.floor);
+  S.g.mapPath[n.floor] = map === 'plain' ? (n.floor % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'plain') : map;   // the dungeon map (#48)
   if (n.corpse.length && n.floor === n.corpseFloor) {
     n.dropQueue.push(...n.corpse); n.corpse = [];
     toast('You found your corpse. Loot recovered!', '#6fcf7f');

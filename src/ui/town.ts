@@ -341,10 +341,42 @@ function nodeGlyph(k: NodeKind, col: string): string {
   }
 }
 
+// ---------- The dungeon map (#48): your whole descent, drawn on old parchment, read top to bottom ----------
+// One row per level: five floors, the boss room at the end, then a staircase down to the next level. Rows run
+// left to right, then right to left (a serpentine), and every room sits a little lower than the last.
+const MAP_COLS = 5, MAP_ROWS = 4;
+const ROOM_X = [104, 208, 312, 416, 520], ROW_Y0 = 66, ROW_DY = 56, ROOM_STEP = 3;
+const INK = '#5b4630', INK_RED = '#8a2e1c', PENCIL = '#8a7658';
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+type RoomState = 'done' | 'here' | 'old' | 'next' | 'later';
+const kindAt = (f: number): NodeKind => (S.g.mapPath[f] as NodeKind | null | undefined) ?? (f % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'plain');
+function roomAt(f: number, firstRow: number) {
+  const i = f - 1, r = Math.floor(i / MAP_COLS), c = i % MAP_COLS;
+  return { x: ROOM_X[r % 2 === 0 ? c : MAP_COLS - 1 - c], y: ROW_Y0 + (r - firstRow) * ROW_DY + c * ROOM_STEP, row: r };
+}
+const roomSize = (k: NodeKind) => k === 'boss' ? [46, 30] : [38, 24];
+/** A staircase on the map: two rails and a rung every few pixels, from one room's edge to the next. */
+function stairs(x1: number, y1: number, x2: number, y2: number, cls: string): string {
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+  if (L < 3) return '';
+  const ux = dx / L, uy = dy / L, nx = -uy * 3.6, ny = ux * 3.6;
+  let d = `M${(x1 + nx).toFixed(1)} ${(y1 + ny).toFixed(1)}L${(x2 + nx).toFixed(1)} ${(y2 + ny).toFixed(1)}M${(x1 - nx).toFixed(1)} ${(y1 - ny).toFixed(1)}L${(x2 - nx).toFixed(1)} ${(y2 - ny).toFixed(1)}`;
+  for (let t = 3; t < L - 2; t += 4.5) { const px = x1 + ux * t, py = y1 + uy * t; d += `M${(px + nx).toFixed(1)} ${(py + ny).toFixed(1)}L${(px - nx).toFixed(1)} ${(py - ny).toFixed(1)}`; }
+  return `<path class="${cls}" d="${d}"/>`;
+}
+function roomSvg(f: number, x: number, y: number, k: NodeKind, st: RoomState, inner = ''): string {
+  const [w, h] = roomSize(k), boss = k === 'boss', pencil = st === 'next' || st === 'later';
+  const col = pencil ? PENCIL : boss ? INK_RED : INK;
+  const box = `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="1.5" class="nm-room ${st}" stroke="${col}"/>`
+    + (boss && !pencil ? `<rect x="${-w / 2 + 3}" y="${-h / 2 + 3}" width="${w - 6}" height="${h - 6}" rx="1" fill="none" stroke="${col}" stroke-width=".8"/>` : '');
+  const glyphG = inner || (st === 'later' && !boss ? `<text y="5" text-anchor="middle" class="nm-q">?</text>` : `<g transform="scale(${boss ? .72 : .6})">${nodeGlyph(k, col)}</g>`);
+  return `<g transform="translate(${x} ${y})" class="nm-r ${st}">${box}${glyphG}<text x="${-w / 2}" y="${-h / 2 - 3}" class="nm-fn">${f}</text></g>`;
+}
+
 function nodeMapHtml(): string {
   const n = N();
   const next = n.floor + 1, after = n.floor + 2;
-  const bossNext = next % T.CHECKPOINT_EVERY === 0, bossAfter = after % T.CHECKPOINT_EVERY === 0;
+  const bossNext = next % T.CHECKPOINT_EVERY === 0;
   const opts: { kind: NodeKind; id: string; name: string; desc: string }[] = [
     { kind: bossNext ? 'boss' : 'plain', id: '', name: bossNext ? `Floor ${next}: ${bossFor(next, T.CHECKPOINT_EVERY).name}` : `Floor ${next}`, desc: bossNext ? '3 battles, the boss at the end. Checkpoint after.' : '3 battles, normal loot' },
   ];
@@ -354,32 +386,64 @@ function nodeMapHtml(): string {
     const count = S.g.bag.filter(x => x.kind === 'map' && x.map === e.map).length;
     opts.push({ kind: e.map, id: e.id, name: MAP_INFO[e.map].name + (count > 1 ? ` ×${count}` : ''), desc: MAP_INFO[e.map].desc + ' · uses the map' });
   }
-  const W = 616, rowY = [300, 186, 72];
-  const xs = (k: number, i: number) => W / 2 + (i - (k - 1) / 2) * Math.min(130, 520 / Math.max(1, k));
-  const prev = bossAfter ? [{ kind: 'boss' as NodeKind }] : [{ kind: 'unknown' as NodeKind }, { kind: 'unknown' as NodeKind }, { kind: 'unknown' as NodeKind }];
-  let lines = '', svgNodes = '';
-  const cx0 = W / 2;
-  opts.forEach((o, i) => {
-    const x = xs(opts.length, i);
-    lines += `<path d="M${cx0} ${rowY[0] - 20} L${x} ${rowY[1] + 24}" stroke="#c9b08a" stroke-width="2" stroke-dasharray="4 5"/>`;
-    prev.forEach((_, j) => { lines += `<path d="M${x} ${rowY[1] - 24} L${xs(prev.length, j)} ${rowY[2] + 18}" stroke="#4a3a2a" stroke-width="2" stroke-dasharray="3 6"/>`; });
-  });
-  prev.forEach((p, j) => { const x = xs(prev.length, j); svgNodes += `<g transform="translate(${x} ${rowY[2]})" opacity=".45"><circle r="17" fill="#1a120c" stroke="${NODE_COL[p.kind]}" stroke-width="2"/>${nodeGlyph(p.kind, NODE_COL[p.kind])}</g>`; });
-  svgNodes += `<g transform="translate(${cx0} ${rowY[0]})"><circle r="18" fill="#3a2a1a" stroke="#8a7a5a" stroke-width="2"/><path d="M-7 0 L-2 6 L8 -6" stroke="#6fcf7f" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>`;
-  const buttons = opts.map((o, i) => {
-    const x = xs(opts.length, i), col = NODE_COL[o.kind];
-    return `<button class="mnode" data-act="nextFloor" data-arg="${o.id}" style="left:${x}px;top:${rowY[1]}px;--nc:${col}">
-      <svg viewBox="-24 -24 48 48" width="48" height="48"><circle r="21" fill="#1a120c" stroke="${col}" stroke-width="3"/>${nodeGlyph(o.kind, col)}</svg>
-      <span class="mn-tip" style="--nw:${Math.min(130, 520 / opts.length - 6)}px"><b style="color:${col}">${o.name}</b><i>${o.desc}</i></span></button>`;
-  }).join('');
-  return `<div class="nodemap">
-    <svg class="nm-svg" viewBox="0 0 ${W} 352" width="${W}" height="352">${lines}${svgNodes}</svg>
-    <div class="nm-title">Floor ${n.floor} cleared · choose your path</div>
-    <div class="nm-lab" style="top:${rowY[0] + 24}px">you are here</div>
-    <div class="nm-lab" style="top:${rowY[2] + 22}px">floor ${after}${bossAfter ? ' · BOSS' : ' · unknown'}</div>
-    ${buttons}
-    <button class="tbtn tportal" data-act="toTown">Town portal <small>15 min · come back to floor ${n.checkpoint}</small></button>
-    <div class="nm-foot">Hover a path for what it does. Maps from loot add paths. The clock runs at 25% while you choose.</div>
+  // which floors and rows to draw: from floor 1 to the deepest you have seen (or the floor after next)
+  const record = Math.max(S.g.record, n.deepest);
+  const maxF = Math.max(after, record);
+  const lastRow = Math.floor((maxF - 1) / MAP_COLS), firstRow = Math.max(0, lastRow - (MAP_ROWS - 1));
+  const firstF = firstRow * MAP_COLS + 1;
+  const stateOf = (f: number): RoomState => f < n.floor ? 'done' : f === n.floor ? 'here' : f === next ? 'next' : f <= record ? 'old' : 'later';
+  let ink = '', rooms = '', marks = '';
+  for (let r = firstRow; r <= lastRow; r++) ink += `<text x="40" y="${ROW_Y0 + (r - firstRow) * ROW_DY + 10}" class="nm-lv">${ROMAN[r] ?? r + 1}</text>`;
+  if (firstRow > 0) {   // older levels are above the sheet: a staircase leads up off the top
+    const a = roomAt(firstF, firstRow);
+    ink += stairs(a.x, 14, a.x, a.y - 12, 'nm-st done') + `<text x="28" y="26" class="nm-note">\u25b2 floors 1 to ${firstF - 1} above</text>`;
+  }
+  for (let f = Math.max(2, firstF); f <= maxF; f++) {
+    const a = roomAt(f - 1, firstRow), b = roomAt(f, firstRow), [aw, ah] = roomSize(kindAt(f - 1)), [bw, bh] = roomSize(f === next ? opts[0].kind : kindAt(f));
+    const cls = f <= n.floor ? 'done' : f === next ? 'next' : f <= record ? 'old' : 'later';
+    ink += a.row === b.row
+      ? stairs(a.x + Math.sign(b.x - a.x) * aw / 2, a.y, b.x - Math.sign(b.x - a.x) * bw / 2, b.y, `nm-st ${cls}`)
+      : stairs(a.x, a.y + ah / 2, b.x, b.y - bh / 2, `nm-st ${cls}`);
+  }
+  for (let f = firstF; f <= maxF; f++) {
+    const p = roomAt(f, firstRow), st = stateOf(f);
+    if (st === 'next') {   // the choice: shows the default room, or the option you hover below
+      const inner = opts.map((o, i) => `<g class="ns ns-${i} ${i === 0 ? 'def' : ''}"><g transform="scale(${o.kind === 'boss' ? .72 : .6})">${nodeGlyph(o.kind, o.kind === 'boss' ? INK_RED : INK)}</g></g>`).join('');
+      rooms += roomSvg(f, p.x, p.y, opts[0].kind, st, inner);
+    } else rooms += roomSvg(f, p.x, p.y, st === 'later' ? (f % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'unknown') : kindAt(f), st);
+  }
+  // you are here, the checkpoint flag, your corpse
+  const here = roomAt(n.floor, firstRow), [hw, hh] = roomSize(kindAt(n.floor));
+  marks += `<ellipse cx="${here.x}" cy="${here.y}" rx="${hw / 2 + 9}" ry="${hh / 2 + 8}" class="nm-here"/><text x="${here.x}" y="${here.y + hh / 2 + 19}" class="nm-you">you are here</text>`;
+  if (n.checkpoint >= firstF && n.checkpoint <= maxF) {
+    const c = roomAt(n.checkpoint, firstRow), [cw, ch] = roomSize(kindAt(n.checkpoint));
+    marks += `<g transform="translate(${c.x + cw / 2 - 2} ${c.y - ch / 2 + 1})" class="nm-flag"><path d="M0 0 V-13 M0 -13 L9 -10 L0 -7"/></g>`;
+  }
+  if (n.corpse.length && n.corpseFloor >= firstF && n.corpseFloor <= maxF) {
+    const c = roomAt(n.corpseFloor, firstRow);
+    marks += `<g transform="translate(${c.x + 20} ${c.y + 13})" class="nm-x"><path d="M-5 -5 L5 5 M5 -5 L-5 5"/></g><text x="${c.x + 28}" y="${c.y + 25}" class="nm-note red">your corpse</text>`;
+  }
+  const buttons = opts.map((o, i) => `<button class="nm-opt" data-act="nextFloor" data-arg="${o.id}" data-i="${i}" style="--nc:${NODE_COL[o.kind]}">
+      <svg viewBox="-14 -14 28 28" width="26" height="26">${nodeGlyph(o.kind, NODE_COL[o.kind])}</svg><b>${o.name}</b><i class="nm-desc">${o.desc}</i></button>`).join('');
+  const sheet = `<defs>
+      <filter id="nmRag" x="-2%" y="-2%" width="104%" height="104%"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="10"/></filter>
+      <filter id="nmInk"><feTurbulence type="fractalNoise" baseFrequency=".08" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="2"/></filter>
+      <filter id="nmGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="5"/><feColorMatrix values="0 0 0 0 .33 0 0 0 0 .23 0 0 0 0 .1 0 0 0 .5 -.1"/></filter>
+      <radialGradient id="nmSheet" cx="50%" cy="45%" r="68%"><stop offset="0" stop-color="#e6d6ad"/><stop offset=".62" stop-color="#d4bd8b"/><stop offset="1" stop-color="#a8885a"/></radialGradient>
+      <clipPath id="nmClip"><rect x="12" y="8" width="592" height="336" rx="8"/></clipPath>
+    </defs>
+    <rect x="12" y="8" width="592" height="336" rx="8" fill="url(#nmSheet)" filter="url(#nmRag)"/>
+    <g clip-path="url(#nmClip)"><rect width="616" height="352" filter="url(#nmGrain)"/>
+      <ellipse cx="470" cy="70" rx="70" ry="34" fill="#7a5426" opacity=".07"/><ellipse cx="120" cy="250" rx="90" ry="40" fill="#6a4a20" opacity=".06"/><ellipse cx="560" cy="300" rx="40" ry="26" fill="#5a3a18" opacity=".08"/>
+      <path d="M12 120 Q308 112 604 126 M300 8 Q296 176 306 344" stroke="#8a6a3a" stroke-width="1" opacity=".18" fill="none"/></g>`;
+  return `<div class="nodemap parchment">
+    <svg class="nm-svg" viewBox="0 0 616 352" width="616" height="352">${sheet}
+      <g filter="url(#nmInk)">${ink}${rooms}${marks}
+        <text x="308" y="30" class="nm-title-ink">Shadow Crypt</text></g></svg>
+    <div class="nm-sub">Floor ${n.floor} cleared · choose the stairs down</div>
+    <div class="nm-opts">${buttons}</div>
+    <button class="tbtn tportal" data-act="toTown">Town portal <small>15 min · back to floor ${n.checkpoint}</small></button>
+    <div class="nm-foot">Maps from loot add paths. The clock runs at 25% while you choose.</div>
   </div>`;
 }
 

@@ -42,7 +42,7 @@ async def main():
         # node map with all map kinds in the bag
         await pg.evaluate("""()=>{const S=window.__lootnight.S; const n=S.g.night; ['cursed','goblin','vault','elite','shrine'].forEach((m,i)=>S.g.bag.push({kind:'map',id:'m'+i,map:m})); n.floor=9; n.enemies=[]; n.phase='mapChoice'; S.g.timeScale=0;}""")
         await pg.wait_for_timeout(250)
-        bb = await pg.evaluate("()=>{const r=[...document.querySelectorAll('.mnode')][1].getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
+        bb = await pg.evaluate("()=>{const r=[...document.querySelectorAll('.nm-opt')][1].getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
         await pg.mouse.move(bb[0], bb[1]); await pg.wait_for_timeout(250)
         await pg.screenshot(path='test/nodemap_maps.png', clip=CLIP)
         print('ERRORS', errs)

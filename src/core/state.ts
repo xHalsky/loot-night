@@ -198,6 +198,7 @@ export interface GameState {
   sleepDebt: number;
   monsters: number;
   bestStars: number; record: number; nightsPlayed: number;
+  mapPath: (string | null)[];    // the dungeon map (#48): what each floor was the last time you entered it, by floor number
   tipsSeen: string[];   // first-time tips already shown (#28)
   howto: boolean;       // the how-to-hide card is open (the night waits)
   seen: string[];                // enemy ids met before: the first meeting shows what they want
@@ -222,7 +223,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0,
+    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0,
     pendingListings: [], pity: 0, uid: 1,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1,
     results: null, morning: null,

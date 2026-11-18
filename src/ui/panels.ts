@@ -93,9 +93,12 @@ export function doorInfoHtml(): string {
   const wakeRow = n.clock >= T.BED_FROM
     ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>` : '';
   void tiredFx; void tired;
-  return `${heardHtml()}
-  <div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div>
-  ${v.stage === 'idle' ? preRowHtml() : ''}
+  // Fixed slots (#46): the last-heard line, her note, the pre-emptive row and the stats never move. A slot that has
+  // nothing to show keeps its space; a tall note (a chat question with replies) grows into the empty pre-row slot.
+  const idle = v.stage === 'idle';
+  return `<div class="di-heard">${heardHtml()}</div>
+  <div class="di-note ${idle ? '' : 'wide'}"><div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div></div>
+  <div class="di-pre">${idle ? preRowHtml() : ''}</div>
   <div class="her-stats">
     <div class="her-row pc" title="Patience ${Math.round(patience)} · caught ${n.catches}/3"><span>Patience</span><div class="hearts">${hearts(patience)}</div><span class="sm">Caught</span><div class="bhearts">${caught}</div></div>
     <div class="her-row gw" title="Goodwill: earned with her. ${T.GOODWILL_RAID} buys a Raid night, ${T.GOODWILL_FORGIVE} forgives a catch."><span>Goodwill</span><div class="gwbar"><i style="width:${S.g.goodwill}%"></i><em style="left:${T.GOODWILL_RAID}%"></em><em style="left:${T.GOODWILL_FORGIVE}%"></em></div><b>${Math.floor(S.g.goodwill)}</b></div>
@@ -257,14 +260,14 @@ function phoneObjHtml(): string {
     screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div>${banners}${it.msgs.length > 3 ? `<div class="ios-more">+${it.msgs.length - 3} more</div>` : ''}</div>`;
   } else if (it) screen = '<div class="ios off"></div>';
   else if (n.herReply && n.herReply.wait <= 0) screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div><div class="ios-ban new"><i style="background:#34c759"></i><div><b>Babe \u2665</b><small>Messages</small><span>${esc(n.herReply.msg)}</span></div></div></div>`;
-  const label = down
-    ? (it ? '<b style="color:#ffb07a">Bzzz! swipe to flip up</b>' : 'Face-down: messages<br>only buzz')
+  const label = down   // face-down (#47): silent, the screen only lights up the desk under it
+    ? (it ? '<span style="color:#b9c8ff">lighting up...</span><br>swipe to flip up' : 'Face-down: silent<br>swipe to flip up')
     : it ? (isCall(it.kind) ? 'tap: pick up<br><span style="color:#ff8a80">red: decline</span>' : 'tap: read<br><span style="color:#ffb07a">swipe: flip it over</span>') : 'tap: text her<br>swipe: flip it over';
-  return `<div class="phone-wrap">
+  return `<div class="phone-wrap"><i class="ph-glow"></i>
     <div class="phone3d ${down ? 'down' : ''} ${it ? 'active' : ''}" data-phone="1">
       <div class="pface front">${screen}</div>
       <div class="pface back"><i class="cam"></i><i class="logo"></i></div>
-    </div>${it ? ring(it.t, it.max) : ''}</div>
+    </div>${it && !down ? ring(it.t, it.max) : ''}</div>
     <div class="obj-label phone-label">${label}</div>`;
 }
 export function deskHtml(): string {
@@ -317,16 +320,17 @@ function phoneHtml(g: PhoneGame): string {
   } else if (g.stage === 'locked') {
     const [app, who, col] = APP[g.app];
     body = `<div class="ph-lock-date">${['Monday', 'Tuesday'][0]}</div><div class="ph-lock-time">${fmtClock(N().clock)}</div>
-      ${g.msgs.slice(-3).reverse().map(m => `<div class="ios-ban big"><i style="background:${col}"></i><div><b>${who}</b><small>${app} · now</small><span>${esc(m)}</span></div></div>`).join('')}
+      <div class="ph-bans">${g.msgs.slice(-2).reverse().map(m => `<div class="ios-ban big"><i style="background:${col}"></i><div><b>${who}</b><small>${app} · now</small><span>${esc(m)}</span></div></div>`).join('')}
+</div>${g.msgs.length > 2 ? `<div class="ios-more">+${g.msgs.length - 2} more from ${who}</div>` : ''}
       <div class="ph-face" data-hold="unlock"><div class="ph-face-ring"><div id="holdFill"></div></div><span class="faceid">\u{1F642}</span></div>
-      <div class="ph-hint">Face ID: hold the phone to your face</div>
+      <div class="ph-hint">Face ID: hold to unlock</div>
       ${quit('Put down')}`;
   } else if (g.stage === 'talk') {
-    const st = g.app === 'friends' ? `misses ${g.misses}/${T.FRIENDS_MAX_MISSES}${N().headset ? ' \u00B7 in your headset' : ' \u00B7 ON SPEAKER'}` : 'one wrong word and he leaves';
+    const st = g.app === 'friends' ? `misses ${g.misses}/${T.FRIENDS_MAX_MISSES}${N().headset ? ' \u00B7 headset' : ' \u00B7 ON SPEAKER'}` : 'one wrong word: he leaves';
     body = `<div class="ios-incall"><b>${CALLER[g.app][0]}</b><span>${st}</span></div>
       <div class="ph-bubble in">${esc(g.line)}</div>
       <div class="timebar"><div id="phBar" style="width:${Math.max(0, g.t / g.max) * 100}%"></div></div>
-      <div class="ph-hint">${g.app === 'courier' ? 'Get him to leave it with a neighbour.' : 'Say no, nicely. Quickly.'}</div>
+      <div class="ph-hint">${g.app === 'courier' ? 'Get it left with a neighbour.' : 'Say no, nicely. Quickly.'}</div>
       <div class="ph-chips ios-replies talk">${(g.opts ?? []).map((o, i) => btn('talk', esc(o), String(i), 'chip')).join('')}</div>
       <div class="feedback">${esc(g.feedback)}</div>`;   // leave with the X or the home bar (hanging up = failing)
   } else if (g.stage === 'call') {
@@ -334,9 +338,8 @@ function phoneHtml(g: PhoneGame): string {
     const mark = ['...', '?', '!'][g.need];
     body = `<div class="ios-incall"><b>Mom</b><span>beat ${g.beat + 1}/${T.MOM_BEATS} \u00B7 misses ${g.misses}/${T.MOM_MAX_MISSES}</span></div>
       <div class="ph-bubble in mom-line">${esc(g.line)}<span class="mark m${g.need}">${mark}</span></div>
-      <div class="ph-hint">Tap the matching reply inside the box.</div>
       <div class="track ${reading ? 'reading' : ''}"><div class="zone" style="left:${g.zone * 100}%;width:${T.MOM_ZONE * 100}%"></div><div id="momMarker" class="marker"></div></div>
-      <div class="ph-chips">${MOM_REPLIES.map((r, i) => btn('mom', `<small>${['...', '?', '!'][i]}</small> ${r}`, String(i), `chip c${i}`)).join('')}</div>
+      <div class="ph-chips mom-replies">${MOM_REPLIES.map((r, i) => btn('mom', `<small>${['...', '?', '!'][i]}</small> ${r}`, String(i), `chip c${i}`)).join('')}</div>
       <div class="feedback">${esc(g.feedback)}</div>
       <button class="ios-endbtn small" data-act="closeGame"><span>&#9742;</span></button>`;
   } else {

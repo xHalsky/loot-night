@@ -50,7 +50,7 @@ be done at a time, so the skill is triage.
 | Five Nights at Freddy's | Tracking a threat by sound and partial information; the door. Mechanics only, not the horror look. |
 | Knights of Pen and Paper | Stars unlock the next level; humor about the people playing. |
 | Diablo | Loot beams, rarity colours, the reveal. Players never buy gear. |
-| Slay the Spire | The node map for choosing the next floor. |
+| Slay the Spire | Choosing the next floor on a map (now an old parchment map of your whole descent). |
 | Papers, Please | Day-by-day structure, a new rule each day. |
 | Baldur's Gate / Infinity Engine | The stone-and-gold skill bar with portraits. |
 

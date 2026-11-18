@@ -30,7 +30,7 @@ healer, then the front enemy.
 
 **Bosses** rotate per checkpoint floor: floor 5 the Ogre, 10 the Warlock, 15 the Black Knight, then around
 again with floor scaling. Each has its own telegraphed move: a cast bar at the top centre and the skills
-that answer it pulsing red. The node map names the boss on the boss floor.
+that answer it pulsing red. The dungeon map names the boss on the path card for the boss floor.
 
 | Boss (HP / attack at floor 1 scale) | Move | Answer |
 |---|---|---|
@@ -122,9 +122,17 @@ so the game teaches the answer in the moment. Skill numbers (`power`, `flat`, `d
 framed portrait per hero (vertical HP gauge, name; click to select in the paper doll), then that hero's
 skills with glyph, hotkey, cooldown sweep and level lock. The auto attack has no button.
 
-**Choosing the next floor.** When a floor ends, the monitor shows a Slay the Spire-style node map: the
-cleared node, the next row (the plain or boss floor plus one node per map in the bag) and a greyed
-preview. Maps (dropped as loot, 8% per drop):
+**Choosing the next floor: the dungeon map** (#48). When a floor ends, the monitor shows your whole descent
+on an old parchment map, drawn in faded brown ink, read top to bottom. Each row is one level (roman numeral
+in the margin): five floors left to right, then right to left, the boss room (red ink, double wall) at the
+end, and a staircase down to the next level; every room sits a little lower than the last. Rooms are joined
+by stairs. Each room shows what that floor was (crossed swords, vault chest, shrine cross, goblin, elite
+skull, cursed slime, boss crown), from `mapPath`, which is saved, so the map shows every night's descent.
+Floors you reached before but not tonight are fainter; the next floor and the one after are pencil sketches.
+Marks: "you are here" (a red ink ring), a flag on the checkpoint, a red X on your corpse. Four levels fit;
+older ones scroll off the top ("floors 1 to N above"). The choice is a row of path cards at the bottom: the
+plain or boss floor plus one card per map in the bag; hovering a card draws that room into the next slot
+and shows what it does. `python3 test/dmap.py` shoots it at a few depths. Maps (dropped as loot, 8% per drop):
 
 | Map | Effect |
 |---|---|
@@ -195,7 +203,12 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   point of use (hover, and the pulsing answers during a wind-up) rather than in a help screen.
 - **No auto-attack button.** It was always on, so the button was noise. Keys start at 1 / Q / A.
 - **Knight in front with the torch**, so the light leads the party and the front hero picks up loot.
-- **Floor choice as a node map** instead of a list in the right panel: the choice reads as a route.
+- **Floor choice on a map** instead of a list in the right panel: the choice reads as a route.
+- **The whole descent on parchment** (0.44, #48): the old node map showed only the next row, upward, so it
+  never felt like going down and forgot where you had been. Rows of five ending in the boss match the
+  checkpoint rhythm, and a serpentine fits four levels (20 floors) on the monitor. Map choices moved to cards
+  under the map, so branches never collide with rooms. Rejected: one row per floor with scrolling (only six
+  floors visible); keeping the choices as nodes on the map (they crossed the stairs).
 - **Reckless, not just slower** (#15): leaving the game has to be dangerous, or Excel is free and the stealth
   layer has no teeth. Rejected: pausing loot or resetting Flow while away (no danger, the player just waits).
   Random targeting was chosen over flat damage boosts because it reads as "nobody is tanking".
@@ -231,7 +244,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   - Measured with `test/autopilot.ts` (lowest party HP, careful / skill spam): floor 5 Ogre 69% / 67%;
     floor 10 Warlock 52% / 62% with 1 to 3 wipes in 12; floor 15 Black Knight 60% / 55%, about 60 s.
     40 s on Excel wipes on all three. Shark at attack 32 wiped 3 to 4 in 10 (too punishing); at 24, 67 to 72%.
-- **The node map hides descriptions until hover** (0.24): five map types make six paths possible.
+- **Path cards hide descriptions until hover** (0.24, kept in 0.44): five map types make six paths possible.
 - **Marks reward order, not speed** (0.23): two skills that are fine alone are better in sequence, so the
   player has a reason to look at the fight between alt-tabs. Judged pays off only on skill hits: when it
   also healed off auto attacks, the party healed itself while you sat on Excel and the reckless autopilot

@@ -48,7 +48,7 @@ export function spawnInterrupt(kind?: InterruptKind) {
   }
   n.interrupts.push({ kind: k, t: max, max, msgs: [], pend, pingAt: -9 });
   n.callsTonight[k] = (n.callsTonight[k] ?? 0) + 1;
-  if (isCall(k)) sfx.vibCall();
+  if (isCall(k) && n.phoneDown <= 0) sfx.vibCall();   // face-down: silent (#47)
   coach('phone');
   return true;
 }
@@ -66,12 +66,12 @@ export function updateInterrupts(dt: number) {
   // the phone keeps vibrating: calls every 1.4 s, messages every 3 s (same rhythm as the shake on the desk)
   for (const i of n.interrupts) {
     const e = i.max - i.t;
-    if (isCall(i.kind)) { if (Math.floor(e / 1.4) !== Math.floor((e - dt) / 1.4)) sfx.vibCall(); continue; }
+    if (isCall(i.kind)) { if (n.phoneDown <= 0 && Math.floor(e / 1.4) !== Math.floor((e - dt) / 1.4)) sfx.vibCall(); continue; }
     while (i.pend.length && e >= i.pend[0]) {
       i.pend.shift(); i.pingAt = e;
       const pool = i.kind === 'boss' ? BOSS_MSGS : HER_MSGS;
       i.msgs.push(pool[Math.min(i.msgs.length, pool.length - 1)]);
-      sfx.vibMsg();
+      if (n.phoneDown <= 0) sfx.vibMsg();   // face-down: it only lights up (#47)
     }
   }
 
@@ -260,15 +260,16 @@ function friendsBlast(how: string) {
 
 // ---------- Declining without picking up (docs/design/desk.md) ----------
 // A call: hold the red Decline button (slower than ignoring, much faster than talking to Mom).
-// A message: drag the phone down to flip it face-down. It stays face-down for a while: new notifications only buzz.
+// A message: drag the phone down to flip it face-down. It stays face-down until flipped back: new notifications are
+// silent, the screen only glows out from under the phone (#47).
 
 export function setDeclineHold(on: boolean) {
   const n = N();
   n.declineHold = on && !!n.interrupts[0] && isCall(n.interrupts[0].kind) && !n.game;
 }
 
-/** Swipe the desk phone over. Face-down: a waiting message is dismissed (cheaper than ignoring it),
- *  later messages only buzz and cost half if they run out unseen. Calls keep ringing. */
+/** Swipe the desk phone over. Face-down: a waiting message is dismissed (cheaper than ignoring it); later calls and
+ *  messages are silent (a glow on the desk), and messages cost half if they run out unseen. */
 export function togglePhoneDown() {
   const n = N();
   if (n.game?.kind === 'phone') return;

@@ -96,3 +96,43 @@
 .mg-close:hover { background: #a8a8ad; transform: scale(1.08); }
 .monster-win .m-head .btn.x { display: none; }
 
+
+/* ---------- Phone minigames, clean pass (#45): fixed sizes for the things you aim at, nothing spills ---------- */
+.ph-screen { min-height: 0; }
+.ph-screen .ph-bubble { font-size: 12px; line-height: 1.3; padding: 7px 10px; overflow-wrap: anywhere; flex: none; }
+.ph-screen .feedback { flex: none; min-height: 14px; font-size: 11px; line-height: 1.25; text-align: center; }
+.ph-screen .ph-hint { flex: none; font-size: 10.5px; line-height: 1.3; }
+.ph-screen .timebar { flex: none; height: 5px; border: 0; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,.14); }
+/* ringing: the label sits right of the knob, never under it */
+.ph-slide { flex: none; height: 46px; font-size: 12px; }
+.ph-slide span { padding-left: 40px; }
+.ph-knob { width: 38px !important; height: 38px !important; }
+.ios-csub { font-size: 10px; margin-top: 2px; }
+/* lock screen: the two newest banners, a "+N more" line, then a Face ID ring that is always a full circle */
+.ph-screen.locked { gap: 6px !important; }
+.ph-screen.locked .ph-lock-time { font-size: 40px !important; line-height: 1; flex: none; }
+.ph-screen.locked .ph-lock-date { flex: none; }
+.ph-bans { flex: 0 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 5px; }
+.ph-bans .ios-ban.big { flex: none; }
+.ph-bans .ios-ban.big span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ph-screen.locked .ios-more { flex: none; font-size: 10px; color: #d9d2ff; margin-top: -2px; }
+.ph-face { flex: none; width: 76px !important; height: 76px !important; aspect-ratio: 1; }
+.ph-screen.locked .ios-quit { flex: none; margin-top: 2px; }
+/* Mom: one reply per row, the instruction lives in the feedback line */
+.ph-screen.call { gap: 7px !important; }
+.ph-screen.call .ios-incall b { font-size: 17px; }
+.ph-screen.call .track { flex: none; height: 24px; }
+.ph-screen.call .track .zone { height: 20px; }
+.ph-screen.call .track .marker { height: 24px; }
+.ph-chips.mom-replies { flex-direction: column; flex-wrap: nowrap; gap: 5px; flex: none; }
+.ph-chips.mom-replies .btn.chip { flex: none; width: 100%; min-height: 30px; font-size: 13px; font-family: Inter, sans-serif; }
+.ph-screen.call .ios-endbtn.small { width: 38px; height: 38px; margin-top: auto; }
+/* courier / the boys: replies grow with their text, one per row */
+.ph-screen.talk { gap: 6px !important; }
+.ph-screen.talk .ios-incall b { font-size: 17px; }
+.ios-replies.talk { flex: none; flex-wrap: nowrap; }
+.ios-replies.talk .btn.chip { flex: none; height: auto; min-height: 30px; padding: 6px 10px; font-size: 11.5px; line-height: 1.25; white-space: normal; }
+/* chats: older messages fade out at the top instead of being cut mid-bubble */
+.ios-thread { min-height: 0; -webkit-mask-image: linear-gradient(transparent, #000 22px); mask-image: linear-gradient(transparent, #000 22px); }
+.ph-screen.chat .ios-replies { flex: none; }
+.ios-mslide span { padding-left: 14px; white-space: nowrap; }   /* desk phone: the label clears the knob (#45) */
