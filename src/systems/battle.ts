@@ -46,7 +46,7 @@ function meet(def: EnemyDef) {
 }
 export const roleOf = (e: Enemy) => ENEMY_BY_ID[e.defId]?.role;
 export const moveOf = (e: Enemy) => ENEMY_BY_ID[e.defId]?.move;
-/** Swarm bodies left (Junk Mail envelopes). */
+/** Swarm bodies left (imps). */
 export const bodies = (e: Enemy) => e.per ? Math.max(0, Math.ceil(e.hp / e.per - 1e-6)) : e.hp > 0 ? 1 : 0;
 
 export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
@@ -120,8 +120,8 @@ function castAbility(h: Hero, slot: number) {
       if (e.hp > 0) mark(e, 'stagger');
       const slam = (e.wind ?? 0) > 0 && moveOf(e) === 'slam';
       if (slam && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
-      else if ((e.wind ?? 0) > 0 && !slam) { /* only FINAL NOTICE can be interrupted */ }
-      else { e.stunned = 1; if (slam) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts FINAL NOTICE! He braces for the next one.`, '#8fb3ff'); sfx.good(); } }
+      else if ((e.wind ?? 0) > 0 && !slam) { /* only SMASH can be interrupted */ }
+      else { e.stunned = 1; if (slam) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts SMASH! The boss braces for the next one.`, '#8fb3ff'); sfx.good(); } }
     }
     return;
   }
@@ -183,7 +183,7 @@ const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / max
 function heroDamageMult(h?: Hero): number {
   const n = N();
   return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * (n.rally > 0 ? 1 + ABILITIES.knight[3].power! : 1) * curioDmgMult()
-    * (h?.id === 'mage' && n.sulk > 0 ? 1 - T.CURIO_SULK_DMG : 1);   // Rafał read the guild bank log
+    * (h?.id === 'mage' && n.sulk > 0 ? 1 - T.CURIO_SULK_DMG : 1);   // Magoo read the guild bank log
 }
 
 function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', from?: { x: number; y: number }, skill = true): number {
@@ -257,7 +257,7 @@ function enemyAct(e: Enemy) {
   if (e.stunned > 0) { e.stunned--; return; }
   if (e.boss && bossMove(e)) return;
   const role = roleOf(e);
-  if (role === 'healer') {   // the Auditor cooks the books for the most hurt friend
+  if (role === 'healer') {   // the Shaman heals the most hurt friend
     const hurt = n.enemies.filter(x => x.hp > 0 && x.hp < x.maxHp * T.AUDITOR_HEAL_BELOW).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
     if (hurt) {
       const amt = Math.min(hurt.maxHp - hurt.hp, Math.round(e.maxHp * T.AUDITOR_HEAL));
@@ -267,7 +267,7 @@ function enemyAct(e: Enemy) {
     }
   }
   e.lunge = 0.3;
-  const hits = role === 'swarm' ? bodies(e) : 1;   // every envelope bites
+  const hits = role === 'swarm' ? bodies(e) : 1;   // every imp bites
   for (let k = 0; k < hits; k++) attackHero(e, e.atk);
 }
 
@@ -282,8 +282,8 @@ function attackHero(e: Enemy, atk: number) {
   else target = chance(0.5) && !S.g.heroes[0].downed ? S.g.heroes[0] : pick(alive);
   const st = heroStats(target);
   let raw = atk;
-  const over = e.turnsAlive - T.INTEREST_AFTER_TURNS;
-  if (over > 0) raw *= 1 + T.INTEREST_PER_TURN * over;
+  const over = e.turnsAlive - T.FURY_AFTER_TURNS;
+  if (over > 0) raw *= 1 + T.FURY_PER_TURN * over;
   if (n.ward > 0) raw *= ABILITIES.healer[2].power!;
   const dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - st.armor * 0.5));
   target.hp -= dmg;
@@ -302,20 +302,20 @@ function bossMove(e: Enemy): boolean {
   const move = moveOf(e);
   if (move === 'slam' && e.acts % T.BOSS_SLAM_EVERY === 0) {
     e.wind = e.windMax = T.BOSS_WINDUP_SEC;
-    toast(`${e.name} winds up FINAL NOTICE! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup(); coach('windup');
+    toast(`${e.name} winds up SMASH! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup(); coach('windup');
     return true;
   }
   if (move === 'loan' && e.acts % T.LOAN_EVERY === 0) {
     e.wind = e.windMax = T.LOAN_WINDUP_SEC;
     const friend = n.enemies.find(x => x !== e && x.hp > 0);
-    toast(friend ? `${e.name}: "Let's refinance." Kill ${friend.name} first!` : `${e.name}: "Loan approved." A friend is coming.`, '#ff8a80'); sfx.windup();
+    toast(friend ? `${e.name} empowers the ${friend.name}! Kill it first!` : `${e.name} summons help. Fire or Storm it!`, '#ff8a80'); sfx.windup();
     return true;
   }
   if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {
     const v = mostHurt();
     if (!v) return false;
     e.evict = S.g.heroes.indexOf(v); e.wind = e.windMax = T.EVICT_WINDUP_SEC;
-    toast(`${e.name} serves an EVICTION on ${v.name}! Taunt or Ward!`, '#ff8a80'); sfx.windup();
+    toast(`${e.name} marks ${v.name} for EXECUTE! Taunt or Ward!`, '#ff8a80'); sfx.windup();
     return true;
   }
   return false;
@@ -329,13 +329,13 @@ function landMove(e: Enemy) {
   if (move === 'evict') return eviction(e);
 }
 
-/** The Loan Shark's friend takes the free slot next to him. */
+/** The Warlock's summon takes the free slot next to him (move id 'loan'). */
 function loanFriend(e: Enemy) {
   const n = N();
   const old = n.enemies.find(x => x !== e && x.hp > 0);
-  if (old) {   // refinanced: back to full and meaner
+  if (old) {   // empowered: back to full and meaner
     old.hp = old.maxHp; old.atk *= T.LOAN_REFI; old.turnsAlive = 0;
-    const c = enemyCenter(old); floatText(c.x, UNIT_Y - 46, 'REFINANCED', '#ff8a80'); vfx('heal', c, undefined, 0.7);
+    const c = enemyCenter(old); floatText(c.x, UNIT_Y - 46, 'EMPOWERED', '#ff8a80'); vfx('heal', c, undefined, 0.7);
     e.lunge = 0.3; sfx.handle();
     return;
   }
@@ -346,10 +346,10 @@ function loanFriend(e: Enemy) {
   add.atb = 0;
   n.enemies[i] = add;
   e.lunge = 0.3; sfx.handle();
-  toast(`${def.name} joins the fight.`, '#ff8a80');
+  toast(`The ${def.name} join${def.role === 'swarm' ? '' : 's'} the fight.`, '#ff8a80');
 }
 
-/** EVICTION lands on one hero; the Landlord's deposit comes back. */
+/** EXECUTE lands on one hero; the Black Knight's shield comes back (move id 'evict'). */
 function eviction(e: Enemy) {
   const n = N();
   const knight = S.g.heroes[0];
@@ -366,10 +366,10 @@ function eviction(e: Enemy) {
     vfx('claw', heroCenter(i), undefined, 0.5);
     floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
     reflect(e, dmg);
-    toast(taunted ? `${knight.name} takes the EVICTION for ${v.name}.` : `EVICTION! ${h.name} is out on the street.`, '#ff8a80');
+    toast(taunted ? `${knight.name} takes the EXECUTE for ${v.name}.` : `EXECUTE! ${h.name} takes a brutal hit.`, '#ff8a80');
     if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); sfx.down(); }
   }
-  if (e.hp > 0) { e.shield = true; toast(`${e.name} takes a new deposit. Bash it off.`, '#8fd8ff'); }
+  if (e.hp > 0) { e.shield = true; toast(`${e.name} raises his shield again. Bash it off.`, '#8fd8ff'); }
 }
 
 function grantXp(amount: number) {
@@ -413,7 +413,7 @@ function bossSlam(e: Enemy) {
     if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); sfx.down(); }
     reflect(e, dmg);
   }
-  toast(n.taunt > 0 && !knight.downed ? `FINAL NOTICE hits ${knight.name} (taunted).` : ward < 1 ? 'FINAL NOTICE, softened by Ward.' : 'FINAL NOTICE hits everyone!', '#ff8a80');
+  toast(n.taunt > 0 && !knight.downed ? `SMASH hits ${knight.name} (taunted).` : ward < 1 ? 'SMASH, softened by Ward.' : 'SMASH hits everyone!', '#ff8a80');
 }
 
 /** Advances the battle. Returns 'victory', 'wipe' or null while it is ongoing. */

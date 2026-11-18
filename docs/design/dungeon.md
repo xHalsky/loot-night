@@ -2,50 +2,54 @@
 
 ## Now
 
-**Party.** Three heroes, persistent across nights, named after the friend group (data: `src/data/heroes.ts`):
-Paweł (Knight, tank, in front, carries the torch), Rafał (Mage), Jacek (Healer, at the back).
+**Party.** Three heroes, persistent across nights (data: `src/data/heroes.ts`, `HERO_NAME`): Knightenstein
+(Knight, tank, in front, carries the torch: you), Magoo (Mage) and Healero (Healer, at the back), the
+characters of your friends Rafał and Jacek. Party and guild chat use the character names, as an MMO would;
+the friends' phone calls use their real names.
 Stats: HP, attack, armor, speed, crit, luck; level and XP; six gear slots (weapon, helm, armor, boots,
 ring, trinket). Old saves are renamed on load.
 
 **Floors.** Endless. A floor is a walk, then `BATTLES_PER_FLOOR` (3) battles. Every
 `CHECKPOINT_EVERY` (5th) floor ends in a boss and sets the checkpoint. Enemies scale per floor
-(`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Dungeon of Overdue Bills
-(`src/data/enemies.ts`). When a boss dies, the enemies still standing run.
+(`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Shadow Crypt
+(`src/data/enemies.ts`). When a boss dies, the enemies still standing run. Enemy ids are older than their
+names (`collector` = Orc, `auditor` = Shaman, `shelter` = Guardian, `junk` = Imps, `bailiff` = Ogre, `shark` =
+Warlock, `landlord` = Black Knight; boss moves `slam`, `loan`, `evict`); saves and tests key on the ids.
 
-**Enemies.** Three plain ones (Debt Skeleton, Late-Fee Bat, The Collector) and three that each ask for a
+**Enemies.** Three plain ones (Skeleton, Bat, Orc) and three that each ask for a
 different answer, joining from floors 2, 3 and 4. The first time you meet one, a line says what it wants.
 
 | Enemy | From | Role | Answer |
 |---|---|---|---|
-| The Auditor | floor 2 | Heals the most hurt friend under `AUDITOR_HEAL_BELOW` (75%) for `AUDITOR_HEAL` (60%) of his own max HP instead of attacking | Frost goes for him first; the mage's auto Bolt picks the weakest, often him |
-| Tax Shelter | floor 3 | Shielded: takes `SHIELD_TAKEN` (25%) damage until a Bash breaks the shield | Bash (it goes for a shield before the front enemy), then burst |
-| Junk Mail | floor 4 | A swarm of 5 envelopes; each single hit takes one envelope at most, and every envelope bites on its turn | Fire hits every envelope; Storm's bolts take one each; Taunt soaks the bites |
+| Shaman | floor 2 | Heals the most hurt friend under `AUDITOR_HEAL_BELOW` (75%) for `AUDITOR_HEAL` (60%) of his own max HP instead of attacking | Frost goes for him first; the mage's auto Bolt picks the weakest, often him |
+| Guardian | floor 3 | Shielded: takes `SHIELD_TAKEN` (25%) damage until a Bash breaks the shield | Bash (it goes for a shield before the front enemy), then burst |
+| Imps | floor 4 | A swarm of 5 imps; each single hit takes one imp at most, and every imp bites on its turn | Fire hits every imp; Storm's bolts take one each; Taunt soaks the bites |
 
 Skill targeting: Bash goes for a winding-up boss, then a shield, then the front enemy; Frost goes for a
 healer, then the front enemy.
 
-**Bosses** rotate per checkpoint floor: floor 5 the Bailiff, 10 the Loan Shark, 15 the Landlord, then around
+**Bosses** rotate per checkpoint floor: floor 5 the Ogre, 10 the Warlock, 15 the Black Knight, then around
 again with floor scaling. Each has its own telegraphed move: a cast bar at the top centre and the skills
 that answer it pulsing red. The node map names the boss on the boss floor.
 
 | Boss (HP / attack at floor 1 scale) | Move | Answer |
 |---|---|---|
-| The Bailiff (1700 / 28) | FINAL NOTICE, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
-| The Loan Shark (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s "loan": a friend (Auditor or Junk Mail) joins; a friend still standing is refinanced instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next loan: Fire, Storm, Frost on the Auditor |
-| The Landlord (1600 / 26) | Starts behind a security deposit (a shield). Every `EVICT_EVERY` (3rd) action, a 3 s EVICTION on the most hurt hero (a red EVICT tag over them): `EVICT_PCT` (90%) of their max HP. Afterwards the deposit comes back | Taunt (the knight takes 55% instead), Ward halves, Revive after; Bash the deposit off again |
+| The Ogre (1700 / 28) | SMASH, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
+| The Warlock (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s SUMMON: a friend (Shaman or Imps) joins; a friend still standing is EMPOWERed instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next summon: Fire, Storm, Frost on the Shaman |
+| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the most hurt hero (a red EXECUTE tag over them): `EVICT_PCT` (90%) of their max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, Revive after; Bash the shield off again |
 
-**Boss big attack: FINAL NOTICE** (the Bailiff). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
+**Boss big attack: SMASH** (the Ogre). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
 a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
 `BOSS_WINDUP_SEC` (3 s) with a low rising sound you can hear from Excel. Then every hero loses
 `BOSS_SLAM_PCT` (60%) of max HP. Three answers, one per hero:
-- **Bash** (knight) interrupts it, but then the boss is **braced**: his next FINAL NOTICE cannot be interrupted;
+- **Bash** (knight) interrupts it, but then the boss is **braced**: his next SMASH cannot be interrupted;
 - **Ward** (healer) halves it (`BOSS_SLAM_WARD_MULT`);
 - **Taunt** (knight) pulls it onto the knight alone (`BOSS_SLAM_TAUNT_PCT` of his max HP).
 So a boss fight is a rotation: Bash, then Ward or Taunt, then Bash again. On Excel during a wind-up,
 nobody answers.
 
-**Interest (Monday's mechanic).** An enemy alive more than `INTEREST_AFTER_TURNS` turns deals
-+`INTEREST_PER_TURN` per extra turn. Rewards burst.
+**Fury (Monday's mechanic, the red FURY +x% tag).** An enemy alive more than `FURY_AFTER_TURNS` turns deals
++`FURY_PER_TURN` per extra turn. Rewards burst.
 
 **Battle.** Side view, heroes left, up to 3 enemies right. Turn order by an ATB gauge
 (`ATB_RATE` × speed; speed 10 = a turn every 3.3 s). Each turn the unit auto-attacks: Knight slashes
@@ -59,7 +63,7 @@ locked as "later nights".
 
 | Hero | Level 1 | Level 3 | Level 5 |
 |---|---|---|---|
-| Knight (1, 2, 3) | Taunt: enemies hit the knight for 5 s, marks them Taunted | Bash: 2x to the front enemy, stun, Stagger; interrupts FINAL NOTICE | Rally: every hero acts right now, +25% party damage for 6 s |
+| Knight (1, 2, 3) | Taunt: enemies hit the knight for 5 s, marks them Taunted | Bash: 2x to the front enemy, stun, Stagger; interrupts SMASH | Rally: every hero acts right now, +25% party damage for 6 s |
 | Mage (Q, W, E) | Fire: 1x to every enemy | Frost: 2.6x to the front enemy, Chill | Storm: 6 bolts at random enemies, 0.6x each |
 | Healer (A, S, D) | Mend: heals the party | Ward: 40% less damage for 6 s | Revive: a downed hero back at 50%, else heals the most hurt for 50% |
 
@@ -72,12 +76,12 @@ the ✕ or "walk past" leaves at once. Curio time is your time: the night clock 
 
 | Curio | Choice A | Choice B |
 |---|---|---|
-| Locked strongbox | Pick the lock: 8 s standing still, quiet | Smash it: instant, Noise +25 |
-| Overdue mailbox | Open: Noise +5; 50% gold (20 x floor), 30% a rare, 20% a late fee (party -15% damage until the next floor) | Leave it |
-| Energy-drink shrine | Offer a real Monster can from the desk: party +30% damage, +20% speed for 60 s | Pray: 50% +15% damage for 30 s, 50% it burps (Noise +10) |
+| Locked chest | Pick the lock: 8 s standing still, quiet | Smash it: instant, Noise +25 |
+| Sealed coffin | Open: Noise +5; 50% gold (20 x floor), 30% a rare, 20% a curse (party -15% damage until the next floor) | Leave it |
+| Shrine of the green flame | Make an offering (costs a real Monster can from the desk): party +30% damage, +20% speed for 60 s | Pray: 50% +15% damage for 30 s, 50% it roars (Noise +10) |
 | Snoring troll on a loot pile | Sneak: 6 s on the RPG screen; alt-tab (or the monitor going off) wakes him | Fight: a mini-boss (330 HP at floor 1 scale), Noise +15 |
-| Guild bank vault | Withdraw "just one thing": a free rare; 40 to 90 s later Rafał reads the log in guild chat and sulks (mage -20% damage for 45 s) | Close it |
-| Unpaid vending machine | Pay 12 gold x floor: party heals 30% | Kick it: Noise +15, 50% the same heal |
+| Guild bank vault | Take one item: a free rare; 40 to 90 s later Magoo reads the log in guild chat and sulks (mage -20% damage for 45 s) | Close it |
+| Potion cart | Pay 12 gold x floor: party heals 30% | Shake it: Noise +15, 50% the same heal, else broken glass |
 
 Strongbox and troll both pay 2 items (the first rare or better); the troll fight adds normal battle drops.
 His fight is not one of the floor's three battles and never counts as the boss. Away when the party reaches
@@ -95,7 +99,7 @@ in, so the order you fire skills in matters:
 | Taunted | Taunt (all enemies, as long as the taunt) | Ward | With Ward up, its hits bounce `MARK_TAUNT_REFLECT` (50%) back |
 
 Marks last `MARK_SEC` (6 s). So the long chain is Rally → Frost → Bash (shatter, stagger) → Fire (x2). On a boss
-it collides with the wind-up: Bash spent on a shatter is not there for FINAL NOTICE. A mark shows as a small
+it collides with the wind-up: Bash spent on a shatter is not there for SMASH. A mark shows as a small
 coloured tag above the enemy's HP bar, its line shrinking as it runs out; its name floats up when it lands
 and the payoff floats up when it is cashed in. A skill that would cash in a mark right now glows gold on the
 skill bar with a badge (x2, x2.5, ↩).
@@ -156,7 +160,7 @@ a minigame window open, or cables out because you ignored the dog), the party pl
 - a pack pulled while you are away starts with `AUTOPILOT_AMBUSH_ATB` (40 to 80) ATB, so it hits first;
 - no skills (they need you).
 Her desk visit and the monitor she switched off are forced on you, so they keep the normal autopilot.
-Party chat complains in the Feed ("Rafał: afk again? pulling"), and the Loot Night taskbar button flashes
+Party chat complains in the Feed ("Magoo: afk again? pulling"), and the Loot Night taskbar button flashes
 orange like a Windows app wanting attention when party HP is under `AUTOPILOT_FLASH_HP` or a hero is down.
 Measured by `test/autopilot.ts` (40 s on Excel): bosses on floor 5 and 10 wipe 16/20 and 20/20; normal
 floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
@@ -170,6 +174,15 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 
 ## Decisions
 
+- **The RPG plays it straight** (0.43, #44): plain fantasy names (WoW and D&D tropes) for the party, enemies,
+  bosses, skills, items, curios, the town (Ravenhold) and the dungeon (Shadow Crypt), so the real-life half
+  carries the jokes and the contrast does the work. The first roster was a debt joke (Debt Skeleton, the
+  Auditor, Junk Mail, the Bailiff's FINAL NOTICE, the Landlord's EVICTION); it read as one more joke on a
+  screen already full of them, and the long names cost reading time mid-fight. Names are one or two words;
+  boss moves are one word in capitals (SMASH, SUMMON / EMPOWER, EXECUTE). Mechanics did not change.
+  Rejected: keeping the jokes in flavour text only (the names are what you read); renaming the ids too
+  (breaks saves and tests for no player gain). The party chat keeps its gamer banter: that is the friends
+  talking, not the game.
 - **Instant skills stay instant** (decided in the balance pass, 0.40, #2): with no global cooldown the bot
   reaches floor 9 to 10 by 01:00, which is the depth a normal night is tuned for; the noise from skill spam is
   already priced (`NOISE_ABILITY` 3.5, loud multi-hit skills once per cast) and wakes her 1 to 2 times a
@@ -193,7 +206,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   floor-10 boss, a player using skills on cooldown dips to ~49% with some close calls and no wipes;
   a player who saves Taunt and Ward only for the wind-up wipes about half the time; 40 s on Excel always wipes.
   The floor-5 boss is milder (~66 to 70%); RPG depth (#27) will give floors 5/10/15 their own bosses.
-  Bailiff history: 700/16 → 850/24 (0.15) → 1100/28 (0.18) → 1700/28 (0.23, the full kit halved kill times).
+  Ogre history: 700/16 → 850/24 (0.15) → 1100/28 (0.18) → 1700/28 (0.23, the full kit halved kill times).
 - **Curios cost real life, not RPG resources** (0.26): every choice spends Noise, standing still, a real can
   or gold, so the RPG's third verb is a stealth decision too. Out on purpose, so it does not become a pocket
   Darkest Dungeon: no hero stress, no torch meter, no provisions. Curios are a garnish on the walk, not a
@@ -205,18 +218,18 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
     the keyboard would be free).
   - The sneak fails on alt-tab, so a troll and her steps at the same time is a real choice.
   - Rejected alternatives for the third verb: standing orders for the autopilot, a Loop Hero floor deck, a
-    torch light meter, pull control, raid marks, loot council, playing only Paweł.
+    torch light meter, pull control, raid marks, loot council, playing only the knight.
 - **Each new enemy asks one question** (0.24): heal (focus it), shield (Bash), swarm (area damage). Plain stat
   variants were rejected: they make fights longer without asking for a different button. The answers lean on
   skills, so a pack with a shield or a swarm is worse while you are away (floor 8, 40 s away: 4/12 wipes,
   was 2/15).
-- **A boss per checkpoint, each with its own move** (0.24): the Bailiff teaches "answer the cast bar", the
-  Loan Shark "kill the adds first", the Landlord "break the shield, then survive the targeted hit". Bash's
+- **A boss per checkpoint, each with its own move** (0.24): the Ogre teaches "answer the cast bar", the
+  Warlock "kill the adds first", the Black Knight "break the shield, then survive the targeted hit". Bash's
   roles change per boss (interrupt, add killer, shield breaker), so the same button is a new decision.
-  - Loan Shark first version only called a friend into a free slot, so killing the friend caused the next
-    loan and leaving it alive was better. Refinancing a living friend fixed the incentive.
-  - Measured with `test/autopilot.ts` (lowest party HP, careful / skill spam): floor 5 Bailiff 69% / 67%;
-    floor 10 Loan Shark 52% / 62% with 1 to 3 wipes in 12; floor 15 Landlord 60% / 55%, about 60 s.
+  - The Warlock's first version only called a friend into a free slot, so killing the friend caused the next
+    summon and leaving it alive was better. Empowering a living friend fixed the incentive.
+  - Measured with `test/autopilot.ts` (lowest party HP, careful / skill spam): floor 5 Ogre 69% / 67%;
+    floor 10 Warlock 52% / 62% with 1 to 3 wipes in 12; floor 15 Black Knight 60% / 55%, about 60 s.
     40 s on Excel wipes on all three. Shark at attack 32 wiped 3 to 4 in 10 (too punishing); at 24, 67 to 72%.
 - **The node map hides descriptions until hover** (0.24): five map types make six paths possible.
 - **Marks reward order, not speed** (0.23): two skills that are fine alone are better in sequence, so the

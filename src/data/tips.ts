@@ -1,21 +1,21 @@
 // First-time tips (docs/design/night.md, Onboarding; #28). Each one shows once per save, the first time its thing
-// happens, as a line in the feed from her or from the guild chat (Rafał and Jacek are your party). Short, in their
+// happens, as a line in the feed from her or from the guild chat (Magoo and Healero are your party: your friends Rafał and Jacek). Short, in their
 // voice, no walls of text. Plain text only (no em dashes).
 export type TipId = 'her_show' | 'plan' | 'pass' | 'caught' | 'endcue' | 'dog' | 'yawn'
   | 'headset' | 'bed' | 'peek' | 'map' | 'shower';   // the core loop's firsts are coach marks instead (COACH below)
-export const TIPS: Record<TipId, { who: 'her' | 'Rafał' | 'Jacek'; text: string }> = {
+export const TIPS: Record<TipId, { who: 'her' | 'Magoo' | 'Healero'; text: string }> = {
   her_show: { who: 'her', text: "I'm watching my show, babe. Don't play all night, okay?" },
-  plan: { who: 'Rafał', text: 'forgot the layout of your flat? the plan is taped to your wall, left of the door. click it' },
-  pass: { who: 'Rafał', text: 'lol she bought the spreadsheet. back to the loot' },
-  caught: { who: 'Rafał', text: 'F. excel has to be up BEFORE she opens the door. listen for the steps' },
-  endcue: { who: 'Jacek', text: "her thing just ended, she's getting up. what she was doing = what she'll want" },
-  dog: { who: 'Rafał', text: 'the dog wants pets. ignore him and he goes for your cables' },
-  yawn: { who: 'Jacek', text: "you're yawning. there's Monster in the fridge on your desk" },
-  headset: { who: 'Rafał', text: "headset on: after 30 s you're in the Zone. but you won't hear her coming" },
-  bed: { who: 'Jacek', text: "she's asleep. crits, bosses and vaults are LOUD now. keep the Noise down" },
-  peek: { who: 'Rafał', text: 'the wider you open the door, the more you see. and the more she sees you' },
-  map: { who: 'Rafał', text: 'pick the next floor. hover a node to see what is there' },
-  shower: { who: 'Jacek', text: 'shower = 90 s of freedom. go loud' },
+  plan: { who: 'Magoo', text: 'forgot the layout of your flat? the plan is taped to your wall, left of the door. click it' },
+  pass: { who: 'Magoo', text: 'lol she bought the spreadsheet. back to the loot' },
+  caught: { who: 'Magoo', text: 'F. excel has to be up BEFORE she opens the door. listen for the steps' },
+  endcue: { who: 'Healero', text: "her thing just ended, she's getting up. what she was doing = what she'll want" },
+  dog: { who: 'Magoo', text: 'the dog wants pets. ignore him and he goes for your cables' },
+  yawn: { who: 'Healero', text: "you're yawning. there's Monster in the fridge on your desk" },
+  headset: { who: 'Magoo', text: "headset on: after 30 s you're in the Zone. but you won't hear her coming" },
+  bed: { who: 'Healero', text: "she's asleep. crits, bosses and vaults are LOUD now. keep the Noise down" },
+  peek: { who: 'Magoo', text: 'the wider you open the door, the more you see. and the more she sees you' },
+  map: { who: 'Magoo', text: 'pick the next floor. hover a node to see what is there' },
+  shower: { who: 'Healero', text: 'shower = 90 s of freedom. go loud' },
 };
 /** On the first night her note names the cue that ends each activity (the tell that she is about to move). */
 export const END_HINT: Record<string, string> = {

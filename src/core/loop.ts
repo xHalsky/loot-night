@@ -26,7 +26,7 @@ export function step(dt: number) {
   if (g.screen !== 'night' || g.paused || g.howto || !g.night) return;
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
   updatePre(dt);
-  updateCurioTimers(dt);   // party buffs, Rafał's sulk
+  updateCurioTimers(dt);   // party buffs, Magoo's sulk
   updateVisits(dt);
   updatePeek(dt);
   updateHim(dt);

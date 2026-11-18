@@ -731,6 +731,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #monUi .ie-hp { position: absolute; right: 1px; top: 1px; bottom: 1px; width: 3px; background: #2a0c0c; display: flex; align-items: flex-end; }
 #monUi .ie-hp i { width: 100%; }
 #monUi .ie-name { position: absolute; left: 0; right: 0; bottom: -1px; font-size: 8px; color: #f2e9d8; text-shadow: 0 1px 0 #000; text-align: center; overflow: hidden; white-space: nowrap; }
+#monUi .ie-name.long { left: -3px; right: -3px; font-size: 7px; letter-spacing: -0.4px; transform: scaleX(.86); overflow: visible; }   /* Knightenstein (#44) */
 #monUi .ie-sks { display: grid; grid-template-columns: repeat(5, 29px); gap: 2px; }
 #monUi .ie-sk { position: relative; width: 29px; height: 40px; padding: 0; border: 2px solid #6a5030; border-radius: 2px; cursor: pointer;
   background: radial-gradient(circle at 40% 35%, #3a2c1e, #140e09); display: grid; place-items: center; box-shadow: inset 0 0 0 1px #000; }
@@ -801,6 +802,8 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .spow { position: absolute; right: 1px; bottom: 0; font-size: 9px; font-weight: 700; color: #ffd27a; text-shadow: 0 1px 0 #000, 0 0 2px #000; line-height: 1; }
 .rp.party .doll { height: 142px !important; }
 .rp.party .dport { height: 44px !important; }
+.rp.party .dport.long { height: auto !important; min-height: 44px; }   /* Knighten-stein wraps onto two lines (#44) */
+.dport.long .dname { line-height: 1.02; }
 .rp.party .dstats { margin-top: 4px; background: #e8d9b5; border: 2px solid #8a6a3a; padding: 2px 6px 3px; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 8px; color: #3a2414; }
 .dstats-h { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid rgba(90,60,30,.35); margin-bottom: 1px; }
 .dstats-h .dim { font-weight: 400; text-transform: none; letter-spacing: 0; color: #7a5a3a; }

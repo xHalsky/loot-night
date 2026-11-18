@@ -7,7 +7,7 @@
 import { T } from '../config/tuning';
 import { S, N, RARITIES, type Vfx, type FloatFx, type MarkId } from '../core/state';
 import { HERO_SPRITES } from '../data/heroes';
-import { ENEMY_BY_ID, ENVELOPE } from '../data/enemies';
+import { ENEMY_BY_ID, IMP } from '../data/enemies';
 import { bodies, moveOf } from '../systems/battle';
 import { MARKS } from '../data/marks';
 import { curioDef } from '../systems/curios';
@@ -200,11 +200,11 @@ function units(c: CanvasRenderingContext2D, t: number) {
     const x = (e.boss ? 500 : ENEMY_X[i]) - (e.lunge ? Math.sin(Math.PI * (1 - e.lunge / 0.3)) * 16 : 0);
     const y = e.boss ? UNIT_Y - 32 : UNIT_Y;
     c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(x + (e.boss ? 42 : 30), FEET, e.boss ? 44 : 30, 6, 0, 0, Math.PI * 2); c.fill();
-    if (e.per) {   // a swarm: one small envelope per body, fluttering
+    if (e.per) {   // a swarm: one small imp per body, fluttering
       const k = bodies(e);
       for (let j = 0; j < k; j++) {
         const ex = x + (j % 3) * 20 - 2 + Math.sin(t * 5 + j) * 3, ey = y + 18 + Math.floor(j / 3) * 26 + Math.cos(t * 4 + j * 2) * 4;
-        drawPx(c, ENVELOPE, ex, ey, 3, e.flash > 0 ? 0.5 : 1);
+        drawPx(c, IMP, ex, ey, 3, e.flash > 0 ? 0.5 : 1);
       }
     } else drawPx(c, def.sprite, x, y, s, e.flash > 0 ? 0.5 : 1);
     if (e.shield) {   // a shield bubble until Bash breaks it
@@ -215,15 +215,15 @@ function units(c: CanvasRenderingContext2D, t: number) {
     }
     bar(c, x - 4, y - 18, e.boss ? 92 : 68, 9, e.hp / e.maxHp, '#e0524a');
     if (e.boss) text(c, e.name, x + 42, y - 24, 12, '#f2b84b', 'center', 600);
-    const over = e.turnsAlive - T.INTEREST_AFTER_TURNS;
-    if (over > 0) text(c, `INTEREST +${Math.round(over * T.INTEREST_PER_TURN * 100)}%`, x + 30, y - 30, 10, '#ffb3a8', 'center');
+    const over = e.turnsAlive - T.FURY_AFTER_TURNS;
+    if (over > 0) text(c, `FURY +${Math.round(over * T.FURY_PER_TURN * 100)}%`, x + 30, y - 30, 10, '#ffb3a8', 'center');
     if (e.stunned > 0) text(c, 'STUN', x + 30, y - 24, 11, '#8fb3ff', 'center');
     if (e.enraged) text(c, 'ENRAGED', x + 42, y + 2 + Math.sin(t * 10) * 2, 12, '#ff5a3a', 'center', 700);
     if (e.per) text(c, `x${bodies(e)}`, x + 62, y - 8, 11, '#efe6cf', 'right', 700);
-    if (e.evict !== undefined && (e.wind ?? 0) > 0) {   // EVICTION target: a red notice over that hero
+    if (e.evict !== undefined && (e.wind ?? 0) > 0) {   // EXECUTE target: a red tag over that hero
       const hx = HERO_X[e.evict] + 30, by = UNIT_Y - 40 + Math.sin(t * 8) * 3;
-      c.fillStyle = '#e0302a'; c.fillRect(hx - 22, by - 12, 44, 14);
-      text(c, 'EVICT', hx, by - 1, 10, '#fff0e8', 'center', 700);
+      c.fillStyle = '#e0302a'; c.fillRect(hx - 29, by - 12, 58, 14);
+      text(c, 'EXECUTE', hx, by - 1, 10, '#fff0e8', 'center', 700);
     }
 
   });
@@ -247,7 +247,7 @@ function markTags(c: CanvasRenderingContext2D) {
     const x = e.boss ? 500 : ENEMY_X[i], y = e.boss ? UNIT_Y - 32 : UNIT_Y;
     const ms = (Object.keys(e.marks) as MarkId[]).filter(k => e.marks![k]! > 0);
     ms.forEach((k, j) => {
-      const cx = x + (e.boss ? 42 : 30), my = y - 54 - j * 13 - (e.boss ? 8 : 0), M = MARKS[k], w = 62;   // stacked above the HP bar and Interest
+      const cx = x + (e.boss ? 42 : 30), my = y - 54 - j * 13 - (e.boss ? 8 : 0), M = MARKS[k], w = 62;   // stacked above the HP bar and Fury
       c.fillStyle = 'rgba(8,4,12,.85)'; c.fillRect(cx - w / 2, my, w, 12);
       text(c, M.tag, cx, my + 9, 9, M.color, 'center', 700);
       c.fillStyle = M.color; c.fillRect(cx - w / 2, my + 11, w * Math.min(1, e.marks![k]! / T.MARK_SEC), 1);
@@ -300,7 +300,7 @@ function fog(c: CanvasRenderingContext2D, t: number) {
   }
 }
 
-/** The boss's FINAL NOTICE wind-up, drawn above the darkness and fog: it must read at a glance. */
+/** The boss's wind-up (SMASH, SUMMON / EMPOWER, EXECUTE), drawn above the darkness and fog: it must read at a glance. */
 function windupHud(c: CanvasRenderingContext2D) {
   const n = N();
   for (const e of n.enemies) {
@@ -308,9 +308,9 @@ function windupHud(c: CanvasRenderingContext2D) {
     // a boss cast bar, MMO raid style: fixed at the top centre, outside the camera
     const k = 1 - e.wind! / (e.windMax ?? T.BOSS_WINDUP_SEC), pulse = Math.floor(performance.now() / 120) % 2;
     const move = moveOf(e), victim = e.evict !== undefined ? S.g.heroes[e.evict]?.name : '';
-    const label = move === 'loan' ? (N().enemies.some(x => x !== e && x.hp > 0) ? 'REFINANCE' : 'LOAN APPROVED') : move === 'evict' ? `EVICTION: ${victim}` : e.braced ? 'FINAL NOTICE (braced, no interrupt)' : 'FINAL NOTICE';
+    const label = move === 'loan' ? (N().enemies.some(x => x !== e && x.hp > 0) ? 'EMPOWER' : 'SUMMON') : move === 'evict' ? 'EXECUTE' : e.braced ? 'SMASH (braced, no interrupt)' : 'SMASH';
     const friend = N().enemies.some(x => x !== e && x.hp > 0);
-    const hint = move === 'loan' ? (friend ? 'Kill his friend first or it comes back stronger' : 'A friend is coming: Fire or Storm it') : move === 'evict' ? 'Taunt or Ward!' : e.braced ? 'Ward or Taunt!' : 'Bash, Ward or Taunt!';
+    const hint = move === 'loan' ? (friend ? 'Kill his friend first or it comes back stronger' : 'A friend is coming: Fire or Storm it') : move === 'evict' ? `On ${victim}: Taunt or Ward!` : e.braced ? 'Ward or Taunt!' : 'Bash, Ward or Taunt!';
     const bw = 240, bx = W / 2 - bw / 2, by = 62;
     c.fillStyle = 'rgba(10,4,6,.85)'; c.fillRect(bx - 3, by - 3, bw + 6, 22);
     c.strokeStyle = pulse ? '#ff5a5a' : '#8a2a2a'; c.lineWidth = 2; c.strokeRect(bx - 3, by - 3, bw + 6, 22);

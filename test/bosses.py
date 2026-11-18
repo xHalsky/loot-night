@@ -27,10 +27,16 @@ async def main():
             if await pg.evaluate("()=>window.__lootnight.S.g.night.phase==='battle'"): break
         await pg.evaluate("""()=>{const S=window.__lootnight.S; const n=S.g.night; const L=window.__lootnight;
           const mk=(id,hp)=>({uid:900+Math.random(),defId:id,name:id,hp,maxHp:hp,atk:5,armor:1,speed:0,atb:0,turnsAlive:0,stunned:0,boss:false,flash:0});
-          const a=mk('auditor',90); a.name='The Auditor'; const s=mk('shelter',180); s.name='Tax Shelter'; s.shield=true; const j=mk('junk',120); j.name='Junk Mail'; j.per=24; j.hp=90;
+          const a=mk('auditor',90); a.name='Shaman'; const s=mk('shelter',180); s.name='Guardian'; s.shield=true; const j=mk('junk',120); j.name='Imps'; j.per=24; j.hp=90;
           n.enemies=[s,a,j]; S.g.timeScale=0;}""")
         await pg.wait_for_timeout(250)
         await pg.screenshot(path='test/enemies_new.png', clip=CLIP)
+        await pg.evaluate("""()=>{const S=window.__lootnight.S; const n=S.g.night;
+          const mk=(id,hp)=>({uid:950+Math.random(),defId:id,name:{collector:'Orc',skeleton:'Skeleton',bat:'Bat'}[id],hp,maxHp:hp,atk:5,armor:1,speed:0,atb:0,turnsAlive:0,stunned:0,boss:false,flash:0});
+          n.enemies=[mk('collector',120),mk('skeleton',80),mk('bat',50)]; S.g.timeScale=0;}""")
+        await pg.wait_for_timeout(250)
+        await pg.screenshot(path='test/enemies_basic.png', clip=CLIP)
+        await boss_shot(pg, 5, 'boss_ogre', "()=>window.__lootnight.S.g.night.enemies.some(e=>e.boss&&e.wind>0.5)")
         await boss_shot(pg, 10, 'boss_shark', "()=>window.__lootnight.S.g.night.enemies.some(e=>e.boss&&e.wind>0.5)")
         await boss_shot(pg, 15, 'boss_landlord', "()=>window.__lootnight.S.g.night.enemies.some(e=>e.boss&&e.wind>1&&e.evict!==undefined)")
         # node map with all map kinds in the bag

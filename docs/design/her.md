@@ -41,7 +41,7 @@ the doorways in the crack lead.
 the doorway): what you last heard of her, where,
 and how long ago: "♫ KETTLE · kitchen · 12 s ago", "♫ STEPS · hallway · now", "♫ ZZZ · bedroom". After
 `APT_STALE_SEC` without a new sound it dims behind a "?" (her phone is silent, so it goes stale). Headset on:
-"Headset on. You hear nothing. (H)", and it stops updating (Earplugs of Peace still let hallway steps
+"Headset on. You hear nothing. (H)", and it stops updating (items of Vigilance still let hallway steps
 through). It never shows where she is now, only the last sound.
 
 **Headset and Zone** (H, or click it on the desk). Headset on fills Zone over `ZONE_FILL_SEC`; full Zone

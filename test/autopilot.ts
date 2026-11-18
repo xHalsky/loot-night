@@ -31,7 +31,7 @@ function castSmart() {
   const ok = (hero: typeof k, s: number) => !hero.downed && hero.cd[s] <= 0 && hero.level >= T.ABILITY_UNLOCK[s];
   const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
   const move = wind ? moveOf(wind) : undefined;
-  const boss = n.enemies.some(e => e.boss && e.hp > 0 && moveOf(e) === 'slam');   // only FINAL NOTICE needs Bash saved
+  const boss = n.enemies.some(e => e.boss && e.hp > 0 && moveOf(e) === 'slam');   // only SMASH needs Bash saved
   if (move === 'slam') { if (ok(k, 2) && !wind!.braced) queueAbility(0, 2); else if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
   if (move === 'evict') { if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
   const alive = n.enemies.filter(e => e.hp > 0);

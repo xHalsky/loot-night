@@ -41,11 +41,11 @@ export const PEEK_CAUGHT = ['"Is that... a dragon?"', '"Work, huh?"', '"Seriousl
 export const FAKEOUT_LINES = ['Steps go past. She went to the kitchen.', 'Bathroom. False alarm.'];
 
 export const TRADE_CHAT = [
-  ['Kubson', 'WTB girlfriend patience, paying 5k gold'],
-  ['xXBartekXx', 'LF healer for Sunday raid, must have Zyn'],
-  ['Wiktor', 'selling Rusty Fork, mint condition, no lowballs'],
+  ['Kubson', 'WTS Runed Sword, 300g, no lowballs'],
+  ['xXBartekXx', 'LF healer for Warlock, need 1 more'],
+  ['Wiktor', 'anyone seen a loot goblin on floor 3?'],
   ['GoldSeller99', 'cheap gold, totally legit, trust'],
-  ['Kubson', 'anyone else\'s mom calling every 5 min?'],
+  ['Kubson', 'LFG Ogre, have tank, need dps'],
 ];
 export const NPCS = [
   { tag: 'Kubson', x: 150, y: 250, color: '#d9534f' },

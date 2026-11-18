@@ -131,7 +131,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
 function updateSleep(dt: number): 'wake' | null {
   const n = N();
   const a = n.apt;
-  const owl = hasLife('owl') ? 1 - T.AFFIX_OWL : 1;   // of the Night Owl
+  const owl = hasLife('owl') ? 1 - T.AFFIX_OWL : 1;   // of Slumber
   a.wake = clamp(a.wake + Math.max(0, n.noise * towelNoise() - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
   if (a.wake >= T.WAKE_TEXT && !a.textSent) {
     if (spawnInterrupt('text')) {

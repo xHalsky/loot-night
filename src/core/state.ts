@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { HERO_NAME } from '../data/heroes';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 export const RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
@@ -37,7 +38,7 @@ export interface Enemy {
   marks?: Partial<Record<MarkId, number>>;          // seconds left per ability mark (docs/design/dungeon.md)
   shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
   per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
-  windMax?: number; evict?: number;                  // boss: length of the current wind-up; EVICTION's target hero
+  windMax?: number; evict?: number;                  // boss: length of the current wind-up; EXECUTE's target hero
   wind?: number; acts?: number; braced?: boolean; enraged?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
 }
 
@@ -217,7 +218,7 @@ export function newHero(id: HeroId, name: string, role: string, hp: number): Her
 
 export function initialState(): GameState {
   return {
-    heroes: [newHero('knight', 'Paweł', 'Knight', 130), newHero('mage', 'Rafał', 'Mage', 75), newHero('healer', 'Jacek', 'Healer', 90)],
+    heroes: [newHero('knight', HERO_NAME.knight, 'Knight', 130), newHero('mage', HERO_NAME.mage, 'Mage', 75), newHero('healer', HERO_NAME.healer, 'Healer', 90)],
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },

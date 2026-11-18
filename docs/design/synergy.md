@@ -18,7 +18,7 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
 | Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise, her text Goodwill | Timers, the headset (the boys) | Fine |
 | Dog and cables | Noise, NO SIGNAL; Good Boy (goblins x2), a fast fix keeps Flow; a wipe calls him over | A timer, a wipe | Fine (0.29) |
-| Tiredness | Yawns, microsleeps, sluggish, Drowsy misses; Red Eyes affix | Clock, sleep debt, Monster | Fine: the Witching Hour gives staying up a reward side (0.31) |
+| Tiredness | Yawns, microsleeps, sluggish, Drowsy misses; of Madness affix | Clock, sleep debt, Monster | Fine: the Witching Hour gives staying up a reward side (0.31) |
 
 ## Slice set vs. arc set (decided 2026-11-16)
 
@@ -83,10 +83,10 @@ rolls after 01:00):
 
 | Affix | Bonus | While |
 |---|---|---|
-| of the Night Shift | Attack | after 01:00 |
-| of Red Eyes | Crit % | Tired 70+ |
-| of the Second Wind | Max HP | after 01:00 |
-| of the Dawn Chaser | Luck | after 03:00 |
+| of Midnight | Attack | after 01:00 |
+| of Madness | Crit % | Tired 70+ |
+| of Twilight | Max HP | after 01:00 |
+| of Dawn | Luck | after 03:00 |
 
 Staying up becomes a greedy choice, not only a penalty. Measured (6 good-bot nights each): bed at 01:00,
 4.8 epic-or-better drops, 1.5 wakes, sleep debt 1.3; bed at 02:00, 6.7 drops, 5.5 wakes, sleep debt 7.0
@@ -110,7 +110,7 @@ Cursed + Shrine = Purified; Goblin Den + Elite = Goblin King).
 2 turns; Fire's Stagger payoff does not spread; Judged heals on skill hits, not auto attacks (away stays
 dangerous); Taunted reflects 50% with Ward, not 20% (20% was too small to see).
 **Cross-system affixes:** built in 0.25 with real-life affixes ([loot.md](loot.md)). Caffeinated shipped as
-"of Caffeine" and Good with Dogs as "of the Good Boy" (luck for 60 s after petting). **Party sets** worn across different heroes (Guild Tabard, Ledger Plate).
+"of Frenzy" and Good with Dogs as "of the Wolf" (luck for 60 s after petting). **Party sets** worn across different heroes (Guild Tabard, Raven Plate).
 
 ## Tweaks
 

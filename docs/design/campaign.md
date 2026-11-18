@@ -13,13 +13,13 @@ Monday to Sunday. Each night adds one dungeon mechanic and one real-life rule, a
 
 | Night | Dungeon | Dungeon mechanic | New real-life rule | 3rd-star challenge |
 |---|---|---|---|---|
-| Mon (built) | Dungeon of Overdue Bills | Interest: enemies alive 3+ turns hit harder | Excel cover, Mom, boss, Peek visits | Never caught |
-| Tue | Swamp of Unread Messages | Enemies spawn adds every 3 turns (rewards area attacks) | Her texts in the evening, Chat visits | Answer every text |
-| Wed | Castle of Missed Calls | Shields removed only by a timed click (rewards watching) | Courier, drilling, Zyn; visit labels gone | Reach floor 10 |
-| Thu | Overtime Tower | 90 s per floor: fast = bonus chest, slow = Exhaustion stack | Snack run and Cuddle visits | No Exhaustion stacks |
-| Fri | Afterparty Catacombs | Enemies swap places; hotkeys shuffle every 30 s | Friends' group call, Hug visits, weekend auction spike | Pass every Hug |
-| Sat | Raid of the Lich Landlord, part 1 | Multi-phase raid boss, each phase saved | Help me visits, dinner shout, visits 25% more often | Clear 2 phases |
-| Sun | Raid of the Lich Landlord, part 2 | Final phases | Everything; a "we need to talk" visit at 23:00 | Kill the Landlord before 01:00 |
+| Mon (built) | Shadow Crypt | Fury: enemies alive 3+ turns hit harder | Excel cover, Mom, boss, Peek visits | Never caught |
+| Tue | Drowned Marsh | Enemies spawn adds every 3 turns (rewards area attacks) | Her texts in the evening, Chat visits | Answer every text |
+| Wed | Iron Keep | Shields removed only by a timed click (rewards watching) | Courier, drilling, Zyn; visit labels gone | Reach floor 10 |
+| Thu | Clockwork Tower | 90 s per floor: fast = bonus chest, slow = Exhaustion stack | Snack run and Cuddle visits | No Exhaustion stacks |
+| Fri | Mirror Catacombs | Enemies swap places; hotkeys shuffle every 30 s | Friends' group call, Hug visits, weekend auction spike | Pass every Hug |
+| Sat | Raid of the Lich Lord, part 1 | Multi-phase raid boss, each phase saved | Help me visits, dinner shout, visits 25% more often | Clear 2 phases |
+| Sun | Raid of the Lich Lord, part 2 | Final phases | Everything; a "we need to talk" visit at 23:00 | Kill the Lich Lord before 01:00 |
 
 Her behaviour per night, like FNAF's levels: Mon Netflix (long TV, predictable; built), Wed Cleaning
 (moves often, many walk-pasts), Fri Bored (peeks more, texts while out of sight), Sun Suspicious
@@ -33,7 +33,7 @@ A steady 1 star stalls at Wednesday; about 2 per night keeps moving, so one or t
 
 Replays keep all RPG progress. Reasons to replay: deeper floors before dawn, each night's exclusive
 drops (boss set pieces, one night legendary), depth milestones, that night's scraps type
-(Receipt Scraps, Swamp Ink, Static Shards, Overtime Tokens, Party Glitter, Landlord Seals).
+(Scrap, Bog Iron, Keep Stone, Gear Shards, Mirror Glass, Lich Seals).
 
 ## Desk shop (zł), #4
 
@@ -51,7 +51,7 @@ of the night's best drops, pending auction listings.
 
 ## The ending
 
-After the Lich Landlord dies on Sunday: a Truck-kun cameo, a level-up screen for the friend ("LEVEL UP!
+After the Lich Lord dies on Sunday: a Truck-kun cameo, a level-up screen for the friend ("LEVEL UP!
 {NAME} reached level {AGE}") with confetti, credits with his friends' real names and gamertags, then the
 morning screen with her saying happy birthday. The save stays playable afterwards.
 

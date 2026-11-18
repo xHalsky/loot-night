@@ -69,8 +69,8 @@ export const T = {
   BATTLE_MENU_SPEED: 0.3,         // battle/walking speed while an item, the full-bag popup or the map choice is open (threats keep full speed)
   ENEMY_HP_PER_FLOOR: 0.25,
   ENEMY_ATK_PER_FLOOR: 0.24,
-  INTEREST_AFTER_TURNS: 3,
-  INTEREST_PER_TURN: 0.10,
+  FURY_AFTER_TURNS: 3,            // Fury: an enemy alive longer than this hits harder each turn (was "Interest")
+  FURY_PER_TURN: 0.10,
   HERO_LEVEL_SCALE: 0.10,
   XP_PER_KILL: 5, XP_PER_BOSS: 40, XP_PER_LEVEL: 40, XP_LEVEL_EXP: 1.7,
   ABILITY_UNLOCK: [1, 1, 3, 5, 99],   // slot 4 (ultimates) is for later nights
@@ -84,20 +84,20 @@ export const T = {
   FEATHER_REVIVE_PCT: 0.5,
   WIPE_TIME_MIN: 60, WIPE_GOLD_PCT: 0.10, WIPE_BAG_LEFT: 0.5,
   ELITE_MULT: 1.5,
-  // Boss big attack (FINAL NOTICE): telegraphed, answerable with Bash (interrupt), Ward (halve) or Taunt (knight only)
+  // Boss big attack (the Ogre's SMASH): telegraphed, answerable with Bash (interrupt), Ward (halve) or Taunt (knight only)
   BOSS_SLAM_EVERY: 2,             // every Nth boss action is a wind-up instead of a hit
   BOSS_WINDUP_SEC: 3,             // red bar over the boss; you can hear it from Excel
   BOSS_SLAM_PCT: 0.6,            // unanswered: every hero loses this share of max HP
   BOSS_SLAM_TAUNT_PCT: 0.55,      // taunted: only the knight is hit, for this share of his max HP
   BOSS_SLAM_WARD_MULT: 0.5,
-  // The Loan Shark (floor 10): every LOAN_EVERY-th action calls in a friend (Auditor or Junk Mail); a friend still
-  // standing is refinanced instead: full HP and x LOAN_REFI attack. Kill friends before the next loan.
+  // The Warlock (floor 10): every LOAN_EVERY-th action SUMMONs a friend (Shaman or Imps); a friend still
+  // standing is EMPOWERed instead: full HP and x LOAN_REFI attack. Kill friends before the next summon.
   LOAN_EVERY: 3, LOAN_WINDUP_SEC: 2, LOAN_REFI: 1.3,
-  // The Landlord (floor 15): a deposit shield Bash breaks; every EVICT_EVERY-th action, EVICTION on the most hurt hero.
+  // The Black Knight (floor 15): a shield Bash breaks; every EVICT_EVERY-th action, EXECUTE on the most hurt hero.
   EVICT_EVERY: 3, EVICT_WINDUP_SEC: 3, EVICT_PCT: 0.9,   // taunted: the knight takes BOSS_SLAM_TAUNT_PCT; Ward halves
   // Enemy roles (docs/design/dungeon.md).
   SHIELD_TAKEN: 0.25,             // a shielded enemy takes this share of damage until a Bash breaks the shield
-  AUDITOR_HEAL: 0.6,              // the Auditor heals a friend for this share of his own max HP
+  AUDITOR_HEAL: 0.6,              // the Shaman heals a friend for this share of his own max HP
   AUDITOR_HEAL_BELOW: 0.75,       // ...when that friend is under this share of their max HP; else he attacks
   // Reckless autopilot: when the player chose to leave the game (Excel, switching, minigames, cables out)
   AUTOPILOT_HEAL_BELOW: 0.35,      // the healer only heals below this (normal: 0.6)
@@ -130,12 +130,12 @@ export const T = {
   CURIO_WAIT_SEC: 7,              // real seconds the party waits at a curio before walking past
   CURIO_AWAY_RECKLESS: 0.5,       // away when the party reaches one: this often they do the loud thing, else walk past
   CURIO_PICK_SEC: 8, CURIO_SMASH_NOISE: 25, CURIO_BOX_DROPS: 2,
-  CURIO_GROAN_NOISE: 5, CURIO_MAIL_GOLD: 20, CURIO_MAIL_ODDS: [0.5, 0.3] as [number, number],   // gold, rare; the rest a late fee
-  CURIO_FEE_DMG: 0.15,            // late fee: party damage down until the next floor
+  CURIO_GROAN_NOISE: 5, CURIO_MAIL_GOLD: 20, CURIO_MAIL_ODDS: [0.5, 0.3] as [number, number],   // coffin: gold, rare; the rest a curse
+  CURIO_FEE_DMG: 0.15,            // coffin curse: party damage down until the next floor
   CURIO_CAN_DMG: 0.3, CURIO_CAN_SPD: 0.2, CURIO_CAN_SEC: 60,   // offering a real can
   CURIO_PRAY_DMG: 0.15, CURIO_PRAY_SEC: 30, CURIO_BURP_NOISE: 10,
   CURIO_SNEAK_SEC: 6, CURIO_ROAR_NOISE: 15, CURIO_TROLL_DROPS: 2,
-  CURIO_BANK_NOTICE_SEC: [40, 90] as [number, number], CURIO_SULK_DMG: 0.2, CURIO_SULK_SEC: 45,   // Rafał sulks: mage damage down
+  CURIO_BANK_NOTICE_SEC: [40, 90] as [number, number], CURIO_SULK_DMG: 0.2, CURIO_SULK_SEC: 45,   // Magoo sulks: mage damage down
   CURIO_VEND_GOLD: 12, CURIO_VEND_HEAL: 0.3, CURIO_KICK_NOISE: 15,   // vend gold is per floor
   // Pre-emptive actions (docs/design/preemptive.md, #19). Content: data/preemptive.ts.
   PRE_SECOND_MULT: 0.5,           // the 2nd use of the same action in a night has this much effect

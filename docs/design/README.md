@@ -34,7 +34,9 @@ section in place; never append "round N" notes.
 3. **Everything feeds everything.** RPG success makes the room louder; handling real life buffs the party.
 4. **Progress is never wiped.** Party, gear and city persist. A failed night still moves you forward.
 5. **One more night.** Short nights, near misses, unidentified loot waiting in town.
-6. **Personal and funny.** Jokes about the real friend beat pop-culture references.
+6. **Personal and funny, in real life.** Jokes about the real friend beat pop-culture references. The jokes
+   live in the real-life half (her, mom, the dog, the friends' chat); the RPG plays it straight (plain fantasy
+   names, WoW and D&D tropes), so the contrast does the work ([dungeon.md](dungeon.md), #44).
 
 The RPG is the main game and must be fun on its own. Real life is layered on top. Only one thing can
 be done at a time, so the skill is triage.
@@ -57,7 +59,7 @@ be done at a time, so the skill is triage.
 - Every number lives in `src/config/tuning.ts`. This bible names the constant, not a copy of the value,
   unless the value is the point of the decision.
 - Content (items, enemies, lines, buildings) lives in `src/data/`. Logic never hard-codes one item.
-- Player-facing text: plain, short, funny where it fits. No em dashes.
+- Player-facing text: plain, short, funny where it fits. No em dashes. The RPG plays it straight (pillar 6).
 - Names of real people are in data so they can be swapped.
 - When the bible is silent, choose the simplest option and open an Issue with the question.
 
@@ -75,5 +77,5 @@ be done at a time, so the skill is triage.
 | Noise | How loud the room is. Brings her sooner; wakes her after midnight. |
 | Power (◆) | Average power of a hero's 6 gear slots (item power = item level × rarity). Shows who needs gear. |
 | Tiredness | Live 0 to 100 meter; sleep debt from earlier nights raises its start. |
-| Scraps | Crafting material from salvage (Receipt Scraps on Monday). |
+| Scraps | Crafting material from salvage. |
 | zł | Real money. Only from the auction house. |

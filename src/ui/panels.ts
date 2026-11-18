@@ -526,6 +526,8 @@ function affixLines(item: Item): string {
 }
 
 /** One line: better or worse for the hero you are looking at. */
+/** A long name may wrap in a narrow cell: a soft hyphen at about 60% (Knighten-stein), shown only if it breaks. */
+const softBreak = (name: string) => name.length > 9 ? `${name.slice(0, Math.ceil(name.length * 0.6))}&shy;${name.slice(Math.ceil(name.length * 0.6))}` : name;
 function powerCompare(h: Hero, item: Item): string {
   const d = heroPower(h, { [item.slot]: item }) - heroPower(h);
   return d > 0 ? `<span style="color:#6fcf7f">\u25b2 +${d} power for ${h.name}</span>` : d < 0 ? `<span style="color:#ff8a80">\u25bc ${d} power for ${h.name}</span>` : `<span class="dim">Same power for ${h.name}</span>`;
@@ -588,7 +590,7 @@ export function uiPanelHtml(): string {
 
   // --- RUN: where you are and what's boosting you ---
   const run = `<section class="rp run">
-    <div class="rp-title"><span>${town ? 'LEDGERFALL · TOWN' : 'DUNGEON OF OVERDUE BILLS'}</span><span>${town ? 'safe' : `Floor ${n.floor}`}</span></div>
+    <div class="rp-title"><span>${town ? 'RAVENHOLD · TOWN' : 'SHADOW CRYPT'}</span><span>${town ? 'safe' : `Floor ${n.floor}`}</span></div>
     <div class="run-row"><span>Checkpoint ${n.checkpoint}</span><span>Record ${Math.max(g.record, n.deepest)}</span><span class="gold">${g.gold} g</span><span class="mats">${g.mats} scraps</span></div>
     <div class="rbar"><label>FLOW x${n.flow.toFixed(1)}</label><div><i style="width:${flowPct}%"></i></div><em>${building ? 'rising' : 'falling'}</em></div>
     <div class="rbar zonebar"><label>ZONE</label><div><i style="width:${Math.round(n.zone * 100)}%"></i></div><em>${!n.headset ? 'headset off' : n.zone >= 1 ? '+25% flow · +10% luck' : `${Math.floor(n.zone * T.ZONE_FILL_SEC)}/${T.ZONE_FILL_SEC} s`}</em></div>
@@ -629,9 +631,9 @@ export function uiPanelHtml(): string {
     const mx = maxHp(h);
     const hpPct = h.downed ? 0 : (h.hp / mx) * 100;
     const behind = best > 0 && powers[i] < best * T.POWER_BEHIND;
-    return `<button class="dport ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
+    return `<button class="dport ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''} ${h.name.length > 9 ? 'long' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
       <span class="dface" style="background:${HERO_COLORS[h.id]}">${h.name[0]}${behind ? '<em class="dneed" title="Falling behind: give them the next good item">!</em>' : ''}</span>
-      <span class="dname">${h.name}<span class="dlv">Lv ${h.level} <b class="dpow">◆${powers[i]}</b></span></span>
+      <span class="dname">${softBreak(h.name)}<span class="dlv">Lv ${h.level} <b class="dpow">◆${powers[i]}</b></span></span>
       <span class="dhp"><i style="width:${hpPct}%;background:${hpPct > 50 ? '#6fcf7f' : hpPct > 0 ? '#e0b24a' : '#e0524a'}"></i></span>
       <span class="dxp"><i style="width:${(h.xp / xpNeeded(h)) * 100}%"></i></span>
     </button>`;

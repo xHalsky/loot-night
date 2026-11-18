@@ -14,8 +14,8 @@ export function isAway(): boolean {
   return n.monitor === 'excel' || !!n.switching || n.action !== 'none' || !!n.unplugged;
 }
 
-const PULL_LINES = ['Jacek: pulling, keep up', 'Rafał: ok we go without him', 'Jacek: no time, next pack', 'Rafał: afk again? pulling'];
-const HURT_LINES = ['Jacek: heals?? oh wait thats me', 'Rafał: someone tank pls', 'Rafał: where is the knight going', 'Jacek: oom-ish, whatever'];
+const PULL_LINES = ['Healero: pulling, keep up', 'Magoo: ok we go without him', 'Healero: no time, next pack', 'Magoo: afk again? pulling'];
+const HURT_LINES = ['Healero: heals?? oh wait thats me', 'Magoo: someone tank pls', 'Magoo: where is the tank going', 'Healero: oom-ish, whatever'];
 let lastLine = -99;
 
 /** Party chat when they pull without you. Rate-limited so the feed stays readable. */

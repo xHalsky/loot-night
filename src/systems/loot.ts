@@ -1,9 +1,9 @@
 import { T } from '../config/tuning';
-import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind } from '../core/state';
+import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind, type Slot } from '../core/state';
 import { pick, weighted, chance, rand } from '../core/rng';
-import { ADJECTIVES, NOUNS, SUFFIXES, SLOT_STATS, STAT_BASE, RARITY_MULT, POSITIVE_AFFIXES, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
+import { ADJECTIVES, NOUNS, SLOT_STATS, STAT_BASE, RARITY_MULT, POSITIVE_AFFIXES, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
 import { toast } from '../core/fx';
-import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, type SpecialAffix } from '../data/affixes';
+import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, SPECIAL_BY_ID, type SpecialAffix } from '../data/affixes';
 import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
 import { coach } from './coach';
@@ -63,17 +63,26 @@ export function genItem(ilvl: number, minRarity = 0): Item {
     affixes.push({ stat, amount: -round1((a + b * ilvl) * 0.6 * rand(0.8, 1.2)) });
   }
   const ri = RARITIES.indexOf(rarity);
-  let name = `${pick(ADJECTIVES[rarity])} ${pick(NOUNS[slot])}`;
   const sp = rollSpecial(rarity);
   let specialAmt: number | undefined;
   if (sp?.kind === 'cross') {
     if (sp.stat) { const [a, b] = STAT_BASE[sp.stat]; specialAmt = Math.max(1, round1((a + b * ilvl) * mult * T.AFFIX_CROSS_PCT)); }
     else specialAmt = T.AFFIX_SPREADSHEET_GOLD;
   }
-  if (sp) name += ` ${sp.suffix}`;
-  else if (ri >= 3) name += ` ${pick(SUFFIXES)}`;
+  const name = itemName(slot, rarity, sp?.id);
   const value = Math.round(6 * ilvl * mult * mult + positives * 3 + (sp ? 10 * mult : 0));
   return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3, ...(sp ? { special: sp.id, specialAmt } : {}), ...(witched ? { witched } : {}) };
+}
+
+/** Adjective + noun, plus "of X" only when the item has a special affix (#44): a suffix means a special effect. */
+export function itemName(slot: Slot, rarity: Rarity, special?: string): string {
+  const sp = special ? SPECIAL_BY_ID[special] : undefined;
+  return `${pick(ADJECTIVES[rarity])} ${pick(NOUNS[slot])}${sp ? ` ${sp.suffix}` : ''}`;
+}
+/** True if the name uses the current word lists (old saves carry names from before #44). */
+export function nameIsCurrent(it: Item): boolean {
+  const sp = it.special ? SPECIAL_BY_ID[it.special] : undefined;
+  return ADJECTIVES[it.rarity].some(a => NOUNS[it.slot].some(n => it.name === `${a} ${n}${sp ? ` ${sp.suffix}` : ''}`));
 }
 
 export const itemEntry = (item: Item): BagEntry => ({ kind: 'item', id: item.id, item });

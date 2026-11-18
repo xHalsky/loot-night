@@ -61,6 +61,8 @@ Tag pushes are refused by the proxy (#11): create version tags/releases from a l
 ## Conventions
 
 - Player-facing text: plain, short, funny where it fits. No em dashes.
+- The RPG plays it straight: plain fantasy names (WoW, D&D), one or two words, no real-life jokes in items,
+  enemies, skills or places. The jokes live in the real-life half and the friends' chat (#44).
 - Characters (her, the guy, the dog) go through `src/ui/pixel.ts` (vector shapes → hard edges → 1px outline).
   They are placeholders for hand-made pixel sprites.
 - Three UI flavours: RPG (Pixelify Sans, stone/parchment), real life (Inter, iOS phone, modern OS),

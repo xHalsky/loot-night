@@ -19,7 +19,7 @@ async def main():
         await pg.wait_for_timeout(600)
         await curio(pg, 'strongbox'); await pg.screenshot(path='test/curio_box.png', clip=CLIP)
         await curio(pg, 'troll', 'sneak', 3.4, 6); await pg.screenshot(path='test/curio_sneak.png', clip=CLIP)
-        await pg.evaluate("()=>{window.__lootnight.S.g.monsters=0; window.__lootnight.S.g.night.partyBuffs=[{name:'Late fee',dmg:-0.15,speed:0,t:1,floor:true},{name:'Monster blessing',dmg:0.3,speed:0.2,t:41}]; window.__lootnight.S.g.night.sulk=30}")
+        await pg.evaluate("()=>{window.__lootnight.S.g.monsters=0; window.__lootnight.S.g.night.partyBuffs=[{name:'Curse',dmg:-0.15,speed:0,t:1,max:1,icon:'curse',floor:true},{name:'Green flame',dmg:0.3,speed:0.2,t:41,max:60,icon:'blessing'}]; window.__lootnight.S.g.night.sulk=30}")
         await curio(pg, 'shrine'); await pg.screenshot(path='test/curio_shrine.png', clip=CLIP)
         # the escape button really closes it
         await pg.evaluate("()=>{window.__lootnight.S.g.timeScale=1}")

@@ -13,7 +13,7 @@ Every decision happens on the game screen, by clicking the button next to a buil
 |---|---|---|
 | Appraiser | Identify epics (`IDENTIFY_COST.epic`) and legendaries; 2.5 s reveal | gold, 10 min |
 | Merchant | Sell for gold (unidentified items at `UNIDENTIFIED_VENDOR_MULT`) | free |
-| Salvage Forge | Break into Receipt Scraps (`SALVAGE_YIELD` 1/2/4/8/16 by rarity) | free |
+| Salvage Forge | Break into scraps (`SALVAGE_YIELD` 1/2/4/8/16 by rarity) | free |
 | Auction House | List for zł; pays out next morning; price × the night's market factor (`MARKET_RANGE`) | 5 min |
 | Dungeon Portal (back row, centre) | Enter the dungeon at the checkpoint | 15 min |
 

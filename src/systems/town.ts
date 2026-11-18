@@ -61,7 +61,7 @@ export function salvage() {
   const e = removeEntry(n.selected);
   if (!e) return;
   S.g.mats += y;
-  toast(`Salvaged ${entryName(e)}: +${y} Receipt Scraps`, '#c9a46a'); sfx.good();
+  toast(`Salvaged ${entryName(e)}: +${y} scraps`, '#c9a46a'); sfx.good();
 }
 
 export function listValue(id: string): number {

@@ -62,7 +62,7 @@ function drawDungeon(c: CanvasRenderingContext2D) {
   const mapLabel = n.floorMap === 'plain' ? '' : ` · ${MAP_INFO[n.floorMap].name.toUpperCase()}`;
   const boss = n.floor % T.CHECKPOINT_EVERY === 0 ? ' · BOSS FLOOR' : '';
   text(c, `FLOOR ${n.floor} · BATTLE ${Math.min(n.battleIdx + 1, 3)}/3${mapLabel}${boss}`, 10, 18, 12, '#a999bd');
-  text(c, 'Dungeon of Overdue Bills', MON_W - 10, 18, 12, '#a999bd', 'right');
+  text(c, 'Shadow Crypt', MON_W - 10, 18, 12, '#a999bd', 'right');
 }
 
 

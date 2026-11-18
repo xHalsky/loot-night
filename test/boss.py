@@ -1,4 +1,4 @@
-# Screenshot: the boss winding up FINAL NOTICE.
+# Screenshot: the boss winding up SMASH.
 import asyncio
 from playwright.async_api import async_playwright
 async def act(pg, sel):

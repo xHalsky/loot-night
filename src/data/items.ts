@@ -24,23 +24,23 @@ export const STAT_BASE: Record<Stat, [number, number]> = {
 };
 export const STAT_LABEL: Record<Stat, string> = { atk: 'Attack', hp: 'Max HP', armor: 'Armor', speed: 'Speed', crit: 'Crit %', luck: 'Luck' };
 
+// Item names (#44): plain fantasy words, two of them, readable at a glance. The adjective climbs with rarity;
+// "of X" is added only for a special affix (data/affixes.ts), so a suffix always means a special effect.
 export const NOUNS: Record<Slot, string[]> = {
-  weapon: ['Rusty Fork', 'Tax Axe', 'Ledger Blade', 'Stapler Mace', 'Late-Fee Dagger', 'Bent Staff', 'Invoice Spear'],
-  helm: ['Dented Pot', 'Monster-Can Helm', 'Paper Crown', 'Colander', 'Headset of Denial'],
-  armor: ['Chain of Receipts', 'Overdraft Plate', 'Hoodie of Comfort', 'Bathrobe', 'Cardboard Vest'],
-  boots: ['Squeaky Boots', 'Wet Boot', 'Slippers', 'Crocs of Haste', 'Socks with Sandals'],
-  ring: ['Phonecard Ring', 'Keyring', 'Bottle-Cap Ring', 'Tab-Pull Band'],
-  trinket: ['Lucky Receipt', 'Soggy Notebook', 'Spoon', 'Rubber Duck', 'Expired Coupon'],
+  weapon: ['Sword', 'Axe', 'Mace', 'Dagger', 'Spear', 'Staff', 'Hammer'],
+  helm: ['Helm', 'Hood', 'Crown', 'Circlet'],
+  armor: ['Breastplate', 'Chainmail', 'Robe', 'Tunic'],
+  boots: ['Boots', 'Greaves', 'Sandals', 'Treads'],
+  ring: ['Ring', 'Band', 'Signet'],
+  trinket: ['Amulet', 'Charm', 'Talisman', 'Relic'],
 };
 export const ADJECTIVES: Record<Rarity, string[]> = {
-  common: ['Worn', 'Cheap', 'Plain', 'Used'],
-  uncommon: ['Sturdy', 'Shiny', 'Decent', 'Polished'],
-  rare: ['Overdue', 'Compounding', 'Audited', 'Certified'],
-  epic: ['Collector\'s', 'Bailiff\'s', 'Notarized', 'Gilded'],
-  legendary: ['Eternal', 'Unpaid', 'Mythic', 'Final-Notice'],
+  common: ['Worn', 'Old', 'Plain', 'Crude'],
+  uncommon: ['Iron', 'Sturdy', 'Fine', 'Bronze'],
+  rare: ['Steel', 'Silver', 'Runed', 'Elven'],
+  epic: ['Arcane', 'Shadow', 'Dwarven', 'Blessed'],
+  legendary: ['Dragon', 'Ancient', 'Mythic', 'Titan'],
 };
-// Random name suffixes for epics and legendaries without a special affix (special ones bring their own: data/affixes.ts).
-export const SUFFIXES = ['of Many Lives', 'of Compound Interest', 'of One More Floor', 'of the Raid Leader', 'of Late Fees', 'of the Group Chat'];
 
 export const MAP_INFO: Record<MapKind, { name: string; desc: string; color: string; value: number }> = {
   elite: { name: 'Elite Pack', desc: 'Harder enemies, a guaranteed rare', color: '#f2b84b', value: 30 },

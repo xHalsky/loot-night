@@ -47,12 +47,12 @@ export function updateCurio(realDt: number) {
   if (!c) return;
   c.t -= realDt;
   if (c.stage === 'sneak' && (n.monitor !== 'rpg' || n.switching || n.monitorOff > 0)) {   // you looked away: he wakes
-    toast('The troll wakes up! "WHO TOUCHED MY PILE?"', '#ff8a80'); sfx.bad();
+    toast('The troll wakes up and roars!', '#ff8a80'); sfx.bad();
     return trollFight();
   }
   if (c.t > 0) return;
   if (c.stage === 'ask') { toast('The party walks past.', '#a999bd'); return endCurio(); }
-  if (c.stage === 'pick') { toast('Click. The strongbox opens.', '#f2b84b'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); return endCurio(); }
+  if (c.stage === 'pick') { toast('Click. The chest opens.', '#f2b84b'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); return endCurio(); }
   if (c.stage === 'sneak') { toast('You tiptoe away with an armful. He keeps snoring.', '#6fcf7f'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true }); return endCurio(); }
 }
 
@@ -71,23 +71,23 @@ export function chooseCurio(choice: string) {
   const noise = (v: number) => { n.noise = Math.min(100, n.noise + v); };
   switch (choice) {
     case 'pick': c.stage = 'pick'; c.t = c.max = T.CURIO_PICK_SEC; sfx.click(); return;
-    case 'smash': noise(T.CURIO_SMASH_NOISE); sfx.slam(); toast(`CRASH. The strongbox gives up. Noise +${T.CURIO_SMASH_NOISE}.`, '#ff9a4d'); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); break;
+    case 'smash': noise(T.CURIO_SMASH_NOISE); sfx.slam(); toast(`CRASH. The chest gives up. Noise +${T.CURIO_SMASH_NOISE}.`, '#ff9a4d'); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); break;
     case 'open': {
       noise(T.CURIO_GROAN_NOISE);
       const r = Math.random(), [g, rare] = T.CURIO_MAIL_ODDS;
-      if (r < g) { const gold = T.CURIO_MAIL_GOLD * n.floor; S.g.gold += gold; toast(`A refund cheque! +${gold} gold.`, '#f2b84b'); sfx.coin(); }
-      else if (r < g + rare) { toast('A parcel. With your name on it.', '#f2b84b'); rollBattleDrops(n.floor, { count: 1, minRare: true }); }
-      else { addBuff({ name: 'Late fee', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'fee', floor: true }); toast(CURIO_LINES.lateFee.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
+      if (r < g) { const gold = T.CURIO_MAIL_GOLD * n.floor; S.g.gold += gold; toast(`Old coins! +${gold} gold.`, '#f2b84b'); sfx.coin(); }
+      else if (r < g + rare) { toast('A relic lies inside.', '#f2b84b'); rollBattleDrops(n.floor, { count: 1, minRare: true }); }
+      else { addBuff({ name: 'Curse', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'curse', floor: true }); toast(CURIO_LINES.curse.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
       break;
     }
     case 'offer':
       S.g.monsters--;
-      addBuff({ name: 'Monster blessing', dmg: T.CURIO_CAN_DMG, speed: T.CURIO_CAN_SPD, t: T.CURIO_CAN_SEC, max: T.CURIO_CAN_SEC, icon: 'blessing' });
-      toast(`You give up a real can. The shrine glows. Party +${Math.round(T.CURIO_CAN_DMG * 100)}% damage, +${Math.round(T.CURIO_CAN_SPD * 100)}% speed.`, '#6ef06e'); sfx.heal();
+      addBuff({ name: 'Green flame', dmg: T.CURIO_CAN_DMG, speed: T.CURIO_CAN_SPD, t: T.CURIO_CAN_SEC, max: T.CURIO_CAN_SEC, icon: 'blessing' });
+      toast(`The flame takes your offering (one real can) and flares up. Party +${Math.round(T.CURIO_CAN_DMG * 100)}% damage, +${Math.round(T.CURIO_CAN_SPD * 100)}% speed.`, '#6ef06e'); sfx.heal();
       break;
     case 'pray':
       if (chance(0.5)) { addBuff({ name: 'Small blessing', dmg: T.CURIO_PRAY_DMG, speed: 0, t: T.CURIO_PRAY_SEC, max: T.CURIO_PRAY_SEC, icon: 'blessing' }); toast(`A small blessing. Party +${Math.round(T.CURIO_PRAY_DMG * 100)}% damage.`, '#6ef06e'); sfx.heal(); }
-      else { noise(T.CURIO_BURP_NOISE); toast(`The shrine burps. Loudly. Noise +${T.CURIO_BURP_NOISE}.`, '#ff9a4d'); sfx.bad(); }
+      else { noise(T.CURIO_BURP_NOISE); toast(`The shrine roars. Noise +${T.CURIO_BURP_NOISE}.`, '#ff9a4d'); sfx.bad(); }
       break;
     case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking. Stay on this screen.', '#8fd0ff'); return;
     case 'fight': return trollFight();
@@ -97,14 +97,14 @@ export function chooseCurio(choice: string) {
       const got = S.g.bag.length > before ? S.g.bag[S.g.bag.length - 1] : null;
       n.bankItem = got?.kind === 'item' ? got.item.name : 'thing';
       n.bankNotice = rand(...T.CURIO_BANK_NOTICE_SEC);
-      toast('You take just one thing. Nobody saw. Probably.', '#f2b84b'); sfx.coin();
+      toast('You take one item. Nobody saw. Probably.', '#f2b84b'); sfx.coin();
       break;
     }
-    case 'pay': S.g.gold -= vendCost(); healParty(T.CURIO_VEND_HEAL); toast(`Crisps for everyone. Party heals ${Math.round(T.CURIO_VEND_HEAL * 100)}%.`, '#6fcf7f'); sfx.coin(); break;
+    case 'pay': S.g.gold -= vendCost(); healParty(T.CURIO_VEND_HEAL); toast(`Potions for everyone. Party heals ${Math.round(T.CURIO_VEND_HEAL * 100)}%.`, '#6fcf7f'); sfx.coin(); break;
     case 'kick':
       noise(T.CURIO_KICK_NOISE);
-      if (chance(0.5)) { healParty(T.CURIO_VEND_HEAL); toast(`THUNK. Snacks fall out. Party heals. Noise +${T.CURIO_KICK_NOISE}.`, '#6fcf7f'); sfx.slam(); }
-      else { toast(`THUNK. Nothing. Your foot hurts. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); sfx.slam(); }
+      if (chance(0.5)) { healParty(T.CURIO_VEND_HEAL); toast(`CLINK. Potions roll out. Party heals. Noise +${T.CURIO_KICK_NOISE}.`, '#6fcf7f'); sfx.slam(); }
+      else { toast(`CRASH. Broken glass, nothing else. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); sfx.slam(); }
       break;
     case 'leave': toast('You leave it alone.', '#a999bd'); break;
   }
@@ -143,11 +143,11 @@ export function updateCurioTimers(dt: number) {
     if (n.bankNotice <= 0) {
       n.bankNotice = 0; n.sulk = T.CURIO_SULK_SEC;
       toast(pick(CURIO_LINES.bankNotice).replace('{item}', n.bankItem), '#8fd0ff');
-      toast(`Rafał sulks: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage for ${T.CURIO_SULK_SEC} s.`, '#ff8a80');
+      toast(`Magoo sulks: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage for ${T.CURIO_SULK_SEC} s.`, '#ff8a80');
     }
   }
 }
-/** A new floor: "until the next floor" buffs (the late fee) end. */
+/** A new floor: "until the next floor" buffs (the curse) end. */
 export function curioFloorEnd() { const n = N(); n.partyBuffs = n.partyBuffs.filter(b => !b.floor); }
 
 /** A battle ended: "next fight" buffs (Loved) are used up. */

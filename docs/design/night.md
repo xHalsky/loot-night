@@ -76,7 +76,7 @@ happening.
   less important one (footsteps > doorway > phone > wind-up > loot), and the bumped one comes back next time.
   Hidden during the jumpscare.
 - **First-time tips** (`TIPS` in `src/data/tips.ts`, `src/systems/tips.ts`): everything else gets one line from
-  her or the guild chat (Rafał and Jacek, your party) in the feed, pinned at its top for `TIP_PIN_SEC`. Once per
+  her or the guild chat (Magoo and Healero, your party) in the feed, pinned at its top for `TIP_PIN_SEC`. Once per
   save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`) and the plan on the wall
   (`TIP_PLAN_AT`). On events: a pass, a catch, an end cue, the dog, a yawn, the headset, her bedtime, a peek,
   the first floor choice, the shower.

@@ -3,6 +3,27 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.43.0 (2026-11-18)
+
+The RPG plays it straight (#44): plain fantasy names and no real-life jokes in the game world, so the real-life
+half carries the comedy. Names are short so they read at a glance. Mechanics and numbers are unchanged.
+
+- **Party:** Knightenstein (knight, you), Magoo (mage) and Healero (healer). Party and guild chat use these
+  names; the friends' phone calls still use Rafał and Jacek. Old saves are renamed on load.
+- **Enemies:** Skeleton, Bat, Orc, Shaman (heals), Guardian (shield), Imps (swarm). New sprites.
+- **Bosses:** the Ogre (SMASH), the Warlock (SUMMON / EMPOWER) and the Black Knight (EXECUTE). New sprites,
+  a bit brighter so they read on the dark boss floor. The EXECUTE target moved to the hint line under the cast
+  bar so the bar title fits.
+- **Items:** two words, a rarity adjective and a slot noun (Iron Helm, Runed Band, Dragon Sword). An "of ..."
+  suffix now appears only on special affixes, one word each (of Stealth, of Charm, of Focus, of the Wolf, of
+  Midnight...). Items in old saves get new names on load.
+- **Curios:** Locked chest, Sealed coffin (curse instead of a late fee), Shrine of the green flame (the offering
+  still costs a real can), Potion cart. The guild bank stays.
+- **World:** the town is Ravenhold, Monday's dungeon the Shadow Crypt; "Interest" is now Fury; Receipt Scraps
+  are scraps; trade chat is MMO chatter.
+- Later nights in the campaign plan renamed to match (Drowned Marsh ... the Lich Lord).
+- Design pillar 6 and CLAUDE.md now say it: jokes in real life, the RPG straight.
+
 ## 0.42.0 (2026-11-18)
 
 Tooltip pass (#43): every tooltip carries only what you need to decide, 2 to 6 lines instead of up to 12.

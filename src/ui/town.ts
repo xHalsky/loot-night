@@ -260,7 +260,7 @@ export function drawTown(c: CanvasRenderingContext2D) {
   for (const p of PLOTS) drawPlot(c, p.id, p.x, p.base, p.w, t);
   // top bar + trade chat
   rect(c, 0, 0, W, 18, 'rgba(10,8,20,.75)');
-  txt(c, 'LEDGERFALL', 8, 13, 10, '#f2c46b', 'left');
+  txt(c, 'RAVENHOLD', 8, 13, 10, '#f2c46b', 'left');
   const k = Math.floor(t / 4) % TRADE_CHAT.length;
   txt(c, `[Trade] ${TRADE_CHAT[k][0]}: ${TRADE_CHAT[k][1]}`, W - 8, 13, 10, '#ff9a4d', 'right');
 }
@@ -416,8 +416,8 @@ function monUiInner(n: NonNullable<typeof S.g.night>): string {
   return `<button class="tbtn tportal ${ok ? '' : 'off'}" data-act="toTown">Town portal <small>${ok ? '15 min' : 'after battle'}</small></button>${skillBarHtml()}`;
 }
 
-/** Skills that answer the boss's wind-up pulse red: FINAL NOTICE = Taunt, Bash (unless braced), Ward;
- *  EVICTION = Taunt, Ward; a loan = Fire and Storm for the friend that is coming. */
+/** Skills that answer the boss's wind-up pulse red: SMASH = Taunt, Bash (unless braced), Ward;
+ *  EXECUTE = Taunt, Ward; SUMMON = Fire and Storm for the friend that is coming. */
 function answersMove(e: { defId: string; braced?: boolean }, id: string, si: number): boolean {
   const move = ENEMY_BY_ID[e.defId]?.move;
   if (move === 'slam') return (id === 'knight' && (si === 1 || (si === 2 && !e.braced))) || (id === 'healer' && si === 2);
@@ -443,7 +443,7 @@ function skillBarHtml(): string {
   const groups = S.g.heroes.map((h, hi) => {
     const mx = maxHp(h), hp = h.downed ? 0 : h.hp / mx;
     const por = `<button class="ie-por ${n.heroTab === hi ? 'sel' : ''} ${h.downed ? 'down' : ''}" data-act="heroTab" data-arg="${hi}" data-tip="hero:${hi}" style="--hc:${HERO_COLORS[h.id]}">
-      <span class="ie-face">${portrait(h.id)}</span><span class="ie-hp"><i style="height:${Math.round(hp * 100)}%;background:${hp > 0.5 ? '#4fbf5f' : hp > 0 ? '#d9a33a' : '#a33'}"></i></span><span class="ie-name">${h.name}</span></button>`;
+      <span class="ie-face">${portrait(h.id)}</span><span class="ie-hp"><i style="height:${Math.round(hp * 100)}%;background:${hp > 0.5 ? '#4fbf5f' : hp > 0 ? '#d9a33a' : '#a33'}"></i></span><span class="ie-name ${h.name.length > 8 ? 'long' : ''}">${h.name}</span></button>`;
     const sk = ABILITIES[h.id].map((a, si) => {
       if (si === 0) return '';                    // auto attack is always on: no button
       const unlocked = si === 0 || abilityUnlocked(h, si);
@@ -477,8 +477,8 @@ function portrait(id: string): string {
 
 // ---------- Buffs and debuffs on you (WoW style: icon squares, timer under each) ----------
 const BI: Record<string, string> = {
-  blessing: '<rect x="7" y="4" width="8" height="15" rx="2" fill="#111"/><ellipse cx="11" cy="5" rx="4" ry="1.2" fill="#c9ced6"/><path d="M10 8 L10.5 15 M12 7.5 L12 16" stroke="#6ef06e" stroke-width="1.4"/><circle cx="11" cy="11" r="9" fill="none" stroke="#6ef06e" stroke-width="1" opacity=".6"/>',
-  fee: '<rect x="2" y="5" width="18" height="12" fill="#efe6cf"/><path d="M2 5 L11 12 L20 5" stroke="#9a8a6a" stroke-width="1.4" fill="none"/><rect x="14" y="12" width="5" height="4" fill="#e0524a"/>',
+  blessing: '<path d="M11 2 C15 7, 18 10, 15 16 C13 20, 8 20, 6 16 C4 12, 8 10, 9 6 C10 9, 12 10, 11 2 Z" fill="#3ad03a"/><path d="M11 10 C13 13, 13 16, 11 18 C9 16, 9 13, 11 10 Z" fill="#b0ff9a"/>',
+  curse: '<circle cx="11" cy="9" r="7" fill="#c9b8e8"/><rect x="7" y="14" width="8" height="5" rx="1" fill="#c9b8e8"/><circle cx="8.5" cy="9" r="2" fill="#3a1f5a"/><circle cx="13.5" cy="9" r="2" fill="#3a1f5a"/><path d="M9 16 V19 M11 16 V19 M13 16 V19" stroke="#3a1f5a" stroke-width="1"/>',
   raid: '<path d="M4 15 C4 6, 18 6, 18 15" stroke="#8fd0ff" stroke-width="2.2" fill="none"/><rect x="2" y="13" width="5" height="7" rx="2" fill="#5a9ad8"/><rect x="15" y="13" width="5" height="7" rx="2" fill="#5a9ad8"/><path d="M7 4 L15 12 M15 4 L7 12" stroke="#f2d24b" stroke-width="2"/>',
   loved: '<path d="M11 19 C4 13, 2 9, 5 6 C7.5 3.5, 10 5, 11 7 C12 5, 14.5 3.5, 17 6 C20 9, 18 13, 11 19 Z" fill="#ff7ab8"/><path d="M7 8 C7.5 7, 8.5 6.5, 9.5 7" stroke="#ffd6e8" stroke-width="1.4" fill="none"/>',
   dog: '<ellipse cx="11" cy="13" rx="7" ry="6" fill="#c8964e"/><ellipse cx="5" cy="9" rx="2.5" ry="4.5" fill="#8a5a2a"/><ellipse cx="17" cy="9" rx="2.5" ry="4.5" fill="#8a5a2a"/><circle cx="8.5" cy="12" r="1.1" fill="#2a1a10"/><circle cx="13.5" cy="12" r="1.1" fill="#2a1a10"/><ellipse cx="11" cy="15" rx="1.6" ry="1.1" fill="#2a1a10"/>',
@@ -507,7 +507,7 @@ function buffsHtml(n: NonNullable<typeof S.g.night>): string {
     ? { k: b.icon, de: b.dmg < 0, name: `${b.name}: party ${Math.round(b.dmg * 100)}% damage until the next floor`, label: 'floor' }
     : { k: b.icon, de: b.dmg < 0, name: `${b.name}: party ${b.dmg >= 0 ? '+' : ''}${Math.round(b.dmg * 100)}% damage${b.speed ? `, +${Math.round(b.speed * 100)}% speed` : ''}`, left: b.t, max: b.max });
   if (n.goodDog > 0) list.push({ k: 'dog', name: `Good Boy: loot goblins x${T.GOOD_BOY_GOBLIN}`, left: n.goodDog, max: T.GOOD_BOY_SEC });
-  if (n.sulk > 0) list.push({ k: 'sulk', de: true, name: `Rafał sulks about the guild bank: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage`, left: n.sulk, max: T.CURIO_SULK_SEC });
+  if (n.sulk > 0) list.push({ k: 'sulk', de: true, name: `Magoo sulks about the guild bank: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage`, left: n.sulk, max: T.CURIO_SULK_SEC });
   if (n.guilt > 0) list.push({ k: 'guilt', name: 'Guilt: party -10% damage', de: true, left: n.guilt, max: T.GUILT_SEC });
   if (n.tired >= T.TIRED_YAWN) list.push({ k: 'tired', de: true, name: n.tired >= T.TIRED_SLUGGISH ? `Sluggish and Drowsy: timers shorter, ${Math.round(T.ECHO_DROWSY_MISS * 100)}% of hits miss (zzz)` : n.tired >= T.TIRED_MICROSLEEP ? 'Microsleeps: your eyes close' : 'Yawning: the screen blurs now and then', label: n.tired >= T.TIRED_SLUGGISH ? 'III' : n.tired >= T.TIRED_MICROSLEEP ? 'II' : 'I' });
   if (!list.length) return '';
