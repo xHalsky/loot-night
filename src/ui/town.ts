@@ -32,7 +32,7 @@ export function townOverlayHtml(): string {
 function buildWindowHtml(id: CityId): string {
   const d = CITY_BY_ID[id], L = lvl(id), g = S.g;
   const afford = L < 3 && g.gold >= d.gold[L] && g.mats >= d.mats[L];
-  const now = L ? `Level ${L}: ${d.effect[L - 1]}` : 'Under construction.';
+  const now = L ? `Level ${L}: ${d.effect[L - 1]}` : 'Empty plot, materials ready.';
   const next = L >= 3 ? '<div class="bw-next">Fully built.</div>'
     : `<div class="bw-next">${L ? 'Next' : 'Built'}: <b>${d.effect[L]}</b></div>${b('build', `${L ? 'Upgrade' : 'Build'} · ${d.gold[L]} g · ${d.mats[L]}<i class="scrap"></i>`, id, `${afford ? 'gold' : 'off'} bw-btn`, '')}`;
   return `<div class="svc-win bld-win"><button class="mg-close" data-act="buildWin" data-arg="" title="Close">\u2715</button>

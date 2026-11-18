@@ -3,6 +3,31 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.48.0 (2026-11-18)
+
+The town, second pass (#51), after Paweł's look at 0.47.
+
+- **Square streets.** The winding streets read as messy; Ravenhold is now a grid like a SNES town: three streets
+  east to west, two north to south, an avenue south from a square plaza. The portal court sits between the plaza and
+  the portal.
+- **Every building shows its trade**, and hangs a shop sign with its mark. The Appraiser's tower has a glowing
+  crystal with circling runes, a telescope and star banners, and the appraiser works in a rune circle on the street.
+  The Auction House is a columned guildhall with lots glowing on pedestals, an auctioneer and bidders with paddles.
+  The Merchant has an awning, a window of bottles, a counter of goods and two stalls on the plaza. The Salvage Forge
+  has its hearth open to the street, a lean-to with a scrap heap, an anvil and a smith hammering sparks. The
+  Treasury is a squat vault with battlements, barred windows and guards. The Inn is half-timbered with bottle-glass
+  windows and drinkers on a bench. The Library has stained glass, a clock tower and an observatory dome.
+- **Plots look unbuilt.** No more scaffolding: cleared ground with stakes and string, a notice board with the
+  building's mark, and its own materials as the clue (crates of books, strongboxes and a vault door, practice
+  swords and a target, kegs and the tankard sign). The build window says "Empty plot, materials ready."
+- **A town that's alive.** About 90 people. Adventurers crowd the portal court and some walk into the vortex (a
+  violet flash); townsfolk fill the plaza (a bard, kids round the fountain, people on its rim, stall customers);
+  walkers on every street. The plaza and the court get the most light: fire bowls, strings of lights, torches, a
+  rune ring, the fountain lit from inside.
+- Lights that don't flicker are baked once per set of building levels, so the extra windows cost nothing per frame.
+- UI only: bots unchanged (good: 3 stars, floor 5, never caught; idle: caught).
+- Tests: `test/towninput.py` also checks the Appraiser and the Salvage Forge.
+
 ## 0.47.0 (2026-11-18)
 
 The town remade (#50). The old city was two rows of buildings facing each other across a plaza, with the services

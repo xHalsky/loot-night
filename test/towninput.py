@@ -2,7 +2,7 @@
 # window, a plot opens its build window, the portal leads down. Run after a build.
 import asyncio
 from playwright.async_api import async_playwright
-SPOTS = {'merchant': (82, 360), 'inn': (588, 330), 'library': (222, 180), 'portal': (334, 70)}   # battle-area pixels
+SPOTS = {'merchant': (480, 220), 'inn': (610, 330), 'library': (208, 100), 'appraiser': (100, 80), 'salvage': (400, 340), 'portal': (334, 70)}   # battle-area pixels
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
@@ -19,10 +19,10 @@ async def main():
             tip = await pg.evaluate("()=>document.querySelector('#tooltipLayer .tt-name')?.textContent || ''")
             await pg.mouse.click(314 + x, 16 + y); await pg.wait_for_timeout(250)
             st = await pg.evaluate("()=>{const g=window.__lootnight.S.g; return {win:g.townWin||null, loc:g.night.location}}")
-            want = {'merchant': ('merchant', 'town'), 'inn': ('build:inn', 'town'), 'library': ('build:library', 'town'), 'portal': (None, 'dungeon')}[name]
+            want = {'merchant': ('merchant', 'town'), 'inn': ('build:inn', 'town'), 'library': ('build:library', 'town'), 'portal': (None, 'dungeon'), 'appraiser': ('appraiser', 'town'), 'salvage': ('salvage', 'town')}[name]
             good = cur == 'pointer' and tip and (st['win'], st['loc']) == want
             ok &= bool(good)
             print(f"{name:9} cursor {cur:8} tip '{tip}' -> {st}  {'ok' if good else 'FAIL'}")
-            await pg.evaluate("()=>{window.__lootnight.S.g.townWin=null}")
+            await pg.evaluate("()=>{window.__lootnight.S.g.townWin=null}"); await pg.wait_for_timeout(150)   # let the closed window leave the DOM
         print('ERRORS', errs); print('PASS' if ok and not errs else 'FAIL'); await b.close()
 asyncio.run(main())

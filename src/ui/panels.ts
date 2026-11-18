@@ -469,7 +469,7 @@ export function tooltipHtml(): string {
     else if (id in SVC_INFO) line = SVC_INFO[id as keyof typeof SVC_INFO].hint;
     else {
       const d = CITY.find(f => f.id === id)!, L = S.g.furniture[d.id] ?? 0;
-      line = L ? `Level ${L}: ${d.effect[L - 1]}` : `Under construction. Built: ${d.effect[0]}`;
+      line = L ? `Level ${L}: ${d.effect[L - 1]}` : `Empty plot, materials ready. Built: ${d.effect[0]}`;
       cost = L >= 3 ? 'Fully built' : `${L ? 'Upgrade' : 'Build'}: ${d.gold[L]} g · ${d.mats[L]} scraps`;
     }
     return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 250)}px;top:${Math.min(hover.y + 12, 720 - 90)}px"><div class="tt-name">${spot.name}</div><div>${line}</div>${cost ? `<div class="tt-sub">${cost}</div>` : ''}</div>`;

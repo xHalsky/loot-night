@@ -26,7 +26,7 @@ async def main():
             path = f'test/layout_{name}.png'; await pg.screenshot(path=path); shots.append((name, path))
         # town first (the night starts there)
         await shot('town')
-        async def hov(): await pg.mouse.move(314 + 458, 16 + 140)
+        async def hov(): await pg.mouse.move(314 + 469, 16 + 100)
         await shot('town_hover', '', 400, hov)
         await pg.mouse.move(700, 600)
         await shot('town_service', "g.townWin='merchant'")
