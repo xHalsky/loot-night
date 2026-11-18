@@ -29,8 +29,10 @@ corner) and the six stats with the gear's share. The bag: "BAG 7/18" and the aut
 gold and scraps, and the deepest floor ever. No instruction text in any header. HP shows only on the battle
 sprites and the skill-bar portraits.
 
-**Item windows** (details of a clicked item, the bag-full popup) open at the top right of the battle area, next to
-the bag, so the bag stays clickable: a full bag asks you to click the item to drop.
+**Item windows** (details of a clicked item, the bag-full popup) open over the side panel's top block (the party and
+gear, or the city menu), so the bag below stays clickable and the battle stays in view. Details: name, rarity, slot,
+item level and power, the affixes in two columns, and one Equip button per hero with the power change (▲ +4).
+They slow nothing: the fight and the clock keep going while you look (#49).
 
 **Loot pickup.** When the front hero walks over a drop, its name flies up from where it lay, in its rarity colour on
 a dark outline (`LOOT_FLY_SEC`; legendaries `LOOT_FLY_LEGENDARY_SEC`); a batch is spaced `LOOT_FLY_STAGGER_SEC`
@@ -174,8 +176,11 @@ the click panels and the design docs hold the detail. `python3 test/tooltips.py`
   during the footsteps. Rejected: keeping the cans for the snack-run tell (the button carries it).
 - **HP only on the sprites and the skill-bar portraits** (0.45): one value in one place; the party cards show what
   you decide gear with (level, power, "needs gear").
-- **Item windows open next to the bag, not over it** (0.45): the bag-full popup asks you to click a bag item.
-  Rejected: over the side panel (it would hide the bag it asks about).
+- **Item windows over the party block, and they slow nothing** (0.46, #49): the fight used to slow to 30% while one
+  was open, a crutch from when the bag sat in a separate panel and looking at it meant looking away; it also let you
+  slow a boss fight on purpose. Now the window covers only the party and gear (its Equip buttons replace them), the
+  bag stays clickable for the bag-full swap, and the battle stays in view. Rejected: the top right of the battle
+  area (0.45; it covered the boss's cast bar); pausing the fight (gearing is meant to be part of the juggle).
 - **Her desk visit covers the battle area only** (0.45): the side panel stays usable, as the right panel was.
 - **Sizes on an even grid** (0.45): every layout number is even, so a 640 × 360 pixel-art version can scale by 2.
 

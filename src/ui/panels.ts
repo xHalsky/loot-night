@@ -545,36 +545,40 @@ function compareFor(heroIdx: number, item: Item): string {
   return powLine + (parts.join(' ') || '<span class="dim">no stat change</span>');
 }
 
+/** The item window (#49): over the party and gear block of the side panel, so the bag below stays clickable and
+ *  the battle stays in view. One Equip button per hero with the power change. */
 function detailHtml(e: BagEntry): string {
-  const n = N();
-  const town = n.location === 'town';
+  const town = N().location === 'town';
+  const close = '<button class="mg-close" data-act="closeSel" title="Close">\u2715</button>';
   let body = '';
   if (e.kind === 'item') {
     const it = e.item;
-    const cur = (i: number) => S.g.heroes[i].gear[it.slot];
+    const eq = it.identified ? `<div class="pop-eq">${S.g.heroes.map((h, i) => {
+      const d = heroPower(h, { [it.slot]: it }) - heroPower(h);
+      return `<button class="pop-eq-btn" data-act="equip" data-arg="${i}"><b>${h.name}</b><em class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? `\u25b2 +${d}` : d < 0 ? `\u25bc ${d}` : '='}</em></button>`;
+    }).join('')}</div>` : '<div class="dim">Unidentified: the Appraiser in town reveals it.</div>';
     body = `<div class="d-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
-      <div class="dim">${cap(it.rarity)} · ${cap(it.slot)} · item level ${it.ilvl} · value ${it.value}</div>
-      <div class="affixes">${affixLines(it)}</div>
-      ${it.identified ? `<div class="cmp">${S.g.heroes.map((h, i) => `<div class="cmp-row">${btn('equip', `Equip on ${h.name}`, String(i), 'sm')}<div class="cmp-d"><div class="dim">${cur(i) ? 'vs ' + esc(cur(i)!.name) : 'empty slot'}</div>${compareFor(i, it)}</div></div>`).join('')}</div>` : ''}
-      ${town ? `<div class="dim">Sell, identify, salvage or list it at the buildings on the city screen.</div>` : ''}`;
+      <div class="pop-sub">${cap(it.rarity)} ${it.slot} · item level ${it.ilvl}${it.identified ? ` · \u25c6 ${itemPower(it)}` : ''}</div>
+      ${it.identified ? `<div class="pop-aff">${affixLines(it)}</div>${specialLine(it)}` : ''}${eq}
+      ${town ? '<div class="dim">Sell, identify, salvage or list it at the services above.</div>' : ''}`;
   } else if (e.kind === 'map') {
-    body = `<div class="d-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div><div class="dim">Pick it when a floor ends. It takes a bag slot until then.</div>`;
+    body = `<div class="d-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div><div class="dim">Pick it when a floor ends.</div>`;
   } else {
-    body = `<div class="d-name" style="color:${FEATHER.color}">${FEATHER.name}</div><div>${FEATHER.desc}</div>${btn('useSel', 'Use now', '', 'sm green')}`;
+    body = `<div class="d-name" style="color:${FEATHER.color}">${FEATHER.name}</div><div>${FEATHER.desc}</div><div class="pop-eq">${btn('useSel', 'Use now', '', 'sm green')}</div>`;
   }
-  return `<div class="overlay-box">${body}<div class="d-foot">${btn('dropSel', 'Drop', '', 'sm red')}${btn('closeSel', 'Close', '', 'sm')}</div></div>`;
+  return `<div class="sp-pop">${close}${body}<div class="d-foot">${btn('dropSel', 'Drop', '', 'sm red')}</div></div>`;
 }
 
-
+/** A new drop with a full bag: click a bag item to swap it, or leave it (the drop waits DROP_WAIT_SEC). */
 function dropPopupHtml(): string {
   const n = N();
   const p = n.dropPopup!;
   const e = p.entry;
-  return `<div class="overlay-box popup">
-    <div class="kicker" style="color:#e0524a">BAG FULL · NEW DROP</div>
+  return `<div class="sp-pop full">
+    <div class="pop-kick">Bag full: new drop</div>
     <div class="d-name" style="color:${entryColor(e)}">${esc(entryName(e))}</div>
-    ${e.kind === 'item' ? `<div class="affixes">${affixLines(e.item)}</div><div class="dim">value ${e.item.value}</div>` : ''}
-    <div>Click a bag item below to drop it and take this one.</div>
+    ${e.kind === 'item' && e.item.identified ? `<div class="pop-aff">${affixLines(e.item)}</div>` : ''}
+    <div>Click a bag item below to swap it for this one.</div>
     <div class="timebar"><div style="width:${(p.t / T.DROP_WAIT_SEC) * 100}%"></div></div>
     <div class="d-foot">${btn('skipDrop', `Leave it (${Math.ceil(p.t)} s)`, '', 'sm')}</div></div>`;
 }
@@ -598,7 +602,9 @@ export function uiPanelHtml(): string {
     const fresh = n.fresh.some(f => f.id === e.id) ? ' fresh' : '';
     const lock = e.kind === 'item' && e.item.locked ? '<i class="lockico">\u{1F512}</i>' : '';
     const corner = e.kind === 'item' ? `<span class="val pow">${e.item.identified ? itemPower(e.item) : '?'}</span>` : `<span class="val">${entryValue(e)}</span>`;
-    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}${fresh ? `;--new:${T.BAG_NEW_SEC}s` : ''}" data-item="bag:${e.id}">${entryIcon(e, 24)}${lock}${corner}${fresh ? '<b class="new">NEW</b>' : ''}</div>`;
+    // an upgrade for someone (#49): a green arrow on the item, so the bag says what to equip at a glance
+    const up = e.kind === 'item' && e.item.identified && g.heroes.some(h => heroPower(h, { [e.item.slot]: e.item }) > heroPower(h)) ? '<i class="up-ico" aria-label="An upgrade">\u25b2</i>' : '';
+    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}${fresh ? `;--new:${T.BAG_NEW_SEC}s` : ''}" data-item="bag:${e.id}">${entryIcon(e, 24)}${lock}${up}${corner}${fresh ? '<b class="new">NEW</b>' : ''}</div>`;
   }).join('');
   const full = g.bag.length >= g.bagSize;
   const bag = head(`BAG <b class="${full ? 'full' : ''}">${g.bag.length}/${g.bagSize}</b>`,
@@ -618,7 +624,7 @@ export function uiPanelHtml(): string {
       const label = { merchant: 'Merchant', appraiser: 'Appraiser', salvage: 'Salvage Forge', auction: 'Auction House' }[id];
       return `<button class="sp-svc ${g.townWin === id ? 'on' : ''}" data-act="townWin" data-arg="${g.townWin === id ? '' : id}">${label}</button>`;
     }).join('');
-    return head('RAVENHOLD · BUILD') + `<div class="sp-cityrows">${rows}</div>` + head('SERVICES') + `<div class="sp-svcs">${svc}</div>` + bag + foot;
+    return `<div class="sp-top">${head('RAVENHOLD · BUILD')}<div class="sp-cityrows">${rows}</div>${head('SERVICES')}<div class="sp-svcs">${svc}</div>${itemPopHtml()}</div>` + bag + foot;
   }
   // --- party: three cards (level, power, "!" when one falls behind); drop gear on a card to equip it ---
   const tab = n.heroTab;
@@ -644,19 +650,18 @@ export function uiPanelHtml(): string {
     return `<div class="sp-stat"><span>${label}</span><b>${fmt(st[k])}${Math.abs(d) >= 0.05 ? `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : ''}${fmt(d)}</em>` : ''}</b></div>`;
   };
   const gear = `<div class="sp-gear"><div class="sp-slots">${slots}</div><div class="sp-stats">${stat('hp', 'HP', r0)}${stat('atk', 'ATK', r1)}${stat('armor', 'ARM', r1)}${stat('speed', 'SPD', r1)}${stat('crit', 'CRIT', r1)}${stat('luck', 'LUCK', r1)}</div></div>`;
-  return head('PARTY') + `<div class="sp-cards">${cards}</div>`
-    + head(`${gh.name.toUpperCase()} · ${gh.role}`, `<b class="sp-pow">\u25c6 ${powers[tab]}</b>`) + gear + bag + foot;
+  return `<div class="sp-top">${head('PARTY')}<div class="sp-cards">${cards}</div>`
+    + head(`${gh.name.toUpperCase()} · ${gh.role}`, `<b class="sp-pow">\u25c6 ${powers[tab]}</b>`) + gear + itemPopHtml() + '</div>' + bag + foot;
 }
 
-/** The item windows (#49): details of the selected item, or a new drop when the bag is full. They open over the
- *  right end of the battle area, next to the bag, so the bag stays clickable (a full bag asks you to pick a slot). */
-export function itemPopHtml(): string {
+/** The item window or the bag-full popup, if one is open (drawn over the side panel's top block). */
+function itemPopHtml(): string {
   const n = S.g.night;
   if (!n) return '';
-  if (n.dropPopup) return `<div class="item-pop">${dropPopupHtml()}</div>`;
+  if (n.dropPopup) return dropPopupHtml();
   if (!n.selected) return '';
   const e = S.g.bag.find(x => x.id === n.selected);
-  return e ? `<div class="item-pop">${detailHtml(e)}</div>` : '';
+  return e ? detailHtml(e) : '';
 }
 
 /** Real life, bottom right of the desk (#49): Tired and Zone, and the Monster button (key M). */

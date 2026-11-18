@@ -10,11 +10,11 @@ The prototype always plays Monday.
 
 | Clock | Runs | Stops | Drives |
 |---|---|---|---|
-| Night clock | In the dungeon: 1 in-game hour per `SEC_PER_GAME_HOUR` (96 s), so bedtime comes after about 8 min and dawn after about 16. At `MENU_CLOCK_SPEED` (25%) while an item, the full-bag popup or the floor map is open. | In the city; city actions cost fixed minutes instead (`COST_*_MIN`). | Bedtime, dawn, sleep debt, Tiredness. |
+| Night clock | In the dungeon: 1 in-game hour per `SEC_PER_GAME_HOUR` (96 s), so bedtime comes after about 8 min and dawn after about 16. At `MENU_CLOCK_SPEED` (25%) while the floor map is open (the party waits at the stairs). | In the city; city actions cost fixed minutes instead (`COST_*_MIN`). | Bedtime, dawn, sleep debt, Tiredness. |
 | Threat time | Always while a night runs, on every screen. | Only the pause menu. | Her, interrupts, the dog, Mood drift, buff timers. |
 
-While an item, the full-bag popup or the floor map is open, the fight also slows to
-`BATTLE_MENU_SPEED` (30%) so the player can think. Threats keep full speed.
+An item window or the full-bag popup slows nothing (#49): gearing is part of the juggle, done with the fight in
+view, and her threats keep full speed either way.
 
 **How a night ends.**
 

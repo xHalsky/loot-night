@@ -11,7 +11,9 @@ ring, trinket). Old saves are renamed on load.
 
 **Floors.** Endless. A floor is a walk, then `BATTLES_PER_FLOOR` (3) battles. Every
 `CHECKPOINT_EVERY` (5th) floor ends in a boss and sets the checkpoint. Enemies scale per floor
-(`ENEMY_HP_PER_FLOOR`, `ENEMY_ATK_PER_FLOOR`). Monday's dungeon is the Shadow Crypt
+(`ENEMY_HP_PER_FLOOR` +60%, `ENEMY_ATK_PER_FLOOR` +45% of their floor-1 numbers per floor), faster than levels
+(`HERO_LEVEL_SCALE`, +4% HP and attack per level) and as fast as the gear that drops there, so the party has to gear
+up as it goes: without new gear the first boss (floor 5) is a wall ([loot.md](loot.md), #49). Monday's dungeon is the Shadow Crypt
 (`src/data/enemies.ts`). When a boss dies, the enemies still standing run. Enemy ids are older than their
 names (`collector` = Orc, `auditor` = Shaman, `shelter` = Guardian, `junk` = Imps, `bailiff` = Ogre, `shark` =
 Warlock, `landlord` = Black Knight; boss moves `slam`, `loan`, `evict`); saves and tests key on the ids.
@@ -258,7 +260,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   with the same average Noise (26). The design wants few visits and real dread, not more of them.
 - **No permadeath.** Progress is never wiped (pillar 4); a wipe costs time, gold and half the bag.
 - Rejected: a 12-slot bag inside the battle UI and drag-to-equip mid-fight as the main loop. Equipping
-  happens in the side panel; the fight slows while you look.
+  happens in the side panel, with the fight in view and at full speed (#49).
 
 ## Planned
 

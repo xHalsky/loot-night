@@ -14,7 +14,6 @@ import { ABILITIES, HOTKEYS, HERO_COLORS } from '../data/heroes';
 import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
 import { maxHp } from '../systems/stats';
 import { TOWN_X, BAND_H } from './layout';
-import { itemPopHtml } from './panels';
 
 const FONT = '"Pixelify Sans", monospace';
 export type ServiceId = 'appraiser' | 'auction' | 'merchant' | 'salvage';
@@ -459,7 +458,7 @@ function curioHtml(c: CurioState): string {
 export function monUiHtml(): string {
   const n = S.g.night;
   if (!n || n.monitor === 'excel' || n.monitorOff > 0 || n.switching) return '';
-  return cornerHtml(n) + buffsHtml(n) + monUiInner(n) + itemPopHtml();
+  return cornerHtml(n) + buffsHtml(n) + monUiInner(n);
 }
 let flowStep = 0, flowGlowUntil = 0;
 /** No top bar (#49): where you are and the Flow multiplier, small and quiet in the battle's top-left corner.

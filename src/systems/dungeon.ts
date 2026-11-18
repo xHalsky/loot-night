@@ -74,12 +74,11 @@ export function chooseNextFloor(bagId: string | null) {
 }
 
 /** True while the player is inspecting an item or making a choice: the fight slows down. */
-export const menuOpen = () => { const n = N(); return !!n.selected || !!n.dropPopup || n.phase === 'mapChoice'; };
 
 export function updateDungeon(realDt: number) {
   const n = N();
   if (n.location !== 'dungeon') return;
-  const dt = realDt * (menuOpen() ? T.BATTLE_MENU_SPEED : 1);
+  const dt = realDt;   // an open item window does not slow the fight: gearing is part of the juggle (#49)
   if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); sfx.goblinLost(); } }
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt * (isAway() && n.phase !== 'battle' ? T.AUTOPILOT_PACE - 1 : 0);   // no resting without you

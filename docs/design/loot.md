@@ -2,8 +2,13 @@
 
 ## Now
 
-**Drops.** A normal battle drops 1 item `BATTLE_DROP_CHANCE` (60%) of the time; bosses drop
-`BOSS_DROPS`; elite floors guarantee a rare. Maps (`MAP_DROP_CHANCE`) and Phoenix Feathers
+**Loot drives progress** (#49). Every normal battle drops an item (`BATTLE_DROP_CHANCE`, 100%); bosses drop
+`BOSS_DROPS`; elite floors guarantee a rare. An item's main stats grow with its item level (= the floor) as fast as
+the enemies do (`STAT_BASE` in `src/data/items.ts`: attack +2, HP +9, armor +1.2 per level), while levels add only
++4% (`HERO_LEVEL_SCALE`). So the party keeps up only by equipping what drops: about one upgrade a battle.
+Measured with the bots (`python3 test/balance.py 24 good 1500 gear` against the same without `gear`): a bot that
+never equips during the night wipes at the first boss in two nights of three and reaches floor 5.4; one that
+equips upgrades as they come reaches floor 9.3 with gear giving 62% of its attack and half its HP. Maps (`MAP_DROP_CHANCE`) and Phoenix Feathers
 (`FEATHER_DROP_CHANCE`) also drop.
 
 **Rarity.** Common, uncommon, rare, epic, legendary. Floor 1 weights `RARITY_WEIGHTS` (60/25/10/4/1),
@@ -57,10 +62,11 @@ loot is on the floor. A collected item's name flies up from where it lay, in its
 shines with NEW (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
 leave by portal or the floor ends, and goes on the corpse in a wipe.
 
-**Bag** (the side panel). `BAG_SIZE` (18) slots, 3 rows, plus the Treasury row (`TREASURY_ROW`, 6 slots shown,
+**Bag** (the side panel). A green ▲ in a slot's corner marks an upgrade: it would raise some hero's Power.
+`BAG_SIZE` (18) slots, 3 rows, plus the Treasury row (`TREASURY_ROW`, 6 slots shown,
 locked until the Treasury opens them, 2 per level). Icons by type, colour by rarity, power in the corner, "?" for
-unidentified. When full, a popup next to the bag offers swap or skip; the drop waits `DROP_WAIT_SEC` of threat
-time, then is lost.
+unidentified. When full, a popup over the party block offers swap or skip; the drop waits `DROP_WAIT_SEC` of threat
+time, then is lost. With a drop every battle the bag fills by floor 5 or so: drop the junk or turn on auto-salvage.
 
 **Power** (Destiny's Light level). Every item has a power: `POWER_PER_ILVL` (10) × item level × the rarity
 multiplier, the same scale that sets its stats (unidentified items count as 0 until identified). A hero's
@@ -103,7 +109,15 @@ scraps.
 - **Players never buy gear**, in any build. Buying kills the thrill of drops. The auction house only sells.
 - **Loot at the kill, not in a popup** (0.11, 0.13): the floor becomes the reward moment, Diablo-style.
 - **Downsides from rare up** to avoid "bigger number wins" and give the comparison tooltip a job.
-- Fewer drops after the first playtest (60% per battle) so each one is noticed.
+- **A drop every battle again** (0.46, #49; it was cut to 60% after the first playtest so each drop was noticed):
+  gear is now how the party keeps up, and each pickup is noticed anyway (its name flies up, the slot shines NEW,
+  the ▲ says if it is an upgrade). Rejected: keeping 60% (upgrades came every other battle and gear lagged two
+  floors behind); fewer battles per floor instead (the floor rhythm and the curios need three).
+- **Gear over levels** (0.46, #49): before, a party that never equipped anything reached floor 9.8 on night 1,
+  against 11.6 for one that geared up: loot was decoration. Enemies now grow 60% / 45% per floor (were 25% / 24%),
+  item main stats grow faster, and levels give 4% (were 10%). Levels still unlock the skills. Rejected: pushing
+  only the enemies (an ungeared party just died earlier, and gearing barely helped); a hard item-level gate (it
+  would read as a lock, not as progress).
 
 ## Planned
 

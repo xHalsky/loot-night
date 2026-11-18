@@ -20,7 +20,7 @@ export const SLOT_STATS: Record<Slot, Stat[]> = {
 };
 // Base amount of a stat at item level L: a + b * L.
 export const STAT_BASE: Record<Stat, [number, number]> = {
-  atk: [2, 1.2], hp: [8, 5], armor: [1, 0.8], speed: [1, 0.25], crit: [2, 0.3], luck: [2, 0.5],
+  atk: [2, 2], hp: [8, 9], armor: [1, 1.2], speed: [1, 0.25], crit: [2, 0.3], luck: [2, 0.5],   // atk, hp, armor keep pace with the enemies (#49)
 };
 export const STAT_LABEL: Record<Stat, string> = { atk: 'Attack', hp: 'Max HP', armor: 'Armor', speed: 'Speed', crit: 'Crit %', luck: 'Luck' };
 

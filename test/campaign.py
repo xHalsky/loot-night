@@ -1,12 +1,13 @@
 # Several nights in a row (#2): does the city give an upgrade every night? Runs bots with NIGHTS=n in parallel.
-# Run: python3 test/campaign.py [runs=8] [nights=4]
+# Run: python3 test/campaign.py [runs=8] [nights=4] [1500 gear]   (extra args go to sim.ts: 'gear' equips upgrades during the night)
 import json, os, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 RUNS = int(sys.argv[1]) if len(sys.argv) > 1 else 8
 NIGHTS = int(sys.argv[2]) if len(sys.argv) > 2 else 4
+EXTRA = sys.argv[3:]
 def run(_):
     env = dict(os.environ, NIGHTS=str(NIGHTS))
-    out = subprocess.run(['npx', 'tsx', 'test/sim.ts', 'good'], capture_output=True, text=True, env=env, cwd='/home/claude/loot-night').stdout
+    out = subprocess.run(['npx', 'tsx', 'test/sim.ts', 'good', *EXTRA], capture_output=True, text=True, env=env, cwd='/home/claude/loot-night').stdout
     return [json.loads(l) for l in out.splitlines() if l.startswith('{')]
 with ThreadPoolExecutor(8) as ex:
     runs = [r for r in ex.map(run, range(RUNS)) if r]

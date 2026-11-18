@@ -9,8 +9,8 @@ const toast = toastAs('NIGHT');   // feed tag (#49)
 export function clockRate(): number {
   const n = N();
   if (n.location === 'town') return 0;
-  const menu = n.phase === 'mapChoice' || !!n.dropPopup || !!n.selected;
-  return (60 / T.SEC_PER_GAME_HOUR) * (menu ? T.MENU_CLOCK_SPEED : 1);
+  const choosing = n.phase === 'mapChoice';   // the party waits at the stairs; item windows do not slow anything (#49)
+  return (60 / T.SEC_PER_GAME_HOUR) * (choosing ? T.MENU_CLOCK_SPEED : 1);
 }
 
 export function moodZone(m: number): 'green' | 'yellow' | 'red' {

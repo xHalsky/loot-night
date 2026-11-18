@@ -4,6 +4,7 @@
 // Reports the LOWEST party HP during the fight (a boss kill levels the party up and heals it).
 // 'close calls' = survived but dipped under 25%.
 // Done when: 40 s away during a boss usually wipes; 40 s away on a normal floor leaves the party hurt but alive.
+// The bot gears up on the way (gearUp), as a player must since #49.
 // Run: npx tsx test/autopilot.ts
 (globalThis as any).localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 (globalThis as any).performance ??= { now: () => Date.now() };
@@ -13,7 +14,21 @@ import { step } from '../src/core/loop';
 import { startNight } from '../src/systems/night';
 import { travelToDungeon, chooseNextFloor, isBossBattle } from '../src/systems/dungeon';
 import { queueAbility, moveOf } from '../src/systems/battle';
-import { maxHp } from '../src/systems/stats';
+import { maxHp, heroStats } from '../src/systems/stats';
+import { equipItemOn } from '../src/systems/bag';
+import { skipDrop } from '../src/systems/loot';
+
+/** The bot gears up on the way, as a player must since #49: every upgrade goes on the hero it helps most. */
+const score = (st: any) => st.atk * 3 + st.hp * 0.3 + st.armor * 2 + st.speed * 3 + st.crit;
+function gearUp() {
+  for (const e of [...S.g.bag]) {
+    if (e.kind !== 'item' || !e.item.identified) continue;
+    let best = -1, gain = 0;
+    S.g.heroes.forEach((h, i) => { const d = score(heroStats(h, { [e.item.slot]: e.item })) - score(heroStats(h)); if (d > gain) { gain = d; best = i; } });
+    if (best >= 0) equipItemOn(e.id, best);
+  }
+  if (N().dropPopup) skipDrop();
+}
 
 const DT = 1 / 60;
 function calm() {
@@ -60,6 +75,7 @@ function reach(boss: boolean, minFloor: number): string | null {
     const n = N();
     if (n.phase === 'mapChoice') chooseNextFloor(null);
     if (n.phase === 'battle' && n.floor >= minFloor && isBossBattle() === boss && n.phaseT < 0.05) return JSON.stringify(S.g);
+    if (n.phase === 'loot' || n.phase === 'walk') gearUp();
     castReady();
     step(DT);
     if (S.g.screen !== 'night') return null;

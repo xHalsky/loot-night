@@ -53,8 +53,13 @@ async def main():
         await shot('phone_ring', "n.nextInterruptAt=1e9", 300, phone)
         await ev(pg, "n.interrupts=[]")
         async def popup():
-            await ev(pg, "const e=g.bag.find(x=>x.kind==='item'); if(e) n.selected=e.id")
+            await ev(pg, "const e=g.bag.find(x=>x.kind==='item'&&x.item.identified); if(e) n.selected=e.id")
         await shot('item_detail', '', 300, popup)
+        await ev(pg, "n.selected=null")
+        async def full():
+            await ev(pg, "const e=g.bag.find(x=>x.kind==='item'); if(e) n.dropPopup={entry:e,t:6}; g.timeScale=0")
+        await shot('bag_full', '', 300, full)
+        await ev(pg, "n.dropPopup=null; g.timeScale=1")
         await shot('map', "n.phase='mapChoice'; n.enemies=[]; g.timeScale=0")
         await ev(pg, "n.phase='walk'; g.timeScale=1")
         async def lap(): await dbg(pg, 'dbgLap'); await pg.wait_for_timeout(1800)

@@ -3,6 +3,33 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.46.0 (2026-11-18)
+
+Loot drives progress (#49, round 3). Before, a party that never equipped anything got almost as deep as one that
+geared up, so loot was decoration. Now enemies outgrow a party that does not gear up, and the bag tells you what
+to equip.
+
+- **Difficulty and loot curves.** Enemies grow +60% HP / +45% attack per floor (were +25% / +24%). Items' main stats
+  grow faster with item level (attack +2, HP +9, armor +1.2 per level; were +1.2, +5, +0.8). Levels give +4% HP and
+  attack (were +10%); they still unlock the skills. Every normal battle drops an item (was 60%).
+- **Upgrades at a glance.** A green ▲ on a bag item that would raise some hero's Power.
+- **Item windows slow nothing.** The item details and the bag-full popup open over the side panel's party block (the
+  bag stays clickable, the battle stays in view), with one Equip button per hero and its power change. The fight no
+  longer slows to 30% and the clock no longer slows while one is open (only the floor map slows the clock now).
+- Bots, before / after (24 nights each, night 1):
+
+  | | Never equips at night | Equips upgrades as they drop |
+  |---|---|---|
+  | Before | floor 9.8, wipes only at boss 10 | floor 11.6, no wipes, gear = 55% of attack |
+  | After | floor 5.4, wipes at boss 5 in 16 of 24 nights | floor 9.3, 4 wipes in 24 nights, gear = 62% of attack, about 30 equips |
+
+  Four nights in a row: equipping as you go goes 9.8 → 12.1 → 13.8 → 14.2; gearing only in the city between nights
+  stalls at about 10 with 0.7 wipes a night. Nobody was caught in any run; stars unchanged (3.0). The city fills
+  faster with the extra drops (2+ buildings before each later night).
+- Tests: the gear bot swaps junk for better drops when the bag is full; `test/balance.py` reports equips, gear share
+  and wipes by floor; `test/campaign.py` takes `1500 gear`; `test/sim.ts` takes `TUNE` / `TUNE_STAT` for experiments.
+  `test/autopilot.ts` gears up on the way (away at a boss still wipes 14 to 20 of 20; present survives 18 to 19 of 20).
+
 ## 0.45.0 (2026-11-18)
 
 Monitor first (#49, round 2): the right RPG panel is gone and the whole RPG lives on a bigger monitor, with a side

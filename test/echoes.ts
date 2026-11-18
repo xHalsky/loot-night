@@ -24,7 +24,7 @@ n = fresh(); n.headset = true; n.dropQueue.push(legendary()); updateDrops(0); ok
 
 // Enrage: a boss under 25% HP
 n = fresh(); travelToDungeon(); n.floor = 5; spawnBattle(5, true, false); n.phase = 'battle';
-const boss = n.enemies.find(e => e.boss)!; boss.hp = Math.round(boss.maxHp * 0.26); n.enemies.filter(e => !e.boss).forEach(e => { e.hp = 0; e.maxHp = 0; });
+const boss = n.enemies.find(e => e.boss)!; boss.hp = Math.round(boss.maxHp * 0.252); n.enemies.filter(e => !e.boss).forEach(e => { e.hp = 0; e.maxHp = 0; });   // one hit takes it under 25% (an ungeared party hits softly since #49)
 for (let i = 0; i < 600 && !boss.enraged; i++) updateBattle(1 / 60);
 ok(!!boss.enraged, 'a boss under 25% HP enrages');
 n.flow = 1; n.monitor = 'rpg'; n.action = 'none'; updateMeters(1); const f1 = n.flow; n.flow = 1; boss.enraged = false; updateMeters(1); const f0 = n.flow; boss.enraged = true;

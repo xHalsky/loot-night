@@ -8,7 +8,7 @@ export const T = {
   EARLIEST_SLEEP: 23 * 60,          // can't log off before 23:00 (closes the 'sleep at 20:00 for 3 stars' exploit)
   DAWN: 30 * 60,
   SEC_PER_GAME_HOUR: 96,          // dungeon: 1 in-game hour per 96 s real time (bedtime ~8 min, dawn ~16 min)
-  MENU_CLOCK_SPEED: 0.25,         // bag detail, map choice, drop popup
+  MENU_CLOCK_SPEED: 0.25,         // the night clock while you choose the next floor on the map (item windows do not slow anything, #49)
   COST_IDENTIFY_MIN: 10,
   COST_FURNITURE_MIN: 15,
   COST_LIST_MIN: 5,
@@ -67,12 +67,11 @@ export const T = {
   WALK_SEC: 4,
   LOOT_PAUSE_SEC: 2.5,
   ATB_RATE: 3,                    // atb gain per second per point of speed; acts at 100 (speed 10 = a turn every 3.3 s)
-  BATTLE_MENU_SPEED: 0.3,         // battle/walking speed while an item, the full-bag popup or the map choice is open (threats keep full speed)
-  ENEMY_HP_PER_FLOOR: 0.25,
-  ENEMY_ATK_PER_FLOOR: 0.24,
+  ENEMY_HP_PER_FLOOR: 0.6,        // enemies outgrow a party that does not gear up: the first boss (floor 5) is the wall (#49)
+  ENEMY_ATK_PER_FLOOR: 0.45,
   FURY_AFTER_TURNS: 3,            // Fury: an enemy alive longer than this hits harder each turn (was "Interest")
   FURY_PER_TURN: 0.10,
-  HERO_LEVEL_SCALE: 0.10,
+  HERO_LEVEL_SCALE: 0.04,         // levels unlock skills; strength comes from gear (#49)
   XP_PER_KILL: 5, XP_PER_BOSS: 40, XP_PER_LEVEL: 40, XP_LEVEL_EXP: 1.7,
   ABILITY_UNLOCK: [1, 1, 3, 5, 99],   // slot 4 (ultimates) is for later nights
   // Ability marks (docs/design/dungeon.md): a skill marks an enemy, another skill cashes the mark in.
@@ -116,7 +115,7 @@ export const T = {
   POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots
   POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag
   DROP_WAIT_SEC: 8,
-  BATTLE_DROP_CHANCE: 0.6,        // a normal battle drops 1 item 60% of the time
+  BATTLE_DROP_CHANCE: 1,          // every normal battle drops an item: an upgrade about every battle (#49)
   BOSS_DROPS: 3, VAULT_DROPS: 5,
   RARITY_WEIGHTS: [60, 25, 10, 4, 1],
   RARITY_SHIFT_PER_FLOOR: [-1, 0.5, 0.3, 0.15, 0.05],

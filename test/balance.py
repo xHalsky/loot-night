@@ -18,6 +18,11 @@ avg = lambda k: sum(r[k] for r in rs) / len(rs)
 types = lambda r: {k for k in r['kinds'] if k in ('peek', 'snack', 'chat', 'cuddle')}
 print(f'{len(rs)} {MODE} nights')
 print(f"depth {avg('depth'):.1f} | end {int(avg('endClock') // 60) % 24}:{int(avg('endClock') % 60):02d} | stars {avg('stars'):.2f} | mood {avg('mood'):.0f}")
+if 'equips' in rs[0]:
+    wf = {}
+    for r in rs:
+        for f in r.get('wipeAt', []): wf[f] = wf.get(f, 0) + 1
+    print(f"gear: equips {avg('equips'):.1f} | full-bag drops swapped in {avg('swapped'):.1f}, left {avg('skipped'):.1f} | slots filled {avg('slots'):.1f}/18 | gear share of ATK {avg('gearAtk'):.0%}, of HP {avg('gearHp'):.0%} | gear ilvl {avg('gearIlvl'):.1f} | wipes by floor {dict(sorted(wf.items()))}")
 print(f"visits {avg('visits'):.1f} | caught {avg('caught'):.2f} | wipes {avg('wipes'):.2f} | wakes {avg('wakes'):.1f} | noise {avg('avgNoise'):.0f} | texts {avg('texts'):.1f}")
 kinds = {}
 for r in rs:

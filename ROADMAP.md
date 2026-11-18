@@ -21,13 +21,7 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **#49 Monitor-first layout** (before any outside playtest: a tester's first two minutes are only fresh once, and
-   that criterion depends on the layout; the final art in #26 / #5 needs the final monitor size). The right panel goes;
-   the RPG moves onto a bigger monitor with an always-on side panel (party, gear, stats, bag; the city UI in town);
-   the Feed becomes a plain event feed; real-life stats top right; loot becomes the progress driver.
-   Rounds: (a) mockup, three variations to choose from (done: A1 final); (b) the move (done, 0.45); (c) the danger
-   and loot-tuning pass: what an open item window does to the fight, and loot as the progress driver.
-2. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
+1. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
    night, tools in `test/balance.py` and `test/campaign.py`). Next: playtests with `docs/playtest.md`, then tune
    from what they show. Repeat until three testers in a row pass.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
