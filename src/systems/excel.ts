@@ -3,7 +3,8 @@ import { hasLife } from './affixes';
 import { S, N, type ExcelPiece, type ExcelState } from '../core/state';
 import { randi, rand } from '../core/rng';
 import { sfx } from '../ui/audio';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('EXCEL');   // feed tag (#49)
 
 // Excel cover screen: a slow spreadsheet Tetris (docs/design/desk.md).
 // Having Excel open raises Busy (she sees you working). Placing blocks adds a bit,

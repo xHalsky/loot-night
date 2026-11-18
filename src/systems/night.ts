@@ -10,7 +10,8 @@ import { startTired } from './tired';
 import { scheduleInterrupt } from './interrupts';
 import { moodZone } from './meters';
 import { save } from './save';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx, setHeadset, stopAmbience } from '../ui/audio';
 import { cityOutlook } from './town';
 
@@ -19,7 +20,7 @@ export function newNight(): Night {
     clock: T.NIGHT_START, threat: 0, location: 'town', phase: 'walk', phaseT: 0,
     floor: 1, battleIdx: 0, floorMap: 'plain', checkpoint: 1, deepest: 0,
     enemies: [], mood: T.MOOD_START, noise: 0, catches: 0, bossQuiet: 0, bossCallback: 0, flow: T.FLOW_MIN,
-    monitor: 'rpg', action: 'none', dropQueue: [], floorLoot: [], fresh: [], dropPopup: null, corpse: [], corpseFloor: 0,
+    monitor: 'rpg', action: 'none', dropQueue: [], floorLoot: [], fresh: [], lootFly: [], dropPopup: null, corpse: [], corpseFloor: 0,
     visit: { stage: 'idle', t: 0, nextAt: 0, fake: false, checked: false, result: '', kind: 'peek' },
     apt: { room: 'living', activity: 'tv', t: 0, moving: 0, soundT: 0, heard: null, heardWhat: '', heardAt: 0, showerUsed: false, lastVisitEnd: 0, forceDoor: false, asleep: false, wake: 0, textSent: false, cued: false, calm: 0, forceKind: null },
     headset: false, scare: 0, zone: 0, tired: 0, blink: { state: 'open', lid: 0, nextIn: 40 }, boost: 0, crash: 0, cans: 0, bin: [], log: [], peeking: false, peek: 0, peekSus: 0, declineHold: false, decline: 0, phoneDown: 0, flipFx: 0, momCallback: 0, switching: null, dog: { stage: 'away', t: 0, next: T.DOG_FIRST_SEC, ignores: 0, limit: 2, pet: 0, sweet: 0, flinch: 0 }, unplugged: null, lap: null, cansHidden: false,

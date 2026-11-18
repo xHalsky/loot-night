@@ -5,7 +5,8 @@ import { addMood } from './meters';
 import { visitSooner } from './visits';
 import { replyText } from './apartment';
 import { maxHp } from './stats';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('PHONE');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { MOM_LINES, MOM_REPLIES, COURIER_TALKS, FRIENDS_TALKS, type TalkStep } from '../data/content';
 import { weighted } from '../core/rng';

@@ -3,7 +3,6 @@
 import { T } from '../config/tuning';
 import { type CurioState, S, N, RARITIES, type BagEntry } from '../core/state';
 import { CITY_BY_ID, type CityId } from '../data/city';
-import { TRADE_CHAT } from '../data/content';
 import { MAP_INFO } from '../data/items';
 import { bossFor, ENEMY_BY_ID } from '../data/enemies';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
@@ -14,6 +13,8 @@ import { icon, glyph, ABILITY_GLYPHS } from './icons';
 import { ABILITIES, HOTKEYS, HERO_COLORS } from '../data/heroes';
 import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
 import { maxHp } from '../systems/stats';
+import { TOWN_X, BAND_H } from './layout';
+import { itemPopHtml } from './panels';
 
 const FONT = '"Pixelify Sans", monospace';
 export type ServiceId = 'appraiser' | 'auction' | 'merchant' | 'salvage';
@@ -258,11 +259,6 @@ export function drawTown(c: CanvasRenderingContext2D) {
   drawPlayers(c, t);
   // front row: plots
   for (const p of PLOTS) drawPlot(c, p.id, p.x, p.base, p.w, t);
-  // top bar + trade chat
-  rect(c, 0, 0, W, 18, 'rgba(10,8,20,.75)');
-  txt(c, 'RAVENHOLD', 8, 13, 10, '#f2c46b', 'left');
-  const k = Math.floor(t / 4) % TRADE_CHAT.length;
-  txt(c, `[Trade] ${TRADE_CHAT[k][0]}: ${TRADE_CHAT[k][1]}`, W - 8, 13, 10, '#ff9a4d', 'right');
 }
 
 // ---------- DOM overlay: buttons by the buildings, and the service windows ----------
@@ -270,25 +266,18 @@ const b = (act: string, label: string, arg: string, cls: string, style: string) 
 
 export function townOverlayHtml(): string {
   const g = S.g;
+  // names over the buildings and plots; building and the services live in the side panel (#49)
   let h = '';
   for (const s of SERVICES) {
     const cx = s.x + s.w / 2;
     h += `<div class="tname" style="left:${cx}px;top:${s.id === 'portal' ? 26 : 36}px">${s.label}</div>`;
-    h += s.id === 'portal'
-      ? b('portal', `Enter floor ${N().checkpoint} <small>15 min</small>`, '', 'portal', `left:${cx}px;top:${s.base - 26}px`)
-      : b('townWin', s.btn, s.id, '', `left:${cx}px;top:${s.base - 24}px`);
+    if (s.id === 'portal') h += b('portal', `Enter floor ${N().checkpoint} <small>15 min</small>`, '', 'portal', `left:${cx}px;top:${s.base - 26}px`);
   }
   for (const p of PLOTS) {
-    const d = CITY_BY_ID[p.id];
     const L = g.furniture[p.id] ?? 0;
-    const cx = p.x + p.w / 2;
-    const afford = L < 3 && g.gold >= d.gold[L] && g.mats >= d.mats[L];
-    h += `<div class="tname plot" style="left:${cx}px;top:${p.base - 128}px">${d.name}${L ? ` <span>Lv ${L}</span>` : ''}<em>${L ? d.effect[L - 1] : 'empty plot'}</em></div>`;
-    h += L >= 3
-      ? `<div class="tbtn max" style="left:${cx}px;top:${p.base - 22}px">MAX LEVEL</div>`
-      : b('build', `${L ? 'Upgrade' : 'Build'} · ${d.gold[L]}g ${d.mats[L]}<i class="scrap"></i>`, p.id, (afford ? 'gold' : 'off') + ' plotbtn', `left:${cx}px;top:${p.base - 24}px`) + `<div class="tname next" style="left:${cx}px;top:${p.base - 104}px">${L ? 'next: ' : ''}${d.effect[L]}</div>`;
+    h += `<div class="tname plot" style="left:${p.x + p.w / 2}px;top:${p.base - 128}px">${L ? `${CITY_BY_ID[p.id].name} <span>Lv ${L}</span>` : 'Empty plot'}</div>`;
   }
-  return h + serviceWindowHtml();
+  return `<div class="town-ov" style="left:${TOWN_X}px;top:${BAND_H}px">${h}</div>` + serviceWindowHtml();
 }
 
 const SVC_INFO: Record<ServiceId, { title: string; hint: string }> = {
@@ -436,7 +425,7 @@ function nodeMapHtml(): string {
     <g clip-path="url(#nmClip)"><rect width="616" height="352" filter="url(#nmGrain)"/>
       <ellipse cx="470" cy="70" rx="70" ry="34" fill="#7a5426" opacity=".07"/><ellipse cx="120" cy="250" rx="90" ry="40" fill="#6a4a20" opacity=".06"/><ellipse cx="560" cy="300" rx="40" ry="26" fill="#5a3a18" opacity=".08"/>
       <path d="M12 120 Q308 112 604 126 M300 8 Q296 176 306 344" stroke="#8a6a3a" stroke-width="1" opacity=".18" fill="none"/></g>`;
-  return `<div class="nodemap parchment">
+  return `<div class="nodemap parchment"><div class="nm-box">
     <svg class="nm-svg" viewBox="0 0 616 352" width="616" height="352">${sheet}
       <g filter="url(#nmInk)">${ink}${rooms}${marks}
         <text x="308" y="30" class="nm-title-ink">Shadow Crypt</text></g></svg>
@@ -444,7 +433,7 @@ function nodeMapHtml(): string {
     <div class="nm-opts">${buttons}</div>
     <button class="tbtn tportal" data-act="toTown">Town portal <small>15 min · back to floor ${n.checkpoint}</small></button>
     <div class="nm-foot">Maps from loot add paths. The clock runs at 25% while you choose.</div>
-  </div>`;
+  </div></div>`;
 }
 
 /** A curio in the corridor (#30): two choices, each with its real-life cost on the button. Escapable. */
@@ -470,14 +459,30 @@ function curioHtml(c: CurioState): string {
 export function monUiHtml(): string {
   const n = S.g.night;
   if (!n || n.monitor === 'excel' || n.monitorOff > 0 || n.switching) return '';
-  return buffsHtml(n) + monUiInner(n);
+  return cornerHtml(n) + buffsHtml(n) + monUiInner(n) + itemPopHtml();
+}
+let flowStep = 0, flowGlowUntil = 0;
+/** No top bar (#49): where you are and the Flow multiplier, small and quiet in the battle's top-left corner.
+ *  Each time Flow passes a step (FLOW_GLOW_STEP) the text glows for a moment. */
+function cornerHtml(n: NonNullable<typeof S.g.night>): string {
+  if (n.location === 'town') return '<div class="corner"><div>Ravenhold · town</div></div>';
+  if (n.phase === 'mapChoice') return '';
+  const step = Math.floor((n.flow + 1e-6) / T.FLOW_GLOW_STEP);
+  const now = performance.now();
+  if (step > flowStep && n.flow > T.FLOW_MIN + 0.01) flowGlowUntil = now + T.FLOW_GLOW_SEC * 1000;
+  flowStep = step;
+  const map = n.floorMap === 'plain' ? '' : ` · ${MAP_INFO[n.floorMap].name}`;
+  const boss = n.floor % T.CHECKPOINT_EVERY === 0 ? ' · boss floor' : '';
+  const pct = Math.round(((n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN)) * 100);
+  return `<div class="corner"><div>Shadow Crypt · floor ${n.floor} · battle ${Math.min(n.battleIdx + 1, T.BATTLES_PER_FLOOR)}/${T.BATTLES_PER_FLOOR}${map}${boss}</div>
+    <div class="cn-flow ${now < flowGlowUntil ? 'step' : ''}"><span>Flow x${n.flow.toFixed(1)}</span><i><b style="width:${pct}%"></b></i></div></div>`;
 }
 function monUiInner(n: NonNullable<typeof S.g.night>): string {
   if (n.location === 'town') return townOverlayHtml();
   if (n.phase === 'mapChoice') return nodeMapHtml();
-  if (n.phase === 'curio' && n.curio) return curioHtml(n.curio);
   const ok = n.phase !== 'battle';
-  return `<button class="tbtn tportal ${ok ? '' : 'off'}" data-act="toTown">Town portal <small>${ok ? '15 min' : 'after battle'}</small></button>${skillBarHtml()}`;
+  const portal = `<button class="tbtn tportal ${ok ? '' : 'off'}" data-act="toTown">Town portal <small>${ok ? '15 min' : 'after battle'}</small></button>`;
+  return portal + (n.phase === 'curio' && n.curio ? curioHtml(n.curio) : '') + skillBarHtml();
 }
 
 /** Skills that answer the boss's wind-up pulse red: SMASH = Taunt, Bash (unless braced), Ward;
@@ -507,7 +512,7 @@ function skillBarHtml(): string {
   const groups = S.g.heroes.map((h, hi) => {
     const mx = maxHp(h), hp = h.downed ? 0 : h.hp / mx;
     const por = `<button class="ie-por ${n.heroTab === hi ? 'sel' : ''} ${h.downed ? 'down' : ''}" data-act="heroTab" data-arg="${hi}" data-tip="hero:${hi}" style="--hc:${HERO_COLORS[h.id]}">
-      <span class="ie-face">${portrait(h.id)}</span><span class="ie-hp"><i style="height:${Math.round(hp * 100)}%;background:${hp > 0.5 ? '#4fbf5f' : hp > 0 ? '#d9a33a' : '#a33'}"></i></span><span class="ie-name ${h.name.length > 8 ? 'long' : ''}">${h.name}</span></button>`;
+      <span class="ie-face">${portrait(h.id)}</span><span class="ie-hp"><i style="height:${Math.round(hp * 100)}%;background:${hp > 0.5 ? '#4fbf5f' : hp > 0 ? '#d9a33a' : '#a33'}"></i></span></button>`;   // no name here: the party cards carry it (#49)
     const sk = ABILITIES[h.id].map((a, si) => {
       if (si === 0) return '';                    // auto attack is always on: no button
       const unlocked = si === 0 || abilityUnlocked(h, si);
@@ -556,13 +561,12 @@ const BI: Record<string, string> = {
   taunt: '<path d="M11 2 L19 5 V11 C19 16, 15 19, 11 21 C7 19, 3 16, 3 11 V5 Z" fill="#6aa8ff"/><path d="M8 9 L14 15 M14 9 L8 15" stroke="#14101a" stroke-width="2"/>',
   ward: '<circle cx="11" cy="11" r="8" fill="none" stroke="#6fcf7f" stroke-width="2.4"/><circle cx="11" cy="11" r="3" fill="#6fcf7f"/>',
 };
+/** Flow, Zone and Tired are not here (#49): they have their own place (the corner, the YOU card). */
 function buffsHtml(n: NonNullable<typeof S.g.night>): string {
   type B = { k: string; name: string; de?: boolean; left?: number; max?: number; label?: string };
   const list: B[] = [];
   if (n.boost > 0) list.push({ k: 'monster', name: 'Monster: party acts 30% faster', left: n.boost, max: T.MONSTER_BOOST_SEC });
   if (n.crash > 0) list.push({ k: 'crash', name: 'Sugar crash: party slower', de: true, left: n.crash, max: T.MONSTER_CRASH_SEC });
-  if (n.headset) list.push({ k: 'zone', name: n.zone >= 1 ? 'In the Zone: Flow builds 25% faster, +10% loot luck (until the headset comes off)' : 'Zone building (headset on, you hear nothing)', label: n.zone >= 1 ? '\u221E' : `${Math.floor(n.zone * 100)}%` });
-  if (n.flow > 1.05) list.push({ k: 'flow', name: `Flow: party damage x${n.flow.toFixed(1)}`, label: `x${n.flow.toFixed(1)}` });
   if (n.taunt > 0) list.push({ k: 'taunt', name: 'Taunt: enemies hit the knight', left: n.taunt, max: 5 });
   if (n.ward > 0) list.push({ k: 'ward', name: 'Ward: party protected', left: n.ward, max: 6 });
   for (const b of n.partyBuffs) list.push(b.fights !== undefined
@@ -573,7 +577,6 @@ function buffsHtml(n: NonNullable<typeof S.g.night>): string {
   if (n.goodDog > 0) list.push({ k: 'dog', name: `Good Boy: loot goblins x${T.GOOD_BOY_GOBLIN}`, left: n.goodDog, max: T.GOOD_BOY_SEC });
   if (n.sulk > 0) list.push({ k: 'sulk', de: true, name: `Magoo sulks about the guild bank: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage`, left: n.sulk, max: T.CURIO_SULK_SEC });
   if (n.guilt > 0) list.push({ k: 'guilt', name: 'Guilt: party -10% damage', de: true, left: n.guilt, max: T.GUILT_SEC });
-  if (n.tired >= T.TIRED_YAWN) list.push({ k: 'tired', de: true, name: n.tired >= T.TIRED_SLUGGISH ? `Sluggish and Drowsy: timers shorter, ${Math.round(T.ECHO_DROWSY_MISS * 100)}% of hits miss (zzz)` : n.tired >= T.TIRED_MICROSLEEP ? 'Microsleeps: your eyes close' : 'Yawning: the screen blurs now and then', label: n.tired >= T.TIRED_SLUGGISH ? 'III' : n.tired >= T.TIRED_MICROSLEEP ? 'II' : 'I' });
   if (!list.length) return '';
   return `<div class="buffs">${list.map(b => {
     const pct = b.left !== undefined && b.max ? Math.round((1 - b.left / b.max) * 36) * 10 : 0;

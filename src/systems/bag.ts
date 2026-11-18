@@ -2,7 +2,8 @@ import { S, N, type Item } from '../core/state';
 import { removeEntry, entryName, swapDrop , isLocked } from './loot';
 import { useFeather } from './dungeon';
 import { maxHp } from './stats';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('LOOT');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 
 /** Clicking a bag slot: swap target while the full-bag popup is open, else select it. */

@@ -2,7 +2,8 @@ import { T } from '../config/tuning';
 import { S, N, type CurioState, type PartyBuff } from '../core/state';
 import { CURIOS, CURIO_BY_ID, CURIO_LINES, TROLL, type CurioDef } from '../data/curios';
 import { chance, pick, randi, rand } from '../core/rng';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { rollBattleDrops } from './loot';
 import { spawnCurioFight, healParty } from './battle';

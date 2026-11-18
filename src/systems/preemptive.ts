@@ -2,7 +2,8 @@ import { T } from '../config/tuning';
 import { S, N } from '../core/state';
 import { PRE_BY_ID, HER_REPLIES, SUSPICIOUS_LINES, type PreId } from '../data/preemptive';
 import { pick, rand, clamp } from '../core/rng';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('HER');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { addMood } from './meters';
 import { screenGlance } from './visits';

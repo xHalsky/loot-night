@@ -3,7 +3,7 @@ import asyncio
 from playwright.async_api import async_playwright
 async def act(pg, sel):
     await pg.evaluate("s=>{const e=document.querySelector(s); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
-CLIP={'x':300,'y':14,'width':680,'height':470}
+CLIP={'x':314,'y':16,'width':948,'height':464}   # the game screen (#49)
 async def curio(pg, cid, stage='ask', t=5, mx=7):
     await pg.evaluate("([c,s,t,m])=>{const S=window.__lootnight.S; const n=S.g.night; n.enemies=[]; n.phase='curio'; n.curio={id:c,stage:s,t:t,max:m}; S.g.timeScale=0;}", [cid, stage, t, mx])
     await pg.wait_for_timeout(250)

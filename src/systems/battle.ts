@@ -4,7 +4,8 @@ import { ENEMIES, BOSSES, ENEMY_BY_ID, bossFor, type EnemyDef } from '../data/en
 import { ABILITIES } from '../data/heroes';
 import { pick, randi, rand, chance } from '../core/rng';
 import { heroStats, maxHp, xpNeeded } from './stats';
-import { floatText, toast } from '../core/fx';
+import { floatText, toastAs } from '../core/fx';
+const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { speedMult } from './tired';
 import { CD_PCT } from '../data/city';

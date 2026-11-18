@@ -3,7 +3,8 @@ import { addGoodwill } from './goodwill';
 import { N } from '../core/state';
 import { chance } from '../core/rng';
 import { addMood, moodZone } from './meters';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('HER');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 
 // She sits on your desk (docs/design/her.md). Not a punishment: it happens when a visit goes well and she is

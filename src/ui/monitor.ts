@@ -10,8 +10,10 @@ import { PIECES } from '../systems/excel';
 import { drawTown } from './town';
 import { sfx } from './audio';
 import { drawDungeonScene } from './dungeon';
+import { GAME_W, GAME_H, BATTLE_W, BAND_H, SCENE_H, TOWN_X, TOWN_W } from './layout';
 
-export const MON_W = 616, MON_H = 352;
+/** The canvas is the whole game screen (#49); the side panel is DOM over its right part. */
+export const MON_W = GAME_W, MON_H = GAME_H;
 const FONT = '"Pixelify Sans", monospace';
 
 export function drawPx(c: CanvasRenderingContext2D, px: Px[], x: number, y: number, s: number, alpha = 1) {
@@ -49,20 +51,37 @@ export function drawMonitor(c: CanvasRenderingContext2D) {
     return;
   }
   if (n.monitor === 'excel') { drawExcel(c); return; }
-  if (n.location === 'town') { drawTown(c); return; }
+  if (n.location === 'town') { drawTownScreen(c); return; }
   drawDungeon(c);
 }
 
 function drawDungeon(c: CanvasRenderingContext2D) {
-  const n = N();
+  // the band above the scene (#49): the cave's ceiling going up into the dark; curio windows open over it
+  const g = c.createLinearGradient(0, 0, 0, BAND_H + 24);
+  g.addColorStop(0, '#040306'); g.addColorStop(1, '#0c0810');
+  c.fillStyle = g; c.fillRect(0, 0, BATTLE_W, BAND_H + 24);
+  for (let i = 0; i < 9; i++) {   // a few roots and stalactites hanging out of the dark
+    const x = 30 + ((i * 83) % (BATTLE_W - 40)), h = 18 + ((i * 37) % 46);
+    c.fillStyle = '#100b14'; c.beginPath(); c.moveTo(x - 10, BAND_H + 24 - h - 30); c.lineTo(x + 10, BAND_H + 24 - h - 30); c.lineTo(x + 1, BAND_H + 24); c.fill();
+  }
+  c.save(); c.translate(0, BAND_H); c.beginPath(); c.rect(0, 0, BATTLE_W, SCENE_H); c.clip();
   drawDungeonScene(c);
-  // HUD strip (outside the camera)
-  c.fillStyle = 'rgba(12,8,16,.85)'; c.fillRect(0, 0, MON_W, 28);
-  c.fillStyle = '#4a3a5c'; c.fillRect(0, 27, MON_W, 1);
-  const mapLabel = n.floorMap === 'plain' ? '' : ` · ${MAP_INFO[n.floorMap].name.toUpperCase()}`;
-  const boss = n.floor % T.CHECKPOINT_EVERY === 0 ? ' · BOSS FLOOR' : '';
-  text(c, `FLOOR ${n.floor} · BATTLE ${Math.min(n.battleIdx + 1, 3)}/3${mapLabel}${boss}`, 10, 18, 12, '#a999bd');
-  text(c, 'Shadow Crypt', MON_W - 10, 18, 12, '#a999bd', 'right');
+  c.restore();
+  sidePanelBack(c);
+}
+/** Under the DOM side panel: its colour, so a frozen frame (the alt-tab switch) still shows a panel there. */
+function sidePanelBack(c: CanvasRenderingContext2D) { c.fillStyle = '#2a1f14'; c.fillRect(BATTLE_W, 0, GAME_W - BATTLE_W, GAME_H); }
+function drawTownScreen(c: CanvasRenderingContext2D) {
+  // the town picture is drawn 1:1, centred; the sky and the plaza run on past its edges
+  const sky = c.createLinearGradient(0, 0, 0, BAND_H + 120); sky.addColorStop(0, '#07081c'); sky.addColorStop(1, '#3a2a5a');
+  c.fillStyle = sky; c.fillRect(0, 0, BATTLE_W, BAND_H + 120);
+  for (let i = 0; i < 40; i++) { c.fillStyle = `rgba(255,255,255,${0.25 + 0.35 * ((i * 7) % 5) / 5})`; c.fillRect((i * 151) % BATTLE_W, (i * 53) % BAND_H, 2, 2); }
+  c.fillStyle = '#4a4658'; c.fillRect(0, BAND_H + 66, BATTLE_W, 84);
+  c.fillStyle = '#6a6676'; c.fillRect(0, BAND_H + 150, BATTLE_W, SCENE_H - 150);
+  c.save(); c.translate(TOWN_X, BAND_H); c.beginPath(); c.rect(0, 0, TOWN_W, SCENE_H); c.clip();
+  drawTown(c);
+  c.restore();
+  sidePanelBack(c);
 }
 
 
@@ -77,7 +96,7 @@ export const XL_BTN_Y = 42, XL_BTN_H = 22, XL_BTN_W = 0;
 const XL_FILL = ['#ddebf7', '#ffeb9c', '#c6efce', '#e2efda', '#fce4d6', '#ededed', '#ffc7ce'];
 const XL_INK = ['#1f4e79', '#7f6000', '#006100', '#375623', '#843c0c', '#3a3a3a', '#9c0006'];
 const SANS = 'Inter, Calibri, Arial, sans-serif';
-const COLS = 'ABCDEFGHIJKLMNOPQ';
+const COLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').concat(['AA', 'AB', 'AC']);
 
 function xlText(c: CanvasRenderingContext2D, s: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'left', weight = 400) {
   c.font = `${weight} ${size}px ${SANS}`; c.fillStyle = color; c.textAlign = align; c.textBaseline = 'alphabetic'; c.fillText(s, x, y);
@@ -88,6 +107,7 @@ function drawExcel(c: CanvasRenderingContext2D) {
   const n = N();
   const ex = n.excel;
   const { x: bx, y: by, cw, ch } = XL;
+  const NC = Math.ceil((MON_W - 30) / cw), NR = Math.floor((MON_H - by - 20) / ch);   // the sheet fills the whole game screen (#49)
   // Title bar
   c.fillStyle = '#217346'; c.fillRect(0, 0, MON_W, 22);
   xlText(c, 'AutoSave', 8, 15, 10, '#d9ead3'); c.fillStyle = '#d9ead3'; c.fillRect(56, 8, 14, 7);
@@ -120,19 +140,19 @@ function drawExcel(c: CanvasRenderingContext2D) {
   xlText(c, 'fx', 66, 80, 11, '#777', 'left', 600);
   xlText(c, p ? `=SUM(C${Math.max(1, p.y + 1)}:J${Math.max(1, p.y + 1)})` : '=SUM(C1:J1)', 86, 80, 10, '#333');
   // Column letters + row numbers
-  c.fillStyle = '#f0f0f0'; c.fillRect(0, 86, MON_W, 18); c.fillRect(0, 104, 30, ch * 12);
-  for (let i = 0; i < 17; i++) {
+  c.fillStyle = '#f0f0f0'; c.fillRect(0, 86, MON_W, 18); c.fillRect(0, 104, 30, ch * NR);
+  for (let i = 0; i < NC; i++) {
     const x = 30 + i * cw;
     const inBoard = i >= 2 && i < 10;
     if (p && inBoard && p.cells.some(([cx]) => 2 + p.x + cx === i)) { c.fillStyle = '#d2e4d6'; c.fillRect(x, 86, cw, 18); }
     xlText(c, COLS[i], x + cw / 2, 99, 10, '#555', 'center');
   }
-  for (let j = 0; j < 12; j++) xlText(c, String(j + 1), 15, by + j * ch + 13, 10, '#555', 'center');
+  for (let j = 0; j < NR; j++) xlText(c, String(j + 1), 15, by + j * ch + 13, 10, '#555', 'center');
   // Grid
-  c.fillStyle = '#ffffff'; c.fillRect(30, by, MON_W - 30, ch * 12);
+  c.fillStyle = '#ffffff'; c.fillRect(30, by, MON_W - 30, ch * NR);
   c.strokeStyle = '#e1e1e1'; c.lineWidth = 1;
-  for (let i = 0; i <= 17; i++) { c.beginPath(); c.moveTo(30 + i * cw + 0.5, 86); c.lineTo(30 + i * cw + 0.5, by + 12 * ch); c.stroke(); }
-  for (let j = 0; j <= 12; j++) { c.beginPath(); c.moveTo(0, by + j * ch + 0.5); c.lineTo(MON_W, by + j * ch + 0.5); c.stroke(); }
+  for (let i = 0; i <= NC; i++) { c.beginPath(); c.moveTo(30 + i * cw + 0.5, 86); c.lineTo(30 + i * cw + 0.5, by + NR * ch); c.stroke(); }
+  for (let j = 0; j <= NR; j++) { c.beginPath(); c.moveTo(0, by + j * ch + 0.5); c.lineTo(MON_W, by + j * ch + 0.5); c.stroke(); }
   // Column A/B labels for realism
   ['Region', 'North', 'South', 'East', 'West', 'Central', 'Online', 'Retail', 'B2B', 'Export', 'Misc', 'TOTAL'].forEach((t, j) => xlText(c, t, 34, by + j * ch + 13, 10, j === 0 || j === 11 ? '#000' : '#333', 'left', j === 0 || j === 11 ? 700 : 400));
   // Board frame (print area style, dashed)
@@ -193,11 +213,12 @@ function drawExcel(c: CanvasRenderingContext2D) {
   c.fillStyle = '#c00000'; c.beginPath(); c.moveTo(nx + tw - 16, ny); c.lineTo(nx + tw - 8, ny); c.lineTo(nx + tw - 8, ny + 8); c.fill();
   ['Note:', 'Fill a whole row C:J', 'and it clears + pays', 'overtime. Excel open =', 'she sees you work.', 'A/D W S Space · Tab'].forEach((l, i) => xlText(c, l, nx + 5, ny + 13 + i * 15, 10, '#3f3100', 'left', i === 0 ? 700 : 400));
   // Sheet tabs + status bar
-  c.fillStyle = '#f0f0f0'; c.fillRect(0, by + 12 * ch, MON_W, MON_H - by - 12 * ch);
-  c.fillStyle = '#ffffff'; c.fillRect(40, by + 12 * ch, 54, 18);
-  xlText(c, 'Q4', 67, by + 12 * ch + 13, 10, '#217346', 'center', 600); c.fillStyle = '#217346'; c.fillRect(40, by + 12 * ch + 16, 54, 2);
-  xlText(c, 'Overtime', 120, by + 12 * ch + 13, 10, '#555', 'center'); xlText(c, '+', 160, by + 12 * ch + 13, 12, '#555', 'center');
-  xlText(c, `Ready     Overtime ${n.excel.pay} g`, MON_W - 8, by + 12 * ch + 13, 10, '#555', 'right');
+  const sb = by + NR * ch;
+  c.fillStyle = '#f0f0f0'; c.fillRect(0, sb, MON_W, MON_H - sb);
+  c.fillStyle = '#ffffff'; c.fillRect(40, sb, 54, 18);
+  xlText(c, 'Q4', 67, sb + 13, 10, '#217346', 'center', 600); c.fillStyle = '#217346'; c.fillRect(40, sb + 16, 54, 2);
+  xlText(c, 'Overtime', 120, sb + 13, 10, '#555', 'center'); xlText(c, '+', 160, sb + 13, 12, '#555', 'center');
+  xlText(c, `Ready     Overtime ${n.excel.pay} g`, MON_W - 8, sb + 13, 10, '#555', 'right');
 }
 
 // ---------------- Battle VFX ----------------
@@ -356,7 +377,7 @@ function drawTarget(c: CanvasRenderingContext2D, to: string) {
   const n = S.g.night!;
   c.clearRect(0, 0, MON_W, MON_H);
   if (to === 'excel') drawExcel(c);
-  else if (n.location === 'town') drawTown(c);
+  else if (n.location === 'town') drawTownScreen(c);
   else drawDungeon(c);
 }
 

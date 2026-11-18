@@ -1,7 +1,8 @@
 import { T } from '../config/tuning';
 import { S, N } from '../core/state';
 import { clamp } from '../core/rng';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('HER');   // feed tag (#49)
 
 // Goodwill (docs/design/synergy.md, #29): a 0-100 bank of good moments with her. No decay within a night,
 // half carries over to the next. Spent on the Raid pass (a pre-emptive action) and, automatically, on

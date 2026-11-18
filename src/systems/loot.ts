@@ -2,7 +2,8 @@ import { T } from '../config/tuning';
 import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind, type Slot } from '../core/state';
 import { pick, weighted, chance, rand } from '../core/rng';
 import { ADJECTIVES, NOUNS, SLOT_STATS, STAT_BASE, RARITY_MULT, POSITIVE_AFFIXES, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('LOOT');   // feed tag (#49)
 import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, SPECIAL_BY_ID, type SpecialAffix } from '../data/affixes';
 import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
@@ -162,11 +163,21 @@ export function moveFloorLoot(dx: number, frontX: number) {
   const got = n.floorLoot.filter(l => l.x <= frontX);
   if (!got.length) return;
   n.floorLoot = n.floorLoot.filter(l => l.x > frontX);
-  for (const l of got) { n.dropQueue.push(l.entry); sfx.click(); }
+  const waiting = n.lootFly.filter(f => f.t < f.delay).length;
+  got.forEach((l, i) => {
+    n.dropQueue.push(l.entry); sfx.click();
+    // its name flies up from where it lay (#49): a batch is staggered and spread sideways; legendaries stay longer
+    const leg = l.entry.kind === 'item' && l.entry.item.rarity === 'legendary';
+    const k = waiting + i;
+    n.lootFly.push({ x: l.x, text: entryName(l.entry), color: entryColor(l.entry), t: 0, max: leg ? T.LOOT_FLY_LEGENDARY_SEC : T.LOOT_FLY_SEC,
+      delay: k * T.LOOT_FLY_STAGGER_SEC, dx: k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.min(3, Math.ceil(k / 2)) * 14 });
+  });
 }
 
 export function updateDrops(dt: number) {
   const n = N();
+  for (const f of n.lootFly) f.t += dt;
+  n.lootFly = n.lootFly.filter(f => f.t < f.delay + f.max);
   for (const f of n.fresh) f.t -= dt;
   n.fresh = n.fresh.filter(f => f.t > 0);
   if (n.dropPopup) {
@@ -183,7 +194,7 @@ export function updateDrops(dt: number) {
     return;
   }
   announce(e);
-  if (bagFree() > 0) { S.g.bag.push(e); n.fresh.push({ id: e.id, t: 1.1 }); if (e.kind === 'item') coach('loot'); }
+  if (bagFree() > 0) { S.g.bag.push(e); n.fresh.push({ id: e.id, t: T.BAG_NEW_SEC }); if (e.kind === 'item') coach('loot'); }
   else { n.dropPopup = { entry: e, t: T.DROP_WAIT_SEC }; sfx.bagFull(); toast('Bag full! The drop waits on the floor.', '#ff8a80'); }
 }
 

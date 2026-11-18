@@ -118,12 +118,13 @@ During a boss wind-up, the skills that answer it pulse red (Taunt, Ward, and Bas
 so the game teaches the answer in the moment. Skill numbers (`power`, `flat`, `dur`) live in
 `src/data/heroes.ts` and are read by both the battle code and the tooltip, so they cannot disagree.
 
-**Skill bar** (dungeon screen only, Infinity Engine style): a stone-and-gold bar along the bottom with a
-framed portrait per hero (vertical HP gauge, name; click to select in the paper doll), then that hero's
-skills with glyph, hotkey, cooldown sweep and level lock. The auto attack has no button.
+**Skill bar** (dungeon screen only, Infinity Engine style): a stone-and-gold bar along the bottom of the battle
+area with a framed portrait per hero (vertical HP gauge, the one HP readout outside the battle; no name, the party
+cards carry it; click to select in the side panel), then that hero's skills with glyph, hotkey (10 px), cooldown
+sweep and level lock. The auto attack has no button.
 
-**Choosing the next floor: the dungeon map** (#48). When a floor ends, the monitor shows your whole descent
-on an old parchment map, drawn in faded brown ink, read top to bottom. Each row is one level (roman numeral
+**Choosing the next floor: the dungeon map** (#48). When a floor ends, the battle area shows your whole descent
+on an old parchment map (the side panel stays), drawn in faded brown ink, read top to bottom. Each row is one level (roman numeral
 in the margin): five floors left to right, then right to left, the boss room (red ink, double wall) at the
 end, and a staircase down to the next level; every room sits a little lower than the last. Rooms are joined
 by stairs. Each room shows what that floor was (crossed swords, vault chest, shrine cross, goblin, elite
@@ -151,7 +152,8 @@ plus any floor loot left on the corpse at that floor. Reaching that floor return
 
 **Loot goblin.** `GOBLIN_CHANCE` after a battle; runs for 6 s; click it for 3 drops, one rare or better.
 
-**The cave diorama** (`src/ui/dungeon.ts`). 2.5D side view lit like a cave: dark except the knight's
+**The cave diorama** (`src/ui/dungeon.ts`). Drawn 1:1, as wide as the battle area (668 px) and 352 px tall at its
+bottom; above it a dark band (the cave's ceiling going up) where the curio windows open (#49). 2.5D side view lit like a cave: dark except the knight's
 flickering torch, which travels with the party, a dim glow around enemies, and light from loot beams
 and spells. Layers: far rock (slow parallax), stone arches, stalactites and roots, a perspective floor,
 units with ground shadows, fog swallowing the far end, and dark foreground silhouettes (pillars,
@@ -173,8 +175,8 @@ orange like a Windows app wanting attention when party HP is under `AUTOPILOT_FL
 Measured by `test/autopilot.ts` (40 s on Excel): bosses on floor 5 and 10 wipe 16/20 and 20/20; normal
 floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
 
-**City portal.** A button at the top left of the dungeon screen (between battles): back to the city,
-15 min. In the city, the Dungeon Portal returns to the checkpoint, 15 min.
+**City portal.** A button at the top left of the battle area, under the corner overlay (between battles): back to
+the city, 15 min. In the city, the Dungeon Portal returns to the checkpoint, 15 min.
 
 **Floor bounty** (0.40): clearing a floor pays `FLOOR_GOLD_BASE` + `FLOOR_GOLD_PER` × floor gold (floor 1: 8,
 floor 10: 35; about 180 a normal night), shown in the feed. Steady income besides selling drops
@@ -256,7 +258,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   with the same average Noise (26). The design wants few visits and real dread, not more of them.
 - **No permadeath.** Progress is never wiped (pillar 4); a wipe costs time, gold and half the bag.
 - Rejected: a 12-slot bag inside the battle UI and drag-to-equip mid-fight as the main loop. Equipping
-  happens in the right panel; the fight slows while you look.
+  happens in the side panel; the fight slows while you look.
 
 ## Planned
 

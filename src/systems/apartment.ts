@@ -3,7 +3,8 @@ import { S, N, type ActivityId, type Room } from '../core/state';
 import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE } from '../data/apartment';
 import { rand, weighted, chance, clamp } from '../core/rng';
 import { moodZone, addMood } from './meters';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('HER');   // feed tag (#49)
 import { sfx, setHeadset, ambienceFor } from '../ui/audio';
 import { spawnInterrupt } from './interrupts';
 import { hasLife } from './affixes';
@@ -107,7 +108,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.asleep) return updateSleep(dt);
 
   // High Noise makes her wrap up whatever she is doing (except the shower).
-  a.t -= dt * (heardNoise() > 70 ? 2 : 1) * towelPace();   // the towel: she gets up less often
+  a.t -= dt * (heardNoise() > T.NOISE_HURRY ? 2 : 1) * towelPace();   // the towel: she gets up less often
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
     a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end); if (!n.headset) tip('endcue');
   }
@@ -136,7 +137,7 @@ function updateSleep(dt: number): 'wake' | null {
   if (a.wake >= T.WAKE_TEXT && !a.textSent) {
     if (spawnInterrupt('text')) {
       a.textSent = true;
-      toast('Text from her: "are you coming to bed?"', '#b98cff');
+      toast('[Phone] Babe: "are you coming to bed?"', '#b98cff');
     }
   }
   if (a.wake >= T.WAKE_UP) {
@@ -154,7 +155,7 @@ export function replyText(ok: boolean) {
   const a = n.apt;
   if (ok) {
     a.wake = clamp(a.wake + T.TEXT_REPLY_WAKE, 0, T.WAKE_UP); addMood(T.TEXT_REPLY_MOOD);
-    toast('You: "Five more minutes, love." She dozes off.', '#6fcf7f'); sfx.good();
+    toast('[Phone] You: "Five more minutes, love." She dozes off.', '#6fcf7f'); sfx.good();
     addGoodwill(T.GOODWILL_TEXT, 'answered her text');
   } else {
     a.wake = clamp(a.wake + T.TEXT_IGNORE_WAKE, 0, T.WAKE_UP); addMood(T.TEXT_IGNORE_MOOD);
@@ -169,8 +170,8 @@ export function sendHerSoon() { const a = N().apt; if (a.asleep) return; a.force
 export function toggleHeadset() {
   const n = N();
   n.headset = !n.headset;
-  if (n.headset) tip('headset');
-  if (!n.headset && n.zone > 0) toast('Headset off: Zone lost.', '#ff9a4d');
+  if (n.headset) { tip('headset'); if (!S.g.tipsSeen.includes('coach:headset')) S.g.tipsSeen.push('coach:headset'); }   // found it alone: no coach mark (#49)
+  if (!n.headset && n.zone > 0) toast('[You] Headset off: Zone lost.', '#ff9a4d');
   setHeadset(n.headset);
   sfx.click();
 }

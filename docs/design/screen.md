@@ -2,28 +2,61 @@
 
 ## Now
 
-**One screen, three columns**, base 1280 × 720, scaled to the window.
+**One screen, monitor first** (#49), base 1280 × 720, scaled to the window. Sizes live in `src/ui/layout.ts`,
+all even so they land on a 640 × 360 pixel grid at 2x.
 
-| Column | Shows |
-|---|---|
-| Left (her) | The webcam view (280 × 532): a dark room, him centred at the bottom as a silhouette with shining glasses, your door behind him (hold it to peek), the plan taped on the wall. Under it: the last-heard line, her note, the "before" row, her stats |
-| Centre (desk) | The monitor (game, city, Excel, minigames), and below it the desk: keyboard and mouse centred on a mat, phone, headset, Monster fridge, cans, tonight's sticky note (the three stars, live; [night.md](night.md)); the bin behind the monitor. The dog and her desk visit overlay it. |
-| Right (RPG) | Top to bottom: YOU (Noise, Tired), Feed, run progress (floor, checkpoint, Flow, Zone), Party (paper doll), Backpack |
+| Zone | Where | Shows |
+|---|---|---|
+| Left: webcam and her | 0 to 296, full height | The webcam view (296 × 532): his dark room, him at the bottom, your door behind him (hold it to peek), the plan on the wall. His head is the headset button. Under it: the last-heard line, her note, the pre-emptive buttons, her stats (Patience and Caught, Goodwill, Noise, Waking up after midnight) |
+| Monitor | the desk's top: a 968 × 518 bezel with a webcam on its top edge | The game screen (948 × 464) and, under it, the OS taskbar (30 px) |
+| · Battle area | the game screen's left 668 px | The dungeon or the city, drawn 1:1 at the bottom (352 px tall); the band above (112 px) holds the dungeon's dark ceiling and the curio windows. Overlays: the corner (where you are, Flow), the town portal, the buffs, the skill bar, item windows, minigame windows |
+| · Side panel | the game screen's right 280 px, full height | Dungeon: party cards, the selected hero's gear and stats, the bag with its Treasury row, gold, scraps and record. City: the build menu, the services, the bag |
+| Desk | under the monitor, 192 px | The phone (drawn 1.38x, running off the bottom edge), the keyboard, mat and mouse (1.5x, top rows only), tonight's sticky note stuck on the bezel's bottom edge. The YOU card and the feed card sit bottom right. The dog rises over the desk edge; her desk visit covers the battle area |
 
-**Monitor chrome.** A desktop taskbar under the screen: app buttons for Loot Night and Excel, the zł
-wallet, the night clock with the bedtime note (red after 01:00), and the power button "Sleep" (from 23:00).
-Buffs bar top right; city portal top left; skill bar along the bottom in the dungeon.
+**Everything RPG is on the monitor.** Excel, the monitor going off and the alt-tab switch hide all of it, the
+side panel included. Real life stays: her panel, the desk, the YOU card and the feed.
 
-**The Feed** is an MMO chat window (General / Combat / Loot / Her tabs, timestamps, the last lines,
-a fake "Press Enter to chat"). Game messages go here, never over the monitor.
+**The corner, not a top bar.** The game has no top bar: "Shadow Crypt · floor 4 · battle 1/3" (plus the floor's
+map and "boss floor") and "Flow x1.4" with a small bar sit in the battle's top-left corner, 10 px at about 70%,
+on no plate. Each time Flow passes a step of `FLOW_GLOW_STEP` (0.5) the Flow text brightens, grows and glows gold
+for `FLOW_GLOW_SEC`. The town portal button sits under it. The city's corner reads "Ravenhold · town".
+
+**The side panel** (dungeon). Party: three cards (name, "Lv 5 ◆44", a thin XP line, a red "!" when a hero falls
+behind), no HP; click one to select it, drop an item on one to equip it. The selected hero: a header
+("KNIGHTENSTEIN · Knight ◆44"), a 3 × 2 gear grid (helm, armor, boots / weapon, ring, trinket; power in the
+corner) and the six stats with the gear's share. The bag: "BAG 7/18" and the auto-salvage toggle in its header,
+6 × 3 slots, then the Treasury row (6 slots; the building opens 2 per level, the rest show a lock). The footer:
+gold and scraps, and the deepest floor ever. No instruction text in any header. HP shows only on the battle
+sprites and the skill-bar portraits.
+
+**Item windows** (details of a clicked item, the bag-full popup) open at the top right of the battle area, next to
+the bag, so the bag stays clickable: a full bag asks you to click the item to drop.
+
+**Loot pickup.** When the front hero walks over a drop, its name flies up from where it lay, in its rarity colour on
+a dark outline (`LOOT_FLY_SEC`; legendaries `LOOT_FLY_LEGENDARY_SEC`); a batch is spaced `LOOT_FLY_STAGGER_SEC`
+apart and fanned sideways. Its bag slot shines with a NEW badge for `BAG_NEW_SEC`, and a LOOT line goes to the feed.
+
+**The YOU card** (real life, bottom right of the desk): Tired (violet, a mark where yawning starts,
+`TIRED_YAWN`) and Zone (cyan, the headset's colour), and the **Monster button** (key M): the can count and
+"Drink · M". It glows amber only from `TIRED_YAWN` while a can is left and no boost runs (time to top up). During
+a visit's footsteps it reads "Hide the cans" (no glow); after hiding, "Hidden" until she leaves; greyed with no cans
+or while your hands are busy. Boost and crash stay in the buffs.
+
+**The feed card**, under it: the last six lines, newest on top, older ones fading, two lines at most each. Each line
+has its time and a tag for whose it is: YOU, LOOT (in the rarity colour), HER, PHONE, GAME, EXCEL, DOG, NIGHT,
+PARTY, GUILD, or a friend's name (MAGOO, HEALERO). A first-time tip is pinned on top while it lasts. No header, no tabs.
+
+**Monitor chrome.** The taskbar under the screen: app buttons for Loot Night and Excel ("Tab = switch"), the zł
+wallet, the night clock (red with "witching hour" after 01:00) and the power button "Sleep" (from 23:00). The
+Loot Night button flashes when the party is in trouble while you are away. Buffs: top right of the battle area.
 
 **Three UI flavours.** Every element belongs to one world, so the player knows at a glance what it is for.
 
 | World | Where | Look |
 |---|---|---|
 | Her | Webcam view, her note, her stats | Warm plum night, Patrick Hand handwriting, cream note cards, the blueprint as a taped sheet. Warnings turn amber, alarms red and shaking. |
-| Real life | Desk, phone, Excel, taskbar, YOU box | Inter, flat panels, iOS and Windows conventions |
-| RPG | Monitor game, right panel | Pixelify Sans, gold-trimmed headers, stone, parchment and leather |
+| Real life | Desk, phone, Excel, taskbar, YOU card, feed | Inter, flat panels, iOS and Windows conventions |
+| RPG | The game screen: battle, overlays, side panel | Pixelify Sans, gold-trimmed headers, stone, parchment and leather |
 
 **Art direction.** Placeholder art drawn in code, aiming at pixel anime (references: ZATO). Characters
 (her, the guy, the dog) go through one pipeline in `src/ui/pixel.ts`: vector shapes rendered small, alpha
@@ -71,7 +104,8 @@ listening, so her sounds are the most important ones in the game.
 **Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`, a two-line pitch and "turn the sound
 on". The first night opens with the how-to-hide card ([night.md](night.md), Onboarding).
 
-**The webcam view** (`src/ui/door.ts`, him in `src/ui/him.ts`; #36, #40). The left panel is what the webcam on
+**The webcam view** (`src/ui/door.ts`, him in `src/ui/him.ts`; #36, #40). Laid out for 280 px and centred in the
+296 px column; the walls and floor run on to the edges. The left panel is what the webcam on
 top of his monitor sees (a small webcam sits on the monitor bezel so the framing reads). His room is dark:
 black and grey walls, floor and door. The only warm light is hers: the gap under the door, the hallway in the
 crack, her in the doorway. Him: centred at the bottom, a bust, so his hair stays just below the light gap. Your
@@ -102,20 +136,24 @@ front, below her: both read at once.
   | Microsleep (`TIRED_MICROSLEEP`+) | Nods off: glasses slide down his nose, eyes shut above them, head drops, "z" (seen while the lids close) | Emote |
   | Full Zone | Hands steepled in front of his face, a glint, a purple glow | Stoic |
   | Monster boost | Jittery | Stoic |
-  | Headset worn | On his head (it leaves the desk), a purple strip on each cup | Gear |
+  | Headset worn | On his head, a cyan strip on each cup (the Zone's colour) | Gear |
 
   Art: one head pose; the emotes and the glasses as layers on the silhouette; gear as separate layers, so a
   real-life upgrade (#4) is one more layer. `python3 test/him.py` shoots every row.
+- **His head is the headset button** (#49): click it (or press H). A small headset icon beside his head is always
+  there, grey when off and cyan when on. Hover: a cyan ring and "Click: headset on (H)" under his head (never over
+  the door). A coach mark teaches it after your first passed visit, unless you found the headset first.
 - **The plan on the wall** (#35, #41): only the corner of a blue sheet taped to the wall shows, coming in from the
   left edge of the frame; that corner is the click area. Click it (the cursor
   turns to a magnifier) and it opens large over the panel: the same plan with the dashed line of sight and no
   marker for her, plus a line on which rooms are next to yours. The game keeps running. Close with ✕, Esc or a
   click outside.
-- **Under the view:** fixed slots that never move (#46): the last-heard line (20 px; blank while she stands in
-  the doorway), her note (64 px, two lines), the "before" row (33 px; hidden during a visit, when her note may
-  grow into its space for a chat question and its replies) and her stats (Patience and Caught, Goodwill, and
-  Waking up after midnight). An empty slot keeps its space, so Patience and Goodwill are always in the same
-  place. `python3 test/herpanel.py` checks ten states.
+- **Under the view:** fixed slots that never move (#46): the last-heard line (18 px; blank while she stands in
+  the doorway), her note (60 px, two lines), the pre-emptive buttons (30 px; hidden during a visit, when her note
+  may grow into its space for a chat question and its replies) and her stats, 17 px rows: Patience and Caught,
+  Goodwill, Noise (amber; once she is asleep a mark at `WAKE_NOISE_FLOOR`, the Noise that wakes her; no mark
+  before, since what reaches her depends on where she is), and Waking up after midnight. An empty slot keeps its
+  space, so Patience and Goodwill are always in the same place. `python3 test/herpanel.py` checks ten states.
 
 **Tooltips** carry only what you need to decide, because the screen is dense and a tooltip covers part of it:
 what it is, what it does in one line, and a cost, an unlock level or the one comparison that matters (an
@@ -123,6 +161,23 @@ item: ▲ / ▼ power for the selected hero). Never formulas, prices, control hi
 the click panels and the design docs hold the detail. `python3 test/tooltips.py` hovers each kind.
 
 ## Decisions
+
+- **Monitor first** (0.45, #49): the right RPG panel is gone and every RPG element lives on a bigger monitor, with a
+  side panel inside the game screen (as in Loop Hero), so the game you hide is one thing on one screen, and Excel
+  hides all of it. The left column grew to 296 px. Rejected: keeping the right panel (two places to look for the
+  RPG, and the game on the monitor stayed small); a PC tower with a sensor screen and a second monitor (both
+  smaller screens, more set dressing to read); one card for YOU and the feed (less room for the feed).
+- **No top bar in the game** (0.45): floor, battle and Flow are glanced at, not read, so they became a quiet corner
+  overlay and the side panel runs full height. Flow's step-up glow tells you it grew without a number to watch.
+- **No cans, fridge or headset on the desk** (0.45): the Monster button (M) and his head (H) do their jobs, and the
+  desk got room for a bigger phone and keyboard. The snack run's rule stays: the button turns into "Hide the cans"
+  during the footsteps. Rejected: keeping the cans for the snack-run tell (the button carries it).
+- **HP only on the sprites and the skill-bar portraits** (0.45): one value in one place; the party cards show what
+  you decide gear with (level, power, "needs gear").
+- **Item windows open next to the bag, not over it** (0.45): the bag-full popup asks you to click a bag item.
+  Rejected: over the side panel (it would hide the bag it asks about).
+- **Her desk visit covers the battle area only** (0.45): the side panel stays usable, as the right panel was.
+- **Sizes on an even grid** (0.45): every layout number is even, so a 640 × 360 pixel-art version can scale by 2.
 
 - **Fixed slots under the webcam** (0.44, #46): the stats jumped up whenever the last-heard line or the
   "before" row hid (a catch, a visit), so your eye lost Patience exactly when it mattered. Every row now has a
@@ -159,7 +214,9 @@ the click panels and the design docs hold the detail. `python3 test/tooltips.py`
   shape, but small); showing it on the plan overlay (the plan must stay a plain map).
 
 - **The door gets the most space in the left column**: it is where the eye candy and the threat live.
-- **Feed in the right panel** replaced an older CITY / SKILLS box; messages over the monitor hid the game.
+- **The feed is a card on the desk** (0.45, #49; was an MMO chat window with tabs in the right panel): game messages
+  never go over the monitor, which would hide the game. Tags replaced the tabs: one column to read, whose line it is at
+  a glance. Rejected: tabs (nobody switched them); a header (space for one more line).
 - **Three flavours** (playtest 4): mixing RPG and real-life styles made it unclear what belonged where.
 - **Code-drawn placeholders** keep iteration fast; final sprites replace them later without logic changes.
 - **Audio sources (0.33):** Kenney CC0 recordings where one exists, seeded synthesis baked to files for the rest.

@@ -44,10 +44,10 @@ and how long ago: "♫ KETTLE · kitchen · 12 s ago", "♫ STEPS · hallway · 
 "Headset on. You hear nothing. (H)", and it stops updating (items of Vigilance still let hallway steps
 through). It never shows where she is now, only the last sound.
 
-**Headset and Zone** (H, or click it on the desk). Headset on fills Zone over `ZONE_FILL_SEC`; full Zone
-gives Flow ×`ZONE_FLOW_MULT` and +`ZONE_LUCK` loot luck, a purple aura around the monitor and a ZONE
+**Headset and Zone** (H, or click his head in the webcam view; #49). Headset on fills Zone over `ZONE_FILL_SEC`; full Zone
+gives Flow ×`ZONE_FLOW_MULT` and +`ZONE_LUCK` loot luck, a cyan aura around the monitor and a ZONE
 badge. But she is muffled to `HEADSET_APT_VOLUME`, the last-heard line stops updating, and the far-steps
-warning is gone; in the webcam view his eyes no longer flick toward her sounds. Headset off empties Zone instantly. Starts off each night; disappears from the desk while worn.
+warning is gone; in the webcam view his eyes no longer flick toward her sounds. Headset off empties Zone instantly. Starts off each night; he wears it (cyan cups), and the icon beside his head turns cyan.
 
 **Peeking through your door** (`src/systems/peek.ts`, `drawHallway` in `src/ui/door.ts`). Hold the door: it
 opens to a narrow crack (`PEEK_CRACK_MIN` of its width) in `PEEK_OPEN_SEC`, then creeps wider to
@@ -107,7 +107,7 @@ The activity's loop stops when its cue starts. Sounds and files: [screen.md](scr
 | Type | Hallway cue | She checks | Your answer | Outcome |
 |---|---|---|---|---|
 | Peek | Quick light steps | The screen | Excel on screen | Pass: Mood `PEEK_PASS_MOOD`. Fail: caught |
-| Snack run | Plates clinking | The desk, never the screen | Click the Monster cans during the footsteps to shove them under the desk; you can keep playing. Then "Take the plate" within `SNACK_TAKE_SEC` | Plate: party +20% HP, Mood `SNACK_PASS_MOOD`. Plate ignored: Mood +3. Cans in sight (or mid-Monster): she confiscates one, Mood +`SNACK_FAIL_MOOD` (not a catch) |
+| Snack run | Plates clinking | The desk, never the screen | During the footsteps the Monster button reads "Hide the cans": click it (or M) to shove them under the desk; you can keep playing. Then "Take the plate" within `SNACK_TAKE_SEC` | Plate: party +20% HP, Mood `SNACK_PASS_MOOD`. Plate ignored: Mood +3. Cans in sight (or mid-Monster): she confiscates one, Mood +`SNACK_FAIL_MOOD` (not a catch) |
 | Chat | Humming | The screen, then your ears | Excel on screen and headset off, then answer 3 questions (`CHAT_ASK_SEC` each, good / meh / rude, shuffled; silence = meh) while staying on Excel | 2 good: Mood `CHAT_PASS_MOOD`. 2 rude: Mood +`CHAT_BAD_MOOD`. Headset on: "are you even listening?" Mood +`CHAT_HEADSET_MOOD`. Back to the game mid-chat: caught |
 | Cuddle (green only) | Slow, soft slipper steps | Nothing | "Come here" or "One sec, babe" (`CUDDLE_ASK_SEC`; no answer = one sec) | Cuddle minigame below. One sec: Mood +`CUDDLE_REFUSE_MOOD` |
 | Good night (green at bedtime, once) | Soft, sleepy steps | Nothing | Nothing to do | She stops at the door in your gaming hoodie, sleeves over her hands: "Night, babe." Mood `WALKBY_MOOD`, then she goes to bed ([eye-candy.md](eye-candy.md)) |
@@ -135,7 +135,7 @@ raises it. At `WAKE_UP` she gets up and comes to your door (never a fake-out), t
 
 **She sits on your desk.** After a passed visit, while she is happy (`LAP_CHANCE` 40%, at most every
 `LAP_MIN_GAP_SEC`), she sits on the desk in front of the monitor, seen first-person from the thighs up,
-covering the screen (and the skill bar; hotkeys still work, see #9). No visits or phone meanwhile. She asks
+covering the battle area (and the skill bar; hotkeys still work, see #9); the side panel stays usable (#49). No visits or phone meanwhile. She asks
 `LAP_QUESTIONS` (3) questions, `LAP_ASK_SEC` each, with a sweet, a meh and a rude answer, shuffled;
 silence is meh. Two sweet: she kisses your cheek and leaves happy (Mood `LAP_HAPPY_MOOD`, no visits for
 `LAP_CALM_SEC`). Two rude: she sulks off ("Fine. Enjoy your elf."). Poses change with each sweet answer

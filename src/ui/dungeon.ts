@@ -15,8 +15,10 @@ import { HERO_X, ENEMY_X, UNIT_Y } from '../systems/battle';
 import { maxHp } from '../systems/stats';
 import { entryColor } from '../systems/loot';
 import { drawPx, text, bar, drawVfx, GOBLIN, goblinPos } from './monitor';
+import { BATTLE_W, SCENE_H } from './layout';
 
-const W = 616, H = 352, FEET = 296, FLOOR_TOP = 262, VP = 308;
+// The scene is as wide as the battle area (#49) and drawn 1:1 under the band (monitor.ts).
+const W = BATTLE_W, H = SCENE_H, FEET = 296, FLOOR_TOP = 262, VP = 308;
 const rnd = (i: number, k = 0) => { const v = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return v - Math.floor(v); };
 
 // ---------- camera ----------
@@ -345,6 +347,17 @@ export function drawDungeonScene(c: CanvasRenderingContext2D) {
   // damage numbers stay readable above the dark
   c.save(); camApply(c, 1);
   for (const f of n.fx) { c.globalAlpha = Math.max(0, Math.min(1, f.t)); text(c, f.text, f.x, f.y, f.text.endsWith('!') ? 20 : 16, f.color, 'center', 600); }
+  // picked-up loot (#49): the name rises from where it lay, in its rarity colour, on a dark outline
+  for (const f of n.lootFly) {
+    const p = (f.t - f.delay) / f.max;
+    if (p < 0) continue;
+    c.globalAlpha = Math.min(1, p * 6, (1 - p) * 4);
+    const y = FEET - 24 - Math.sqrt(p) * 70;
+    c.font = `600 15px "Pixelify Sans", monospace`; c.textAlign = 'center';
+    c.lineWidth = 4; c.strokeStyle = 'rgba(10,6,14,.95)'; c.lineJoin = 'round';
+    c.strokeText(f.text, f.x + f.dx, y);
+    c.fillStyle = f.color; c.fillText(f.text, f.x + f.dx, y);
+  }
   c.globalAlpha = 1;
   c.restore();
   c.save(); camApply(c, 1.35); foreground(c, scroll, toScreen(torch.x, torch.y)); c.restore();

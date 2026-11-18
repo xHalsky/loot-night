@@ -12,7 +12,7 @@ const C = {
   chair: '#15151a', chairS: '#101014', rim: '#2e2e38', frame: '#030304',
   lens: '#fbfbff', dim: '#8a8a98', off: '#34343e', fog: '#ffd9e4',
   mouth: '#e8607a', mouthD: '#5a1424', teeth: '#f4f1ea', sweat: '#a8dcff', blush: '#ff7a9a', puff: '#d8d8e0',
-  set: '#141418', setS: '#0e0e11', setL: '#9a6bff',
+  set: '#141418', setS: '#0e0e11', setL: '#4fd1e8',   // the cups light up in the Zone's cyan (#49)
 };
 const SC = 0.9;                                       // the whole figure, so he fits under the door as a bust
 const W = 200, H = 200, OX = 100, OY = 20;            // sprite size; head top-centre at (OX, OY)

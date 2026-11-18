@@ -35,7 +35,7 @@ async def main():
             tops[name] = t
             print(f'{name:10}', t)
             path = f'test/herpanel_{name}.png'
-            await pg.screenshot(path=path, clip={'x': 0, 'y': 440, 'width': 280, 'height': 280}); shots.append((name, path))
+            await pg.screenshot(path=path, clip={'x': 0, 'y': 440, 'width': 296, 'height': 280}); shots.append((name, path))
         print('stats top constant:', len({t['stats'] for t in tops.values()}) == 1, '· max bottom', max(t['bottom'] for t in tops.values()))
         print('ERRORS', errs); await b.close()
     ims = [Image.open(p) for _, p in shots]

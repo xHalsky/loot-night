@@ -3,6 +3,37 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.45.0 (2026-11-18)
+
+Monitor first (#49, round 2): the right RPG panel is gone and the whole RPG lives on a bigger monitor, with a side
+panel inside the game screen. The layout is the "A1 final" board from round 1. Rules and numbers are unchanged.
+
+- **Layout.** The webcam view and her panel are 296 px wide (was 280). The game screen is 948 x 464 (was 616 x 352):
+  a 668 px battle area and a 280 px side panel. The desk is 192 px tall. All sizes are even, so a 640 x 360
+  pixel-art version can scale by 2 (`src/ui/layout.ts`).
+- **The battle area.** The dungeon and the city are drawn 1:1 at its bottom; a dark band above holds the dungeon's
+  ceiling and the curio windows. No top bar: where you are and Flow are a quiet overlay in the top-left corner,
+  and Flow glows for a second each time it passes a step of 0.5. The town portal sits under it. Buffs drop Flow,
+  Zone and Tired (shown elsewhere). The skill-bar portraits lose their names; hotkeys are 10 px.
+- **The side panel.** Party cards (level, power, XP line, "!" when behind; no HP), the selected hero's 3 x 2 gear
+  grid and stats, the bag with the auto-salvage toggle in its header, the Treasury row (locks until built), gold,
+  scraps and record. In the city: the build menu and the services (moved off the plaza), and the bag. Item details
+  and the bag-full popup open next to the bag.
+- **Loot pickup.** The item's name flies up from where it lay in its rarity colour (staggered when several), and its
+  bag slot shines with NEW.
+- **Real life.** A YOU card (Tired, Zone) with the Monster button (M): it glows only when you are tired, and turns
+  into "Hide the cans" during a visit's footsteps. The feed is a card under it: newest on top, a tag per line (YOU,
+  LOOT, HER, PHONE, GAME...), no tabs. Noise moved to her panel, under Goodwill. No cans, fridge or headset on the
+  desk; the phone and keyboard are bigger and run off the bottom edge; the Tonight note is stuck on the monitor's
+  bottom edge. The taskbar drops "bed 01:00" (the witching hour still shows).
+- **Headset.** Click his head (H still works). A small headset icon beside his head, grey or cyan; hover shows a ring
+  and a tip. A coach mark teaches it after the first passed visit, unless you found it first. His cups are cyan.
+- **Her panel** fits four stat rows plus Noise after midnight (tighter slots). Her desk visit covers the battle
+  area only; the side panel stays usable.
+- Tests: new `test/layout.py` (every moment on one sheet); clips in the old screenshot scripts moved.
+  `NOISE_HURRY` (70) moved into `tuning.ts`.
+- Sims unchanged (UI only): good bot floor 9, 0 catches, 3 stars; idle bot caught and unplugged.
+
 ## 0.44.0 (2026-11-18)
 
 Playtest polish: phone screens, the her panel, a quiet face-down phone and a real dungeon map.

@@ -2,7 +2,8 @@ import { T } from '../config/tuning';
 import { S, N, type VisitKind } from '../core/state';
 import { chance, pick, weighted } from '../core/rng';
 import { addMood, moodZone } from './meters';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('HER');   // feed tag (#49)
 import { sfx, ambience } from '../ui/audio';
 import { PEEK_PASS, PEEK_CAUGHT, FAKEOUT_LINES, CHAT_QS } from '../data/content';
 import { maybeLap } from './lap';
@@ -38,7 +39,9 @@ function endVisit() {
   const n = N();
   const v = n.visit;
   if (v.stage === 'in') sfx.doorClose();      // she pulls the door shut behind her
+  const passed = v.stage === 'in' && v.result !== 'caught';
   v.stage = 'idle'; v.checked = false; v.chat = null;
+  if (passed && !S.g.tipsSeen.includes('headset')) coach('headset');   // you can listen now: time to learn what the headset costs (#49)
   n.cansHidden = false;                       // you pull the cans back out
   afterVisit();
 }

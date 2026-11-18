@@ -2,7 +2,8 @@ import { T } from '../config/tuning';
 import { S, N } from '../core/state';
 import { clamp } from '../core/rng';
 import { updateTired } from './tired';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('NIGHT');   // feed tag (#49)
 
 /** Night clock speed in game minutes per real second (docs/design/night.md). */
 export function clockRate(): number {

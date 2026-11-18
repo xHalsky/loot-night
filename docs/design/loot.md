@@ -53,26 +53,28 @@ while active.
 bounce once. Each shows a bundle with a gleam, an additive beam in its rarity colour (taller and wider
 for better rarities) with a soft halo, a glow pool, rising sparkles and a pool of light in the darkness.
 The front hero collects by walking over them; the party walks faster (75 px/s instead of 40) while
-loot is on the floor. A collected item's bag slot flashes. Floor loot is swept into the bag when you
+loot is on the floor. A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
+shines with NEW (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
 leave by portal or the floor ends, and goes on the corpse in a wipe.
 
-**Bag.** `BAG_SIZE` (18) slots, 3 rows, plus Treasury slots. Icons by type, colour by rarity, sell
-value in the corner, "?" for unidentified. When full, a popup offers swap or skip; the drop waits
-`DROP_WAIT_SEC` of threat time, then is lost.
+**Bag** (the side panel). `BAG_SIZE` (18) slots, 3 rows, plus the Treasury row (`TREASURY_ROW`, 6 slots shown,
+locked until the Treasury opens them, 2 per level). Icons by type, colour by rarity, power in the corner, "?" for
+unidentified. When full, a popup next to the bag offers swap or skip; the drop waits `DROP_WAIT_SEC` of threat
+time, then is lost.
 
 **Power** (Destiny's Light level). Every item has a power: `POWER_PER_ILVL` (10) × item level × the rarity
 multiplier, the same scale that sets its stats (unidentified items count as 0 until identified). A hero's
 Power is the average of their 6 slots, an empty slot counting as 0, so filling an empty slot matters as much
-as upgrading. Shown as ◆ on the portraits (next to the level), in the equip window title, on every slot, on
+as upgrading. Shown as ◆ on the party cards (next to the level), in the selected hero's header, on every slot, on
 bag items, and in item tooltips as one line on the Power change for the selected hero ("▲ +4 power for
 Knightenstein"). Sell prices show in the Merchant's window, not in tooltips. A hero under `POWER_BEHIND` (85%) of the party's best gets a pulsing red "!" on
-their portrait: they deserve the next good item.
+their party card: they deserve the next good item.
 
-**Paper doll.** Hero portraits with HP/XP; click one to show it on the doll (helm on the head, armor on the
-body, and so on, with faint icons for empty slots) and a stats line. Drag from the bag onto a slot or a
-portrait to equip; drag off to unequip; right-click to equip on the selected hero. Hover tooltips show the
+**Gear** (the side panel, #49). Three party cards (level, power, a thin XP line; no HP); click one to show its gear:
+a 3 × 2 grid (helm, armor, boots / weapon, ring, trinket, faint icons for empty slots). Drag from the bag onto a
+slot or a party card to equip; drag off to unequip; right-click to equip on the selected hero. Hover tooltips show the
 name, rarity, slot and power, the stats and special affix, and for bag items whether it is better for the
-selected hero; the detailed stat comparison is in the item's click panel. Under the doll, a stat block shows the selected
+selected hero; the detailed stat comparison is in the item's click panel. Next to the grid, a stat block shows the selected
 hero's HP, ATK, ARM, SPD, CRIT and LUCK, with the share that comes from gear in green (red if gear lowers it).
 
 **Lock.** Hover an item and press L: a padlock; it cannot be sold, salvaged, listed, dropped or

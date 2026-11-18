@@ -43,7 +43,7 @@ async def main():
             shots.append((name, path))
         # the desk phone: idle menu, an incoming call, a burst of messages (face up and face down)
         await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; n.game=null; n.action='idle'; n.preMenu='phone'}"); await pg.wait_for_timeout(300)
-        DESK = {'x': 260, 'y': 380, 'width': 420, 'height': 340}
+        DESK = {'x': 296, 'y': 420, 'width': 480, 'height': 300}   # the desk's left part (#49)
         await pg.screenshot(path='test/phone_desk_menu.png', clip=DESK); shots.append(('desk_menu', 'test/phone_desk_menu.png'))
         await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; n.preMenu=null; n.interrupts=[{kind:'mom',t:12,max:20,msgs:[],pend:[],pingAt:-9}]}"); await pg.wait_for_timeout(300)
         await pg.screenshot(path='test/phone_desk_call.png', clip=DESK); shots.append(('desk_call', 'test/phone_desk_call.png'))

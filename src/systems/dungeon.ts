@@ -4,7 +4,8 @@ import { spawnBattle, updateBattle, reviveHero } from './battle';
 import { rollBattleDrops, removeEntry, entryName, moveFloorLoot, sweepFloorLoot } from './loot';
 import { HERO_X, ENEMY_X } from './battle';
 import { maxHp } from './stats';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('GAME');   // feed tag (#49)
 import { chance } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';

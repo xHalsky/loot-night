@@ -25,7 +25,7 @@ import { entryName, entryColor, entryValue, cap } from '../systems/loot';
 import { icon, glyph, ABILITY_GLYPHS } from './icons';
 import { canLeaveDungeon } from '../systems/dungeon';
 import { moodZone } from '../systems/meters';
-import { fmtClock } from '../core/fx';
+import { fmtClock, parseTag } from '../core/fx';
 import type { MorningScene } from './her';
 import { hasSave } from '../systems/save';
 import { canSleep } from '../systems/night';
@@ -102,6 +102,7 @@ export function doorInfoHtml(): string {
   <div class="her-stats">
     <div class="her-row pc" title="Patience ${Math.round(patience)} · caught ${n.catches}/3"><span>Patience</span><div class="hearts">${hearts(patience)}</div><span class="sm">Caught</span><div class="bhearts">${caught}</div></div>
     <div class="her-row gw" title="Goodwill: earned with her. ${T.GOODWILL_RAID} buys a Raid night, ${T.GOODWILL_FORGIVE} forgives a catch."><span>Goodwill</span><div class="gwbar"><i style="width:${S.g.goodwill}%"></i><em style="left:${T.GOODWILL_RAID}%"></em><em style="left:${T.GOODWILL_FORGIVE}%"></em></div><b>${Math.floor(S.g.goodwill)}</b></div>
+    <div class="her-row nz" title="Your Noise.${n.apt.asleep ? ` Above ${T.WAKE_NOISE_FLOOR} it wakes her.` : ' How much reaches her depends on where she is.'}"><span>Noise</span><div class="pill nzbar"><i style="width:${Math.round(n.noise)}%"></i>${n.apt.asleep ? `<em style="left:${T.WAKE_NOISE_FLOOR}%"></em>` : ''}</div><b>${Math.round(n.noise)}</b></div>
     ${wakeRow}
   </div>`;
 }
@@ -122,7 +123,7 @@ function preBtn(id: PreId, cls = ''): string {
 function preRowHtml(): string {
   const n = N();
   void n;
-  return `<div class="pre-row"><small>before</small><div class="pre-btns">${PRE_ACTIONS.filter(a => a.where === 'door').map(a => preBtn(a.id)).join('')}</div></div>`;
+  return `<div class="pre-row"><div class="pre-btns">${PRE_ACTIONS.filter(a => a.where === 'door').map(a => preBtn(a.id)).join('')}</div></div>`;
 }
 export function preText(s: string): string {
   return s.replace('{text}', String(T.PRE_TEXT_SEC)).replace('{textCalm}', String(T.PRE_TEXT_CALM)).replace('{textMood}', String(T.PRE_TEXT_MOOD))
@@ -215,14 +216,19 @@ export function planHtml(): string {
     Through the crack: kitchen first, then the bathroom, the far end only when wide.</div></div></div>`;
 }
 
+/** The feed card (#49): newest line on top, older ones fading; a tag says whose line it is. No header, no tabs. */
+const TAG_COLOR: Record<string, string> = { YOU: '#a08cff', HER: '#ff9ab8', PHONE: '#6aa8ff', GAME: '#f2c46b', DOG: '#e48f3e', EXCEL: '#4fbf7a',
+  NIGHT: '#c77dff', PARTY: '#8fd0ff', GUILD: '#6fe08a', MAGOO: '#b59bff', HEALERO: '#6fcfa0', KNIGHTENSTEIN: '#8fb3ff' };
 export function feedHtml(): string {
   const n = S.g.night;
   if (!n) return '';
-  const lines = n.log.filter(l => l.text !== n.tip?.text).slice(-9).map(l => `<div class="fl"><i>[${l.time}]</i> <span style="color:${l.color}">${esc(l.text)}</span></div>`).join('');
-  const pin = n.tip ? `<div class="fl tip" style="color:${n.tip.color}">${esc(n.tip.text)}</div>` : '';
-  return `<div class="feed-tabs"><b>General</b><span>Combat</span><span>Loot</span><span>Her</span></div>
-    ${pin}<div class="feed-body">${lines || '<div class="fl dim">Welcome to Loot Night. Have fun, don\'t get caught.</div>'}</div>
-    <div class="feed-input">Press Enter to chat...</div>`;
+  const line = (time: string, tag: string, text: string, color: string, i: number, cls = '') =>
+    `<div class="fl ${cls}" style="opacity:${Math.max(0.35, 1 - i * 0.13).toFixed(2)}"><i>${time}</i>${tag ? `<b style="color:${tag === 'LOOT' ? color : TAG_COLOR[tag] ?? '#c9c0d8'}">${esc(tag)}</b>` : ''}<span style="color:${color}">${esc(text)}</span></div>`;
+  const pin = n.tip ? parseTag(n.tip.text) : null;
+  const rows = n.log.filter(l => !pin || l.text !== pin.text).slice(-6).reverse();
+  const out = (pin ? [line(fmtClock(n.clock), pin.tag.toUpperCase(), pin.text, n.tip!.color, 0, 'tip')] : [])
+    .concat(rows.map((l, i) => line(l.time, l.tag ?? '', l.text, l.color, i + (pin ? 1 : 0))));
+  return out.slice(0, 6).join('') || '<div class="fl dim">Welcome to Loot Night. Have fun, don\'t get caught.</div>';
 }
 
 // ---------------- Desk objects ----------------
@@ -247,7 +253,7 @@ function phoneObjHtml(): string {
   const down = n.phoneDown > 0;
   let screen = '<div class="ios off"></div>';
   // picked up: the phone leaves the desk until the minigame ends or its window is closed
-  if (inPhone) return '<div class="obj-label phone-label" style="color:#8a7a6a">phone in your hand</div>';
+  if (inPhone) return '';   // picked up: it is in your hand (the window over the monitor)
   else if (it && isCall(it.kind)) {
     // same incoming-call screen as in your hand: tap red to decline at once, tap anywhere else to pick up
     screen = `<div class="ios call"><div class="ios-di"></div><div class="ios-cname">${CALLER[it.kind][0]}</div><div class="ios-csub">${CALLER[it.kind][1]}</div>
@@ -260,32 +266,21 @@ function phoneObjHtml(): string {
     screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div>${banners}${it.msgs.length > 3 ? `<div class="ios-more">+${it.msgs.length - 3} more</div>` : ''}</div>`;
   } else if (it) screen = '<div class="ios off"></div>';
   else if (n.herReply && n.herReply.wait <= 0) screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div><div class="ios-ban new"><i style="background:#34c759"></i><div><b>Babe \u2665</b><small>Messages</small><span>${esc(n.herReply.msg)}</span></div></div></div>`;
-  const label = down   // face-down (#47): silent, the screen only lights up the desk under it
-    ? (it ? '<span style="color:#b9c8ff">lighting up...</span><br>swipe to flip up' : 'Face-down: silent<br>swipe to flip up')
-    : it ? (isCall(it.kind) ? 'tap: pick up<br><span style="color:#ff8a80">red: decline</span>' : 'tap: read<br><span style="color:#ffb07a">swipe: flip it over</span>') : 'tap: text her<br>swipe: flip it over';
-  return `<div class="phone-wrap"><i class="ph-glow"></i>
+  return `<div class="phone-zoom"><div class="phone-wrap"><i class="ph-glow"></i>
     <div class="phone3d ${down ? 'down' : ''} ${it ? 'active' : ''}" data-phone="1">
       <div class="pface front">${screen}</div>
       <div class="pface back"><i class="cam"></i><i class="logo"></i></div>
-    </div>${it && !down ? ring(it.t, it.max) : ''}</div>
-    <div class="obj-label phone-label">${label}</div>`;
+    </div>${it && !down ? ring(it.t, it.max) : ''}</div></div>`;
 }
 export function deskHtml(): string {
   const n = S.g.night;
   if (!n) return '';
-  const hs = n.headset;
-  const canDrink = S.g.monsters > 0 && !n.game;
-  const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing';
-  const boostTxt = n.boost > 0 ? `<b style="color:#6fcf7f">BOOST ${Math.ceil(n.boost)} s</b>` : n.crash > 0 ? `<b style="color:#ff9a4d">CRASH ${Math.ceil(n.crash)} s</b>` : `Monster x${S.g.monsters}`;
+  // No headset, cans or fridge on the desk (#49): he wears the headset (click his head, or H), and Monster is the
+  // button on the YOU card (M). The desk keeps the phone; the Zone lights the monitor's edge in the headset's cyan.
   const z = Math.round(n.zone * 20) / 20;
-  return `
-  ${hs ? `<div class="zone-glow ${n.zone >= 1 ? 'full' : ''}" style="--z:${z}"></div>` : ''}
-  <div class="obj headset-obj ${hs ? 'on' : ''}" data-act="headset">${hs ? `<div class="hs-on"><div class="hs-waves"><i></i><i></i><i></i></div>on your head</div>` : headsetSvg()}</div>
-  <div class="obj-label hs-label" style="color:${hs ? '#f2b84b' : '#c9b8a8'}">${hs ? (n.zone >= 1 ? 'In the Zone, deaf (H)' : 'Zone building, deaf (H)') : 'Headset (H): you hear her'}</div>
+  return `${n.headset ? `<div class="zone-glow ${n.zone >= 1 ? 'full' : ''}" style="--z:${z}"></div>` : ''}
   ${phoneObjHtml()}
-  ${prePhoneHtml()}
-  ${n.cansHidden ? '<div class="obj-label mon-label">cans hidden under the desk</div>' : `<div class="obj monster-obj ${canDrink ? 'ready' : 'off'} ${coming && S.g.monsters > 0 ? 'hideable' : ''}" ${coming && S.g.monsters > 0 ? 'data-act="hideCans"' : canDrink ? 'data-act="openMonster"' : ''}>${monsterStockSvg(n.game?.kind === 'monster' ? Math.max(0, S.g.monsters - 1) : S.g.monsters)}</div>
-  <div class="obj-label mon-label">${coming && S.g.monsters > 0 ? '<b style="color:#ffb07a">click: hide the cans</b>' : boostTxt}</div>`}`;
+  ${prePhoneHtml()}`;
 }
 
 // ---------------- Morning vignette by how the night ended (#22) ----------------
@@ -388,10 +383,11 @@ export function windowHtml(): string {
   const n = S.g.night;
   if (!n || !n.game) return '';
   // grey circle with a red X just outside the top-right corner: always a way out
-  if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:506px;top:-6px">\u2715</button>';
+  // windows sit over the battle area (#49), each with the close button just outside its top-right corner
+  if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:532px;top:66px">\u2715</button>';
   const close = n.game.kind === 'phone'
-    ? '<button class="mg-close" data-act="closeGame" title="Put the phone down" style="left:390px;top:-26px">\u2715</button>'
-    : '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:516px;top:-4px">\u2715</button>';
+    ? '<button class="mg-close" data-act="closeGame" title="Put the phone down" style="left:415px;top:22px">\u2715</button>'
+    : '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:542px;top:48px">\u2715</button>';
   return (n.game.kind === 'phone' ? phoneHtml(n.game) : monsterHtml(n.game)) + close;
 }
 
@@ -464,6 +460,7 @@ export function tooltipHtml(): string {
   if (!n || !hover.key) return '';
   const parts = hover.key.split(':');
   let body = '';
+  if (parts[0] === 'autosalvage') return `<div class="tooltip" style="left:${Math.min(hover.x - 120, 1280 - 250)}px;top:${hover.y + 14}px"><div class="tt-name">Auto-salvage</div><div>Common and uncommon drops turn straight into scraps.</div></div>`;
   if (parts[0] === 'pre') return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 270)}px;bottom:${Math.max(8, 720 - hover.y + 14)}px">${preTip(parts[1] as PreId)}</div>`;   // low on screen: open upwards
   else if (parts[0] === 'skill' || parts[0] === 'hero') {
     const h = S.g.heroes[Number(parts[1])];
@@ -582,125 +579,106 @@ function dropPopupHtml(): string {
     <div class="d-foot">${btn('skipDrop', `Leave it (${Math.ceil(p.t)} s)`, '', 'sm')}</div></div>`;
 }
 
+/** The side panel inside the game screen (#49): the party, the selected hero's gear and stats, the bag and the
+ *  Treasury row; in town the city menu (build, services) and the bag. No HP here (the battle and the skill bar
+ *  show it), no instruction text in the headers. Hidden with the rest of the game (Excel, monitor off, switching). */
 export function uiPanelHtml(): string {
   const n = S.g.night;
   if (!n) return '';
   const g = S.g;
   const town = n.location === 'town';
-  const lock = abilitiesLocked();
-  const flowPct = ((n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN)) * 100;
-  const building = !town && n.monitor === 'rpg' && n.action === 'none' && n.monitorOff <= 0;
-
-  // --- RUN: where you are and what's boosting you ---
-  const run = `<section class="rp run">
-    <div class="rp-title"><span>${town ? 'RAVENHOLD · TOWN' : 'SHADOW CRYPT'}</span><span>${town ? 'safe' : `Floor ${n.floor}`}</span></div>
-    <div class="run-row"><span>Checkpoint ${n.checkpoint}</span><span>Record ${Math.max(g.record, n.deepest)}</span><span class="gold">${g.gold} g</span><span class="mats">${g.mats} scraps</span></div>
-    <div class="rbar"><label>FLOW x${n.flow.toFixed(1)}</label><div><i style="width:${flowPct}%"></i></div><em>${building ? 'rising' : 'falling'}</em></div>
-    <div class="rbar zonebar"><label>ZONE</label><div><i style="width:${Math.round(n.zone * 100)}%"></i></div><em>${!n.headset ? 'headset off' : n.zone >= 1 ? '+25% flow · +10% luck' : `${Math.floor(n.zone * T.ZONE_FILL_SEC)}/${T.ZONE_FILL_SEC} s`}</em></div>
-  </section>`;
-
-  // --- SKILLS: old-school action bars ---
-  const skills = g.heroes.map((h, hi) => {
-    const buttons = ABILITIES[h.id].map((a, si) => {
-      const unlocked = si === 0 || abilityUnlocked(h, si);
-      const cd = h.cd[si];
-      const [gname, gcol] = ABILITY_GLYPHS[h.id][si];
-      let cls = 'sk', over = '';
-      if (si === 0) { cls += ' auto'; over = '<b class="sk-tag">AUTO</b>'; }
-      else if (!unlocked) { cls += ' locked'; over = `<b class="sk-tag">${si <= 3 ? `Lv${T.ABILITY_UNLOCK[si]}` : 'soon'}</b>`; }
-      else if (cd > 0) { cls += ' cd'; const pct = cd / ABILITIES[h.id][si].cd; over = `<i class="sk-sweep" style="--p:${Math.round(pct * 360)}deg"></i><b class="sk-cd">${Math.ceil(cd)}</b>`; }
-      else cls += ' ready';
-      if (h.queued === si) cls += ' queued';
-      if (lock && si > 0) cls += ' blocked';
-      return `<button class="${cls}" data-act="ability" data-arg="${hi},${si}" title="${esc(a.name)}">${glyph(gname, unlocked ? gcol : '#4a4440', 26)}${over}<span class="sk-key">${HOTKEYS[h.id][si].toUpperCase()}</span></button>`;
-    }).join('');
-    return `<div class="sk-row ${h.downed ? 'downed' : ''}"><button class="sk-por" style="background:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${hi}">${h.name[0]}</button>${buttons}</div>`;
-  }).join('');
-  const skillsBox = `<section class="rp skills"><div class="rp-title"><span>SKILLS</span><span class="${lock ? 'warn' : ''}">${lock ? lock : 'click or hotkey'}</span></div>${skills}</section>`;
-
-  // --- TOWN (replaces skills in town) ---
-  const townBox = `<section class="rp town"><div class="rp-title"><span>CITY</span><span>clock paused</span></div>
-    <div class="dim">Everything happens on the city screen: click the buttons by the buildings. Build on empty plots. Enter the dungeon through the portal.</div>
-    ${CITY.map(f => { const lv = g.furniture[f.id] ?? 0; return `<div class="furn"><b>${f.name}</b><span class="${lv ? 'good' : 'dim'}">${lv ? `Lv ${lv} · ${f.effect[lv - 1]}` : 'not built'}</span></div>`; }).join('')}
-    <div class="dim">Gold ${g.gold} · Scraps ${g.mats} · Auction pending: ${g.pendingListings.length}</div>
-  </section>`;
-
-  // --- PARTY: paper doll ---
-  const tab = n.heroTab;
-  const gh = g.heroes[tab];
-  const powers = g.heroes.map(h => heroPower(h));
-  const best = Math.max(...powers);
-  const portraits = g.heroes.map((h, i) => {
-    const mx = maxHp(h);
-    const hpPct = h.downed ? 0 : (h.hp / mx) * 100;
-    const behind = best > 0 && powers[i] < best * T.POWER_BEHIND;
-    return `<button class="dport ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''} ${h.name.length > 9 ? 'long' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
-      <span class="dface" style="background:${HERO_COLORS[h.id]}">${h.name[0]}${behind ? '<em class="dneed" title="Falling behind: give them the next good item">!</em>' : ''}</span>
-      <span class="dname">${softBreak(h.name)}<span class="dlv">Lv ${h.level} <b class="dpow">◆${powers[i]}</b></span></span>
-      <span class="dhp"><i style="width:${hpPct}%;background:${hpPct > 50 ? '#6fcf7f' : hpPct > 0 ? '#e0b24a' : '#e0524a'}"></i></span>
-      <span class="dxp"><i style="width:${(h.xp / xpNeeded(h)) * 100}%"></i></span>
-    </button>`;
-  }).join('');
-  const slots = SLOTS.map(sl => {
-    const it = gh.gear[sl];
-    const style = it ? `background:${RARITY_BG[it.rarity]};border-color:${RARITY_COLOR[it.rarity]}` : '';
-    return `<div class="dslot s-${sl} ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${tab}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 24)}${it ? `<span class="spow">${it.identified ? itemPower(it) : '?'}</span>` : ''}</div>`;
-  }).join('');
-  const st = heroStats(gh), base = heroBaseStats(gh);
-  const statRow = (k: Stat, label: string, fmt: (v: number) => string) => {
-    const gear = st[k] - base[k];
-    return `<div class="dstat"><span>${label}</span><b>${fmt(st[k])}</b>${Math.abs(gear) >= 0.05 ? `<em class="${gear > 0 ? 'up' : 'down'}">${gear > 0 ? '+' : ''}${fmt(gear)}</em>` : '<em></em>'}</div>`;
-  };
-  const r0 = (v: number) => String(Math.round(v)), r1 = (v: number) => String(Math.round(v * 10) / 10);
-  const statBlock = `<div class="dstats"><div class="dstats-h"><span>${gh.name}'s stats</span><span class="dim">green = from gear${powers.some(p => best > 0 && p < best * T.POWER_BEHIND) ? ' · <b style="color:#b03a2a">!</b> = needs gear' : ''}</span></div>
-    ${statRow('hp', 'HP', r0)}${statRow('atk', 'ATK', r1)}${statRow('armor', 'ARM', r1)}${statRow('speed', 'SPD', r1)}${statRow('crit', 'CRIT', r1)}${statRow('luck', 'LUCK', r1)}</div>`;
-  const party = `<section class="rp party"><div class="rp-title"><span>PARTY</span><span>drop gear on a hero</span></div>
-    <div class="doll-wrap">
-      <div class="dports">${portraits}</div>
-      <div class="doll" style="--hc:${HERO_COLORS[gh.id]}">
-        <div class="doll-title">${gh.name.toUpperCase()} · ${gh.role} <b class="doll-pow">◆ ${heroPower(gh)}</b></div>
-        <div class="doll-fig"><i class="fh"></i><i class="fb"></i><i class="fl"></i></div>
-        ${slots}
-      </div>
-    </div>
-    ${statBlock}</section>`;
-
-  // --- BACKPACK ---
-  const bagCells = Array.from({ length: g.bagSize }, (_, i) => {
+  const head = (l: string, r = '') => `<div class="sp-h"><span>${l}</span>${r}</div>`;
+  // --- bag: 18 slots, then the Treasury row (the building opens 2 per level; the rest show a lock) ---
+  const cells = Array.from({ length: T.BAG_SIZE + T.TREASURY_ROW }, (_, i) => {
+    if (i >= g.bagSize) return '<div class="bslot locked" aria-label="Locked: the Treasury opens it"><i class="lock-ico"></i></div>';
     const e = g.bag[i];
-    if (!e) return `<div class="bslot empty"></div>`;
+    if (!e) return `<div class="bslot empty${i >= T.BAG_SIZE ? ' tre' : ''}"></div>`;
     const sel = n.selected === e.id ? ' sel' : '';
     const swap = n.dropPopup ? ' swap' : '';
     const fresh = n.fresh.some(f => f.id === e.id) ? ' fresh' : '';
     const lock = e.kind === 'item' && e.item.locked ? '<i class="lockico">\u{1F512}</i>' : '';
-    const corner = e.kind === 'item' ? `<span class="val pow">${e.item.identified ? '\u25c6' + itemPower(e.item) : '?'}</span>` : `<span class="val">${entryValue(e)}</span>`;
-    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}" data-item="bag:${e.id}">${entryIcon(e, 26)}${lock}${corner}</div>`;
+    const corner = e.kind === 'item' ? `<span class="val pow">${e.item.identified ? itemPower(e.item) : '?'}</span>` : `<span class="val">${entryValue(e)}</span>`;
+    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}${fresh ? `;--new:${T.BAG_NEW_SEC}s` : ''}" data-item="bag:${e.id}">${entryIcon(e, 24)}${lock}${corner}${fresh ? '<b class="new">NEW</b>' : ''}</div>`;
   }).join('');
-  const backpack = `<section class="rp pack"><div class="rp-title"><span>BAG</span><button class="as-tog ${g.autoSalvage ? 'on' : ''}" data-act="autoSalvage" title="Common and uncommon drops turn straight into scraps">auto-salvage &lt;<b style="color:#5b9cff">blue</b>: ${g.autoSalvage ? 'ON' : 'off'}</button><span style="color:${g.bag.length >= g.bagSize ? '#ff8a80' : 'inherit'}">${g.bag.length}/${g.bagSize} · L=lock</span></div>
-    <div class="bag" data-drop="bag">${bagCells}</div></section>`;
+  const full = g.bag.length >= g.bagSize;
+  const bag = head(`BAG <b class="${full ? 'full' : ''}">${g.bag.length}/${g.bagSize}</b>`,
+    `<button class="as-tog ${g.autoSalvage ? 'on' : ''}" data-act="autoSalvage" data-tip="autosalvage">Auto-salvage ${g.autoSalvage ? 'on' : 'off'}</button>`)
+    + `<div class="sp-bag" data-drop="bag">${cells}</div>`;
+  const foot = `<div class="sp-foot"><span class="gold">${g.gold} g · ${g.mats} scraps</span><span>record ${Math.max(g.record, n.deepest)}</span></div>`;
+  if (town) {
+    const rows = CITY.map(f => {
+      const L = g.furniture[f.id] ?? 0;
+      const pips = [0, 1, 2].map(k => `<i class="${k < L ? 'on' : ''}"></i>`).join('');
+      const afford = L < 3 && g.gold >= f.gold[L] && g.mats >= f.mats[L];
+      const act = L >= 3 ? '<span class="sp-max">Max</span>'
+        : `<button class="sp-build ${afford ? 'ok' : 'off'}" data-act="build" data-arg="${f.id}">${L ? 'Upgrade' : 'Build'} ${f.gold[L]} g · ${f.mats[L]}<i class="scrap"></i></button>`;
+      return `<div class="sp-city"><div><b>${f.name}</b><span class="pips">${pips}</span><small>${L ? f.effect[L - 1] : `Next: ${f.effect[0]}`}</small></div>${act}</div>`;
+    }).join('');
+    const svc = (['merchant', 'appraiser', 'salvage', 'auction'] as const).map(id => {
+      const label = { merchant: 'Merchant', appraiser: 'Appraiser', salvage: 'Salvage Forge', auction: 'Auction House' }[id];
+      return `<button class="sp-svc ${g.townWin === id ? 'on' : ''}" data-act="townWin" data-arg="${g.townWin === id ? '' : id}">${label}</button>`;
+    }).join('');
+    return head('RAVENHOLD · BUILD') + `<div class="sp-cityrows">${rows}</div>` + head('SERVICES') + `<div class="sp-svcs">${svc}</div>` + bag + foot;
+  }
+  // --- party: three cards (level, power, "!" when one falls behind); drop gear on a card to equip it ---
+  const tab = n.heroTab;
+  const gh = g.heroes[tab];
+  const powers = g.heroes.map(h => heroPower(h));
+  const best = Math.max(...powers);
+  const cards = g.heroes.map((h, i) => {
+    const behind = best > 0 && powers[i] < best * T.POWER_BEHIND;
+    return `<button class="sp-card ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
+      <span class="sp-ini">${h.name[0]}</span><span class="sp-nm"><b>${h.name}</b><small>Lv ${h.level} \u25c6${powers[i]}</small></span>${behind ? '<em class="sp-need">!</em>' : ''}
+      <i class="sp-xp"><i style="width:${Math.round((h.xp / xpNeeded(h)) * 100)}%"></i></i></button>`;
+  }).join('');
+  const GEAR_ORDER: Item['slot'][] = ['helm', 'armor', 'boots', 'weapon', 'ring', 'trinket'];
+  const slots = GEAR_ORDER.map(sl => {
+    const it = gh.gear[sl];
+    const style = it ? `background:${RARITY_BG[it.rarity]};border-color:${RARITY_COLOR[it.rarity]}` : '';
+    return `<div class="dslot ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${tab}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 22)}${it ? `<span class="spow">${it.identified ? itemPower(it) : '?'}</span>` : ''}</div>`;
+  }).join('');
+  const st = heroStats(gh), base = heroBaseStats(gh);
+  const r0 = (v: number) => String(Math.round(v)), r1 = (v: number) => String(Math.round(v * 10) / 10);
+  const stat = (k: Stat, label: string, fmt: (v: number) => string) => {
+    const d = st[k] - base[k];
+    return `<div class="sp-stat"><span>${label}</span><b>${fmt(st[k])}${Math.abs(d) >= 0.05 ? `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : ''}${fmt(d)}</em>` : ''}</b></div>`;
+  };
+  const gear = `<div class="sp-gear"><div class="sp-slots">${slots}</div><div class="sp-stats">${stat('hp', 'HP', r0)}${stat('atk', 'ATK', r1)}${stat('armor', 'ARM', r1)}${stat('speed', 'SPD', r1)}${stat('crit', 'CRIT', r1)}${stat('luck', 'LUCK', r1)}</div></div>`;
+  return head('PARTY') + `<div class="sp-cards">${cards}</div>`
+    + head(`${gh.name.toUpperCase()} · ${gh.role}`, `<b class="sp-pow">\u25c6 ${powers[tab]}</b>`) + gear + bag + foot;
+}
 
-  let overlay = '';
-  if (n.dropPopup) overlay = dropPopupHtml();
-  else if (n.selected) { const e = g.bag.find(x => x.id === n.selected); if (e) overlay = detailHtml(e); }
+/** The item windows (#49): details of the selected item, or a new drop when the bag is full. They open over the
+ *  right end of the battle area, next to the bag, so the bag stays clickable (a full bag asks you to pick a slot). */
+export function itemPopHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  if (n.dropPopup) return `<div class="item-pop">${dropPopupHtml()}</div>`;
+  if (!n.selected) return '';
+  const e = S.g.bag.find(x => x.id === n.selected);
+  return e ? `<div class="item-pop">${detailHtml(e)}</div>` : '';
+}
 
-  void `<div class="bottom-hint">${town ? 'City: use the buildings on screen' : n.phase === 'mapChoice' ? 'Pick the next floor on the map' : 'Town portal: button on the game screen'}</div>`;
-
-  const tiredFx2 = [n.tired >= T.TIRED_YAWN && 'yawning', n.tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Monster holds you up' : 'eyes closing'), n.tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
-  const you = `<section class="rp you"><div class="rp-title"><span>YOU</span><span>${tiredFx2 || 'awake enough'}</span></div>
-    <div class="you-row"><span>Noise</span><div class="ybar"><i style="width:${n.noise}%;background:#f2a03d"></i></div><b>${Math.round(n.noise)}</b></div>
-    <div class="you-row"><span>Tired</span><div class="ybar"><i style="width:${n.tired}%;background:#8fa8d9"></i><em style="left:${T.TIRED_MICROSLEEP}%"></em></div><b>${Math.round(n.tired)}</b></div>
-  </section>`;
-  // order (top to bottom): You, Feed, run progress, Party, Bag
-  return `${you}
-  <section class="rp feed">${feedHtml()}</section>
-  ${run}
-  <div class="mid">
-    <div class="mid-spacer"></div>
-    ${party}
-    ${overlay ? `<div class="overlay">${overlay}</div>` : ''}
-  </div>
-  ${backpack}
-  `;
+/** Real life, bottom right of the desk (#49): Tired and Zone, and the Monster button (key M). */
+export function youHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const g = S.g;
+  const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing' && n.visit.stage !== 'in';
+  const hide = coming && g.monsters > 0 && !n.cansHidden;
+  const canDrink = g.monsters > 0 && !n.game && !n.pre;
+  const tired = n.tired >= T.TIRED_YAWN && canDrink && n.boost <= 0 && !hide;   // time to top up: the button glows
+  let label = `\u00d7${g.monsters}`, sub = 'Drink · M', cls = '', act = 'openMonster';
+  if (hide) { label = 'Hide'; sub = 'the cans · M'; cls = 'hide'; act = 'hideCans'; }
+  else if (n.cansHidden && n.visit.stage !== 'idle') { label = 'Hidden'; sub = 'under the desk'; cls = 'off'; act = ''; }
+  else if (!canDrink) cls = 'off';
+  if (tired) cls += ' tired';
+  const row = (name: string, cls2: string, v: number, mark?: number) =>
+    `<div class="yc-row ${cls2}"><span>${name}</span><i class="yc-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, v)))}%"></i>${mark !== undefined ? `<em style="left:${mark}%"></em>` : ''}</i><b>${Math.round(v)}</b></div>`;
+  return `<div class="yc-rows">${row('Tired', 'yc-tired', n.tired, T.TIRED_YAWN)}${row('Zone', 'yc-zone', n.headset ? n.zone * 100 : 0)}</div>
+    <button class="yc-can ${cls}" ${act ? `data-act="${act}"` : ''} aria-label="Monster: drink one (M), or hide the cans while she is coming">
+      <svg width="16" height="22" viewBox="0 0 16 22" aria-hidden="true"><rect x="2" y="2" width="12" height="19" rx="2.5" fill="#15161a" stroke="#9aa0ac"/><rect x="3.5" y=".8" width="9" height="2.2" rx="1" fill="#c9ced6"/><path d="M5.5 7 L6.5 16 M8 6.5 V16.5 M10.5 7 L9.5 16" stroke="#7cf08a" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span><b>${label}</b><small>${sub}</small></span></button>`;
 }
 
 // ---------------- OS taskbar (real life) ----------------
@@ -717,7 +695,7 @@ export function taskbarHtml(): string {
     <span class="tb-hint">Tab = switch</span>
     <span class="tb-tray">
       <span class="tb-wallet">${S.g.zl} zł</span>
-      <span class="tb-clock ${late ? 'late witching' : ''}" title="${late ? 'Witching Hour: better drops, more sleep debt.' : ''}"><b>${fmtClock(n.clock)}</b><small>${late ? 'witching hour' : 'bed 01:00'}</small></span>
+      <span class="tb-clock ${late ? 'late witching' : ''}" title="${late ? 'Witching Hour: better drops, more sleep debt.' : ''}"><b>${fmtClock(n.clock)}</b>${late ? '<small>witching hour</small>' : ''}</span>
       <button class="tb-power ${canSleep() ? '' : 'off'}" data-act="sleep" title="Log off and sleep">⏻ ${n.clock < T.EARLIEST_SLEEP ? 'Sleep (23:00+)' : 'Sleep'}</button>
     </span>`;
 }
@@ -792,7 +770,7 @@ const HOWTO: [string, string, string][] = [
     '<rect x="4" y="16" width="20" height="16" rx="3" fill="#3a3a44"/><text x="14" y="28" font-size="9" fill="#fff" text-anchor="middle" font-family="Inter">Tab</text><path d="M26 24h6" stroke="#fff" stroke-width="2"/><rect x="34" y="12" width="20" height="24" rx="3" fill="#1d7a44"/><text x="44" y="29" font-size="13" fill="#fff" text-anchor="middle" font-weight="700" font-family="Inter">X</text>'],
   ['Answer her', 'Each visit wants something else. Plates clinking: hide your cans. Humming: talk to her. Slow steps: a cuddle.',
     '<rect x="8" y="8" width="42" height="28" rx="6" fill="#fff4f2"/><path d="M18 36l-4 8 10-8" fill="#fff4f2"/><text x="29" y="27" font-size="16" fill="#e8657f" text-anchor="middle" font-family="Patrick Hand">?!</text>'],
-  ['Headset (H)', 'After 30 s on you are in the Zone: faster Flow, more loot. But you cannot hear her coming.',
+  ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.',
     '<path d="M14 30a15 15 0 0 1 30 0" stroke="#6a6a78" stroke-width="5" fill="none"/><rect x="9" y="27" width="9" height="15" rx="3" fill="#55555f"/><rect x="40" y="27" width="9" height="15" rx="3" fill="#55555f"/><rect x="10" y="30" width="2" height="9" fill="#9a6bff"/><rect x="46" y="30" width="2" height="9" fill="#9a6bff"/>'],
 ];
 export function howtoHtml(): string {

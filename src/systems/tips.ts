@@ -10,7 +10,7 @@ export function tip(id: TipId) {
   if (!g.night || g.tipsSeen.includes(id)) return;
   g.tipsSeen.push(id);
   const t = TIPS[id];
-  const text = t.who === 'her' ? `[Her] "${t.text}"` : `[Guild] ${t.who}: ${t.text}`;
+  const text = t.who === 'her' ? `[Her] "${t.text}"` : `[${t.who}] ${t.text}`;
   const color = t.who === 'her' ? '#ff9ab8' : '#7ee08a';
   toast(text, color);
   g.night.tip = { text, color, t: T.TIP_PIN_SEC };

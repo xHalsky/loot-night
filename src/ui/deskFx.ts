@@ -6,15 +6,20 @@ import { LAP_QS } from '../systems/lap';
 import { drawHerLap, OUTFIT_BY_ACTIVITY } from './her';
 import { pixelSprite, blit, smooth, cel } from './pixel';
 import { sfx } from './audio';
+import { DESK_W, GAME_X, GAME_Y, BATTLE_W, GAME_H } from './layout';
 
-const DW = 680, DH = 720;
+const DW = DESK_W, DH = 720;
+// The cable scene and her on the desk were drawn for the old 680 px desk; they are placed on the new one (#49).
+const CABLE_OX = 152, CABLE_OY = 40;   // the cable scene, centred on the monitor
+const LAP_OX = 12, LAP_OY = 40;       // her on the desk: over the battle area only, the side panel stays usable
 let scale = 1;
 export function setDeskScale(s: number) { scale = s; }
 
 // ---------- dog (pixel sprite, 84 x 110 at 3x) ----------
 // He stands on the floor next to your chair: only head, chest and front paws (on the desk edge) are in view.
-const DOG_PX = 2, DOG_W = 120, DOG_H = 116, DOG_X0 = 340 - (DOG_W / 2) * DOG_PX, DOG_Y0 = 720 - DOG_H * DOG_PX;
-const HEAD = { x: 340, y: DOG_Y0 + 40 * DOG_PX };
+const DOG_CX = 440;   // he rises over the desk edge in front of the keyboard (#49)
+const DOG_PX = 2, DOG_W = 120, DOG_H = 116, DOG_X0 = DOG_CX - (DOG_W / 2) * DOG_PX, DOG_Y0 = 720 - DOG_H * DOG_PX;
+const HEAD = { x: DOG_CX, y: DOG_Y0 + 40 * DOG_PX };
 let dogY = 360, lastT = 0, petting = false, last = { x: 0, y: 0, t: 0 };
 let hearts: { x: number; y: number; vy: number; t: number }[] = [];
 const SWEET: [number, number][] = [[-38, -48], [38, -48], [0, 38]];   // left ear, right ear, chin (from head centre)
@@ -35,7 +40,8 @@ document.addEventListener('pointerdown', ev => {
   if (!n || S.g.paused || n.game) return;
   const p = toDesk(ev);
   if (n.unplugged) {
-    for (let i = 0; i < n.unplugged.kinds.length; i++) if (!n.unplugged.plugged[i] && Math.hypot(p.x - plugPos[i].x, p.y - plugPos[i].y - 10) < 36) {
+    const q = { x: p.x - CABLE_OX, y: p.y - CABLE_OY };
+    for (let i = 0; i < n.unplugged.kinds.length; i++) if (!n.unplugged.plugged[i] && Math.hypot(q.x - plugPos[i].x, q.y - plugPos[i].y - 10) < 36) {
       dragPlug = i; ev.preventDefault(); ev.stopImmediatePropagation(); sfx.click(); return;
     }
   }
@@ -47,7 +53,7 @@ document.addEventListener('pointermove', ev => {
   const n = S.g.night;
   if (!n) return;
   const p = toDesk(ev);
-  if (dragPlug >= 0) { plugPos[dragPlug].x = p.x; plugPos[dragPlug].y = p.y - 10; return; }
+  if (dragPlug >= 0) { plugPos[dragPlug].x = p.x - CABLE_OX; plugPos[dragPlug].y = p.y - CABLE_OY - 10; return; }
   if (petting) {
     const now = performance.now();
     const dist = Math.hypot(p.x - last.x, p.y - last.y), dt = Math.max(1, now - last.t) / 1000;
@@ -203,12 +209,15 @@ function drawCables(c: CanvasRenderingContext2D, t: number) {
 // ---------- her on the desk, first person ----------
 function drawLap(c: CanvasRenderingContext2D, t: number) {
   const l = S.g.night!.lap!;
+  c.save(); c.beginPath(); c.rect(GAME_X, GAME_Y, BATTLE_W, GAME_H); c.clip();
   const look = OUTFIT_BY_ACTIVITY[l.outfit] ?? OUTFIT_BY_ACTIVITY.tv;
   const k = l.stage === 'arrive' ? Math.max(0, l.t / 1.2) : l.stage === 'leave' ? 1 - Math.max(0, l.t / 1.4) : 0;
   const breathe = Math.sin(t * 1.6) > 0 ? 3 : 0;
   const pose = Math.min(2, l.sweet);
-  c.fillStyle = `rgba(0,0,0,${0.35 * (1 - k)})`; c.fillRect(0, 0, DW, 440);
+  c.fillStyle = `rgba(0,0,0,${0.35 * (1 - k)})`; c.fillRect(GAME_X, GAME_Y, BATTLE_W, GAME_H);
+  c.translate(LAP_OX, LAP_OY);
   drawHerLap(c, { outfit: look.outfit, face: l.face, blink: (t % 4.1) < 0.13 }, pose, Math.round(k * 240 / 3) * 3, Math.round((k * 60 + breathe) / 3) * 3, 1 - k);
+  c.restore();
 }
 
 export function drawDeskFx() {
@@ -221,7 +230,7 @@ export function drawDeskFx() {
   const t = performance.now() / 1000;
   const dt = Math.min(0.05, lastT ? t - lastT : 0.016); lastT = t;
   shake = Math.max(0, shake - dt);
-  if (n.unplugged) drawCables(c, t);
+  if (n.unplugged) { c.save(); c.translate(CABLE_OX, CABLE_OY); drawCables(c, t); c.restore(); }
   else for (let i = 0; i < PLUG_HOME.length; i++) { plugPos[i].x = PLUG_HOME[i].x; plugPos[i].y = PLUG_HOME[i].y; }
   if (n.lap) drawLap(c, t);
   drawDog(c, t);

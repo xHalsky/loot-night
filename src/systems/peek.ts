@@ -1,7 +1,8 @@
 import { T } from '../config/tuning';
 import { N } from '../core/state';
 import { addMood } from './meters';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('HER');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { tip } from './tips';
 

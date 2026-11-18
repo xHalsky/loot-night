@@ -7,7 +7,7 @@ import { COACH, type CoachId } from '../data/tips';
 // the player does it, the moment passes, `COACH_MAX_SEC` (real seconds) runs out, or they close it. Once per save.
 
 /** Her comes first: a loot hint must never hide "she is at your door". */
-const PRIORITY: Record<CoachId, number> = { steps: 5, door: 4, phone: 3, windup: 2, loot: 1 };
+const PRIORITY: Record<CoachId, number> = { steps: 5, door: 4, phone: 3, windup: 2, loot: 1, headset: 0 };
 
 export function coach(id: CoachId) {
   const g = S.g;
@@ -38,6 +38,7 @@ function done(id: CoachId, m: number): boolean {
     case 'phone': return n.game?.kind === 'phone' || n.interrupts.length === 0;
     case 'loot': return S.g.heroes.reduce((a, h) => a + Object.keys(h.gear).length, 0) > m;
     case 'windup': return !n.enemies.some(e => (e.wind ?? 0) > 0) || S.g.heroes.some(h => h.queued !== null);
+    case 'headset': return n.headset || v.stage !== 'idle';
   }
 }
 

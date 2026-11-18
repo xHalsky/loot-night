@@ -1,6 +1,7 @@
 import { T } from '../config/tuning';
 import { S, N, type BinCan } from '../core/state';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('YOU');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 
 // Monster: a boost you operate by hand (docs/design/desk.md).

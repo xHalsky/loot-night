@@ -133,6 +133,7 @@ export interface Night {
   dropQueue: BagEntry[];
   floorLoot: { entry: BagEntry; x: number; t: number }[];   // drops lying on the dungeon floor (screen x)
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
+  lootFly: { x: number; text: string; color: string; t: number; max: number; delay: number; dx: number }[];   // picked-up loot: names flying up from the floor (#49)
   dropPopup: { entry: BagEntry; t: number } | null;
   corpse: BagEntry[]; corpseFloor: number;
   visit: VisitState;
@@ -145,7 +146,7 @@ export interface Night {
   boost: number; crash: number;  // Monster timers (s)
   cans: number;                  // empty cans in the bin
   bin: BinCan[];                 // where they lie (persists all night)
-  log: { text: string; color: string; time: string }[];   // the chat feed
+  log: { text: string; color: string; time: string; tag?: string }[];   // the feed (tag: YOU, LOOT, HER, PHONE, GAME, or a name)
   peeking: boolean; peek: number; peekSus: number;   // peek: how open the door is, 0 shut .. 1 = PEEK_CRACK_MAX   // door peek
   declineHold: boolean; decline: number;   // holding Decline on a ringing call
   phoneDown: number; flipFx: number;       // phone face-down timer, flip animation
@@ -168,7 +169,7 @@ export interface Night {
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
   goldStart: number;   // gold when the night began: the F1 line shows tonight's income (#2)
-  coach: { id: 'steps' | 'door' | 'phone' | 'loot' | 'windup'; t: number; mark: number } | null;   // a coach mark is up (#42)
+  coach: { id: 'steps' | 'door' | 'phone' | 'loot' | 'windup' | 'headset'; t: number; mark: number } | null;   // a coach mark is up (#42)
   moodDrift: number;
   selected: string | null; heroTab: number;
   everCaught: boolean; unidentifiedFound: number;

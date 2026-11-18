@@ -6,7 +6,10 @@ ignoring the interrupt. While a minigame has your hands, skills are paused and F
 
 ## Now
 
-### Meters in the YOU box (right panel)
+### The YOU card (desk, bottom right; #49)
+
+Tired and Zone as bars, and the Monster button (see Monster energy break). Noise is a row in her panel, under
+Goodwill ([screen.md](screen.md)).
 
 | Meter | Rises from | Falls | Matters |
 |---|---|---|---|
@@ -23,7 +26,9 @@ time (`INTERRUPT_CAP`), every `INTERRUPT_INTERVAL_SEC`. The screen stays off unt
   the same moment. The boss may follow up halfway through.
 - **On the desk.** A call shows the iOS incoming-call screen; the red Decline declines at once, a tap
   anywhere else picks up. Messages wake it to the lock screen with banners.
-- **In your hand.** The phone leaves the desk and opens as a 186 × 398 window over the monitor with iOS
+- **On the desk it is big** (#49): the 90 × 186 phone drawn 1.38x at the desk's left edge, running off the bottom.
+  On the desk's incoming-call screen the Decline button sits right under the slider, so it stays in view.
+- **In your hand.** The phone leaves the desk and opens as a 186 × 398 window over the battle area with iOS
   screens: incoming call (slide to answer), lock screen with Face ID (hold `FACE_UNLOCK_SEC`), in-call
   screen, iMessage thread with blue quick-reply buttons. Every screen can be left (put down, Decline, red
   end button, back chevron, home bar, the close X); leaving counts as ignoring. Layout rules (#45): the
@@ -83,10 +88,12 @@ A Win9x hourglass cursor throughout; a relay click at the start, mode change and
 
 ### Monster energy break
 
-The can pack on the desk is also a tell for the Snack run: during a visit's footsteps, clicking it shoves the
-cans under the desk instead (they come back out when she leaves).
+The cans are not drawn on the desk (#49): the **Monster button** on the YOU card (or M) is the can pack. It
+glows amber from `TIRED_YAWN` while a can is left (time to top up). It is also the Snack run's tell: during a
+visit's footsteps it reads "Hide the cans", and a click (or M) shoves the cans under the desk (they come back out
+when she leaves).
 
-Click the mini fridge on the desk; one canvas scene, five steps, `MONSTER_PER_NIGHT` (3) cans per night:
+Click the button; one canvas scene in a window over the battle area, five steps, `MONSTER_PER_NIGHT` (3) cans per night:
 1. Click the fridge: it opens, stocked with a dozen cans.
 2. Drag any can out and drop it anywhere on the desk (natural angle).
 3. Click the can: tab click and gas hiss in one action (Noise +`MONSTER_QUIET_NOISE`).
@@ -105,24 +112,28 @@ in the same pixel anime style as her: profile, tousled fringe, headset round his
 ### The dog and the cables
 
 A shiba stands on the floor; every `DOG_EVERY_SEC` his head, chest and front paws rise over the desk
-edge, whining (a little Noise). Pet him on the desk: hold and stroke gently; too fast (`DOG_FAST`) and
+edge in front of the keyboard, whining (a little Noise). Pet him on the desk: hold and stroke gently; too fast (`DOG_FAST`) and
 he flinches. One random spot (an ear or the chin) is his favourite (×`DOG_SWEET_MULT`): eyes close,
 tongue out, hearts. His tail wags harder as he gets happier (no bars). Done: he licks your hand and lies
 down. Ignored after `DOG_WAIT_SEC`, he leaves; after 1 to 3 ignores (random each time) he slams into the
 desk and the monitor cables come out.
 
-**Cable fix.** NO SIGNAL (the party fights on, drops are lost). The screen becomes the back of the
-monitor: 4 cables drawn from 9 plug shapes (HDMI, DisplayPort, figure-8 power, USB-A, USB-C, DVI, VGA,
+**Cable fix.** NO SIGNAL (the party fights on, drops are lost; the side panel goes dark with the screen). The
+screen becomes the back of the monitor: 4 cables drawn from 9 plug shapes (HDMI, DisplayPort, figure-8 power, USB-A, USB-C, DVI, VGA,
 Ethernet, 3.5 mm) in random colours from 9, sockets in random order. Drag each plug to the matching
 shape: it clicks in or bounces back.
 
 ### Buffs bar
 
-WoW-style squares at the top right of the game screen: green border for buffs, red for debuffs, with a
-cooldown sweep and seconds. Monster boost, sugar crash, Zone (% while building, ∞ when full), Flow
-multiplier, Taunt, Ward, Guilt, Tiredness I / II / III. Hover for the effect.
+WoW-style squares at the top right of the battle area: green border for buffs, red for debuffs, with a
+cooldown sweep and seconds. Monster boost, sugar crash, Taunt, Ward, Guilt, Good Boy, the curio and Raid buffs.
+Flow, Zone and Tired are not here (#49): they have their own place (the corner, the YOU card). Hover for the effect.
 
 ## Decisions
+
+- **Monster is a button, not a can pack on the desk** (0.45, #49): it frees the desk and puts the stimulant next to
+  the Tired bar it answers. It glows only when you are tired, so it asks for attention when it matters. Rejected:
+  glowing during the snack run too (two meanings for one glow; the label change says it).
 
 - **Face-down means silent** (0.44, #47): it used to keep buzzing, so flipping the phone did not buy the quiet
   the player asked for. Now the only sign is the glow under it, which you can watch or ignore. Rejected: no

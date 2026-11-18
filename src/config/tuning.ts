@@ -59,6 +59,7 @@ export const T = {
 
   // --- Flow ---
   FLOW_MIN: 1, FLOW_MAX: 3, FLOW_BUILD_SEC: 60, FLOW_DECAY_MULT: 2,
+  FLOW_GLOW_STEP: 0.5, FLOW_GLOW_SEC: 1,   // the corner's Flow text glows each time the multiplier passes a step of 0.5 (#49)
 
   // --- Dungeon ---
   BATTLES_PER_FLOOR: 3,
@@ -109,6 +110,9 @@ export const T = {
 
   // --- Loot ---
   BAG_SIZE: 18,
+  TREASURY_ROW: 6,                // the bag's last row: the Treasury opens 2 slots per level; the rest show a lock (#49)
+  BAG_NEW_SEC: 1.5,               // a fresh item's bag slot shines with NEW this long
+  LOOT_FLY_SEC: 1.6, LOOT_FLY_LEGENDARY_SEC: 2.6, LOOT_FLY_STAGGER_SEC: 0.3,   // picked-up loot: its name flies up from the floor (#49)
   POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots
   POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag
   DROP_WAIT_SEC: 8,
@@ -179,6 +183,7 @@ export const T = {
   MOOD_DRIFT_EVERY_SEC: 30,
   MOOD_GREEN: 40, MOOD_RED: 75, MOOD_MAX: 100,
   NOISE_DECAY_PER_SEC: 2,
+  NOISE_HURRY: 70,                // heard Noise above this: she finishes what she is doing twice as fast
   NOISE_ACTION: 0.3,              // every hero action (keyboard clacking)
   NOISE_CRIT: 3, NOISE_ABILITY: 3.5, NOISE_BOSS_KILL: 20, NOISE_VAULT: 30, NOISE_LEVEL: 6,
 

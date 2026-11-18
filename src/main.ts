@@ -4,8 +4,9 @@ import { T } from './config/tuning';
 import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
+import { DESK_W, BATTLE_W, BAND_H } from './ui/layout';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
+import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS } from './data/heroes';
@@ -20,7 +21,6 @@ import { startPre, cancelPre, episodeAnswer } from './systems/preemptive';
 import type { PreId } from './data/preemptive';
 import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction } from './systems/town';
 import { monUiHtml } from './ui/town';
-import { deskPileHtml } from './ui/monsterArt';
 import { altTab, excelInput } from './systems/excel';
 import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, setMonsterHold, cancelMonster } from './systems/monster';
@@ -43,30 +43,34 @@ import { COACH } from './data/tips';
 
 (window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints } };   // test hook for the Playwright scripts
 
-// ---------- DOM skeleton: three panels (docs/design/screen.md) ----------
+// ---------- DOM skeleton (#49, monitor-first; docs/design/screen.md) ----------
+// Left: the webcam view and her panel. Right: the desk, with the monitor on top. All RPG UI lives inside the game
+// screen (the battle canvas, its overlay and the side panel); the YOU card and the feed sit on the desk.
 const stage = document.getElementById('stage')!;
 stage.innerHTML = `
-  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="herHead"></div><div id="doorInfo"></div></div>
+  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"><span class="hh-tip" id="hhTip"></span></div><div id="herHead"></div><div id="doorInfo"></div></div>
   <div id="desk">
     <div id="deskInner">
       <div class="desk-surface"></div>
-      <div class="stand"></div><div class="stand-base"></div>
       <div class="bezel"></div><div class="webcam" title="The webcam: the left panel is what it sees"><i></i></div>
-      <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
-      <div id="monUi"></div>
-      <div id="winLayer"></div>
-      <div id="toasts"></div>
+      <div id="screen">
+        <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
+        <div id="monUi"></div>
+        <div id="ui"></div>
+        <div id="winLayer"></div>
+        <div id="toasts"></div>
+      </div>
       <div id="taskbar"></div>
-      <div class="mat"></div><div class="keyboard">${keyboardSvg()}</div><div class="mouse">${mouseSvg()}</div>
+      <div class="kb"><div class="mat"></div><div class="keyboard">${keyboardSvg()}</div><div class="mouse">${mouseSvg()}</div></div>
       <div id="deskObjects"></div>
       <div id="tonight"></div>
-      <div id="canPile"></div>
-      <canvas id="deskFx" width="680" height="720"></canvas>
+      <div id="youCard"></div>
+      <div id="feedCard"></div>
+      <canvas id="deskFx" width="${DESK_W}" height="720"></canvas>
       <div id="lapUi"></div>
       <div id="preUi"></div>
     </div>
   </div>
-  <div id="ui"></div>
   <div id="screens"></div>
   <div id="pause"></div>
   <div id="planUi"></div>
@@ -340,8 +344,8 @@ monCanvas.addEventListener('pointerdown', ev => {
     if (b) excelInput(b.cmd);
     return;
   }
-  const g = goblinPos();
-  if (g && Math.abs(x - (g.x + 18)) < 34 && Math.abs(y - (g.y + 20)) < 34) catchGoblin();
+  const g = goblinPos();   // the scene sits under the band, 1:1 (#49)
+  if (g && x < BATTLE_W && Math.abs(x - (g.x + 18)) < 34 && Math.abs(y - BAND_H - (g.y + 20)) < 34) catchGoblin();
 });
 
 // Away from the desk (a pre-emptive action): nothing on the desk reacts, only the away card.
@@ -369,6 +373,7 @@ window.addEventListener('keydown', ev => {
   if (ev.key === 'Tab') { ev.preventDefault(); altTab(); return; }
   const k = ev.key.toLowerCase();
   if (k === 'h' && !n.game) { toggleHeadset(); return; }
+  if (k === 'm' && !n.game) { monsterKey(); return; }   // the Monster button on the YOU card (#49)
   if (k === 'l' && hover.key) { const [kind, a, b] = hover.key.split(':'); const id = kind === 'bag' ? a : S.g.heroes[Number(a)]?.gear[b as 'weapon']?.id; if (id) toggleLock(id); return; }
   if (n.game) {
     const i = ['1', '2', '3'].indexOf(k);
@@ -389,6 +394,13 @@ window.addEventListener('keydown', ev => {
   });
 });
 void sfx;
+/** M: drink a Monster; while her footsteps are on and the cans are out, hide them instead. */
+function monsterKey() {
+  const n = N();
+  const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing' && n.visit.stage !== 'in';
+  if (coming && S.g.monsters > 0 && !n.cansHidden) hideCans();
+  else if (!n.pre) openMonster();
+}
 
 /** The shower panel covers the apartment map while she showers and you can hear it (docs/design/eye-candy.md). */
 // Coach mark: put the bubble next to its anchor and a ring around the anchor (stage coordinates).
@@ -424,7 +436,9 @@ function render() {
     setHtml('herHead', herHeadHtml());
     setHtml('tonight', tonightHtml());
     setHtml('deskObjects', deskHtml());
-    setHtml('canPile', deskPileHtml());
+    setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
+    setHtml('youCard', youHtml());
+    setHtml('feedCard', feedHtml());
     setHtml('monUi', monUiHtml());
     setHtml('winLayer', windowHtml());
     setHtml('ui', uiPanelHtml());
@@ -442,7 +456,7 @@ function render() {
     eye.classList.toggle('closed', n.blink.state === 'closed');
     eye.style.display = lid > 0 && g.screen === 'night' ? 'block' : 'none';
     el('desk').classList.toggle('yawn', n.yawn > 0);
-    el('ui').classList.toggle('dimmed', n.monitor === 'excel');
+    el('ui').classList.toggle('off', n.monitor === 'excel' || n.monitorOff > 0 || !!n.switching);   // the side panel is on the screen: it goes with it
   }
   if (g.screen !== 'night' || g.paused || g.howto) stopAmbience();   // her TV does not follow you to the title or the morning
   setHtml('screens', screenHtml());

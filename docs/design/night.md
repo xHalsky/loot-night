@@ -41,7 +41,7 @@ scraps still missing.
 bare soles out from under the blanket, breathing), summary and the next-night button on the right.
 Auction listings pay out here in zł.
 
-**Tiredness.** The live form of sleep debt, a 0 to 100 meter in the YOU box.
+**Tiredness.** The live form of sleep debt, a 0 to 100 meter on the YOU card (desk, bottom right).
 - Start: `TIRED_BASE` + `TIRED_PER_DEBT` × sleep debt (10 + 3 per point).
 - After 22:00 it rises `TIRED_PER_GAME_MIN` per in-game minute, only while the dungeon clock runs.
   A rested player reaches microsleeps around 00:30; one who stayed up to dawn starts the next night near 70.
@@ -63,7 +63,8 @@ happening.
   (or Esc / Enter). Four tiles, two lines each: 1 Listen (the sounds, the last-heard line, hold the door to
   peek), 2 Tab to Excel (footsteps: switch now, never wait for the handle), 3 Answer her (each visit wants
   something else), 4 Headset (the Zone, but you are deaf to her). The pause menu reopens it.
-- **Tonight, a sticky note on the desk** (`tonightHtml`, #42): left of the monitor stand, always visible in the
+- **Tonight, a sticky note** (`tonightHtml`, #42): stuck on the monitor's bottom edge over the middle of the taskbar
+  (#49), always visible in the
   game and in Excel. The three stars of the night with a live mark each: "★ plug stays in", "★★ she's happy",
   "★★★ not caught" (✓ on track, ! her Mood is red, ✗ lost for tonight), when Sleep opens (⏻ 23:00+) and
   "deeper = better loot". Hover: what each star means. Before this the stars first appeared on the results

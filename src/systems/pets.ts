@@ -1,7 +1,8 @@
 import { T } from '../config/tuning';
 import { N } from '../core/state';
 import { rand, randi } from '../core/rng';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('DOG');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { tip } from './tips';
 

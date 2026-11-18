@@ -3,11 +3,12 @@
 ## Now
 
 **The city is the hub, on the monitor.** An MMO capital: city wall and towers, a cobbled plaza with a
-fountain, lamp posts and a trade chat ticker. The night clock stops here; city actions cost fixed minutes
+fountain and lamp posts. The night clock stops here; city actions cost fixed minutes
 (`COST_IDENTIFY_MIN`, `COST_FURNITURE_MIN`, `COST_LIST_MIN`, `COST_TRAVEL_MIN`). Threat time keeps
 running, so she and the phone still come.
 
-Every decision happens on the game screen, by clicking the button next to a building:
+The plaza is on the battle area; the decisions are in the side panel's city menu (#49): a SERVICES block
+(one button per building) and a BUILD block (one row per plot):
 
 | Building | Action | Cost |
 |---|---|---|
@@ -17,11 +18,12 @@ Every decision happens on the game screen, by clicking the button next to a buil
 | Auction House | List for zł; pays out next morning; price × the night's market factor (`MARKET_RANGE`) | 5 min |
 | Dungeon Portal (back row, centre) | Enter the dungeon at the checkpoint | 15 min |
 
-Each service opens a window on the monitor listing the backpack with one action button per item. Locked
-items refuse every action.
+Each service opens a window over the plaza listing the backpack with one action button per item. Locked
+items refuse every action. The Dungeon Portal's "Enter floor N" button stays on the plaza, by the portal.
 
 **Build plots.** Four plots in the front row, each fixed to one building (`src/data/city.ts`). An empty plot
-shows a FOR SALE fence and a Build button; each building has 3 levels and its art changes per level.
+shows a FOR SALE fence; each building has 3 levels and its art changes per level. The BUILD rows show level pips,
+the current (or next) effect and a Build / Upgrade button with its cost (greyed when you cannot pay).
 
 | Building | Lv 1 / 2 / 3 | Gold | Scraps |
 |---|---|---|---|
@@ -30,7 +32,7 @@ shows a FOR SALE fence and a Build button; each building has 3 levels and its ar
 | Library | Cooldowns −8 / 15 / 22% | 350 / 800 / 1600 | 8 / 18 / 32 |
 | Treasury | Backpack +2 / 4 / 6 slots | 400 / 900 / 1800 | 10 / 20 / 36 |
 
-Upgrades apply instantly. While in the city, the right panel shows the city bonuses.
+Upgrades apply instantly.
 
 **The crowd.** Nine players with guild tags (Night Owls, Loot Goblins, Heal Me Pls, Edgy). A third stand
 around, the rest roam to random spots on the plaza, avoiding the fountain. One chat bubble at a time
@@ -56,8 +58,9 @@ results screen counts your bag too: "Sell and salvage your bag in the city: it p
 
 ## Decisions
 
-- **Hub actions live on the monitor**, next to the buildings, not in the right panel: the city feels like a
-  place, and the right panel stays about the party.
+- **Hub actions live in the side panel** (0.45, #49; were buttons next to the buildings): the side panel is where
+  the RPG's decisions are, in the dungeon and the city alike, and the plaza stays a picture. Rejected: keeping the
+  buttons on the plaza (the bag they act on was in another place); a separate town screen (one more screen to learn).
 - **Fixed buildings, upgradeable plots.** The earlier "player house with furniture" (Training Dummy,
   Bed, Bookshelf, Loot Chest, Altar...) became four city buildings; old saves migrate Dummy → Training
   Grounds and Bed → Inn.

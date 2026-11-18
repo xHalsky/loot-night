@@ -17,7 +17,7 @@ async def main():
         async def shot(name, js, full=False):
             await pg.evaluate("()=>{" + js + "}"); await pg.wait_for_timeout(300)
             path = f'test/webcam_{name}.png'
-            await pg.screenshot(path=path, clip={'x': 0, 'y': 0, 'width': 640 if full else 280, 'height': 720})
+            await pg.screenshot(path=path, clip={'x': 0, 'y': 0, 'width': 640 if full else 296, 'height': 720})
             shots.append((name, path))
         N = "const n=window.__lootnight.S.g.night;"
         await shot('idle', N + "n.apt.heardWhat='TV'; n.apt.heard='living'; n.apt.heardAt=n.threat-4;")
@@ -42,7 +42,7 @@ async def main():
         await act(pg, '#planUi .mg-close'); await pg.wait_for_timeout(200)
         closed_x = await pg.evaluate("()=>!document.querySelector('.plan-sheet')")
         print('plan opens', opened, '| Esc closes (no pause)', closed_esc, '| click outside closes', closed_out, '| x closes', closed_x)
-        await pg.screenshot(path='test/webcam_desk.png', clip={'x': 280, 'y': 0, 'width': 680, 'height': 60})
+        await pg.screenshot(path='test/webcam_desk.png', clip={'x': 296, 'y': 0, 'width': 984, 'height': 60})
         print('ERRORS', errs); await b.close()
     cols = 4
     sheet = Image.new('RGB', (cols * 286, 2 * 742), '#111')

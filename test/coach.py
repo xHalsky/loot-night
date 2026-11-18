@@ -60,7 +60,7 @@ async def main():
         # 5. boss wind-up (state: a wind-up on screen)
         await pg.evaluate("()=>{" + fresh('windup') + "n.monitor='rpg'; n.enemies.forEach(e=>{e.wind=2; e.windMax=2;}); n.coach={id:'windup',t:0,mark:0};}")
         await pg.wait_for_timeout(300); await pg.screenshot(path='test/coach_windup.png')
-        await pg.screenshot(path='test/coach_tonight.png', clip={'x': 280, 'y': 420, 'width': 680, 'height': 300})
+        await pg.screenshot(path='test/coach_tonight.png', clip={'x': 700, 'y': 470, 'width': 320, 'height': 160})
         print('ERRORS', errs); ok &= not errs
         await b.close()
     print('PASS' if ok else 'FAIL')

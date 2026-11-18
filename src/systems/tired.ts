@@ -2,7 +2,8 @@ import { T } from '../config/tuning';
 import { hasLife } from './affixes';
 import { S, N } from '../core/state';
 import { rand } from '../core/rng';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('YOU');   // feed tag (#49)
 import { tip } from './tips';
 
 // Tiredness: the live form of sleep debt (docs/design/night.md).

@@ -1,7 +1,8 @@
 import { T } from '../config/tuning';
 import { N } from '../core/state';
 import { pick } from '../core/rng';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('PARTY');   // feed tag (#49)
 
 // Reckless autopilot (docs/design/dungeon.md). When the player CHOSE to leave the game (Excel, switching,
 // a minigame window, cables out because the dog was ignored), the party plays badly: nobody holds aggro,

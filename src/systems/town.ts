@@ -1,7 +1,8 @@
 import { T } from '../config/tuning';
 import { S, N, RARITIES } from '../core/state';
 import { removeEntry, entryName } from './loot';
-import { toast } from '../core/fx';
+import { toastAs } from '../core/fx';
+const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { isLocked } from './loot';
 import { CITY, CITY_BY_ID, BAG_PLUS, type CityId } from '../data/city';

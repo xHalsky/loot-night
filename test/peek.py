@@ -34,7 +34,7 @@ async def main():
                                   [act_id, room, asleep, stage, c])
                 await pg.wait_for_timeout(250)
                 path = f'test/peek_{name}{tag}.png'
-                await pg.screenshot(path=path, clip={'x': 0, 'y': 20, 'width': 280, 'height': 370})
+                await pg.screenshot(path=path, clip={'x': 0, 'y': 20, 'width': 296, 'height': 370})
                 shots.append((name + tag, path))
         print('ERRORS', errs); await b.close()
     W, H = 280, 370

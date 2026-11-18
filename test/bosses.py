@@ -3,7 +3,7 @@ import asyncio, sys
 from playwright.async_api import async_playwright
 async def act(pg, sel):
     await pg.evaluate("s=>{const e=document.querySelector(s); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
-CLIP={'x':300,'y':14,'width':680,'height':470}
+CLIP={'x':314,'y':16,'width':948,'height':464}   # the game screen (#49)
 async def boss_shot(pg, floor, name, cond):
     await pg.evaluate("f=>{const S=window.__lootnight.S; const n=S.g.night; n.floor=f; n.battleIdx=2; n.phase='walk'; n.phaseT=0; n.enemies=[]; S.g.timeScale=1; S.g.heroes.forEach(h=>{h.level=9; h.hp=9999; h.downed=false})}", floor)
     for _ in range(150):

@@ -8,13 +8,16 @@ import { ACT_BY_ID } from '../data/apartment';
 // The webcam view (#36, #40): what the camera on top of his monitor sees. A dark grey room; him centred at the
 // bottom, a silhouette whose glasses catch the screen; your door behind him; the plan taped on the wall (#35). Hold the door to peek: it opens a crack onto the hallway (drawHallway).
 // Never covered by him: the doorway, the crack (right edge), the light gap under the door and her toes.
-export const DOOR_W = 280, DOOR_H = 532;
+export const DOOR_W = 296, DOOR_H = 532;
+/** The view is laid out for 280 px and centred in the 296 px column (#49); the walls and floor run on to the edges. */
+const VW = 280, OFF = (DOOR_W - VW) / 2;
 const TOP = 34, BOT = 370, X0 = 48, DW = 184;   // door opening, centred in the frame (#41)
 /** The plan on the wall: a sheet mostly out of frame, its corner showing at the left edge (#41). */
 export const PLAN_RECT = { x: -30, y: 122, w: 64, h: 74 };
 const HIM_X = 140, HIM_Y = 394;   // centred; his hair stays below the light gap under the door (#40)
 /** What a click on the webcam view hits. */
 export function doorHit(x: number, y: number): 'door' | 'plan' | null {
+  x -= OFF;
   const P = PLAN_RECT;
   if (x >= 0 && x <= P.x + P.w + 4 && y >= P.y - 6 && y <= P.y + P.h + 6) return 'plan';   // the visible corner
   if (x >= X0 - 6 && x <= X0 + DW + 6 && y >= TOP - 6 && y <= BOT + 8) return 'door';
@@ -28,7 +31,10 @@ export function drawDoor(c: CanvasRenderingContext2D) {
   const t = performance.now() / 1000;
   c.imageSmoothingEnabled = false;
   c.fillStyle = '#0c0c0f'; c.fillRect(0, 0, DOOR_W, DOOR_H);
-  for (let x = 0; x < DOOR_W; x += 36) { c.fillStyle = '#121216'; c.fillRect(x, 0, 18, BOT); c.fillStyle = '#0f0f13'; c.fillRect(x + 18, 0, 18, BOT); }
+  const fg0 = c.createLinearGradient(0, BOT + 6, 0, DOOR_H); fg0.addColorStop(0, '#19191e'); fg0.addColorStop(1, '#09090b');
+  c.fillStyle = fg0; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);   // the floor under the side strips
+  c.save(); c.translate(OFF, 0);
+  for (let x = -36; x < VW + 36; x += 36) { c.fillStyle = '#121216'; c.fillRect(x, 0, 18, BOT); c.fillStyle = '#0f0f13'; c.fillRect(x + 18, 0, 18, BOT); }
   c.fillStyle = '#1d1d23'; c.fillRect(X0 - 6, TOP - 6, DW + 12, BOT - TOP + 6);       // frame
   const stage = n?.visit.stage ?? 'idle';
   const H = BOT - TOP;
@@ -102,7 +108,20 @@ export function drawDoor(c: CanvasRenderingContext2D) {
   if (n && n.peekSus > 0.05) {
     c.fillStyle = `rgba(224,82,74,${Math.min(0.9, n.peekSus)})`; c.fillRect(X0, TOP - 14, DW * Math.min(1, n.peekSus), 5);
   }
+  drawHeadsetIcon(c);
   if (n && n.peek <= 0 && stage === 'idle' && !daydreaming()) { c.fillStyle = 'rgba(220,220,230,.3)'; c.font = '14px "Patrick Hand", sans-serif'; c.textAlign = 'center'; c.fillText('hold the door to peek', X0 + DW / 2, BOT - 12); }
+  c.restore();
+}
+
+/** A small headset icon beside his head (#49): grey when off, cyan when on. His head is the button (#headHit). */
+const HEADSET_ICON = new Path2D('M4 13 V10 C4 5 16 5 16 10 V13 M2.5 11 h4 v6 h-4 z M13.5 11 h4 v6 h-4 z');
+function drawHeadsetIcon(c: CanvasRenderingContext2D) {
+  const n = S.g.night;
+  if (!n) return;
+  c.save(); c.translate(HIM_X + 50, HIM_Y + 4); c.scale(0.95, 0.95);
+  c.strokeStyle = n.headset ? '#4fd1e8' : '#8a8a96'; c.lineWidth = 1.8; c.lineJoin = 'round'; c.lineCap = 'round';
+  c.stroke(HEADSET_ICON);
+  c.restore();
 }
 
 /** His side of the room: the floor, the plan on the wall, him, and his daydream while she showers. */
@@ -110,11 +129,11 @@ function room(c: CanvasRenderingContext2D, t: number) {
   const n = S.g.night;
   // the floor between the door and the camera, in the light from under the door
   const fg = c.createLinearGradient(0, BOT + 6, 0, DOOR_H); fg.addColorStop(0, '#19191e'); fg.addColorStop(1, '#09090b');
-  c.fillStyle = fg; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
+  c.fillStyle = fg; c.fillRect(-OFF, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
   c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1;
   for (let i = -5; i <= 6; i++) { c.beginPath(); c.moveTo(X0 + DW / 2 + i * 24, BOT + 6); c.lineTo(X0 + DW / 2 + i * 90, DOOR_H); c.stroke(); }
-  for (const y of [BOT + 26, BOT + 58, BOT + 104, BOT + 168]) { c.beginPath(); c.moveTo(0, y); c.lineTo(DOOR_W, y); c.stroke(); }
-  c.fillStyle = '#18181d'; c.fillRect(0, BOT + 3, X0 - 6, 3); c.fillRect(X0 + DW + 6, BOT + 3, DOOR_W, 3);   // skirting
+  for (const y of [BOT + 26, BOT + 58, BOT + 104, BOT + 168]) { c.beginPath(); c.moveTo(-OFF, y); c.lineTo(VW + OFF, y); c.stroke(); }
+  c.fillStyle = '#18181d'; c.fillRect(-OFF, BOT + 3, X0 - 6 + OFF, 3); c.fillRect(X0 + DW + 6, BOT + 3, DOOR_W, 3);   // skirting
   planSheet(c);
   if (!n) return;
   // him: back of his head while he peeks, his face otherwise (expressions and gear: #37, #38)
@@ -122,21 +141,21 @@ function room(c: CanvasRenderingContext2D, t: number) {
   const bob = Math.sin(t * 1.4) > 0.6 ? 1 : 0;
   // the monitor in front of him: a faint cold light on the floor around him
   const sg = c.createRadialGradient(HIM_X, DOOR_H, 10, HIM_X, DOOR_H, 170); sg.addColorStop(0, 'rgba(170,190,255,.10)'); sg.addColorStop(1, 'rgba(170,190,255,0)');
-  c.fillStyle = sg; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
+  c.fillStyle = sg; c.fillRect(-OFF, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
   if (me.glow) {   // full Zone: the purple glow around him
     const zg = c.createRadialGradient(HIM_X, HIM_Y + 70, 20, HIM_X, HIM_Y + 70, 130); zg.addColorStop(0, 'rgba(154,107,255,.42)'); zg.addColorStop(1, 'rgba(154,107,255,0)');
-    c.fillStyle = zg; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
+    c.fillStyle = zg; c.fillRect(-OFF, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
   }
   const back = c.createRadialGradient(HIM_X, HIM_Y + 40, 20, HIM_X, HIM_Y + 40, 120);   // backlight: his silhouette against the room
   back.addColorStop(0, 'rgba(120,122,140,.22)'); back.addColorStop(1, 'rgba(120,122,140,0)');
-  c.fillStyle = back; c.fillRect(0, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
+  c.fillStyle = back; c.fillRect(-OFF, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
   const glow = n.monitor === 'excel' ? 'rgba(214,255,226,' : 'rgba(222,232,255,';   // the lenses take the screen's colour
   drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking, look: me.look, headset: n.headset, jitter: me.jitter, glow });
   if (me.face === 'asleep') { c.fillStyle = '#c8cad8'; c.font = '16px "Patrick Hand", sans-serif'; c.textAlign = 'left'; c.fillText('z', HIM_X + 38, HIM_Y + 6 - (t * 8 % 12)); c.fillText('z', HIM_X + 48, HIM_Y - 8 - (t * 8 % 12)); }
   // monitor light on his face from the front, a webcam's soft vignette
-  const v = c.createRadialGradient(DOOR_W / 2, DOOR_H * 0.45, DOOR_H * 0.35, DOOR_W / 2, DOOR_H * 0.45, DOOR_H * 0.75);
+  const v = c.createRadialGradient(VW / 2, DOOR_H * 0.45, DOOR_H * 0.35, VW / 2, DOOR_H * 0.45, DOOR_H * 0.75);
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)');
-  c.fillStyle = v; c.fillRect(0, 0, DOOR_W, DOOR_H);
+  c.fillStyle = v; c.fillRect(-OFF, 0, DOOR_W, DOOR_H);
   daydream(c, t);
 }
 
