@@ -63,18 +63,38 @@ happening.
   (or Esc / Enter). Four tiles, two lines each: 1 Listen (the sounds, the last-heard line, hold the door to
   peek), 2 Tab to Excel (footsteps: switch now, never wait for the handle), 3 Answer her (each visit wants
   something else), 4 Headset (the Zone, but you are deaf to her). The pause menu reopens it.
-- **First-time tips** (`src/data/tips.ts`, `src/systems/tips.ts`): the first time each thing happens, one line
-  from her or the guild chat (Rafał and Jacek, your party) lands in the feed and stays pinned at its top for
-  `TIP_PIN_SEC`. Once per save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`)
-  and the plan on the wall (`TIP_PLAN_AT`). On events: footsteps, a pass, a catch, an end cue, a call, a
-  message, the dog, a yawn, the headset, her bedtime, a peek, the first loot, the first floor choice, the shower.
+- **Tonight, a sticky note on the desk** (`tonightHtml`, #42): left of the monitor stand, always visible in the
+  game and in Excel. The three stars of the night with a live mark each: "★ plug stays in", "★★ she's happy",
+  "★★★ not caught" (✓ on track, ! her Mood is red, ✗ lost for tonight), when Sleep opens (⏻ 23:00+) and
+  "deeper = better loot". Hover: what each star means. Before this the stars first appeared on the results
+  screen, so a new player knew the rules but not what a good night was.
+- **Coach marks for the core loop** (`COACH` in `src/data/tips.ts`, `src/systems/coach.ts`, #42): the first
+  footsteps, her first time in the doorway, the first phone, the first loot and the first boss wind-up get a
+  callout next to the thing itself (a ring around it), and the game crawls at `COACH_SLOW` (a quarter speed)
+  until the player does it: Tab, answering her, opening the phone, equipping, a skill. It also clears when the
+  moment passes, after `COACH_MAX_SEC` real seconds, or with ✕. Once per save. A more important one bumps a
+  less important one (footsteps > doorway > phone > wind-up > loot), and the bumped one comes back next time.
+  Hidden during the jumpscare.
+- **First-time tips** (`TIPS` in `src/data/tips.ts`, `src/systems/tips.ts`): everything else gets one line from
+  her or the guild chat (Rafał and Jacek, your party) in the feed, pinned at its top for `TIP_PIN_SEC`. Once per
+  save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`) and the plan on the wall
+  (`TIP_PLAN_AT`). On events: a pass, a catch, an end cue, the dog, a yawn, the headset, her bedtime, a peek,
+  the first floor choice, the shower.
 - **Labelled cues on the first night:** the her-note names the hallway cue of each visit type (`VISIT_CUE`) and,
   new, the cue that ends each activity (`END_HINT`: "The kettle clicked off. Tea, then maybe a snack run.").
   Later nights rely on the sound.
-- Tests: `npx tsx test/tips.ts`, `python3 test/onboarding.py` (screens: `test/onb_*.png`).
+- Tests: `npx tsx test/tips.ts`, `python3 test/onboarding.py` (screens: `test/onb_*.png`), `python3 test/coach.py`
+  (each coach mark, the crawl, clearing, the bump; screens: `test/coach_*.png`).
 
 ## Decisions
 
+- **The goal on a sticky note, the core loop coached in place** (0.41, #42): the 0.39 onboarding taught how to
+  hide but not what you play for, and its feed lines were easy to miss while the RPG scrolls. The note is
+  diegetic (he wrote tonight's goals down) and lives on the desk because the right panel had no room: as a
+  panel section it squeezed the feed to two lines and cut the party's stats. Coach marks slow the game
+  instead of pausing it, so the first footsteps are still a timing lesson (press Tab while she walks), just a
+  readable one. Rejected: a scripted tutorial level (teaches the script, not the listening); pausing on each
+  coach mark (teaches acting on a frozen screen); a safe first visit (kept the first catch possible).
 - **Onboarding by happening, not by a tutorial** (0.39): the slice is meant to be understood within 2 minutes
   without being told. One card for the one rule you cannot learn by watching (Excel up before the door
   opens), then each system explains itself once, in a friend's or her voice, when it first shows up. Tips go

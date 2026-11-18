@@ -16,6 +16,7 @@ import { updateDrops } from '../systems/loot';
 import { checkNightEnd } from '../systems/night';
 import { updateHim } from '../systems/him';
 import { updateTips } from '../systems/tips';
+import { updateCoach, coachScale } from '../systems/coach';
 
 const STEP = 1 / 60;
 
@@ -47,7 +48,9 @@ export function startLoop(render: () => void) {
   let last = performance.now();
   let acc = 0;
   const frame = (now: number) => {
-    acc += Math.min(0.25, (now - last) / 1000) * S.g.timeScale;
+    const real = Math.min(0.25, (now - last) / 1000);
+    updateCoach(real);
+    acc += real * S.g.timeScale * coachScale();   // a coach mark makes the game crawl (#42)
     last = now;
     while (acc >= STEP) { step(STEP); acc -= STEP; }
     render();

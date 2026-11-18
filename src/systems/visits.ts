@@ -14,6 +14,7 @@ import { towelSteps } from './preemptive';
 import { addBuff } from './curios';
 import { addGoodwill, tryForgive } from './goodwill';
 import { tip } from './tips';
+import { coach } from './coach';
 
 // Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
 // Each visit type asks for a different answer:
@@ -56,7 +57,7 @@ export function pickKind(from: string, woken = false, green = moodZone(N().mood)
 export function startVisit(woken = false, kind?: VisitKind) {
   const v = N().visit;
   if (v.stage !== 'idle') return;
-  tip('steps');
+  coach('steps');
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && !N().apt.forceKind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
@@ -113,7 +114,7 @@ export function updateVisits(dt: number) {
       break;
     case 'passing': if (hearsApartment()) toast(pick(FAKEOUT_LINES), '#a999bd'); endVisit(); break;
     case 'hall': v.stage = 'handle'; v.t = HANDLE; sfx.handle(); break;
-    case 'handle': v.stage = 'in'; v.t = T.VISIT_IN_SEC; v.checked = false; sfx.door(); break;
+    case 'handle': v.stage = 'in'; v.t = T.VISIT_IN_SEC; v.checked = false; sfx.door(); coach('door'); break;
     case 'in': leave(); break;
   }
 }

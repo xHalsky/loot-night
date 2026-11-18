@@ -12,6 +12,7 @@ import { isAway, autopilotPull, autopilotHurt } from './autopilot';
 import { MARKS } from '../data/marks';
 import { overtimeGold } from './affixes';
 import { curioDmgMult, curioSpeedMult, partyCrit } from './curios';
+import { coach } from './coach';
 
 export const HERO_X = [208, 124, 40];   // knight in front (right), healer at the back
 export const ENEMY_X = [380, 457, 534];
@@ -301,7 +302,7 @@ function bossMove(e: Enemy): boolean {
   const move = moveOf(e);
   if (move === 'slam' && e.acts % T.BOSS_SLAM_EVERY === 0) {
     e.wind = e.windMax = T.BOSS_WINDUP_SEC;
-    toast(`${e.name} winds up FINAL NOTICE! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup();
+    toast(`${e.name} winds up FINAL NOTICE! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup(); coach('windup');
     return true;
   }
   if (move === 'loan' && e.acts % T.LOAN_EVERY === 0) {

@@ -167,6 +167,7 @@ export interface Night {
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
   goldStart: number;   // gold when the night began: the F1 line shows tonight's income (#2)
+  coach: { id: 'steps' | 'door' | 'phone' | 'loot' | 'windup'; t: number; mark: number } | null;   // a coach mark is up (#42)
   moodDrift: number;
   selected: string | null; heroTab: number;
   everCaught: boolean; unidentifiedFound: number;

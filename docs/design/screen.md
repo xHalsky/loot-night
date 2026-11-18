@@ -7,7 +7,7 @@
 | Column | Shows |
 |---|---|
 | Left (her) | The webcam view (280 × 532): a dark room, him centred at the bottom as a silhouette with shining glasses, your door behind him (hold it to peek), the plan taped on the wall. Under it: the last-heard line, her note, the "before" row, her stats |
-| Centre (desk) | The monitor (game, city, Excel, minigames), and below it the desk: keyboard and mouse centred on a mat, phone, headset, Monster fridge, cans; the bin behind the monitor. The dog and her desk visit overlay it. |
+| Centre (desk) | The monitor (game, city, Excel, minigames), and below it the desk: keyboard and mouse centred on a mat, phone, headset, Monster fridge, cans, tonight's sticky note (the three stars, live; [night.md](night.md)); the bin behind the monitor. The dog and her desk visit overlay it. |
 | Right (RPG) | Top to bottom: YOU (Noise, Tired), Feed, run progress (floor, checkpoint, Flow, Zone), Party (paper doll), Backpack |
 
 **Monitor chrome.** A desktop taskbar under the screen: app buttons for Loot Night and Excel, the zł

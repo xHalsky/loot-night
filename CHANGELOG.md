@@ -3,6 +3,33 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.41.0 (2026-11-18)
+
+Onboarding, part 2 (#42): a player now knows what a good night is, and the core loop is coached where it
+happens.
+
+- **Tonight sticky note:**
+  - A yellow Post-it on the desk, left of the monitor stand, always visible in the game and in Excel.
+  - The three stars, live: "★ plug stays in", "★★ she's happy", "★★★ not caught". Each is marked ✓, ! (her
+    Mood is red) or ✗ (lost for tonight).
+  - Also on it: when Sleep opens (23:00+) and "deeper = better loot". Hovering it explains the stars.
+  - Until now the stars only appeared on the results screen.
+  - A right-panel section was tried first: there was no room, it squeezed the feed to two lines and cut off the
+    party's stats.
+- **Coach marks for the core loop, once per save:**
+  - The first footsteps ("Press Tab now"), her first time in the doorway ("answer her in her note"), the first
+    phone, the first loot ("right-click to equip") and the first boss wind-up ("hit a skill now").
+  - Each one is a callout next to the thing with a ring around it. The game crawls at a quarter speed
+    (`COACH_SLOW`) until you do it, the moment passes, 14 real seconds run out (`COACH_MAX_SEC`), or you close
+    it with ✕.
+  - A more important mark bumps a less important one (footsteps over the doorway, over the phone, over the
+    wind-up, over loot), and the bumped one comes back next time.
+  - Never shown over the jumpscare. Those moments' feed tips are gone; the other first-time tips stay.
+- **Tests and sims:**
+  - New `test/coach.py`: each mark through the game, the crawl (0.25x), clearing by doing the thing, ✕, the
+    bump, and screenshots. `test/tips.ts`, `test/onboarding.py`, `test/webcam.py` and `test/sound.py` pass.
+  - Sims (8 good, 6 idle): good depth 10.0, visits 5.6, 0 catches; idle caught 0.83. No rule changes.
+
 ## 0.40.0 (2026-11-17)
 
 Balance pass, round 1 (#2). Numbers from new tools; outside playtests are next (docs/playtest.md).

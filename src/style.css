@@ -883,3 +883,23 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .ht-tile svg { grid-row: span 2; }
 .ht-tile b { font-size: 15px; } .ht-tile b i { font-style: normal; color: #f2b84b; }
 .ht-tile p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.3; opacity: .85; }
+
+/* Tonight (#42): a sticky note on the desk, left of the monitor stand */
+#tonight { position: absolute; left: 128px; top: 449px; z-index: 4; }
+#tonight .sticky { width: 116px; padding: 5px 7px 4px; background: linear-gradient(#ffeb8a, #f8de6a); color: #3b2c12; transform: rotate(-3deg);
+  box-shadow: 2px 4px 8px rgba(0,0,0,.5); font: 13px/14px 'Patrick Hand', sans-serif; white-space: nowrap; cursor: help; }
+#tonight .sticky::before { content: ''; position: absolute; left: 40px; top: -6px; width: 36px; height: 11px; background: rgba(240,236,220,.65); transform: rotate(2deg); }
+#tonight .st-h { font-size: 14px; font-weight: 700; } #tonight .st-h small { font-weight: 400; font-size: 11px; opacity: .75; }
+#tonight .st-f { font-size: 11.5px; opacity: .75; }
+#tonight b { font-weight: 700; } #tonight b.ok { color: #1f8a3a; } #tonight b.risk { color: #c77a00; } #tonight b.lost { color: #c0262d; }
+/* Coach marks (#42) */
+#coachUi { position: absolute; inset: 0; z-index: 45; pointer-events: none; }
+#coachUi .coach { position: absolute; width: 250px; padding: 9px 12px 8px; background: #fff4d6; color: #2a1d12; border-radius: 10px;
+  box-shadow: 0 0 0 3px #f2b84b, 0 10px 30px rgba(0,0,0,.6); font-family: Inter, sans-serif; pointer-events: auto; animation: coachIn .25s ease-out; }
+#coachUi .coach b { display: block; font-size: 16px; margin-bottom: 2px; }
+#coachUi .coach p { margin: 0; font-size: 13px; line-height: 1.3; }
+#coachUi .coach small { display: block; margin-top: 5px; font-size: 10.5px; opacity: .6; }
+#coachUi .coach .mg-close { right: -10px; top: -10px; }
+#coachUi .coach-ring { position: absolute; border: 3px solid #f2b84b; border-radius: 10px; box-shadow: 0 0 18px rgba(242,184,75,.7); animation: coachPulse 1s ease-in-out infinite alternate; }
+@keyframes coachIn { from { transform: scale(.85); opacity: 0; } }
+@keyframes coachPulse { from { opacity: .45; } to { opacity: 1; } }

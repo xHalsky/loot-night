@@ -7,7 +7,7 @@ import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type PhoneGam
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { markText } from '../data/marks';
 import { specialText, hasLife } from '../systems/affixes';
-import { END_HINT } from '../data/tips';
+import { END_HINT, COACH } from '../data/tips';
 import { cityOutlook } from '../systems/town';
 import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
 import { preBlocked, nextMult } from '../systems/preemptive';
@@ -832,4 +832,28 @@ export function toastsHtml(): string {
   const n = S.g.night;
   if (!n) return '';
   return (n.reveal ? `<div class="reveal"><div class="kicker">APPRAISER</div><b>${esc(n.reveal.name)}</b></div>` : '');
+}
+
+/** Tonight (#42): a sticky note on his desk with the three stars, live. What a good night looks like, while you
+ *  play it (the results screen used to be the first place that said so). Always on screen, in both RPG and Excel. */
+export function tonightHtml(): string {
+  const n = S.g.night;
+  if (!n) return '';
+  const zone = moodZone(n.mood);
+  const mark = (s: 'ok' | 'risk' | 'lost') => `<b class="${s}">${s === 'ok' ? '✓' : s === 'risk' ? '!' : '✗'}</b>`;
+  return `<div class="sticky" title="Stars at the end of the night: 1 if she never pulls the plug, 2 if she is green or yellow when you log off, 3 if she never caught you.">
+    <div class="st-h">Tonight <small>⏻ ${n.clock >= T.EARLIEST_SLEEP ? 'sleep any time' : '23:00+'}</small></div>
+    <div>★ plug stays in ${mark(zone === 'red' ? 'risk' : 'ok')}</div>
+    <div>★★ she's happy ${mark(zone === 'red' ? 'risk' : 'ok')}</div>
+    <div>★★★ not caught ${mark(n.everCaught ? 'lost' : 'ok')}</div>
+    <div class="st-f">deeper = better loot</div></div>`;
+}
+
+/** Coach mark (#42): a callout next to the thing, while the game crawls. Positioned by main.ts. */
+export function coachHtml(): string {
+  const c = S.g.night?.coach;
+  if (!c) return '';
+  const d = COACH[c.id];
+  return `<div class="coach ${d.side}" data-coach="${c.id}"><button class="mg-close" data-act="coachClose" title="Got it">\u2715</button>
+    <b>${d.title}</b><p>${d.text}</p><small>The game is slowed down until you do it.</small></div><div class="coach-ring"></div>`;
 }

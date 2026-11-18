@@ -6,7 +6,7 @@ import { toast } from '../core/fx';
 import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, type SpecialAffix } from '../data/affixes';
 import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
-import { tip } from './tips';
+import { coach } from './coach';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
 
@@ -174,7 +174,7 @@ export function updateDrops(dt: number) {
     return;
   }
   announce(e);
-  if (bagFree() > 0) { S.g.bag.push(e); n.fresh.push({ id: e.id, t: 1.1 }); if (e.kind === 'item') tip('loot'); }
+  if (bagFree() > 0) { S.g.bag.push(e); n.fresh.push({ id: e.id, t: 1.1 }); if (e.kind === 'item') coach('loot'); }
   else { n.dropPopup = { entry: e, t: T.DROP_WAIT_SEC }; sfx.bagFull(); toast('Bag full! The drop waits on the floor.', '#ff8a80'); }
 }
 

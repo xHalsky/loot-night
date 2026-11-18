@@ -5,7 +5,7 @@ import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml } from './ui/panels';
+import { herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS } from './data/heroes';
@@ -38,6 +38,8 @@ import type { VisitKind } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
+import { closeCoach } from './systems/coach';
+import { COACH } from './data/tips';
 
 (window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints } };   // test hook for the Playwright scripts
 
@@ -57,6 +59,7 @@ stage.innerHTML = `
       <div id="taskbar"></div>
       <div class="mat"></div><div class="keyboard">${keyboardSvg()}</div><div class="mouse">${mouseSvg()}</div>
       <div id="deskObjects"></div>
+      <div id="tonight"></div>
       <div id="canPile"></div>
       <canvas id="deskFx" width="680" height="720"></canvas>
       <div id="lapUi"></div>
@@ -67,6 +70,7 @@ stage.innerHTML = `
   <div id="screens"></div>
   <div id="pause"></div>
   <div id="planUi"></div>
+  <div id="coachUi"></div>
   <div id="debug"></div>
   <div id="tooltipLayer"></div>
   <div id="ghost"></div>
@@ -152,6 +156,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgCall: a => spawnInterrupt(a as 'courier'),
   dbgGoblin: () => { N().goblin = { t: T.GOBLIN_SEC }; sfx.goblin(); },
   dbgSfx: a => audition(a),
+  coachClose: () => closeCoach(),
   dbgCalm: () => { N().apt.calm += 30; toast(`Debug: her next visit waits (calm ${Math.round(N().apt.calm)} s).`, '#a999bd'); },   // the framework's debug action (#19)
   dbgEpic: () => dbgDrop(itemEntry(genItem(N().floor, 3))),
   dbgLeg: () => dbgDrop(itemEntry(genItem(N().floor, 4))),
@@ -381,6 +386,28 @@ window.addEventListener('keydown', ev => {
 void sfx;
 
 /** The shower panel covers the apartment map while she showers and you can hear it (docs/design/eye-candy.md). */
+// Coach mark: put the bubble next to its anchor and a ring around the anchor (stage coordinates).
+function placeCoach() {
+  const c = S.g.night?.coach;
+  const box = document.querySelector('#coachUi .coach') as HTMLElement | null;
+  const ring = document.querySelector('#coachUi .coach-ring') as HTMLElement | null;
+  if (!c || !box || !ring) return;
+  const a = document.querySelector(COACH[c.id].anchor) as HTMLElement | null;
+  if (!a) { box.style.visibility = ring.style.visibility = 'hidden'; return; }
+  const s = stage.getBoundingClientRect(), r = a.getBoundingClientRect();
+  const x = (r.left - s.left) / stageScale, y = (r.top - s.top) / stageScale, w = r.width / stageScale, h = r.height / stageScale;
+  Object.assign(ring.style, { left: `${x - 4}px`, top: `${y - 4}px`, width: `${w + 8}px`, height: `${h + 8}px`, visibility: 'visible' });
+  const bw = box.offsetWidth, bh = box.offsetHeight;
+  let bx = x + w / 2 - bw / 2, by = y + h / 2 - bh / 2;
+  const side = COACH[c.id].side;
+  if (side === 'over') by = y + 70;
+  if (side === 'right') { bx = x + w + 16; by = y + h / 2 - bh / 2; }
+  if (side === 'left') { bx = x - bw - 16; by = y + Math.min(h / 2, 60) - bh / 2; }
+  if (side === 'above') { by = y - bh - 16; }
+  bx = Math.max(8, Math.min(1280 - bw - 8, bx)); by = Math.max(8, Math.min(720 - bh - 8, by));
+  Object.assign(box.style, { left: `${bx}px`, top: `${by}px`, visibility: 'visible' });
+}
+
 // ---------- Render ----------
 function render() {
   const g = S.g;
@@ -390,6 +417,7 @@ function render() {
   if (n) {
     setHtml('doorInfo', doorInfoHtml());
     setHtml('herHead', herHeadHtml());
+    setHtml('tonight', tonightHtml());
     setHtml('deskObjects', deskHtml());
     setHtml('canPile', deskPileHtml());
     setHtml('monUi', monUiHtml());
@@ -417,6 +445,8 @@ function render() {
   if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());
   if (!g.night || g.screen !== 'night') planOpen = false;
   setHtml('planUi', planOpen ? planHtml() : '');
+  setHtml('coachUi', g.screen === 'night' && !g.paused && !g.howto && !(g.night?.scare) ? coachHtml() : '');   // never over the jumpscare
+  placeCoach();
   setHtml('pause', pauseHtml());
   setHtml('debug', debugHtml());
   setHtml('scare', scareHtml());
