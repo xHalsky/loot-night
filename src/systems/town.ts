@@ -111,7 +111,7 @@ export function applyCity() {
   S.g.bagSize = T.BAG_SIZE + BAG_PLUS[f.treasury];
 }
 
-export function openTownWin(w: 'merchant' | 'appraiser' | 'salvage' | 'auction' | null) { S.g.townWin = w; sfx.click(); }
+export function openTownWin(w: NonNullable<typeof S.g.townWin> | null) { S.g.townWin = w; sfx.click(); }
 
 /** Actions from the service windows take the item id directly. */
 export function serviceAction(kind: 'identify' | 'vendor' | 'salvage' | 'list', id: string) {

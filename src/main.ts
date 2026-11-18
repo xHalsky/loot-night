@@ -5,6 +5,7 @@ import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { DESK_W, BATTLE_W, BAND_H } from './ui/layout';
+import { townHit, townHover } from './ui/townMap';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
 import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
@@ -137,6 +138,7 @@ const actions: Record<string, (arg: string) => void> = {
   identify: () => identify(), vendor: () => vendor(), salvage: () => salvage(), list: () => list(),
   build: a => buildCity(a as 'training'),
   townWin: a => openTownWin((a || null) as 'merchant' | null),
+  buildWin: a => openTownWin(a ? `build:${a}` as 'build:inn' : null),
   svc: a => { const [k, id] = a.split(':'); serviceAction(k as 'vendor', id); },
   portal: () => { S.g.townWin = null; travelToDungeon(); },
   openPhone: () => openPhone(),
@@ -344,9 +346,28 @@ monCanvas.addEventListener('pointerdown', ev => {
     if (b) excelInput(b.cmd);
     return;
   }
+  if (n.location === 'town') {   // the city (#50): click a building
+    const id = x < BATTLE_W ? townHit(x, y) : null;
+    if (id === 'portal') { S.g.townWin = null; travelToDungeon(); }
+    else if (id === 'training' || id === 'inn' || id === 'library' || id === 'treasury') openTownWin(`build:${id}`);
+    else if (id) openTownWin(id);
+    return;
+  }
   const g = goblinPos();   // the scene sits under the band, 1:1 (#49)
   if (g && x < BATTLE_W && Math.abs(x - (g.x + 18)) < 34 && Math.abs(y - BAND_H - (g.y + 20)) < 34) catchGoblin();
 });
+
+// The city (#50): a building under the mouse glows and shows its tooltip; the cursor says it can be clicked.
+monCanvas.addEventListener('pointermove', ev => {
+  const n = S.g.night;
+  const r = monCanvas.getBoundingClientRect();
+  const x = (ev.clientX - r.left) * (MON_W / r.width), y = (ev.clientY - r.top) * (MON_H / r.height);
+  const id = n && n.location === 'town' && n.monitor === 'rpg' && !n.switching && x < BATTLE_W ? townHit(x, y) : null;
+  townHover.id = id;
+  monCanvas.style.cursor = id ? 'pointer' : 'default';
+  if (id) monCanvas.dataset.tip = `town:${id}`; else delete monCanvas.dataset.tip;
+});
+monCanvas.addEventListener('pointerleave', () => { townHover.id = null; delete monCanvas.dataset.tip; });
 
 // Away from the desk (a pre-emptive action): nothing on the desk reacts, only the away card.
 window.addEventListener('pointerdown', ev => {

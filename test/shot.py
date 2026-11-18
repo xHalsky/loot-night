@@ -7,7 +7,7 @@ async def main():
         errs=[]
         pg.on('pageerror', lambda e: errs.append(str(e)))
         pg.on('console', lambda m: errs.append('console:'+m.text) if m.type=='error' else None)
-        await pg.goto('file:///home/claude/lootnight/dist/index.html')
+        await pg.goto('file:///home/claude/loot-night/dist/index.html')
         await pg.wait_for_timeout(800)
         await pg.screenshot(path='test/s0_title.png')
         await pg.click('[data-act=newGame]', force=True); await pg.evaluate("()=>{window.__lootnight.S.g.howto=false}")

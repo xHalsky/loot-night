@@ -7,10 +7,10 @@ import { maxHp } from '../systems/stats';
 import { MAP_INFO } from '../data/items';
 import { NPCS, TRADE_CHAT } from '../data/content';
 import { PIECES } from '../systems/excel';
-import { drawTown } from './town';
+import { drawTownMap } from './townMap';
 import { sfx } from './audio';
 import { drawDungeonScene } from './dungeon';
-import { GAME_W, GAME_H, BATTLE_W, BAND_H, SCENE_H, TOWN_X, TOWN_W } from './layout';
+import { GAME_W, GAME_H, BATTLE_W, BAND_H, SCENE_H } from './layout';
 
 /** The canvas is the whole game screen (#49); the side panel is DOM over its right part. */
 export const MON_W = GAME_W, MON_H = GAME_H;
@@ -72,15 +72,7 @@ function drawDungeon(c: CanvasRenderingContext2D) {
 /** Under the DOM side panel: its colour, so a frozen frame (the alt-tab switch) still shows a panel there. */
 function sidePanelBack(c: CanvasRenderingContext2D) { c.fillStyle = '#2a1f14'; c.fillRect(BATTLE_W, 0, GAME_W - BATTLE_W, GAME_H); }
 function drawTownScreen(c: CanvasRenderingContext2D) {
-  // the town picture is drawn 1:1, centred; the sky and the plaza run on past its edges
-  const sky = c.createLinearGradient(0, 0, 0, BAND_H + 120); sky.addColorStop(0, '#07081c'); sky.addColorStop(1, '#3a2a5a');
-  c.fillStyle = sky; c.fillRect(0, 0, BATTLE_W, BAND_H + 120);
-  for (let i = 0; i < 40; i++) { c.fillStyle = `rgba(255,255,255,${0.25 + 0.35 * ((i * 7) % 5) / 5})`; c.fillRect((i * 151) % BATTLE_W, (i * 53) % BAND_H, 2, 2); }
-  c.fillStyle = '#4a4658'; c.fillRect(0, BAND_H + 66, BATTLE_W, 84);
-  c.fillStyle = '#6a6676'; c.fillRect(0, BAND_H + 150, BATTLE_W, SCENE_H - 150);
-  c.save(); c.translate(TOWN_X, BAND_H); c.beginPath(); c.rect(0, 0, TOWN_W, SCENE_H); c.clip();
-  drawTown(c);
-  c.restore();
+  drawTownMap(c);   // Ravenhold at night fills the whole battle area (#50)
   sidePanelBack(c);
 }
 

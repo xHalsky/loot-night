@@ -16,6 +16,8 @@ import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
 import { headsetSvg, monsterStockSvg } from './peripherals';
 import { CITY, CD_PCT } from '../data/city';
+import { TOWN_SPOTS, type TownSpotId } from './townMap';
+import { SVC_INFO } from './town';
 import { isAway } from '../systems/autopilot';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
 import { CHAT_QS, VISIT_CUE } from '../data/content';
@@ -460,6 +462,18 @@ export function tooltipHtml(): string {
   if (!n || !hover.key) return '';
   const parts = hover.key.split(':');
   let body = '';
+  if (parts[0] === 'town') {   // a building in the city (#50): what it is, what it does, the cost
+    const id = parts[1] as TownSpotId, spot = TOWN_SPOTS.find(s => s.id === id)!;
+    let line = '', cost = '';
+    if (id === 'portal') { line = `Enter the dungeon at floor ${n.checkpoint}.`; cost = '15 min'; }
+    else if (id in SVC_INFO) line = SVC_INFO[id as keyof typeof SVC_INFO].hint;
+    else {
+      const d = CITY.find(f => f.id === id)!, L = S.g.furniture[d.id] ?? 0;
+      line = L ? `Level ${L}: ${d.effect[L - 1]}` : `Under construction. Built: ${d.effect[0]}`;
+      cost = L >= 3 ? 'Fully built' : `${L ? 'Upgrade' : 'Build'}: ${d.gold[L]} g · ${d.mats[L]} scraps`;
+    }
+    return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 250)}px;top:${Math.min(hover.y + 12, 720 - 90)}px"><div class="tt-name">${spot.name}</div><div>${line}</div>${cost ? `<div class="tt-sub">${cost}</div>` : ''}</div>`;
+  }
   if (parts[0] === 'autosalvage') return `<div class="tooltip" style="left:${Math.min(hover.x - 120, 1280 - 250)}px;top:${hover.y + 14}px"><div class="tt-name">Auto-salvage</div><div>Common and uncommon drops turn straight into scraps.</div></div>`;
   if (parts[0] === 'pre') return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 270)}px;bottom:${Math.max(8, 720 - hover.y + 14)}px">${preTip(parts[1] as PreId)}</div>`;   // low on screen: open upwards
   else if (parts[0] === 'skill' || parts[0] === 'hero') {
@@ -620,11 +634,9 @@ export function uiPanelHtml(): string {
         : `<button class="sp-build ${afford ? 'ok' : 'off'}" data-act="build" data-arg="${f.id}">${L ? 'Upgrade' : 'Build'} ${f.gold[L]} g · ${f.mats[L]}<i class="scrap"></i></button>`;
       return `<div class="sp-city"><div><b>${f.name}</b><span class="pips">${pips}</span><small>${L ? f.effect[L - 1] : `Next: ${f.effect[0]}`}</small></div>${act}</div>`;
     }).join('');
-    const svc = (['merchant', 'appraiser', 'salvage', 'auction'] as const).map(id => {
-      const label = { merchant: 'Merchant', appraiser: 'Appraiser', salvage: 'Salvage Forge', auction: 'Auction House' }[id];
-      return `<button class="sp-svc ${g.townWin === id ? 'on' : ''}" data-act="townWin" data-arg="${g.townWin === id ? '' : id}">${label}</button>`;
-    }).join('');
-    return `<div class="sp-top">${head('RAVENHOLD · BUILD')}<div class="sp-cityrows">${rows}</div>${head('SERVICES')}<div class="sp-svcs">${svc}</div>${itemPopHtml()}</div>` + bag + foot;
+    // the services are the buildings themselves now (click one in the city, #50); the way down stays here too
+    const gate = `<div class="sp-svcs"><button class="sp-gate" data-act="portal">Enter the dungeon · floor ${n.checkpoint}</button></div>`;
+    return `<div class="sp-top">${head('RAVENHOLD · BUILD')}<div class="sp-cityrows">${rows}</div>${gate}${itemPopHtml()}</div>` + bag + foot;
   }
   // --- party: three cards (level, power, "!" when one falls behind); drop gear on a card to equip it ---
   const tab = n.heroTab;

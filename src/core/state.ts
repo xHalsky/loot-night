@@ -208,7 +208,7 @@ export interface GameState {
   pendingListings: { name: string; zl: number }[];
   pity: number; uid: number;
   night: Night | null;
-  townWin?: 'merchant' | 'appraiser' | 'salvage' | 'auction' | null;
+  townWin?: 'merchant' | 'appraiser' | 'salvage' | 'auction' | `build:${'training' | 'inn' | 'library' | 'treasury'}` | null;   // a service window, or a plot's build window (#50)
   screen: Screen; paused: boolean; debug: boolean; timeScale: number;
   results: Results | null;
   morning: { paid: number; listings: number } | null;

@@ -6,7 +6,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
         pg = await b.new_page(viewport={'width':1280,'height':720}, device_scale_factor=2)
-        await pg.goto('file:///home/claude/lootnight/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]'); await act(pg,'[data-act=portal]')
         await pg.keyboard.press('F1'); await pg.wait_for_timeout(200); await act(pg,'[data-act=dbgVisit]'); await act(pg,'[data-act=dbgBusy]'); await pg.keyboard.press('F1'); await pg.keyboard.press('Tab')
         for i in range(14):

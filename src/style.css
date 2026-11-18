@@ -1149,3 +1149,13 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #ui .sp-pop .btn.sm { min-height: 22px; font-size: 11px; }
 /* an upgrade for someone: a green arrow in the bag slot's top-right corner (#49) */
 #ui .sp-bag .up-ico { position: absolute; right: 2px; top: 0; font: 400 10px/1 'Pixelify Sans', monospace; font-style: normal; color: #6fcf7f; text-shadow: 0 1px 0 #000, 0 0 3px #000; pointer-events: none; }
+/* the city (#50): the windows a click on a building opens, and the side panel's way into the dungeon */
+#monUi .svc-win .mg-close { right: 6px; top: 6px; width: 22px; height: 22px; font-size: 12px; }
+#monUi .svc-win .svc-head { padding-right: 36px; }
+#monUi .svc-win.bld-win { left: 184px !important; top: 150px !important; width: 300px; height: auto !important; }
+#monUi .bld-win .bw-body { display: flex; flex-direction: column; gap: 8px; padding: 10px 10px 0; }
+#monUi .bld-win .bw-next { font-size: 12px; color: #c9b08a; } #monUi .bld-win .bw-next b { font-weight: 400; color: #9fe0a8; }
+#monUi .bld-win .tbtn.bw-btn { position: static; transform: none; align-self: flex-start; font-size: 12px; padding: 5px 12px; }
+#monUi .bld-win .svc-foot { margin: 0 -10px; }
+#ui .sp-gate { grid-column: 1 / -1; font-size: 11px; padding: 5px 4px; color: #f2e9d8; background: linear-gradient(#6a3ab8, #3a1a78); border: 1.5px solid #c9a0ff; border-radius: 2px; box-shadow: 0 0 8px rgba(170,120,255,.45); }
+#ui .sp-gate:hover { filter: brightness(1.15); }

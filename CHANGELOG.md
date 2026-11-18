@@ -3,6 +3,29 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.47.0 (2026-11-18)
+
+The town remade (#50). The old city was two rows of buildings facing each other across a plaza, with the services
+as buttons in the side panel: it read as a menu with pictures. Now Ravenhold is a place.
+
+- **A jRPG town at night, seen from above.** It fills the whole battle area: stone houses under slate roofs,
+  cobbled streets winding between them, a fountain on the round plaza, graves and dead trees under the ridge. Dungeon
+  Portal at the top centre: a pointed arch with skulls and chains, a violet vortex turning inside, violet braziers.
+  Candlelit windows, lantern posts, the forge's furnace, smoke and sparks, hooded walkers with lanterns.
+- **Unbuilt buildings are construction sites** (foundation, half wall, scaffolding, a crane, stone blocks). Each
+  level changes the art: the Training Grounds get barracks and a watchtower, the Inn a stable wing and a balcony, the
+  Library a tower and a glowing dome, the Treasury gold trim and a gold dome.
+- **The buildings are the buttons.** Names are painted on wooden signs in the scene. Hover: a soft gold halo, a hand
+  cursor, the tooltip, a brighter sign. Click a service for its window, a plot for its new build window (effect now
+  and next, Build / Upgrade with the cost), the portal to go down.
+- **Side panel:** the SERVICES buttons are gone (each was a building on the map; the panel overflowed with them). The
+  BUILD list stays, and an "Enter the dungeon · floor N" button.
+- The MMO crowd with guild tags and chat bubbles is gone (the guild chat lives in the feed).
+- UI only: bots unchanged (good: 3 stars, floor 5, never caught; idle: caught).
+- Tests: `test/towninput.py` checks hover and click on the map (Merchant, Inn, Library, portal);
+  `test/layout.py` shoots the town, hover, build window and two sets of built levels. Old screenshot scripts
+  pointed at a stale repo path (fixed).
+
 ## 0.46.0 (2026-11-18)
 
 Loot drives progress (#49, round 3). Before, a party that never equipped anything got almost as deep as one that
