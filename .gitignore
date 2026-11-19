@@ -4,3 +4,5 @@ test/*.png
 *.log
 .DS_Store
 __pycache__/
+test/rl/
+test/rl.zip
