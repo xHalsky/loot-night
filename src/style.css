@@ -991,7 +991,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .phone-zoom .phone-wrap { left: 0 !important; top: 0 !important; }
 .phone-zoom .ios.call .ios-mrow { display: none; }
 .phone-zoom .ios.call .ios-mslide { margin-top: 12px; }
-.pre-phone { left: 150px !important; top: 470px !important; }
+.pre-phone { left: 150px !important; top: 520px !important; }   /* on the desk beside the phone, below the taskbar (#63) */
 #tonight { left: 470px !important; top: 498px !important; z-index: 6 !important; }
 #tonight .sticky { transform: rotate(3deg) !important; }
 

@@ -3,6 +3,14 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.3 (2026-11-19)
+
+- The phone's Messages menu (tap the idle phone: Text her, Raid night?) opened over the monitor's taskbar, and the
+  taskbar hid its header and "Text her". It now sits on the desk beside the phone, below the taskbar (#63).
+  New check `test/phonemenu.py`: the menu is below the taskbar and nothing covers it.
+- `test/rl_screens.py`: every real-life screen (phone, dog, every pop-up) at 2x with contact sheets, for the
+  redesign.
+
 ## 0.49.2 (2026-11-19)
 
 Space didn't tilt the Goblin Fuel can (#62).
