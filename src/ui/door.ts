@@ -4,6 +4,7 @@ import { drawHim } from './him';
 import { hisLook } from '../systems/him';
 import { T } from '../config/tuning';
 import { ACT_BY_ID } from '../data/apartment';
+import { PLAN_WALLS, PLAN_YOU } from './plan';
 
 // The webcam view (#36, #40): what the camera on top of his monitor sees. A dark grey room; him centred at the
 // bottom, a silhouette whose glasses catch the screen; your door behind him; the plan taped on the wall (#35). Hold the door to peek: it opens a crack onto the hallway (drawHallway).
@@ -172,10 +173,8 @@ function planSheet(c: CanvasRenderingContext2D) {
   const k = (w - 8) / 200, ox = 4, oy = 6;
   const L = (pts: number[][]) => { c.beginPath(); pts.forEach(([px, py], i) => (i ? c.lineTo(ox + px * k, oy + py * k) : c.moveTo(ox + px * k, oy + py * k))); c.stroke(); };
   c.strokeStyle = '#eaf3ff'; c.lineWidth = 1.2;
-  c.strokeRect(ox + 2 * k, oy + 2 * k, 196 * k, 196 * k);
-  L([[2, 84], [52, 84]]); L([[66, 84], [110, 84]]); L([[124, 84], [150, 84]]); L([[92, 2], [92, 84]]); L([[148, 2], [148, 84]]);
-  L([[2, 106], [28, 106]]); L([[92, 106], [150, 106]]); L([[170, 106], [198, 106]]); L([[118, 106], [118, 198]]);
-  c.fillStyle = '#ffd27a'; c.fillRect(ox + 156 * k, oy + 150 * k, 4, 4);   // YOU
+  for (const [x1, y1, x2, y2] of PLAN_WALLS) L([[x1, y1], [x2, y2]]);   // the same layout as the big sheet (ui/plan.ts)
+  c.fillStyle = '#ffd27a'; c.fillRect(ox + PLAN_YOU[0] * k - 2, oy + PLAN_YOU[1] * k - 2, 4, 4);   // YOU
   c.fillStyle = '#cfe2ff'; c.font = '9px "Patrick Hand", sans-serif'; c.textAlign = 'right'; c.fillText('plan', w - 4, h - 4);
   c.fillStyle = 'rgba(240,230,200,.75)'; c.fillRect(w - 12, -3, 14, 6); c.fillRect(w - 12, h - 3, 14, 6);   // tape on the corners you can see
   c.restore();

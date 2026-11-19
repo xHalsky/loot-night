@@ -12,6 +12,7 @@ import { cityOutlook } from '../systems/town';
 import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
 import { preBlocked, nextMult } from '../systems/preemptive';
 import { phoneAction } from '../systems/interrupts';
+import { planSvg } from './plan';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
@@ -177,39 +178,13 @@ export function heardHtml(): string {
     : `<div class="heard"><i>&#9835;</i> ${what}</div>`;
 }
 
-function planSvg(size: number): string {
-  const W = 'stroke="#eaf3ff" stroke-width="2.2" fill="none"', F = 'stroke="#cfe2ff" stroke-width="1" fill="none" opacity=".8"';
-  return `<svg viewBox="0 0 200 200" width="${size}" height="${size}">
-    <defs><pattern id="bpGrid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="rgba(255,255,255,.08)" stroke-width=".6"/></pattern>
-</defs>
-    <rect width="200" height="200" fill="#1d4f91"/><rect width="200" height="200" fill="url(#bpGrid)"/>
-    <path d="M160 106 L4 92 M160 106 L40 196" fill="none" stroke="#ff9aa8" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>
-    <rect x="2" y="2" width="196" height="196" ${W} stroke-width="3"/>
-    <path d="M2 84 H52 M66 84 H110 M124 84 H150" ${W}/>
-    <path d="M92 2 V84 M148 2 V84" ${W}/>
-    <path d="M2 106 H28 M92 106 H150 M170 106 H198" ${W}/>
-    <path d="M118 106 V198" ${W}/>
-    <path d="M52 84 A14 14 0 0 1 66 70" ${F}/><path d="M110 84 A14 14 0 0 1 124 70" ${F}/><path d="M170 106 A20 20 0 0 1 150 126" ${F}/>
-    <path d="M24 2 H70 M24 5 H70 M160 2 H190 M160 5 H190 M30 195 H90 M30 198 H90 M140 195 H184 M140 198 H184 M195 20 V60 M198 20 V60" stroke="#eaf3ff" stroke-width="1"/>
-    <rect x="10" y="10" width="40" height="52" ${F}/><rect x="13" y="13" width="15" height="9" ${F}/><rect x="32" y="13" width="15" height="9" ${F}/><path d="M10 30 H50" ${F}/>
-    <rect x="98" y="8" width="22" height="46" rx="6" ${F}/><ellipse cx="136" cy="64" rx="6" ry="8" ${F}/><rect x="126" y="8" width="18" height="12" ${F}/>
-    <path d="M152 8 H194 V80 H182 V20 H152 Z" ${F}/><circle cx="188" cy="34" r="3" ${F}/><circle cx="188" cy="46" r="3" ${F}/><rect x="156" y="50" width="18" height="18" rx="9" ${F}/>
-    <rect x="12" y="166" width="58" height="20" rx="4" ${F}/><rect x="74" y="160" width="20" height="26" rx="4" ${F}/><path d="M16 114 H70" stroke="#cfe2ff" stroke-width="2.4"/><rect x="28" y="130" width="34" height="18" ${F}/>
-    <rect x="148" y="170" width="44" height="22" ${F}/><circle cx="168" cy="160" r="6" ${F}/><rect x="124" y="120" width="12" height="30" ${F}/>
-    <g font-family="Patrick Hand, sans-serif" font-size="11" fill="#eaf3ff" letter-spacing=".8">
-      <text x="50" y="76" text-anchor="middle">BEDROOM</text><text x="120" y="78" text-anchor="middle" font-size="9">BATH</text>
-      <text x="166" y="98" text-anchor="middle" font-size="9">KITCHEN</text><text x="62" y="99" font-size="9">HALLWAY</text>
-      <text x="58" y="158" text-anchor="middle">LIVING</text><text x="150" y="150" font-size="11" fill="#ffd27a">YOU</text></g>
-  </svg>`;
-}
-
-/** The plan taken off the wall (#35): the blueprint, large. It teaches the layout; it never shows her. */
 export function planHtml(): string {
   return `<div class="plan-back"><div class="plan-sheet"><button class="mg-close" title="Back (Esc)">\u2715</button>
-    <div class="plan-title">The plan <small>which rooms are next to yours, and where the doorways lead</small></div>
+    <div class="plan-title">The plan <small>who hears you, what the crack shows</small></div>
     ${planSvg(340)}
-    <div class="plan-foot">Next to your room: living room, kitchen, hallway (she hears you best). Across: bathroom. Far: bedroom.
-    Through the crack: kitchen first, then the bathroom, the far end only when wide.</div></div></div>`;
+    <div class="plan-foot">Next to your room: the living room (through the wall) and the kitchen (right across, no door).
+    She hears you best there and in the hallway. The bathroom is across and further, the bedroom at the far end.
+    Through the crack: 1 the kitchen, 2 the bathroom door, 3 the far end only when the door is wide.</div></div></div>`;
 }
 
 /** The feed card (#49): newest line on top, older ones fading; a tag says whose line it is. No header, no tabs. */

@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.5 (2026-11-19)
+
+- **The plan matches the apartment again.** The blue sheet on his wall still showed the layout from before the
+  door-crack view. It is redrawn from the hallway you see through the crack: your door opens onto the hallway,
+  the kitchen's open doorway is right across, the bathroom door further along, the bedroom door and the living
+  room's opening at the far end; the living room shares your wall; the front door is at the near end. Numbers 1
+  to 3 mark what the crack shows first, then next, then only when wide, and the text under it says who hears you
+  best. The corner of the sheet in the webcam view uses the same layout (`src/ui/plan.ts`).
+- `test/redesign_chunks.py`: the redesign's windows grouped by purpose (her, hints, RPG windows, night overlays,
+  end of the night), with a board per group.
+
 ## 0.49.4 (2026-11-19)
 
 Everything on the phone happens inside the phone (#63).

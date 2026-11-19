@@ -34,8 +34,13 @@ during her shower leaves the door chance at 35%; the same kill while she makes t
 
 **The plan** (a sheet taped to the wall in the webcam view, only its corner in frame; #35, #41; screen.md). A blue architect's floor plan:
 white walls, door swings, furniture, a dashed line of sight from your door. It never marks where she is. Click
-it for the large version: it teaches the layout, which rooms are next to yours (Noise by distance) and where
-the doorways in the crack lead.
+it for the large version: it teaches the layout, which rooms are next to yours (Noise by distance) and what the
+crack shows. It is drawn to match the hallway behind your door (`src/ui/plan.ts`, one layout for the sheet and
+its corner in the webcam view): your door opens onto the hallway; right across it the kitchen's open doorway
+(1), further along the same wall the bathroom door (2), at the far end the bedroom door and the living room's
+opening on your side (3); the living room shares your wall; the front door is at the hallway's near end. The
+numbers 1 to 3 are the order the crack reveals them. (0.49.5: the old sheet showed the layout from before the
+crack view, with the hallway running past the bedroom and the bathroom between them.)
 
 **Last heard** (one line under the webcam view, above the her-note, `heardHtml()`; hidden while she stands in
 the doorway): what you last heard of her, where,
