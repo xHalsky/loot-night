@@ -39,7 +39,9 @@ crack shows. It is drawn to match the hallway behind your door (`src/ui/plan.ts`
 its corner in the webcam view): your room is at the hallway's end, so the crack looks straight down it; on the
 right wall the kitchen's open doorway (1), then the bathroom door (2); at the far end the living room's opening on
 the left and the bedroom door on the right (3). The kitchen is beside your room and the living room runs along the
-hallway's left side, so both share your walls. The numbers 1 to 3 are the order the crack reveals them. The sheet
+hallway's left side, so both share your walls. Your desk is on the far wall, facing away from the door, so the
+door is right behind you as in the webcam view, and your bed is along the same wall (0.49.7, #65; they were the
+other way round). The numbers 1 to 3 are the order the crack reveals them. The sheet
 has no front door: nothing in the game uses it, and the crack doesn't show one. (0.49.6, #64: 0.49.5 put your
 room beside the hallway and the front door at its end, but the crack's one vanishing point means you look down
 the hallway's length; before that the sheet still showed the layout from before the crack view.)
@@ -140,22 +142,29 @@ Mom stops calling (the boss still pings). Noise above `WAKE_NOISE_FLOOR` raises 
 `WAKE_TEXT` she texts "are you coming to bed?" ([desk.md](desk.md)); a reply lowers Waking, ignoring
 raises it. At `WAKE_UP` she gets up and comes to your door (never a fake-out), then goes back to bed.
 
-**She sits on your desk.** After a passed visit, while she is happy (`LAP_CHANCE` 40%, at most every
-`LAP_MIN_GAP_SEC`), she sits on the desk in front of the monitor, seen first-person from the thighs up,
-covering the battle area (and the skill bar; hotkeys still work, see #9); the side panel stays usable (#49). No visits or phone meanwhile. She asks
+**She leans into your face.** After a passed visit, while she is happy (`LAP_CHANCE` 40%, at most every
+`LAP_MIN_GAP_SEC`), she leans in between you and the screen: in from outside the right edge, over the whole
+frame (the webcam, the monitor, the desk; the rest dims), bent forward with her head tilted, chest up, her body
+running off the bottom right (`drawHerPeek` in `src/ui/her.ts`, `drawLapFx` in `src/ui/deskFx.ts`). Her line
+sits by her face, your three answers on the left. Hotkeys still work (#9). No visits or phone meanwhile. She asks
 `LAP_QUESTIONS` (3) questions, `LAP_ASK_SEC` each, with a sweet, a meh and a rude answer, shuffled;
 silence is meh. Two sweet: she kisses your cheek and leaves happy (Mood `LAP_HAPPY_MOOD`, no visits for
 `LAP_CALM_SEC`). Two rude: she sulks off ("Fine. Enjoy your elf."). Poses change with each sweet answer
-(hands on thighs, hair twirl, leaning back). Guild chat reacts ("who is that??").
+(a finger on her lips, twirling her hair, her chin on her fist). Guild chat reacts ("who is that??").
 
 **How she looks.** Outfit comes from what she was doing: TV = off-shoulder tee and shorts with the
 remote; tea = oversized hoodie and mug; phone or bathroom = tank top and shorts; shower = towel wrap and
 turban with droplets; woken = sleep shirt and messy hair. Barefoot at the door, painted toenails, contact
 shadow on the hallway floor. Expressions follow the situation: suspicious while she looks, smile when she
 buys it, angry, then furious with an anger mark on later catches, pout when woken, blush and wink on lean
-visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head.
+visits and when she leans in. A small reaction bubble (?, !, heart, ...) over her head.
 
 ## Decisions
+
+- **Her questions lean into your face, over the whole screen** (0.49.7, #65, Paweł's review): she comes in from
+  outside the right edge, part of her off screen, the way someone leans between you and your monitor. Rejected:
+  sitting on the desk over the battle area only, with the side panel left usable (#49): it read as a window on
+  the PC, not her getting in your face.
 
 - **Snack run never looks at the screen** (0.17): rewarding the player who reads the cue with staying in
   the game is what makes the cue worth reading. Hiding the cans costs one click during the footsteps,

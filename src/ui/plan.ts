@@ -3,7 +3,8 @@
 // Your door is at the hallway's end, so the crack looks straight down it: on the right wall the kitchen's open
 // doorway first, then the bathroom door; at the far end the living room's opening (left) and the bedroom door (right).
 // Who hears what (ROOM_DISTANCE): the kitchen and the living room share your walls and the hallway starts at your
-// door (next), the bathroom (middle), the bedroom (far). The plan never marks where she is.
+// door (next), the bathroom (middle), the bedroom (far). Your desk faces the far wall, so the door is right behind
+// you (as in the webcam view). The plan never marks where she is.
 
 /** Walls as segments on a 200 x 200 sheet (openings are gaps). */
 export const PLAN_WALLS: [number, number, number, number][] = [
@@ -16,7 +17,7 @@ export const PLAN_WALLS: [number, number, number, number][] = [
   [110, 2, 110, 84],                                                                              // bathroom | kitchen
 ];
 /** Your room's centre (the gold YOU). */
-export const PLAN_YOU: [number, number] = [156, 132];
+export const PLAN_YOU: [number, number] = [152, 140];
 
 export function planSvg(size: number): string {
   const W = 'stroke="#eaf3ff" stroke-width="2.2" fill="none" stroke-linecap="square"', F = 'stroke="#cfe2ff" stroke-width="1" fill="none" opacity=".8"';
@@ -34,7 +35,7 @@ export function planSvg(size: number): string {
     <rect x="74" y="6" width="22" height="46" rx="6" ${F}/><rect x="99" y="6" width="9" height="14" ${F}/><ellipse cx="103" cy="38" rx="5" ry="7" ${F}/>
     <path d="M136 6 H194 V72 H182 V18 H136 Z" ${F}/><circle cx="188" cy="30" r="3" ${F}/><circle cx="188" cy="44" r="3" ${F}/><rect x="114" y="6" width="16" height="20" ${F}/><circle cx="154" cy="50" r="9" ${F}/>
     <path d="M8 116 V160" stroke="#cfe2ff" stroke-width="2.4"/><rect x="30" y="126" width="24" height="26" ${F}/><rect x="72" y="116" width="20" height="52" rx="4" ${F}/><rect x="24" y="172" width="28" height="18" rx="4" ${F}/>
-    <rect x="180" y="118" width="14" height="48" ${F}/><path d="M190 124 V160" stroke="#cfe2ff" stroke-width="2"/><circle cx="171" cy="148" r="7" ${F}/><rect x="162" y="88" width="32" height="20" ${F}/><rect x="186" y="91" width="6" height="14" ${F}/><rect x="126" y="122" width="10" height="52" ${F}/>
+    <rect x="180" y="86" width="14" height="34" ${F}/><path d="M190 90 V116" stroke="#cfe2ff" stroke-width="2"/><circle cx="169" cy="100" r="7" ${F}/><rect x="166" y="134" width="28" height="46" ${F}/><rect x="170" y="137" width="20" height="9" ${F}/><rect x="126" y="122" width="10" height="52" ${F}/>
     <g font-family="Patrick Hand, sans-serif" font-size="11" fill="#eaf3ff" letter-spacing=".8" text-anchor="middle">
       <text x="30" y="82">BEDROOM</text><text x="89" y="62" font-size="9">BATH</text><text x="154" y="78" font-size="9">KITCHEN</text>
       <text x="106" y="105" font-size="8">HALLWAY</text><text x="46" y="112" font-size="10">LIVING</text>

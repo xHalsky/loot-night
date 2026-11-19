@@ -60,8 +60,13 @@ async def main():
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
         if await ev(pg, "return g.paused"): await pg.keyboard.press('Escape')
         await dbg(pg, 'dbgLap'); await pg.wait_for_timeout(1900)
-        await shot(pg, '1_her', 'her_on_the_desk_question', clip=MONITOR)
-        await shot(pg, '1_her', 'her_on_the_desk_full_frame')
+        await shot(pg, '1_her', 'her_leans_in_question')            # the whole stage: she covers it all (#65)
+        await ev(pg, "n.lap.sweet=1; n.lap.face='blush'"); await pg.wait_for_timeout(300)
+        await shot(pg, '1_her', 'her_leans_in_after_a_sweet_answer')
+        await ev(pg, "n.lap.sweet=2; n.lap.face='wink'"); await pg.wait_for_timeout(300)
+        await shot(pg, '1_her', 'her_leans_in_two_sweet_answers')
+        await ev(pg, "n.lap.stage='arrive'; n.lap.t=0.6"); await pg.wait_for_timeout(60)
+        await shot(pg, '1_her', 'her_leans_in_arriving')
         await ev(pg, "n.lap=null"); await pg.wait_for_timeout(300)
 
         # ---- 2 hints ----

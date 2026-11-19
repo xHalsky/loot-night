@@ -105,7 +105,7 @@ export type MiniGame = PhoneGame | MonsterGame | CuddleGame;
 
 /** The dog (docs/design/desk.md): pops up at the desk for attention. */
 export interface DogState { stage: 'away' | 'up' | 'happy'; t: number; next: number; ignores: number; limit: number; pet: number; sweet: number; flinch: number; sweetPet?: number }   // sweetPet: petting done on his favourite spot
-/** She sits on the desk in front of the monitor (docs/design/her.md). */
+/** She leans into your face from the right, asking three things (docs/design/her.md, #65). */
 export interface LapState { stage: 'arrive' | 'ask' | 'react' | 'leave'; t: number; q: number; asked: number; order: number[]; sweet: number; rude: number; face: 'smile' | 'neutral' | 'pout' | 'blush' | 'wink'; line: string; outfit: string }
 
 // Excel: a slow spreadsheet Tetris. Filled rows pay overtime gold.

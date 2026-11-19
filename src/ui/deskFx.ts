@@ -1,17 +1,17 @@
-// On-desk scenes drawn over the desk panel (no windows): the dog, the cable fix, and her sitting on the desk.
+// On-desk scenes drawn over the desk panel (no windows): the dog and the cable fix. Her questions (leaning into
+// your face from the right) cover the whole stage on their own canvas (drawLapFx, #65).
 // Design doc section 10. Rules live in systems/pets.ts and systems/lap.ts.
 import { S } from '../core/state';
 import { petStroke, plugIn, PLUGS, CABLE_COLORS } from '../systems/pets';
 import { LAP_QS } from '../systems/lap';
-import { drawHerLap, OUTFIT_BY_ACTIVITY } from './her';
+import { drawHerPeek, OUTFIT_BY_ACTIVITY } from './her';
 import { pixelSprite, blit, smooth, cel } from './pixel';
 import { sfx } from './audio';
-import { DESK_W, GAME_X, GAME_Y, BATTLE_W, GAME_H } from './layout';
+import { DESK_W } from './layout';
 
 const DW = DESK_W, DH = 720;
-// The cable scene and her on the desk were drawn for the old 680 px desk; they are placed on the new one (#49).
+// The cable scene was drawn for the old 680 px desk; it is placed on the new one (#49).
 const CABLE_OX = 152, CABLE_OY = 40;   // the cable scene, centred on the monitor
-const LAP_OX = 12, LAP_OY = 40;       // her on the desk: over the battle area only, the side panel stays usable
 let scale = 1;
 export function setDeskScale(s: number) { scale = s; }
 
@@ -206,18 +206,28 @@ function drawCables(c: CanvasRenderingContext2D, t: number) {
   });
 }
 
-// ---------- her on the desk, first person ----------
-function drawLap(c: CanvasRenderingContext2D, t: number) {
-  const l = S.g.night!.lap!;
-  c.save(); c.beginPath(); c.rect(GAME_X, GAME_Y, BATTLE_W, GAME_H); c.clip();
+// ---------- her questions: she leans into your face from the right (#65) ----------
+// Over the whole stage (the webcam, the monitor, the desk), her body running off the bottom right. She slides in
+// along her lean and out the same way. Hotkeys keep working underneath (#9).
+const PEEK_X = 780, PEEK_Y = 140;   // the top of her head, stage px
+export function drawLapFx() {
+  const cv = document.getElementById('lapFx') as HTMLCanvasElement | null;
+  if (!cv) return;
+  const c = cv.getContext('2d')!;
+  c.clearRect(0, 0, cv.width, cv.height);
+  const l = S.g.night?.lap;
+  if (!l) return;
+  const t = performance.now() / 1000;
   const look = OUTFIT_BY_ACTIVITY[l.outfit] ?? OUTFIT_BY_ACTIVITY.tv;
   const k = l.stage === 'arrive' ? Math.max(0, l.t / 1.2) : l.stage === 'leave' ? 1 - Math.max(0, l.t / 1.4) : 0;
+  const ease = k * k;
   const breathe = Math.sin(t * 1.6) > 0 ? 3 : 0;
-  const pose = Math.min(2, l.sweet);
-  c.fillStyle = `rgba(0,0,0,${0.35 * (1 - k)})`; c.fillRect(GAME_X, GAME_Y, BATTLE_W, GAME_H);
-  c.translate(LAP_OX, LAP_OY);
-  drawHerLap(c, { outfit: look.outfit, face: l.face, blink: (t % 4.1) < 0.13 }, pose, Math.round(k * 240 / 3) * 3, Math.round((k * 60 + breathe) / 3) * 3, 1 - k);
-  c.restore();
+  c.fillStyle = `rgba(12,6,12,${0.6 * (1 - k)})`; c.fillRect(0, 0, cv.width, cv.height);
+  const g = c.createRadialGradient(PEEK_X + 120, PEEK_Y + 90, 20, PEEK_X + 120, PEEK_Y + 90, 420);
+  g.addColorStop(0, `rgba(255,170,190,${0.16 * (1 - k)})`); g.addColorStop(1, 'rgba(255,170,190,0)');
+  c.fillStyle = g; c.fillRect(0, 0, cv.width, cv.height);
+  drawHerPeek(c, { outfit: look.outfit, face: l.face, blink: (t % 4.1) < 0.13 }, Math.min(2, l.sweet),
+    PEEK_X + Math.round(ease * 600 / 3) * 3, PEEK_Y + Math.round((ease * 360 + breathe) / 3) * 3, 1);
 }
 
 export function drawDeskFx() {
@@ -232,7 +242,6 @@ export function drawDeskFx() {
   shake = Math.max(0, shake - dt);
   if (n.unplugged) { c.save(); c.translate(CABLE_OX, CABLE_OY); drawCables(c, t); c.restore(); }
   else for (let i = 0; i < PLUG_HOME.length; i++) { plugPos[i].x = PLUG_HOME[i].x; plugPos[i].y = PLUG_HOME[i].y; }
-  if (n.lap) drawLap(c, t);
   drawDog(c, t);
   drawHearts(c, dt);
 }

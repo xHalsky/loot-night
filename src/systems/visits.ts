@@ -100,7 +100,7 @@ export function updateVisits(dt: number) {
   n.scare = Math.max(0, n.scare - dt);
   const amb = aptAmbience();
   ambience(amb?.cue ?? null, amb?.room, amb?.level);   // her TV, kettle or shower, while she is at it
-  if (n.lap) return;                 // she is on your desk: the apartment waits
+  if (n.lap) return;                 // she is leaning in: the apartment waits
   if (v.stage === 'idle') {
     const r = updateApartment(dt);
     if (r) startVisit(r === 'wake');

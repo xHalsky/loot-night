@@ -27,7 +27,7 @@ import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, ans
 import { openMonster, cancelMonster } from './systems/monster';
 import { drawMonsterScene, monsterTilt } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
-import { drawDeskFx, lapUiHtml, setDeskScale } from './ui/deskFx';
+import { drawDeskFx, drawLapFx, lapUiHtml, setDeskScale } from './ui/deskFx';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -68,10 +68,11 @@ stage.innerHTML = `
       <div id="youCard"></div>
       <div id="feedCard"></div>
       <canvas id="deskFx" width="${DESK_W}" height="720"></canvas>
-      <div id="lapUi"></div>
       <div id="preUi"></div>
     </div>
   </div>
+  <canvas id="lapFx" width="1280" height="720"></canvas>
+  <div id="lapUi"></div>
   <div id="screens"></div>
   <div id="pause"></div>
   <div id="planUi"></div>
@@ -473,6 +474,7 @@ function render() {
     drawMonsterScene();
     applyPhoneDrag();
     drawDeskFx();
+    drawLapFx();
     setHtml('lapUi', lapUiHtml());
     setHtml('preUi', preBusyHtml());
     const lid = n.blink.state === 'open' ? 0 : n.blink.lid;

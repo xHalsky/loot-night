@@ -13,7 +13,7 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | RPG combat | Noise, loot, XP | Flow, Zone, Goblin Fuel, buildings, gear, Tiredness; curios (a real can, Noise, standing still) | Fine |
 | Loot | Gold, scraps, zł, party power; real-life affixes change headset, alt-tab, Tiredness, excuses, waking, cans | Flow, Zone, green Mood; cross-system affixes read headset, Goblin Fuel, Noise, Mood, the dog, Excel | zł is a dead end until the store (#4) |
 | Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift, pre-emptive actions | Fine: good visits now pay Goodwill and Loved (0.29, 0.30) |
-| Goodwill | Forgiveness, the Raid pass (calm, Noise allowed) | Cuddle, good chat, lean visit, sweet answers on the desk, her text answered; catches take it | New in 0.30 |
+| Goodwill | Forgiveness, the Raid pass (calm, Noise allowed) | Cuddle, good chat, lean visit, sweet answers when she leans in, her text answered; catches take it | New in 0.30 |
 | Noise | Visit timing, waking her | Combat, dog, Goblin Fuel, loud curio choices, a legendary yell, a wipe slam | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
 | Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise, her text Goodwill | Timers, the headset (the boys) | Fine |
@@ -53,7 +53,7 @@ per-night charge. One system for "act before she comes", not two.
 A 0 to 100 bank on the door panel under Patience and Caught (a bar with marks at 40 and 60); no decay in a
 night; half carries over to the next. A toast names every gain and loss.
 
-- **Earned:** a good cuddle +20, two sweet answers when she sits on your desk +20, a good chat +8, her
+- **Earned:** a good cuddle +20, two sweet answers when she leans in +20, a good chat +8, her
   bedtime text answered +5, a lean visit +3. Later: Hug +15, Help me +15 (#12).
 - **Lost:** every catch -15.
 - **Raid pass** (40): a phone action, "Raid night?" (3 s). No visits for `RAID_CALM_SEC` (150 s), and Noise

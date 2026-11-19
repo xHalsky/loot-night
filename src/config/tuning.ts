@@ -58,7 +58,7 @@ export const T = {
   // The dog: pops up for attention; ignored 1-3 times -> bumps the desk, cables out
   DOG_FIRST_SEC: 50, DOG_EVERY_SEC: [70, 120] as [number, number], DOG_AGAIN_SEC: [25, 40] as [number, number], DOG_WAIT_SEC: 12, DOG_WHINE_NOISE: 0.6,
   DOG_PET_RATE: 0.0032, DOG_SWEET_MULT: 3, DOG_FAST: 2200,
-  // She sits on your desk (only when she is happy): sweet-talk her off
+  // She leans into your face (only when she is happy): sweet-talk her away
   LAP_CHANCE: 0.4, LAP_MIN_GAP_SEC: 180, LAP_ASK_SEC: 7, LAP_QUESTIONS: 3, LAP_HAPPY_MOOD: -15, LAP_RUDE_MOOD: 6, LAP_SULK_MOOD: 10, LAP_CALM_SEC: 60,
 
   // --- Flow ---

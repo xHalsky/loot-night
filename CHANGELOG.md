@@ -3,6 +3,16 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.7 (2026-11-19)
+
+- **Her questions lean into your face** (#65). She no longer sits on the desk over the battle area. She leans in
+  from outside the right edge over the whole screen (webcam, monitor, desk; the rest dims), bent forward with her
+  head tilted, her body running off the bottom right. Her line sits by her face, your three answers on the left in
+  bigger buttons. Poses by sweet answers: a finger on her lips, twirling her hair, her chin on her fist. Same rules
+  and timers (hotkeys still work); the toasts say "She leans in between you and the screen." and "She leaves you
+  to it.". Sims unchanged (drawing only).
+- **The plan: your desk and your bed swapped** (#65), so the door is right behind you, as the webcam view shows.
+
 ## 0.49.6 (2026-11-19)
 
 - **Your room is at the end of the hallway** (#64). The crack looks straight down the hallway, so your door is at

@@ -7,8 +7,9 @@ import { toastAs } from '../core/fx';
 const toast = toastAs('HER');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 
-// She sits on your desk (docs/design/her.md). Not a punishment: it happens when a visit goes well and she is
-// in a good mood. She blocks most of the monitor (the right panel still works). No other interrupts meanwhile.
+// She leans into your face (docs/design/her.md, #65). Not a punishment: it happens when a visit goes well and she
+// is in a good mood. She leans in from the right over the whole screen (hotkeys still work). No other interrupts
+// meanwhile.
 // To get your screen back you have to be sweet: she asks three things; sweet answers make her leave happy,
 // rude ones make her sulk off.
 
@@ -20,14 +21,14 @@ export const LAP_QS: LapQ[] = [
   { q: 'Did you miss me?', a: ['Every second.', 'You were gone?', 'I was busy.'] },
   { q: 'Guess what I am thinking.', a: ['That I am the luckiest guy alive.', 'Food?', 'That I should log off? No.'] },
   { q: 'Are you coming to bed soon?', a: ['Five more minutes, I promise.', 'Maybe.', 'After this floor. And the next.'] },
-  { q: 'Can I stay here a bit?', a: ['Always. Best seat in the house.', 'I guess.', 'You are blocking the healer.'] },
+  { q: 'Can I stay here a bit?', a: ['Always. Best view in the house.', 'I guess.', 'You are blocking the healer.'] },
 ];
 let lastLap = -999;
-const GUILD = [['xXBartekXx', 'who is that?? 👀'], ['Kubson', 'bro is AFK with a girl on his desk'], ['Ania_Heals', 'tell her I said hi!'], ['LeeroyPL', 'tank stopped moving, everyone ok?'],
+const GUILD = [['xXBartekXx', 'who is that?? 👀'], ['Kubson', 'bro is AFK, his girl is in the way'], ['Ania_Heals', 'tell her I said hi!'], ['LeeroyPL', 'tank stopped moving, everyone ok?'],
   ['Wiktor', 'screenshot or it did not happen'], ['GoldSeller99', 'selling: girlfriend patience potions, 5g'], ['Zbyszek', 'gg, he is gone'], ['DarkLord2009', 'imagine having a gf lol']];
 const guild = () => { const [who, msg] = GUILD[Math.floor(Math.random() * GUILD.length)]; toast(`[Guild] ${who}: ${msg}`, '#6fe08a'); };
 
-/** Called when a visit passes. Returns true if she decides to sit on the desk instead of leaving. */
+/** Called when a visit passes. Returns true if she decides to lean in instead of leaving. */
 export function maybeLap(): boolean {
   const n = N();
   if (n.lap || n.clock >= T.BED_FROM || moodZone(n.mood) !== 'green') return false;
@@ -44,7 +45,7 @@ export function startLap() {
   (n.lap as unknown as { qs: number[] }).qs = qs;
   n.visit.stage = 'idle';
   sfx.kiss();
-  toast('She sits on your desk, right in front of the monitor.', '#ff9ab8');
+  toast('She leans in between you and the screen.', '#ff9ab8');
   guild();
 }
 
@@ -88,5 +89,5 @@ function leave() {
   } else if (l.rude >= 2) {
     addMood(T.LAP_SULK_MOOD); l.face = 'pout'; l.line = '"Fine. Enjoy your elf."';
     toast(`She sulks off. Patience -${T.LAP_SULK_MOOD}.`, '#ff8a80');
-  } else { l.face = 'neutral'; l.line = '"Okay, nerd. Have fun."'; toast('She hops off the desk.', '#ffb3c7'); }
+  } else { l.face = 'neutral'; l.line = '"Okay, nerd. Have fun."'; toast('She leaves you to it.', '#ffb3c7'); }
 }

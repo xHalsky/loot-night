@@ -1,7 +1,7 @@
 // Her: pixel-anime figure (docs/design/her.md). Vector shapes rendered through ui/pixel.ts
 // at low resolution (hard edges, 1px outline, nearest-neighbour upscale). Poses: standing at the door,
-// leaning on the frame (barefoot, one foot against her calf), sitting on your desk in first person (thighs up),
-// and asleep in bed seen from the foot end (bare soles out from under the blanket).
+// leaning on the frame (barefoot, one foot against her calf), leaning into your face from the right (the
+// questions, upper body), and asleep in bed seen from the foot end (bare soles out from under the blanket).
 import { pixelSprite, blit, smooth, poly, mirror, rows, cel, type Pt } from './pixel';
 
 export type Outfit = 'lounge' | 'towel' | 'hoodie' | 'bighoodie' | 'pajama' | 'tank';   // bighoodie: your gaming hoodie on her, sleeves over her hands
@@ -123,6 +123,7 @@ function locks(c: CanvasRenderingContext2D, outfit: Outfit, rightTucked = false)
 // ---------------------------------------------------------------- body geometry
 interface Geo {
   torso: Path2D; neck: Path2D; legs: Path2D[]; arms: Path2D[]; armsBack: Path2D[]; hands: Path2D[]; feet: Path2D[]; extra?: (c: CanvasRenderingContext2D) => void;
+  front?: (c: CanvasRenderingContext2D) => void;   // drawn over the head (a finger on her lips)
   head: { x: number; y: number; s: number; r: number };
   bands: Record<Outfit, { on: 'torso' | 'legs' | 'legL' | 'legR' | 'armL' | 'armR' | 'arms'; poly: number[][]; cloth: string }[]>;
   hand: [number, number];      // where an item is held
@@ -177,55 +178,56 @@ function standGeo(lean: boolean): Geo {
   };
 }
 
-// First person: she sits on the desk right in front of you, legs crossed, framed from the thighs up.
-// Poses: 0 hands on her crossed knee, 1 twirling her hair, 2 leaning back on her hands.
-function lapGeo(pose: number): Geo {
-  const T: Pt[] = [[-6, 49], [-17, 52], [-26, 56], [-29, 64], [-28.5, 76], [-25, 87], [-18, 99], [-19.5, 106], [-29, 114], [-34, 121], [0, 126], [34, 121], [29, 114], [19.5, 106], [18, 99], [25, 87], [28.5, 76], [29, 64], [26, 56], [17, 52], [6, 49]];
-  // knees together, both legs angled a little to her right: a softer, more flattering line than straight-on
-  const thighL: Pt[] = [[-33, 114], [-41, 132], [-50, 160], [-58, 192], [-19, 192], [-13, 162], [-6, 138], [-1.5, 125], [0, 121, 1]];
-  const thighR: Pt[] = [[33, 113], [34, 130], [27, 150], [15, 170], [3, 192], [-23, 194], [-15, 168], [-6, 147], [1.5, 130], [1, 121]];
-  let arms: Path2D[], hands: Path2D[], armsBack: Path2D[] = [], r = 0;
-  if (pose === 0) {
-    // hands resting lightly on her thighs
-    arms = [smooth([[-24, 55], [-31, 58], [-35.5, 70], [-37, 86], [-36, 102], [-34, 118], [-31, 134], [-25, 134], [-28.5, 118], [-30.5, 102], [-30.5, 86], [-28, 70]]),
-      smooth([[24, 55], [31, 58], [35.5, 70], [36.5, 86], [34, 102], [28, 120], [20, 138], [14, 137], [22, 119], [28.5, 102], [30, 86], [28, 70]])];
-    hands = [smooth([[-33, 131], [-34, 139], [-30, 145], [-24.5, 144], [-25, 136], [-26, 131]]), smooth([[20.5, 135], [19, 143], [14, 148], [9.5, 146], [12, 139], [14.5, 135]])];
-    r = -0.07;
-  } else if (pose === 1) {
-    arms = [smooth([[-24, 55], [-31, 58], [-37, 70], [-40, 86], [-43, 102], [-45, 114], [-38, 116], [-36, 102], [-33, 86], [-29, 70]]),
-      smooth([[25, 55], [33, 57], [41, 48], [43, 36], [37, 26], [28, 18], [21, 17], [19, 23], [28, 30], [35, 38], [34, 48], [27, 62]])];
-    hands = [smooth([[-49, 110], [-52, 118], [-44, 121], [-36, 119], [-38, 111]]), smooth([[16, 13], [21, 9], [26, 14], [23, 22], [17, 21]])];
-    r = 0.07;
-  } else {
-    // leaning back on her hands: arms go out and back down to the desk behind her
-    armsBack = [smooth([[-25, 55], [-35, 58], [-43, 70], [-49, 88], [-53, 106], [-55, 118], [-47, 120], [-44, 106], [-39, 88], [-32, 72]]),
-      smooth([[25, 55], [35, 58], [43, 70], [49, 88], [53, 106], [55, 118], [47, 120], [44, 106], [39, 88], [32, 72]])];
-    arms = []; hands = []; r = -0.12;
-  }
-  const legs = (h: number, _c: number, cloth: string) => [
-    { on: 'legL' as const, poly: [[-300, -999], [300, -999], [300, h - 10], [-300, h + 4]], cloth }, { on: 'legR' as const, poly: [[-300, -999], [300, -999], [300, h - 12], [-300, h + 6]], cloth }];
+const B2 = (a: number, b: number) => rows(a, b);
+
+// Leaning into your face from the right (the questions, #65): bent forward at the waist, seen from the chest up;
+// the body runs off the bottom right. Drawn upright here and turned by PEEK_LEAN in drawHerPeek; the head turns
+// back about the chin (PEEK_HEAD), so she tilts her head without breaking her neck.
+// Poses: 0 a finger on her lips (shh), 1 twirling her hair, 2 her chin on her fist.
+const PEEK_HEAD = 0.42;
+function peekGeo(pose: number): Geo {
+  const T: Pt[] = [[-6, 49], [-17, 52], [-26, 56], [-29, 64], [-28.5, 76], [-25, 87], [-18, 99], [-19.5, 106], [-29, 114], [-33, 124], [-34, 150], [-30, 200], [0, 206], [30, 200], [34, 150], [33, 124], [29, 114], [19.5, 106], [18, 99], [25, 87], [28.5, 76], [29, 64], [26, 56], [17, 52], [6, 49]];
+  const toChin = smooth([[-24, 55], [-32, 59], [-35, 70], [-35, 83], [-31, 94], [-23, 98], [-15, 94], [-8, 82], [-3, 68], [1, 55], [-7, 49], [-12, 60], [-17, 73], [-22, 82], [-26, 79], [-28, 70], [-27, 62]]);
+  const twirl = smooth([[25, 55], [33, 57], [40, 48], [42, 38], [38, 30], [32, 24], [26, 22], [24, 27], [30, 31], [34, 38], [33, 48], [27, 60]]);
+  const twirlHand = smooth([[21, 23], [25, 17], [31, 19], [31, 26], [25, 29]]);
+  const arms = pose === 1 ? [smooth(ARM_L), twirl] : [toChin, smooth(mirror(ARM_L))];
+  const hands = pose === 1 ? [smooth(HAND_L), twirlHand] : [smooth(mirror(HAND_L))];
+  // the fist under her chin, drawn over the face in head space: pose 0 raises the index finger to her lips
+  const front = pose === 1 ? undefined : (c: CanvasRenderingContext2D) => {
+    const ln = { color: C.line, w: LW };
+    c.save(); c.translate(40 * Math.sin(PEEK_HEAD), 40 - 40 * Math.cos(PEEK_HEAD)); c.rotate(PEEK_HEAD);
+    if (pose === 0) {
+      cel(c, smooth([[-1.3, 45], [-1.5, 37.4], [-0.5, 35.5], [0.9, 35.6], [1.6, 37.4], [1.5, 45]]), C.skin, C.skinS, 0.4, ln);
+      c.fillStyle = C.nail; c.fillRect(-0.6, 35.9, 1.4, 1.1);
+    }
+    cel(c, smooth([[-4.8, 45.5], [-3.2, 42.8], [1.8, 42.6], [4.6, 44.8], [4.8, 49.2], [2.6, 52.4], [-2.6, 52.6], [-5, 49.8]]), C.skin, C.skinS, 0.6, ln);
+    c.strokeStyle = C.skinD; c.lineWidth = 0.5; c.beginPath();
+    for (const y of [46, 48.6]) { c.moveTo(-3.6, y); c.lineTo(3.2, y + 0.3); }   // curled fingers
+    c.stroke(); c.restore();
+  };
+  // the off-shoulder tee: the sleeve sits low on the near arm and up on the other one
+  const sleeve0 = pose === 1 ? B2(63, 77) : [[-999, 63], [-23, 63], [-23, 77], [-999, 77]];
+  const sleeve1 = pose === 1 ? B2(9999, 9999) : B2(-999, 71);   // the raised arm is the bare shoulder
   return {
-    torso: smooth(T), neck: poly([[-5, 36], [5, 36], [5.6, 52], [-5.6, 52]]), legs: [smooth(thighL), smooth(thighR)], arms, armsBack, hands, feet: [],
-    head: { x: 0, y: 0, s: 1, r }, hand: [-40, 114], bust: 77, shoulder: 54,
-    extra: (c) => { c.save(); c.clip(smooth(thighL)); c.fillStyle = 'rgba(120,60,60,.28)'; c.translate(3, 4); c.fill(smooth(thighR)); c.restore(); },   // crossing-leg shadow
+    torso: smooth(T), neck: poly([[-5, 36], [5, 36], [5.6, 52], [-5.6, 52]]), legs: [], arms, armsBack: [], hands, feet: [], front,
+    head: { x: 40 * Math.sin(PEEK_HEAD), y: 40 - 40 * Math.cos(PEEK_HEAD), s: 1, r: PEEK_HEAD }, hand: [0, 0], bust: 77, shoulder: 54,
     bands: {
       lounge: [
         { on: 'torso', poly: [[-999, 66], [-15, 57.5], [6, 52], [999, 49], [999, 101], [-999, 103]], cloth: 'tee' },
-        { on: 'armR', poly: B2(-999, 71), cloth: 'tee' }, { on: 'armL', poly: B2(63, 77), cloth: 'tee' },
-        { on: 'torso', poly: B2(111, 999), cloth: 'denim' }, ...legs(140, 110, 'denim'),
+        { on: 'armL', poly: sleeve0, cloth: 'tee' }, { on: 'armR', poly: sleeve1, cloth: 'tee' },
+        { on: 'torso', poly: B2(111, 999), cloth: 'denim' },
       ],
       tank: [
         { on: 'torso', poly: [[-999, 62], [-14, 60], [-8, 68], [0, 71.5], [8, 68], [14, 60], [999, 62], [999, 93], [-999, 93]], cloth: 'tank' },
-        { on: 'torso', poly: B2(110, 999), cloth: 'sweat' }, ...legs(130, 106, 'sweat'),
+        { on: 'torso', poly: B2(110, 999), cloth: 'sweat' },
       ],
-      hoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'hoodie' }, ...legs(146, 122, 'hoodie'), { on: 'arms', poly: B2(-999, 118), cloth: 'hoodie' }],
-      bighoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'gamer' }, ...legs(150, 126, 'gamer'), { on: 'arms', poly: B2(-999, 999), cloth: 'gamer' }],
-      pajama: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 76], [7, 51], [999, 51], [999, 999], [-999, 999]], cloth: 'shirt' }, ...legs(156, 132, 'shirt'), { on: 'arms', poly: B2(-999, 88), cloth: 'shirt' }],
-      towel: [{ on: 'torso', poly: [[-999, 70], [-10, 66], [10, 66], [999, 70], [999, 999], [-999, 999]], cloth: 'towel' }, ...legs(142, 118, 'towel')],
+      hoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'hoodie' }, { on: 'arms', poly: B2(-999, 999), cloth: 'hoodie' }],
+      bighoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'gamer' }, { on: 'arms', poly: B2(-999, 999), cloth: 'gamer' }],
+      pajama: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 76], [7, 51], [999, 51], [999, 999], [-999, 999]], cloth: 'shirt' }, { on: 'arms', poly: B2(-999, 999), cloth: 'shirt' }],
+      towel: [{ on: 'torso', poly: [[-999, 70], [-10, 66], [10, 66], [999, 70], [999, 999], [-999, 999]], cloth: 'towel' }],
     },
   };
 }
-const B2 = (a: number, b: number) => rows(a, b);
 
 function band(c: CanvasRenderingContext2D, clipPath: Path2D, bandPoly: number[][], cloth: string) {
   const [base, shade] = CLOTH[cloth];
@@ -298,6 +300,7 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
     if (item === 'remote') { c.fillStyle = '#2c2c34'; c.fillRect(x - 1.8, y - 10, 3.6, 13); c.fillStyle = '#e0524a'; c.fillRect(x - 0.8, y - 8.6, 1.6, 1.4); }
   }
   headAt(); head(c, o, true); locks(c, o.outfit, false); c.restore();
+  if (g.front) g.front(c);
 }
 
 // ---------------------------------------------------------------- public: standing / leaning (door)
@@ -312,12 +315,14 @@ export function drawHer(c: CanvasRenderingContext2D, x: number, y: number, s: nu
   blit(c, sp, x - ox * px, y - oy * px, px);
 }
 
-/** First-person view of her sitting on the desk. Fills a 680 x 720 canvas (pixel size 3). */
-export function drawHerLap(c: CanvasRenderingContext2D, o: HerOpts, pose: number, dx = 0, dy = 0, alpha = 1) {
-  const px = 2, W = 340, H = 360, s = 2.16;
-  const key = `lap:${o.outfit}:${o.face}:${o.blink ? 1 : 0}:${pose}`;
-  const sp = pixelSprite(key, W, H, cc => { LW = 0.9 / s; cc.translate(170, 10); cc.scale(s, s); figure(cc, lapGeo(pose), { ...o, item: 'none' }); });
-  blit(c, sp, dx, dy, px, alpha);
+/** Her leaning into your face from the right (the questions, #65), over the whole stage. The top of her head is at
+ *  (x, y) in stage px; her body runs off the bottom right. Pixel size 3. */
+export const PEEK_LEAN = -0.75;
+export function drawHerPeek(c: CanvasRenderingContext2D, o: HerOpts, pose: number, x: number, y: number, alpha = 1) {
+  const px = 3, s = 1.75, W = 270, H = 260, ax = 40, ay = 40;
+  const key = `peek:${o.outfit}:${o.face}:${o.blink ? 1 : 0}:${pose}`;
+  const sp = pixelSprite(key, W, H, cc => { LW = 0.9 / s; cc.translate(ax, ay); cc.rotate(PEEK_LEAN); cc.scale(s, s); figure(cc, peekGeo(pose), { ...o, item: 'none' }); });
+  blit(c, sp, x - ax * px, y - ay * px, px, alpha);
 }
 
 /** Morning vignette by how the night ended (docs/design/eye-candy.md): seen from the foot end, 480 x 240.

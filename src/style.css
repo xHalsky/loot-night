@@ -673,12 +673,14 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .ybar em { position: absolute; top: -2px; width: 2px; height: 12px; background: #f2e9d8; }
 /* ===== On-desk scenes: dog, cables, her on the desk ===== */
 #deskFx { position: absolute; left: 0; top: 0; width: 680px; height: 720px; z-index: 7; pointer-events: none; }
-#lapUi { position: absolute; inset: 0; z-index: 8; pointer-events: none; font-family: 'Patrick Hand', 'Inter', sans-serif; }
+/* her questions (#65): she leans in from the right over the whole stage; her line by her face, your answers on the left */
+#lapFx { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 12; pointer-events: none; }
+#lapUi { position: absolute; inset: 0; z-index: 13; pointer-events: none; font-family: 'Patrick Hand', 'Inter', sans-serif; }
 #lapUi > * { pointer-events: auto; }
-.lap-bubble { position: absolute; left: 14px; top: 40px; width: 180px; max-width: 250px; background: #fff4f2; color: #5a2d3c; font-size: 20px; line-height: 1.1; padding: 8px 14px; border-radius: 16px; box-shadow: 0 3px 0 rgba(0,0,0,.35); }
-.lap-bubble::after { content: ''; position: absolute; right: -14px; top: 18px; border: 8px solid transparent; border-left-color: #fff4f2; }
-.lap-answers { position: absolute; left: 520px; top: 40px; width: 152px; display: flex; flex-direction: column; gap: 6px; }
-.lap-ans { font: 17px 'Patrick Hand', sans-serif; text-align: left; padding: 6px 10px; border-radius: 12px; border: 2px solid #e7a0bd; background: #fff; color: #5a2d3c; cursor: pointer; box-shadow: 0 2px 0 #c97a98; }
+.lap-bubble { position: absolute; left: 560px; top: 196px; width: 210px; background: #fff4f2; color: #5a2d3c; font-size: 24px; line-height: 1.1; padding: 10px 16px; border-radius: 18px; box-shadow: 0 3px 0 rgba(0,0,0,.35); }
+.lap-bubble::after { content: ''; position: absolute; right: -16px; top: 26px; border: 9px solid transparent; border-left-color: #fff4f2; }
+.lap-answers { position: absolute; left: 70px; top: 260px; width: 380px; display: flex; flex-direction: column; gap: 10px; }
+.lap-ans { font: 22px 'Patrick Hand', sans-serif; text-align: left; padding: 9px 14px; border-radius: 14px; border: 2px solid #e7a0bd; background: #fff; color: #5a2d3c; cursor: pointer; box-shadow: 0 2px 0 #c97a98; }
 .lap-ans:hover { background: #ffe6ee; transform: translateY(-1px); }
 .lap-timer { height: 5px; border-radius: 3px; background: rgba(255,255,255,.2); overflow: hidden; }
 .lap-timer i { display: block; height: 100%; background: #ff9ab8; }
@@ -1108,8 +1110,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .phone-win { left: 241px !important; top: 30px !important; }
 .cuddle-win { left: 124px !important; top: 80px !important; }
 #deskFx { width: 984px !important; }
-.lap-bubble { left: 26px !important; top: 80px !important; }
-.lap-answers { left: 532px !important; top: 80px !important; }
 /* her panel fixed slots (#46), tightened so four stat rows plus Noise fit after midnight (#49):
    heard 18, note 60, pre-emptive row 30, then up to four rows of 17 */
 #doorInfo { top: 530px !important; height: 188px !important; grid-template-rows: 18px 60px 30px 1fr !important; }
