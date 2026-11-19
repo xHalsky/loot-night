@@ -276,7 +276,9 @@ No blessing cards. The choice at the end of a floor is the route, on the parchme
 - **Where:** in town only. The town side panel gets three tabs: **Town** (the build list and the way down),
   **Inventory** (party, gear, bag) and **Skill Tree** (pick a hero; the tree opens over the battle area, 334 ×
   232 on the grid, as a constellation in Moonwell 32, and the side panel shows the hovered node's details and
-  cost). Node shapes by kind: unlock large, rule medium (pairs drawn as a fork), stat small,
+  cost). **No pop-up windows in town** (Paweł, 2026-11-19): clicking a building on the map opens it in the side
+  panel's Town tab, a service (sell, identify, salvage, list) or a plot's build/upgrade, and the appraiser's reveal
+  shows there too. The service and build windows over the town go. Node shapes by kind: unlock large, rule medium (pairs drawn as a fork), stat small,
   ultimate largest, autocast small with a loop mark.
 
 ### 2.2 The four trees (names are placeholders, effects are the spec)

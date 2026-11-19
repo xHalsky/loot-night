@@ -21,14 +21,20 @@ phone/    Everything on the phone happens inside the phone. In your hand (the wi
           itself into her chat. On the desk: screen off, an incoming call with its countdown ring, the lock-screen
           banners, face-down (glow, idle), her reply banner.
 dog/      The shiba up at the desk (waiting, petted), and his revenge: the NO SIGNAL cable screen behind the monitor.
-windows/  Every pop-up: the how-to card, the energy break (all 5 steps), the cuddle break, the plan, her on the
-          desk, the pre-emptive busy cards (tea, towel) and the tea question, the coach marks, a tooltip, pause,
-          and the RPG windows (service, build, curio, item details, bag full, the appraiser card) so one frame can
-          cover all of them. Also Excel (the monitor's other app), the microsleep and caught overlays, and the
-          results and morning screens.
+windows/  Every pop-up that stays: the how-to card, the energy break (all 5 steps), the cuddle break, the plan,
+          her on the desk, being away from the PC (the empty chair: tea now, "Charge phone" in step 6), the coach
+          marks, a tooltip, pause, the RPG's curio window, item details and bag full (both in the side panel), Excel
+          (its content becomes Q4 in step 4), the microsleep and caught overlays, the results and morning screens.
+windows_going/  Pop-ups the plan removes, for reference only (don't design a frame for them):
+          - the town's service windows (merchant etc.), the build window and the appraiser's reveal card: in town,
+            a building opens in the side panel instead (Pawel, 2026-11-19; goes with the town tabs, #53);
+          - the tea and towel cards and the tea's "Stay for one episode?": both actions are placeholders that the
+            Home app's devices replace (step 6, #57).
 sheet_*.png  A labelled contact sheet per folder.
+Planned windows not built yet (they need the frame too): the Windows 98/XP dialogs (the promotion alert), the
+skill tree screen, the Goblin Fuel inspect window. The phone's apps (Shop, Home) live inside the phone.
 """
-shots = {'phone': [], 'dog': [], 'windows': []}
+shots = {'phone': [], 'dog': [], 'windows': [], 'windows_going': []}
 fails = []
 
 async def act(pg, sel):
@@ -83,9 +89,9 @@ async def main():
         await pg.wait_for_timeout(300)
         # ---- town windows (the night starts in town) ----
         await ev(pg, "g.townWin='merchant'"); await pg.wait_for_timeout(300)
-        await shot(pg, 'windows', 'rpg_service_window_merchant', sel='.svc-win')
+        await shot(pg, 'windows_going', 'rpg_service_window_merchant__to_the_town_side_panel', sel='.svc-win')
         await ev(pg, "g.townWin='build:inn'"); await pg.wait_for_timeout(300)
-        await shot(pg, 'windows', 'rpg_build_window_inn', sel='.svc-win')
+        await shot(pg, 'windows_going', 'rpg_build_window_inn__to_the_town_side_panel', sel='.svc-win')
         await ev(pg, "g.townWin=null")
         await act(pg, '[data-act=portal]'); await pg.wait_for_timeout(600)
 
@@ -184,20 +190,20 @@ async def main():
         await ev(pg, "n.lap=null"); await pg.wait_for_timeout(300)
 
         # ---- pre-emptive actions (the phone menu, texting her, tea, the episode question, the towel) ----
-        tb = await pg.evaluate("()=>{const e=document.querySelector('[data-tip^=\"pre:tea\"]'); if(!e) return null; const r=e.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
-        if tb: await pg.mouse.move(*tb); await pg.wait_for_timeout(400)
-        await shot(pg, 'windows', 'tooltip_on_an_action', clip={'x': 0, 'y': 360, 'width': 560, 'height': 360})
+        tb = await pg.evaluate("()=>{const e=[...document.querySelectorAll('[data-tip^=\"skill:\"]')].find(e=>e.getBoundingClientRect().width>0); if(!e) return null; const r=e.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
+        if tb: await pg.mouse.move(*tb); await pg.wait_for_timeout(500)
+        await shot(pg, 'windows', 'tooltip_on_a_skill', clip={'x': 296, 'y': 260, 'width': 620, 'height': 300})
         await pg.mouse.move(640, 300)
         await ev(pg, "n.preUses={}; n.apt.calm=0; n.apt.activity='tv'; n.apt.room='living'; n.apt.moving=0")
         await dbg(pg, 'pre', 'tea'); await pg.wait_for_timeout(500)
-        await shot(pg, 'windows', 'pre_tea_away_empty_chair_full_frame')
-        await shot(pg, 'windows', 'pre_busy_card_tea', sel='.pre-card')
+        await shot(pg, 'windows', 'away_from_the_pc_empty_chair_full_frame')
+        await shot(pg, 'windows_going', 'pre_busy_card_tea__removed_step_6', sel='.pre-card')
         await ev(pg, "if(n.pre) n.pre.t=0.05"); await pg.wait_for_timeout(500)
-        await shot(pg, 'windows', 'pre_tea_stay_for_an_episode', sel='.pre-card')
+        await shot(pg, 'windows_going', 'pre_tea_stay_for_an_episode__removed_step_6', sel='.pre-card')
         await dbg(pg, 'episode', '0'); await pg.wait_for_timeout(300)
         await ev(pg, "n.pre=null; n.action='none'; n.preUses={}")
         await dbg(pg, 'pre', 'towel'); await pg.wait_for_timeout(500)
-        await shot(pg, 'windows', 'pre_busy_card_towel', sel='.pre-card')
+        await shot(pg, 'windows_going', 'pre_busy_card_towel__removed_step_6', sel='.pre-card')
         await ev(pg, "n.pre=null; n.action='none'"); await pg.wait_for_timeout(300)
 
         # ---- coach marks ----
@@ -221,7 +227,7 @@ async def main():
             await shot(pg, 'windows', 'rpg_bag_full_new_drop', sel='.sp-pop')
             await ev(pg, "n.dropPopup=null")
         await ev(pg, "n.reveal={name:'Ironbark Greatsword', t:3}"); await pg.wait_for_timeout(300)
-        await shot(pg, 'windows', 'rpg_appraiser_reveal', sel='.reveal')
+        await shot(pg, 'windows_going', 'rpg_appraiser_reveal__to_the_town_side_panel', sel='.reveal')
         await ev(pg, "n.reveal=null")
 
         # ---- the monitor's other app, and full-screen overlays ----
