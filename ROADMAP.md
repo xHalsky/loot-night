@@ -38,6 +38,9 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 ## Phase 2: toward Steam (p2)
 
+- **#59 Fan-service pass:** the appeal of Steam's adult-tagged games with no 18+ requirement. Audit the whole game
+  for where and what; feeds #22 and #6.
+- **#60 Steam release** after the outside playtests: desktop build, Steamworks, settings, brand renames, store page.
 - **#39 Poker face** (idea): a big drop while she is in the doorway makes him grin; hold a key to keep a straight face.
 - **#5 Final sprites** once the slice's screens are stable (the left panel rework, 0.34 to 0.36, set its layout; him included).
 - **#32 Background music**, under her sounds, ducking when she is at the door.
