@@ -5,7 +5,7 @@ best moments make her attention the temptation rather than decoration.
 
 **Tone rules.** Babe is a fictional character, not anyone real. Cheeky pin-up, clothed adults, flattering
 poses, bare feet (the friend likes feet). Suggestive only: fades, fog and silhouettes do the work. Nothing
-explicit. A birthday gift gets shown around.
+explicit. A Steam game gets streamed and shown around.
 
 ## Now (built)
 

@@ -3,10 +3,10 @@
 The build order. Issues hold the details; priority labels match the phases below. Reorder here first,
 then update the labels. Done items leave this list (they live in `CHANGELOG.md`).
 
-Plan: **a Monday slice that is a good game on its own → a longer arc with an ending → endless free play.
-Final sprites once the screens stop changing.** We have time for polish.
+Plan: **the redesign handoff (steps 1 to 7) → outside playtests → a Steam release.** The week runs into endless
+Custom Nights; there is no birthday ending (decided 2026-11-19). **Final sprites once the screens stop changing.**
 
-## Phase 1: the Monday slice (p1)
+## Phase 1: the redesign build and the playtest (p1)
 
 **Slice is done when** someone other than Paweł plays it and:
 - understands what to do within 2 minutes,
@@ -36,18 +36,14 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    from what they show. Repeat until three testers in a row pass.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
 
-## Phase 2: the arc (p2)
+## Phase 2: toward Steam (p2)
 
-- **#3 Nights after Monday** (the week in #56 replaces most of this plan; decide what is left), each adding one rule, one visit type or interrupt, one dungeon. Length decided
-  by content (3 to 7 nights), ending with the birthday level-up screen and credits, then endless free play
-  with escalating her behaviour.
 - **#39 Poker face** (idea): a big drop while she is in the doorway makes him grin; hold a key to keep a straight face.
 - **#5 Final sprites** once the slice's screens are stable (the left panel rework, 0.34 to 0.36, set its layout; him included).
 - **#32 Background music**, under her sounds, ducking when she is at the door.
-- **#4 Real-life upgrade store** (the zł sink; the Shop app in #55 and the devices in #57 are this store).
 - **#14 Synergy pass, arc set:** combo floors, party sets, overtime zł, bag tools, banter, unfolding city,
-  bounties, the ending.
-- Rest of #12 (Hug, Help me, Coming to bed?, How do I look?), #20, #23, #22 ("How do I look?", "Wanna join?") as the nights need them.
+  bounties.
+- Rest of #12 (Hug, Help me, Coming to bed?, How do I look?), #20, #23 (her evening texts, dinner, laundry), #22 ("How do I look?", "Wanna join?") as the nights need them.
 
 ## Later (p3)
 

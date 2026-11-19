@@ -169,7 +169,8 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 - **Monster stash in the kitchen fridge** (idea, #25): the desk holds 2 cans; a "Fridge run" pre-emptive
   action restocks, and backfires if she is in the kitchen or hallway.
 
-- More interrupts (car alarm, drilling, verification SMS, dinner shout, laundry request): #23, by night ([campaign.md](campaign.md)).
+- Real-life requests worth taking (her evening texts, dinner shout, laundry request): #23. Dropped 2026-11-19 for
+  having no answer that pays: car alarm, neighbour drilling, verification SMS.
 - The boys' call revealing the next node row (an interrupt payout): #29.
 - Zyn as a second stimulant: #10.
 - Desk upgrades (phone stand, quieter keyboard, shorter lag): #4. Choose a pet: #7.

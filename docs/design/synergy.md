@@ -98,8 +98,8 @@ promise on night 1.
 Built (0.28, 0.29): the courier's parcel, the boys' raid buff; the dog petted mostly on his favourite spot
 (`GOOD_BOY_SWEET_SHARE` of the petting) = Good Boy, loot goblins x2 for 60 s (dog icon on the buff bar);
 cables back in under `CABLE_FAST_SEC` (6 s) restore the Flow you had when he bumped the desk; a bank shot in
-the bin gives a small Flow bonus. Planned with their interrupts: car alarm +60 gold, dinner shout = Fed, the
-boys' call revealing the next node row.
+the bin gives a small Flow bonus. Planned with their interrupts: dinner shout = Fed (#23), the boys' call revealing the next node row. (The car
+alarm and its gold are dropped: real life never pays RPG gold.)
 
 ## Synergy inside the RPG
 

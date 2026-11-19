@@ -1,6 +1,6 @@
 # Loot Night: working rules
 
-Birthday-gift browser game: a loot-heavy idle RPG on the monitor while the player hides it from his girlfriend
+A browser game heading for a Steam release (it started as a birthday gift): a loot-heavy idle RPG on the monitor while the player hides it from his girlfriend
 (stealth layer), mom, boss, dog and tiredness. Vite + TypeScript, built to one self-contained `dist/index.html`.
 
 ## Where things are

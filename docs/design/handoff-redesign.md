@@ -1,15 +1,17 @@
 # Loot Night: redesign handoff (RPG, trees, real life, Q4, the week, smart home)
 
-For the builder. Add each numbered step below to the to-do list (one Issue per step on xHalsky/loot-night),
-in this order. Each step's bullets are its checklist. Values marked *start* are starting values: put them in
+For the builder. Received 2026-11-19 from the redesign chat (project doc `claude/loot-night-handoff-redesign.md`),
+with Paweł's answers of 2026-11-19 folded in. Steps 1 to 7 are Issues #52 to #58, in this order. Each step's bullets are its checklist. Values marked *start* are starting values: put them in
 the config object and tune them with the debug overlay.
 
 ## 0. Rules that hold for every step
 
+- **The goal:** a proper Steam game. No birthday ending.
 - **The frame:** Five Nights at Freddy's, but the night guard is trying to play a game, and the threat is his
   girlfriend. The RPG is the temptation: it has to be fun on its own, or the rest doesn't work.
 - **Loot comes only from the game.** Real life can give buffs (heals, cooldowns, calm), never items or RPG gold.
-  RPG to real life is fine (Auction House pays złoty, real-life affixes on gear).
+  RPG to real life is fine (Auction House pays złoty, real-life affixes on gear). Złoty buys only real-life
+  upgrades: things for you, and smart-home devices for defense. Q4 (the Excel clicker) is its main source.
 - **Currencies:** gold and Souls in the RPG, złoty (zł) in real life. Souls replace scraps. No fourth currency.
 - **Player-facing text:** plain, short, funny where it fits, no em dashes. The RPG plays it straight: plain
   fantasy names of one or two words, no real-life jokes in items, enemies, skills or places.
@@ -21,6 +23,8 @@ the config object and tune them with the debug overlay.
   layout is 4 heroes with 4 wells each, enemy ranks, swaps, path-card features and conditions, run-blessing
   icons, the tree screen, the Q4 screen and the phone apps. Keep the Moonwell 32 look, the grid and the
   meaning colours; lay the new parts out on the same grid. Code-drawn stand-ins are fine until the art pass.
+  The PC (taskbar, windows, Excel, dialogs) looks like Windows 98/XP. The phone is a touch smartphone: mouse
+  only, no keys. The battle is being redrawn for 4 heroes and at most 6 to 8 enemies at once.
 
 ---
 
@@ -61,7 +65,7 @@ Build and test this with real life switched off. It has to hold 15 minutes alone
 ### 1.3 Floors: walk, packs, pickup
 - A floor is walk, encounter, walk, encounter, walk, encounter, then the floor end. Every 5th floor is a boss
   floor: two encounters, then the boss.
-- **Packs:** an encounter is a pack in up to 4 enemy ranks on screen. Pack size `= min(PACK_MAX, PACK_MIN +
+- **Packs:** an encounter is a pack, at most 6 to 8 enemies on screen (the battle redesign sets the layout). Pack size `= min(PACK_MAX, PACK_MIN +
   floor(f / 2))` (*start* `PACK_MIN` 5, `PACK_MAX` 12). The rest wait off screen on the right and step into
   the free rank as the front ones die. Imp swarms stay as they are (one swarm fills one rank).
 - **Keep the walk** (`WALK_SEC` stays) and the Diablo pickup. Drops fall where the enemy died, in their
@@ -88,7 +92,8 @@ Build and test this with real life switched off. It has to hold 15 minutes alone
 - **Wipe:** a "PARTY WIPE" moment, all unbanked items and gold are lost, Souls earned in the run are kept, and
   the party wakes in town at full HP (travel time as for the portal). Remove the old wipe penalties:
   `WIPE_GOLD_PCT`, `WIPE_TIME_MIN`, `WIPE_BAG_LEFT`, the corpse and the corpse run. The desk slam (Noise) stays.
-- Banked items are never lost on a wipe. Locking (L) still only protects from salvage and dropping.
+- Banked items are never lost on a wipe. Locking (L) still blocks salvage, selling, listing and dropping, but a
+  locked item you haven't banked is lost on a wipe like the rest (tune after the playtests).
 - **Run end card** (small, over the battle area, 2 s): deepest floor this run, items banked or lost, Souls.
 - **Souls:** each floor cleared gives `SOULS_PER_FLOOR = 3 + floor` (*start*); each boss +20; salvage gives
   Souls by rarity (reuse `SALVAGE_YIELD` [1, 2, 4, 8, 16]). Souls are one shared pool for all heroes.
@@ -267,9 +272,10 @@ No blessing cards. The choice at the end of a floor is the route, on the parchme
 - **Costs (*start*):** stat 10, unlock 15, rule 15, autocast 40, ultimate 60 Souls, each × (1 + 0.25 × nodes
   already bought in that tree).
 - **Respec:** free during testing (a button on the tree screen), refunds all Souls spent in that tree.
-- **Where:** in town only. Each party card in the side panel gets a "Tree" button; the tree opens over the
-  battle area (334 × 232 on the grid) as a constellation in Moonwell 32, and the side panel shows the hovered
-  node's details and cost. Node shapes by kind: unlock large, rule medium (pairs drawn as a fork), stat small,
+- **Where:** in town only. The town side panel gets three tabs: **Town** (the build list and the way down),
+  **Inventory** (party, gear, bag) and **Skill Tree** (pick a hero; the tree opens over the battle area, 334 ×
+  232 on the grid, as a constellation in Moonwell 32, and the side panel shows the hovered node's details and
+  cost). Node shapes by kind: unlock large, rule medium (pairs drawn as a fork), stat small,
   ultimate largest, autocast small with a loop mark.
 
 ### 2.2 The four trees (names are placeholders, effects are the spec)
@@ -365,8 +371,14 @@ changes marked **new**.
   (✓ green or yellow, ! red). Keep "⏻ 23:00+". Drop "deeper = better loot".
 - **Results:** three named stars, lit or not. Near miss for Deep: "N floors short of tonight's target".
   Update the stars key. `bestStars` stays.
-- **Morning chest:** one chest per star, opened on the Morning screen. Each rolls one item from the normal
-  drop table at tonight's deepest floor. A full bag is handled the way the game already handles it.
+- **Morning rewards, one per star, on the Morning screen.** Loot only comes from the game, so only the RPG
+  star pays in loot:
+  - **Deep: a chest.** It rolls one item from the normal drop table at tonight's deepest floor. A full bag is
+    handled the way the game already handles it.
+  - **Unseen: Trust.** She never caught you, so she trusts you: the next night starts with Goodwill
+    +`STAR_UNSEEN_GOODWILL` (*start* 20), closer to a Raid night (40) and a forgiven catch (60).
+  - **Sweet: Breakfast.** She's happy, so she makes breakfast: sleep debt −`STAR_SWEET_DEBT` (*start* 1), so
+    the next night starts less tired.
 
 ### 3.2 Phone: fewer events, each worth taking
 - Replace the `INTERRUPT_INTERVAL_SEC` timer with a night script; each time ± about 15 game minutes. Aim for
@@ -382,6 +394,8 @@ changes marked **new**.
 
 - **Only calls buzz.** Texts arrive silently on the lock screen with a ~60 s deadline.
 - **Short:** every event done in about 5 s, 1–2 taps. Boss: one row of sums. Mom: 1–2 beats (`MOM_BEATS`).
+- **The phone is touch only:** every answer is a tap, a swipe or a drag with the mouse. Remove the 1 2 3 keys
+  for Mom's replies and the boss's sums.
 - **Speaker or pick up** on every call: Speaker keeps your hands free (keep playing, skills still castable)
   but adds Noise while the call lasts. Pick up = hands busy, as now.
 - **Face-down = Do Not Disturb** until you flip it back. Everything silent; missed events count as ignored
@@ -390,7 +404,8 @@ changes marked **new**.
   `REAL_LIFE_GAP_SEC` (*start* 15) apart. No new phone event while footsteps are coming, while she's at the
   door or in the room, during a boss wind-up, during her shower, or during a calm window you earned (tea,
   Raid night, Text her). Scripted events slide later; they're never dropped.
-- The dog is unchanged.
+- The dog stays as it is (cute, cheap, and the cable fix when you ignore him stays). He only follows the
+  collision rule's spacing: his arrival slides later, he is never dropped.
 
 ---
 
@@ -401,7 +416,7 @@ into the same wallet as the Auction House. It must be fun to touch, pay somethin
 fast, and keep earning on its own while you're back in the RPG.
 
 ### 4.1 The screen
-- Fills the game screen (474 × 232) as the Mac OS 8 Excel window from the art spec. File name in the title
+- Fills the game screen (474 × 232) as a Windows 98/XP Excel window. File name in the title
   bar: "Q4_report_FINAL_v3.xls".
 - Shows: your job title and a progress bar to the next promotion, złoty per second, the Hustle meter, the
   toys (4.2) and a **Macros** ribbon tab listing the automation (4.3) with Buy buttons and costs.
@@ -435,7 +450,7 @@ Levels; each level costs `base × 1.15^level`. All of it keeps running while you
 - By lifetime złoty earned in Q4 (*start*): Intern (start), Junior Analyst 50, Analyst 300, Senior Analyst
   1,500, Team Lead 6,000, Manager 25,000, Director 100,000.
 - Each promotion: all Q4 income ×1.5 (stacking), its unlocks from 4.3 (Team Lead: Sort cooldown −3 s), and a
-  Mac OS 8 alert "Congrats on your promotion!" with a confetti burst (1.5 s).
+  Windows 98/XP dialog "Congrats on your promotion!" with a confetti burst (1.5 s).
 - Pacing target: the first promotion after about 30 s of clicking, then one every 1–3 minutes of mixed play.
 - Q4 progress persists across nights.
 
@@ -549,5 +564,6 @@ Last before the playtest. These replace the placeholder pre-emptive moves.
 ## Open (ask Paweł, don't guess)
 
 1. The Rogue's name.
-2. Skill and node names are placeholders; the effects are the spec.
+2. Node names are placeholders; the effects are the spec. Skill names are decided: the ones in this doc,
+   simple and tied to the class theme.
 3. The week schedule in step 5.
