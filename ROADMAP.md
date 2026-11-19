@@ -21,20 +21,30 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
+1. **The redesign handoff, steps 1 to 7, in this order** (spec: `docs/design/handoff-redesign.md`). Not started:
+   it waits for the visual redesign phase to finish.
+   1. #52 The RPG on its own (real life off): real-time combat, packs, runs, the floor map's route choice,
+      run blessings, marching order, the Rogue, loot rules.
+   2. #53 Skill trees, Souls and autocast.
+   3. #54 Real life back on: stars that reward greed and the phone retune (Paweł's brief from testing v0.48).
+   4. #55 Q4, the Excel clicker, and the Shop app.
+   5. #56 The week (FNAF's nights).
+   6. #57 The smart home and the phone battery.
+   7. #58 Before the playtest.
+2. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
    night, tools in `test/balance.py` and `test/campaign.py`). Next: playtests with `docs/playtest.md`, then tune
    from what they show. Repeat until three testers in a row pass.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).
 
 ## Phase 2: the arc (p2)
 
-- **#3 Nights after Monday**, each adding one rule, one visit type or interrupt, one dungeon. Length decided
+- **#3 Nights after Monday** (the week in #56 replaces most of this plan; decide what is left), each adding one rule, one visit type or interrupt, one dungeon. Length decided
   by content (3 to 7 nights), ending with the birthday level-up screen and credits, then endless free play
   with escalating her behaviour.
 - **#39 Poker face** (idea): a big drop while she is in the doorway makes him grin; hold a key to keep a straight face.
 - **#5 Final sprites** once the slice's screens are stable (the left panel rework, 0.34 to 0.36, set its layout; him included).
 - **#32 Background music**, under her sounds, ducking when she is at the door.
-- **#4 Real-life upgrade store** (the zł sink).
+- **#4 Real-life upgrade store** (the zł sink; the Shop app in #55 and the devices in #57 are this store).
 - **#14 Synergy pass, arc set:** combo floors, party sets, overtime zł, bag tools, banter, unfolding city,
   bounties, the ending.
 - Rest of #12 (Hug, Help me, Coming to bed?, How do I look?), #20, #23, #22 ("How do I look?", "Wanna join?") as the nights need them.
