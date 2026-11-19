@@ -361,12 +361,12 @@ function phoneHtml(g: PhoneGame): string {
 const hint = (dir: 'left' | 'right' | 'up' | 'down' | 'tap' | 'hold', x: number, y: number) =>
   `<div class="mhint h-${dir}" style="left:${x}px;top:${y}px">${{ left: '&larr;', right: '&rarr;', up: '&uarr;', down: '&darr;', tap: 'CLICK', hold: 'HOLD' }[dir]}</div>`;
 
-const M_STEPS = [
-  ['fridge', 'Fridge', 'Click the fridge.'],
-  ['grab', 'Grab', 'Drag any can out and drop it on the desk.'],
-  ['open', 'Open', 'Click the can.'],
-  ['drink', 'Drink', 'Hold to drink. Let go in the green.'],
-  ['toss', 'Toss', 'Throw the empty into the bin.'],
+const M_STEPS: [MonsterGame['stage'], string, string][] = [
+  ['drawer', 'Drawer', 'Grab the drawer handle and pull.'],
+  ['grab', 'Grab', 'Drag a can onto the desk.'],
+  ['open', 'Open', 'Pull the tab up.'],
+  ['drink', 'Drink', 'Hold the can (mouse). Hold Space to tilt, let go to tilt back. 85% for the full boost.'],
+  ['toss', 'Toss', 'One throw. A miss stays on the floor.'],
 ];
 
 function monsterHtml(g: MonsterGame): string {
@@ -389,7 +389,7 @@ export function windowHtml(): string {
   if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:532px;top:66px">\u2715</button>';
   const close = n.game.kind === 'phone'
     ? '<button class="mg-close" data-act="closeGame" title="Put the phone down" style="left:415px;top:22px">\u2715</button>'
-    : '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:542px;top:48px">\u2715</button>';
+    : '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:622px;top:0px">\u2715</button>';
   return (n.game.kind === 'phone' ? phoneHtml(n.game) : monsterHtml(n.game)) + close;
 }
 
@@ -417,15 +417,13 @@ export function updateWindowDynamics() {
     return;
   }
   const d = document.getElementById('dragEl');
-  if (d) {
+  if (d && g.kind === 'phone') {
     const dist = Number(d.dataset.dist || 0), dir = Number(d.dataset.dir || 1);
     if (d.dataset.drag === 'door') (d.parentElement as HTMLElement).style.transform = `perspective(500px) rotateY(${g.drag * 75}deg)`;
     else d.style.transform = d.dataset.axis === 'x' ? `translateX(${g.drag * dist * dir}px)` : `translateY(${g.drag * dist * dir}px)`;
   }
   const f = document.getElementById('holdFill');
-  if (f) f.style.height = g.kind === 'phone' ? `${g.unlock * 100}%` : `${g.drink * 100}%`;
-  const gf = document.getElementById('gulpFill');
-  if (gf && g.kind === 'monster') { gf.style.height = `${Math.min(1, g.gulp / 1.15) * 100}%`; const [lo, hi] = T.MONSTER_GULP_GOOD; gf.style.background = g.gulp >= lo && g.gulp <= hi ? '#3ecf6e' : g.gulp > hi ? '#e0524a' : '#f2b84b'; }
+  if (f && g.kind === 'phone') f.style.height = `${g.unlock * 100}%`;
   if (g.kind === 'phone') {
     const m = document.getElementById('momMarker');
     if (m) m.style.left = `${Math.min(100, g.sweep * 100)}%`;

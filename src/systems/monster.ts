@@ -1,95 +1,96 @@
 import { T } from '../config/tuning';
-import { S, N, type BinCan } from '../core/state';
+import { S, N, type CanPose } from '../core/state';
 import { toastAs } from '../core/fx';
 const toast = toastAs('YOU');   // feed tag (#49)
 import { sfx } from '../ui/audio';
+import { DROPPED } from './fuelPhysics';
 
-// Monster: a boost you operate by hand (docs/design/desk.md).
-// 1 open the fridge, 2 grab any can and put it anywhere on the desk, 3 click it open (click + psst),
-// 4 drink: hold to bring it to your mouth, release in the green band, x3 (boost starts here),
-// 5 toss the empty: throw it into the bin (physics). Cans stay in the bin all night.
-// The scene and its physics live in ui/monsterScene.ts; this file holds the rules.
+// Goblin Fuel: a boost you operate by hand (docs/design/desk.md, #61). Code names still say "monster".
+// 1 pull the desk drawer open, 2 drag a can onto the desk, 3 pull the tab until it pops,
+// 4 pour it into your mouth (side view, liquid physics: what goes down sets the boost),
+// 5 one throw at the bin; a miss stays on the floor for good (S.g.floorCans).
+// The scene and its input live in ui/monsterScene.ts, the physics in systems/fuelPhysics.ts; this file holds the rules.
 
 export function openMonster() {
   const n = N();
   if (n.game) return;
   if (S.g.monsters <= 0) { toast(`Your heart says no. ${T.MONSTER_PER_NIGHT} a night is the limit.`, '#a999bd'); sfx.bad(); return; }
   n.action = 'miniGame';
-  n.game = { kind: 'monster', stage: 'fridge', drag: 0, drink: 1, holding: false, gulp: 0, gulps: 0, coughed: false, opened: false, feedback: '', canX: 0 };
+  n.game = { kind: 'monster', stage: 'drawer', opened: false, feedback: '', drunk: 0, result: null };
   sfx.click();
 }
 
 const G = () => { const g = N().game; return g && g.kind === 'monster' ? g : null; };
 
-export function monsterOpenFridge() { const g = G(); if (g?.stage === 'fridge') { g.stage = 'grab'; sfx.fridge(); } }
+export function monsterDrawerOpen() { const g = G(); if (g?.stage === 'drawer') g.stage = 'grab'; }
 
-/** The can was put down on the desk at x. */
-export function monsterPlaced(x: number) { const g = G(); if (g?.stage === 'grab') { g.canX = x; g.stage = 'open'; sfx.clank(0.1); } }
+/** The can stands on the desk. */
+export function monsterPlaced() { const g = G(); if (g?.stage === 'grab') g.stage = 'open'; }
 
-/** One click: tab up and back, the hiss. */
+/** The tab popped: the can is open (a little Noise), one can used. */
 export function monsterOpenCan() {
   const g = G();
   if (!g || g.stage !== 'open') return;
   const n = N();
   n.noise = Math.min(100, n.noise + T.MONSTER_QUIET_NOISE);
-  sfx.hiss(false);
   g.opened = true; S.g.monsters--;
   g.stage = 'drink'; g.feedback = '';
 }
 
-export function setMonsterHold(on: boolean) {
+/** Poured too fast: it went the wrong way. */
+export function monsterCough() {
+  const g = G();
+  if (!g) return;
+  const n = N();
+  n.noise = Math.min(100, n.noise + T.MONSTER_COUGH_NOISE);
+  g.feedback = '*cough cough* Too fast! (Noise)';
+  sfx.bad();
+}
+
+/** The can is empty: `share` of it went down. 85%+ is the full boost, 60%+ half of it, less is nothing. */
+export function monsterDrank(share: number) {
   const g = G();
   if (!g || g.stage !== 'drink') return;
-  if (on) { if (!g.coughed) g.holding = true; return; }
-  // Release: judge the gulp.
-  if (g.holding) {
-    const [lo, hi] = T.MONSTER_GULP_GOOD;
-    if (g.gulp >= lo && g.gulp <= hi) { g.drink = Math.max(0, g.drink - 0.34); g.gulps++; g.feedback = 'Big gulp!'; sfx.gulp(); }
-    else if (g.gulp > 0.12) { g.drink = Math.max(0, g.drink - 0.1); g.feedback = 'Just a sip. Hold a bit longer.'; sfx.gulp(); }
-    if (g.drink <= 0.02) { g.drink = 0; g.stage = 'toss'; g.feedback = ''; boost(); }
-  }
-  g.holding = false; g.gulp = 0; g.coughed = false;
+  g.drunk = share;
+  const pct = Math.round(share * 100);
+  if (share >= T.MONSTER_DRINK_FULL) { g.result = 'full'; boost(1, pct); }
+  else if (share >= T.MONSTER_DRINK_HALF) { g.result = 'half'; boost(T.MONSTER_HALF_MULT, pct); }
+  else { g.result = 'none'; toast(`Only ${pct}% went down. The rest is on your shirt and the desk. No boost.`, '#ff8a80'); sfx.bad(); }
+  g.stage = 'toss'; g.feedback = '';
 }
 
-export function updateMonster(dt: number) {
-  const g = G();
-  if (!g || g.stage !== 'drink' || !g.holding) return;
-  g.gulp += dt / T.MONSTER_GULP_SEC;
-  if (g.gulp > T.MONSTER_GULP_GOOD[1] + 0.15) {
-    const n = N();
-    n.noise = Math.min(100, n.noise + T.MONSTER_COUGH_NOISE);
-    g.holding = false; g.gulp = 0; g.coughed = true;
-    g.feedback = '*cough cough* Too long! (Noise) Let go and try again.';
-    sfx.bad();
-  }
-}
-
-function boost() {
+function boost(mult: number, pct: number) {
   const n = N();
-  n.tired = Math.max(0, n.tired + T.MONSTER_TIRED);
-  n.boost = T.MONSTER_BOOST_SEC; n.crash = 0;
-  n.blink = { state: 'open', lid: 0, nextIn: Math.max(n.blink.nextIn, T.MONSTER_BOOST_SEC) };
-  toast(`GOBLIN FUEL! Party acts 30% faster for ${T.MONSTER_BOOST_SEC} s. Tiredness ${T.MONSTER_TIRED}.`, '#6fcf7f');
+  const sec = Math.round(T.MONSTER_BOOST_SEC * mult), tired = Math.round(T.MONSTER_TIRED * mult);
+  n.tired = Math.max(0, n.tired + tired);
+  n.boost = sec; n.crash = 0;
+  n.blink = { state: 'open', lid: 0, nextIn: Math.max(n.blink.nextIn, sec) };
+  toast(mult >= 1 ? `GOBLIN FUEL! ${pct}% down. Party acts 30% faster for ${sec} s. Tiredness ${tired}.`
+    : `${pct}% down: half a boost. Party acts 30% faster for ${sec} s. Tiredness ${tired}.`, '#6fcf7f');
   sfx.level();
 }
 
-/** A thrown can hit something hard (noise for loud bounces). */
+/** A thrown can hit something hard (Noise for loud bounces). */
 export function monsterClank(power: number) {
   const n = N();
   if (power > 0.5) n.noise = Math.min(100, n.noise + T.MONSTER_CLANK_NOISE * power);
 }
 
-/** The can came to rest inside the bin. `bin` is the settled state of every can in it. */
-export function monsterBinned(bin: BinCan[], style: 'swish' | 'bank' | 'rim') {
+/** The throw is over. `bin` and `floor` are where every can now lies (the floor ones stay for good). */
+export function monsterTossed(bin: CanPose[], floor: CanPose[], inBin: boolean, style: 'swish' | 'bank' | 'rim') {
   const n = N();
   const g = G();
   if (!g || g.stage !== 'toss') return;
-  n.bin = bin;
-  n.cans = bin.length;
+  n.bin = bin; n.cans = bin.length;
+  S.g.floorCans = floor.slice(-T.MONSTER_FLOOR_CANS_MAX);
   n.game = null; n.action = 'none';
-  const line = style === 'swish' ? 'Swish! Nothing but bin.' : style === 'bank' ? 'Off the wall and in. Clean.' : 'Rattled in off the rim.';
-  toast(line, '#6fcf7f');
-  if (style !== 'rim') n.flow = Math.min(T.FLOW_MAX, n.flow + T.MONSTER_SWISH_FLOW);
+  if (inBin) {
+    toast(style === 'swish' ? 'Swish! Nothing but bin.' : style === 'bank' ? 'Off the wall and in. Clean.' : 'Rattled in off the rim.', '#6fcf7f');
+    if (style !== 'rim') n.flow = Math.min(T.FLOW_MAX, n.flow + T.MONSTER_SWISH_FLOW);
+  } else {
+    const k = S.g.floorCans.length;
+    toast(`Missed. It stays there.${k > 1 ? ` ${k} cans on the floor now.` : ''}`, '#a999bd');
+  }
 }
 
 /** Closing early: before it is open nothing is lost; while drinking the can is wasted; after drinking it stays on the floor. */
@@ -99,5 +100,8 @@ export function cancelMonster() {
   if (!g) return;
   n.game = null; n.action = 'none';
   if (g.opened && g.stage === 'drink') toast('You put it down half full. Wasted.', '#a999bd');
-  if (g.stage === 'toss') toast('Empty can left on the floor. She will see that.', '#a999bd');
+  if (g.stage === 'toss') {
+    S.g.floorCans = [...S.g.floorCans, { ...DROPPED, x: DROPPED.x + (S.g.floorCans.length % 5) * 7 }].slice(-T.MONSTER_FLOOR_CANS_MAX);
+    toast('You drop the empty by your chair. It stays there.', '#a999bd');
+  }
 }

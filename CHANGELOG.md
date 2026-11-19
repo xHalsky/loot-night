@@ -3,6 +3,30 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.0 (2026-11-19)
+
+The Goblin Fuel break is remade as five hands-on steps in a dark room (#61). He is the left panel's character in every
+shot: dark silhouette, white glasses, drawn the same pixel way.
+
+- **Drawer** (new, replaces the fridge, which he never had): a top-down shot of the desk's corner. Grab the handle
+  and pull; it sticks, slides and thunks open. **Grab**: drag a can from the drawer onto the desk.
+- **Open**: a close-up of the lid. Pull the ring up until the seal pops: PSSHHT, spray, a shake, a new pop sound.
+- **Drink** is now a physics puzzle in side view: 80 drops of liquid in a see-through can. Hold the can with the
+  mouse, bring it to his lips, hold Space to tilt and let go to ease back. He swallows at a steady rate; pour
+  too fast and it runs down his chin or he coughs (Noise). 85% down is the full boost, 60% half of it
+  (half the time, half the Tiredness drop), less is nothing. Cheeks puff as his mouth fills.
+  Headless check (`test/pour.ts`): holding Space 56-57%, reacting to his cheeks 79-88%, a slow tilt 86-91%.
+- **Toss** remade: rigid can physics with friction (the old one was wonky), one throw. A miss stays on the floor
+  for good: it is saved, later throws land among the old cans and move them. `test/toss.ts`: 6 of 28 blind
+  pulls go in; misses settle, none sink.
+- New sounds: drawer slide and thunk, tab creak, pop, splash, can on desk.
+- Tuning: `MONSTER_DRINK_FULL/HALF`, `MONSTER_HALF_MULT`, `MONSTER_FLUID_N`, `MONSTER_TILT_*`, `MONSTER_LIPS`,
+  `MONSTER_SWALLOW`, `MONSTER_MOUTH_CAP`, `MONSTER_FLOOR_CANS_MAX`, `MONSTER_COUGH_NOISE` (the `MONSTER_GULP_*`
+  values are gone).
+- Bots: the sim drinks at 90% (full boost, as before), so balance is unchanged. Good bot 3 stars in 5 of 5 runs
+  (one drank a can); idle bot unplugged.
+- Plan: the Mini fridge upgrade in the handoff now skips the drawer step.
+
 ## 0.48.2 (2026-11-19)
 
 The energy drink is now **Goblin Fuel** (#60: no real brands on Steam).

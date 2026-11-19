@@ -33,8 +33,12 @@ export const T = {
   MONSTER_TIRED: -35,
   MONSTER_BOOST_SEC: 60, MONSTER_SPEED: 0.30,   // party acts 30% faster
   MONSTER_CRASH_SEC: 20, MONSTER_CRASH_SPEED: -0.15, MONSTER_CRASH_TIRED: 10,
-  MONSTER_GULP_SEC: 1.0,          // hold to fill the gulp meter; release in the green band
-  MONSTER_GULP_GOOD: [0.6, 1.0] as [number, number],
+  MONSTER_DRINK_FULL: 0.85, MONSTER_DRINK_HALF: 0.6, MONSTER_HALF_MULT: 0.5,   // share drunk: full boost / half of it / none (#61)
+  MONSTER_FLUID_N: 80,            // drink particles in a can
+  MONSTER_TILT_SPEED: 1.2, MONSTER_TILT_BACK: 1.0, MONSTER_TILT_MAX: 2.6,   // rad/s: hold Space to tilt, it eases back when you let go
+  MONSTER_LIPS: 16,                      // px: the opening this close to his mouth = lips on the rim
+  MONSTER_SWALLOW: 30, MONSTER_MOUTH_CAP: 14,   // particles per second he can swallow; what fits in his mouth before it spills
+  MONSTER_FLOOR_CANS_MAX: 40,     // missed throws kept on the floor
   MONSTER_COUGH_NOISE: 6,
   MONSTER_QUIET_NOISE: 3,         // the click + psst of opening
   MONSTER_CLANK_NOISE: 4,         // a hard bounce of a thrown can

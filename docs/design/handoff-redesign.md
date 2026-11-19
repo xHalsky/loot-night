@@ -481,7 +481,7 @@ Levels; each level costs `base × 1.15^level`. All of it keeps running while you
 | Silent keyboard and mouse | 249 | Q4 actions make half the Noise (permanent) |
 | Flowers | 89 | +20 Goodwill at once, a pink feed line (one use, buy again) |
 | Dog chew | 29 | The dog's next visit comes 120 s later (one use) |
-| Mini fridge | 599 | The Goblin Fuel scene skips the Fridge step (permanent) |
+| Mini fridge | 599 | The Goblin Fuel scene skips the drawer step: a cold can is already on the desk (permanent) |
 | Ergonomic chair | 899 | Tiredness builds 15% slower (permanent) |
 | New phone | 2999 | Listed as "coming soon" until step 6 |
 

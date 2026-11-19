@@ -24,8 +24,8 @@ import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction 
 import { monUiHtml } from './ui/town';
 import { altTab, excelInput } from './systems/excel';
 import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
-import { openMonster, setMonsterHold, cancelMonster } from './systems/monster';
-import { drawMonsterScene } from './ui/monsterScene';
+import { openMonster, cancelMonster } from './systems/monster';
+import { drawMonsterScene, monsterTilt } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawDeskFx, lapUiHtml, setDeskScale } from './ui/deskFx';
 import { drawHerBed } from './ui/her';
@@ -184,8 +184,8 @@ function dbgDrop(e: ReturnType<typeof itemEntry>) { const n = N(); if (n.locatio
 
 // ---------- Tactile input: drag (slide, lift, pull) and hold (face unlock, drink) ----------
 let drag: { id: string; axis: string; dir: number; dist: number; x0: number; y0: number; t0: number; p: number } | null = null;
-function setDrag(p: number) { const g = S.g.night?.game; if (g && g.kind !== 'cuddle') g.drag = p; }
-function setHold(on: boolean) { if (!S.g.night) return; setPhoneHold(on); setMonsterHold(on); }
+function setDrag(p: number) { const g = S.g.night?.game; if (g && g.kind === 'phone') g.drag = p; }
+function setHold(on: boolean) { if (!S.g.night) return; setPhoneHold(on); }
 
 // ---------- Inventory: hover tooltips, drag to equip / unequip, right-click to equip ----------
 let inv: { key: string; x0: number; y0: number; moved: boolean } | null = null;
@@ -304,6 +304,8 @@ el('planUi').addEventListener('pointerdown', ev => {   // a click outside the sh
   if (!(ev.target as HTMLElement).closest('.plan-sheet') || (ev.target as HTMLElement).closest('.mg-close')) { ev.preventDefault(); ev.stopPropagation(); planOpen = false; }
 });
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
+document.addEventListener('keyup', ev => { if (ev.key === ' ') monsterTilt(false); });
+window.addEventListener('blur', () => monsterTilt(false));
 document.addEventListener('pointercancel', () => { drag = null; setDrag(0); setHold(false); });
 
 document.addEventListener('pointerdown', ev => {
@@ -399,6 +401,7 @@ window.addEventListener('keydown', ev => {
   if (n.game) {
     const i = ['1', '2', '3'].indexOf(k);
     const gm = n.game;
+    if (gm.kind === 'monster' && ev.key === ' ') { ev.preventDefault(); monsterTilt(true); return; }   // Space tilts the can (#61)
     if (i >= 0 && gm.kind === 'phone' && gm.stage === 'call') momReply(i);
     else if (i >= 0 && gm.kind === 'phone' && gm.stage === 'chat' && gm.app === 'boss') bossPick(gm.rows[gm.row].options[i]);
     return;

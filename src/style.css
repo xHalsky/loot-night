@@ -441,7 +441,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .mc-level > div { width: 100%; background: #6fe08a; }
 .gulp { position: absolute; left: 340px; bottom: 34px; width: 28px; height: 130px; border: 2px solid #1d2330; border-radius: 6px; background: #fff; overflow: hidden; }
 .g-band { position: absolute; left: 0; right: 0; background: rgba(62,207,110,.3); border-top: 2px solid #3ecf6e; border-bottom: 2px solid #3ecf6e; }
-#gulpFill { position: absolute; left: 4px; right: 4px; bottom: 0; height: 0; border-radius: 3px; }
 .gulp span { position: absolute; left: 0; right: 0; top: -2px; text-align: center; font-size: 8px; font-weight: 700; }
 .gulps, .tabcount { position: absolute; left: 236px; top: 10px; font-size: 16px; color: #2f6fed; letter-spacing: 4px; }
 .slowmeter { position: absolute; left: 330px; bottom: 60px; font-size: 11px; font-weight: 700; color: #2e9a55; background: #e2f5e8; padding: 4px 8px; border-radius: 10px; }
@@ -1111,7 +1110,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 
 /* windows over the battle area */
 .phone-win { left: 241px !important; top: 30px !important; }
-.monster-win { left: 114px !important; top: 60px !important; }
 .cuddle-win { left: 124px !important; top: 80px !important; }
 #deskFx { width: 984px !important; }
 .lap-bubble { left: 26px !important; top: 80px !important; }
@@ -1159,3 +1157,16 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #monUi .bld-win .svc-foot { margin: 0 -10px; }
 #ui .sp-gate { grid-column: 1 / -1; font-size: 11px; padding: 5px 4px; color: #f2e9d8; background: linear-gradient(#6a3ab8, #3a1a78); border: 1.5px solid #c9a0ff; border-radius: 2px; box-shadow: 0 0 8px rgba(170,120,255,.45); }
 #ui .sp-gate:hover { filter: brightness(1.15); }
+
+/* Goblin Fuel break (#61): a bigger scene in a dark window, the room is dark */
+#winLayer .monster-win { left: 34px !important; top: 12px !important; width: 600px; height: 396px; background: #121018; color: #e8e4f0; border: 1px solid #2e2a3a; }
+.monster-win .m-head { background: #18151f; border-bottom: 1px solid #2a2634; }
+.monster-win .m-sub { color: #8a84a0; }
+.monster-win .btn.x { background: #241f2e; color: #e8e4f0; }
+.monster-win .m-steps span { background: #1f1b28; color: #6e6880; }
+.monster-win .m-steps span b { background: #3a3448; color: #cfc8e0; }
+.monster-win .m-steps span.done { background: #18240f; color: #8fe33a; } .monster-win .m-steps span.done b { background: #4f9a26; color: #fff; }
+.monster-win .m-steps span.now { background: #4f9a26; color: #fff; } .monster-win .m-steps span.now b { background: #fff; color: #2c5a12; }
+.monster-win .m-instr { color: #e8e4f0; font-size: 13px; }
+.monster-win .m-instr em { color: #ffb070; }
+#mcv { width: 600px !important; height: 300px !important; cursor: grab; }

@@ -10,7 +10,7 @@ import { altTab } from '../src/systems/excel';
 import { openPhone, momReply, bossPick, answerSlide, setPhoneHold, textReply, talkPick } from '../src/systems/interrupts';
 import { petStroke, plugIn } from '../src/systems/pets';
 import { answer as lapAnswer } from '../src/systems/lap';
-import { openMonster, monsterOpenFridge, monsterPlaced, monsterOpenCan, setMonsterHold, monsterBinned } from '../src/systems/monster';
+import { openMonster, monsterDrawerOpen, monsterPlaced, monsterOpenCan, monsterDrank, monsterTossed } from '../src/systems/monster';
 import { wakeUp } from '../src/systems/tired';
 import { hideCans, takePlate, chatAnswer, cuddleAnswer } from '../src/systems/visits';
 import { cuddleDot, cuddlePointer } from '../src/systems/cuddle';
@@ -119,11 +119,11 @@ while (S.g.screen === 'night' && t < 2000) {
     if (n.unplugged) n.unplugged.sockets.forEach((k, slot) => plugIn(k, slot));
     if (n.lap?.stage === 'ask') lapAnswer(0);
     if (g?.kind === 'monster') {
-      if (g.stage === 'fridge') monsterOpenFridge();
-      else if (g.stage === 'grab') monsterPlaced(240);
+      if (g.stage === 'drawer') monsterDrawerOpen();
+      else if (g.stage === 'grab') monsterPlaced();
       else if (g.stage === 'open') monsterOpenCan();
-      else if (g.stage === 'drink') { if (!g.holding) setMonsterHold(true); else if (g.gulp >= 0.75) setMonsterHold(false); }
-      else if (g.stage === 'toss') monsterBinned([...n.bin, { ax: 330, ay: 200, bx: 340, by: 214 }], 'swish');
+      else if (g.stage === 'drink') monsterDrank(0.9);
+      else if (g.stage === 'toss') monsterTossed([...n.bin, { x: 505, y: 260, a: Math.PI / 2 }], S.g.floorCans, true, 'swish');
     }
     if (n.phase === 'mapChoice' && !n.selected) { const m = S.g.bag.find(e => e.kind === 'map'); chooseNextFloor(m ? m.id : null); }
     if (n.dropPopup) {

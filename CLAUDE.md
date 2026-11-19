@@ -29,6 +29,8 @@ A browser game heading for a Steam release (it started as a birthday gift): a lo
     npx tsx test/alttab.ts           # alt-tab timing acceptance test
     npx tsx test/autopilot.ts        # reckless autopilot: present vs 40 s away (wipes, party HP)
     npx tsx test/noise.ts            # Noise by distance and masking
+    npx tsx test/pour.ts             # Goblin Fuel drink: careless vs careful pours against the 60%/85% marks
+    npx tsx test/toss.ts             # Goblin Fuel throw: hits and misses, missed cans stay and pile up
     python3 test/balance.py 16 good  # balance report: visits, variety, catches, Noise, income vs the cheapest building
     python3 test/campaign.py 8 4     # NIGHTS=4 bot campaigns: city builds per night (sim.ts NIGHTS=n)
     python3 test/<name>.py           # Playwright screenshot scripts (Chrome at /usr/bin/google-chrome)

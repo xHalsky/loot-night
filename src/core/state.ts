@@ -92,12 +92,13 @@ export interface PhoneGame {
   msgs: string[];                    // chat history shown above the question
 }
 export interface MonsterGame {
-  kind: 'monster'; stage: 'fridge' | 'grab' | 'open' | 'drink' | 'toss';
-  drag: number; drink: number; holding: boolean; gulp: number; gulps: number; coughed: boolean; opened: boolean; feedback: string;
-  canX: number;                   // where the can stands on the desk (scene px)
+  kind: 'monster'; stage: 'drawer' | 'grab' | 'open' | 'drink' | 'toss';
+  opened: boolean; feedback: string;
+  drunk: number;                         // share of the can that went down (set when it is empty)
+  result: 'full' | 'half' | 'none' | null;
 }
-/** An empty can resting in the bin: two ends of a capsule (scene px of the toss view). */
-export interface BinCan { ax: number; ay: number; bx: number; by: number }
+/** An empty can lying in the toss view (scene px): centre and angle. In the bin (tonight) or on the floor (for good). */
+export interface CanPose { x: number; y: number; a: number }
 /** Cuddle: follow her slow breathing (a dot moving along a path) without rushing. */
 export interface CuddleGame { kind: 'cuddle'; t: number; max: number; warmth: number; mx: number; my: number; lastMx: number; lastMy: number; jerk: number }
 export type MiniGame = PhoneGame | MonsterGame | CuddleGame;
@@ -145,7 +146,7 @@ export interface Night {
   blink: { state: 'open' | 'closing' | 'closed'; lid: number; nextIn: number };
   boost: number; crash: number;  // Monster timers (s)
   cans: number;                  // empty cans in the bin
-  bin: BinCan[];                 // where they lie (persists all night)
+  bin: CanPose[];                // where they lie in the bin (tonight)
   log: { text: string; color: string; time: string; tag?: string }[];   // the feed (tag: YOU, LOOT, HER, PHONE, GAME, or a name)
   peeking: boolean; peek: number; peekSus: number;   // peek: how open the door is, 0 shut .. 1 = PEEK_CRACK_MAX   // door peek
   declineHold: boolean; decline: number;   // holding Decline on a ringing call
@@ -205,6 +206,7 @@ export interface GameState {
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back
   goodwill: number;              // her Goodwill bank, 0-100 (systems/goodwill.ts); half carries over
+  floorCans: CanPose[];          // missed throws: they stay on the floor for good (#61)
   pendingListings: { name: string; zl: number }[];
   pity: number; uid: number;
   night: Night | null;
@@ -224,7 +226,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0,
+    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0, floorCans: [],
     pendingListings: [], pity: 0, uid: 1,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1,
     results: null, morning: null,

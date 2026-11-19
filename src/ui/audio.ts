@@ -257,6 +257,13 @@ export const sfx = {
   clank(p: number) { play('tin', { vol: 0.3 + p * 0.8, jitter: 0.08 }) || tone(1900 + Math.random() * 900, 0.05, 'triangle', 0.05 + p * 0.18); },
   binDrop() { play('bin') || noise(0.12, 0.12, 3500, 0.02); },
   gulp() { play('gulp', { jitter: 0.05 }) || tone(160, 0.12, 'sine', 0.25, 0, 90); },
+  // the Goblin Fuel break (#61): drawer runners, the tab's pop, spills
+  drawerSlide(v: number) { noise(0.07, 0.03 + v * 0.05, 700 + v * 900); },
+  drawerThunk() { tone(90, 0.09, 'sine', 0.3, 0, 55); noise(0.05, 0.08, 900); },
+  pop() { tone(1500, 0.02, 'square', 0.14); tone(220, 0.07, 'sine', 0.35, 0.005, 70); noise(0.04, 0.18, 4500, 0, 'game', 'highpass'); },
+  tabCreak() { tone(2400 + Math.random() * 600, 0.015, 'square', 0.03); },
+  splash() { noise(0.09, 0.07, 1600 + Math.random() * 800); },
+  canOnDesk() { play('tin', { vol: 0.25, jitter: 0.05 }) || tone(1400, 0.04, 'triangle', 0.1); tone(140, 0.06, 'sine', 0.2, 0, 90); },
   monClick() { tone(1900, 0.012, 'square', 0.05); tone(95, 0.12, 'sine', 0.05, 0.01, 60); noise(0.03, 0.03, 2500, 0.005); },
   lick() { noise(0.08, 0.1, 1800); },
   kiss() { tone(1600, 0.05, 'sine', 0.12); noise(0.05, 0.08, 4000, 0.02); },
