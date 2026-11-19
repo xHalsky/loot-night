@@ -136,3 +136,25 @@
 .ios-thread { min-height: 0; -webkit-mask-image: linear-gradient(transparent, #000 22px); mask-image: linear-gradient(transparent, #000 22px); }
 .ph-screen.chat .ios-replies { flex: none; }
 .ios-mslide span { padding-left: 14px; white-space: nowrap; }   /* desk phone: the label clears the knob (#45) */
+
+/* Messages, in the phone (#63): the phone's own chats (Text her, Raid night?), and a message being sent */
+.ios-who b.big { font-size: 13px; font-weight: 600; }
+.ios-chatlist { flex: 1; display: flex; flex-direction: column; margin: 2px -4px 0; }
+.ios-chatrow { display: grid; grid-template-columns: 30px 1fr 10px; gap: 7px; align-items: center; text-align: left; border: 0; border-bottom: 1px solid #e5e5ea; background: none; padding: 7px 4px; cursor: pointer; font-family: Inter, sans-serif; color: #111; }
+.ios-chatrow:hover { background: #f2f2f7; }
+.ios-chatrow > i { width: 30px; height: 30px; border-radius: 50%; color: #fff; font-style: normal; font-size: 13px; font-weight: 600; display: grid; place-items: center; }
+.ios-chatrow > span { display: flex; flex-direction: column; min-width: 0; }
+.ios-chatrow b { font-size: 11.5px; font-weight: 600; }
+.ios-chatrow em { font-style: normal; font-size: 11px; color: #007aff; font-weight: 600; }
+.ios-chatrow small { font-size: 9.5px; color: #8e8e93; }
+.ios-chatrow span > em + small + em, .ios-chatrow .sus { font-size: 9px; color: #ff9500; }
+.ios-chatrow u { text-decoration: none; color: #c7c7cc; font-size: 16px; }
+.ios-chatrow.off { cursor: default; }
+.ios-chatrow.off em { color: #8e8e93; }
+.ios-chatrow.off > i { opacity: .45; }
+.ph-screen.chat .ph-bubble.out { background: #007aff; color: #fff; align-self: flex-end; max-width: 88%; border-radius: 16px 16px 4px 16px; font-size: 12px; padding: 6px 10px; }
+.ph-bubble .caret { display: inline-block; width: 1px; height: 12px; margin-left: 1px; vertical-align: -2px; background: #fff; animation: caretBlink 0.8s steps(1) infinite; }
+@keyframes caretBlink { 50% { opacity: 0; } }
+.ios-delivered { align-self: flex-end; font-size: 9px; color: #8e8e93; margin-top: -2px; }
+.ph-screen.chat .timebar > div { background: #007aff; height: 100%; }
+.ph-screen.chat .ph-hint { color: #8e8e93; }

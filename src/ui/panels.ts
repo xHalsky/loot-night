@@ -11,6 +11,7 @@ import { END_HINT, COACH } from '../data/tips';
 import { cityOutlook } from '../systems/town';
 import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
 import { preBlocked, nextMult } from '../systems/preemptive';
+import { phoneAction } from '../systems/interrupts';
 import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
@@ -138,20 +139,13 @@ function preTip(id: PreId): string {
   const d = PRE_BY_ID[id];
   return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs ${preText(d.cost)}</div><div>${preText(d.tip)}</div>`;
 }
-/** The idle phone's menu (tap the phone with nothing on it). */
-export function prePhoneHtml(): string {
-  const n = N();
-  if (n.preMenu !== 'phone') return '';
-  return `<div class="pre-phone"><button class="mg-close" data-act="preMenu" title="Close" style="right:-9px;top:-9px;width:20px;height:20px;font-size:11px">\u2715</button>
-    <div class="pp-app"><i></i>Messages</div>${PRE_ACTIONS.filter(a => a.where === 'phone').map(a => preBtn(a.id, 'ios')).join('')}</div>`;
-}
 /** Your desk chair, nobody in it (placeholder art until #26). */
 const EMPTY_CHAIR = `<svg class="empty-chair" viewBox="0 0 160 220" width="160" height="220"><rect x="30" y="4" width="100" height="112" rx="22" fill="#2b2230" stroke="#120c16" stroke-width="3"/><rect x="42" y="16" width="76" height="88" rx="16" fill="#352a3c"/><rect x="72" y="114" width="16" height="16" fill="#1c1620"/><rect x="16" y="128" width="128" height="24" rx="10" fill="#3a2f42" stroke="#120c16" stroke-width="3"/><rect x="74" y="150" width="12" height="42" fill="#1c1620"/><path d="M28 206 L80 190 L132 206" stroke="#1c1620" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="28" cy="210" r="7" fill="#120c16"/><circle cx="132" cy="210" r="7" fill="#120c16"/><circle cx="80" cy="206" r="7" fill="#120c16"/></svg>`;
 /** Busy with an action: a small card; away from the desk: the empty chair over everything. */
 export function preBusyHtml(): string {
   const n = N();
   const p = n.pre;
-  if (!p) return '';
+  if (!p || phoneAction()) return '';   // phone actions play out in the phone itself (#63)
   const d = PRE_BY_ID[p.id as PreId];
   const pct = Math.round((1 - p.t / p.max) * 100);
   const what = p.id === 'text' ? 'Typing...' : p.id === 'towel' ? (n.towel ? 'Pulling the towel away...' : 'Pushing a towel under the door...')
@@ -251,7 +245,7 @@ const APP: Record<string, [string, string, string]> = { boss: ['Work', 'Boss', '
 function phoneObjHtml(): string {
   const n = N();
   const it = n.interrupts[0];
-  const inPhone = n.game?.kind === 'phone';
+  const inPhone = n.game?.kind === 'phone' || n.preMenu === 'phone' || phoneAction();   // in your hand (#63)
   const down = n.phoneDown > 0;
   let screen = '<div class="ios off"></div>';
   // picked up: the phone leaves the desk until the minigame ends or its window is closed
@@ -282,7 +276,7 @@ export function deskHtml(): string {
   const z = Math.round(n.zone * 20) / 20;
   return `${n.headset ? `<div class="zone-glow ${n.zone >= 1 ? 'full' : ''}" style="--z:${z}"></div>` : ''}
   ${phoneObjHtml()}
-  ${prePhoneHtml()}`;
+`;
 }
 
 // ---------------- Morning vignette by how the night ended (#22) ----------------
@@ -381,9 +375,41 @@ function monsterHtml(g: MonsterGame): string {
   </div>`;
 }
 
+/** The idle phone, picked up (#63): Messages. Its chats are the phone's own actions (Text her, Raid night?). */
+function messagesHtml(): string {
+  const rows = PRE_ACTIONS.filter(a => a.where === 'phone').map(a => {
+    const why = preBlocked(a.id);
+    const [who, col] = a.id === 'text' ? ['Babe \u2665', '#34c759'] : ['The Boys (3)', '#5856d6'];
+    return `<button class="ios-chatrow ${why ? 'off' : ''}" data-act="pre" data-arg="${a.id}" data-tip="pre:${a.id}"><i style="background:${col}">${who[0]}</i>
+      <span><b>${who}</b><em>${a.name}</em><small>${why || preText(a.cost)}</small>${preUseNote(a.id)}</span><u>\u203A</u></button>`;
+  }).join('');
+  return `<div class="ios-nav"><button class="ios-back" data-act="preMenu">\u2039</button><div class="ios-who"><b class="big">Messages</b></div><span></span></div>
+    <div class="ios-chatlist">${rows}</div>`;
+}
+/** Sending: the message types itself into the chat, then shows Delivered (#63). Hands are busy meanwhile. */
+const PHONE_SEND: Record<string, [string, string, string]> = { text: ['Babe \u2665', '#34c759', 'what are you up to? \u2665'], raid: ['The Boys (3)', '#5856d6', 'raid night? need a carry'] };
+function phoneSendHtml(): string {
+  const p = N().pre!;
+  const [who, col, msg] = PHONE_SEND[p.id] ?? PHONE_SEND.text;
+  const k = 1 - p.t / p.max, typed = Math.min(1, k * 1.3);
+  const bubble = typed < 1 ? `<div class="ph-bubble out">${esc(msg.slice(0, Math.max(1, Math.ceil(msg.length * typed))))}<i class="caret"></i></div>`
+    : `<div class="ph-bubble out">${esc(msg)}</div><div class="ios-delivered">Delivered</div>`;
+  return `<div class="ios-nav"><button class="ios-back" data-act="preCancel">\u2039</button><div class="ios-who"><i style="background:${col}">${who[0]}</i><b>${who}</b></div><span id="phTime">${Math.ceil(p.t)} s</span></div>
+    <div class="ios-thread">${bubble}</div>
+    <div class="timebar"><div style="width:${Math.round(k * 100)}%"></div></div>
+    <div class="ph-hint">Hands busy: typing.</div>`;
+}
+const phoneShell = (inner: string, close: string) => `<div class="phone-win">${statusBar()}<div class="ph-screen chat">${inner}</div><button class="ph-home" data-act="${close}" title="Swipe home: put the phone down"></button></div>
+  <button class="mg-close" data-act="${close}" title="Put the phone down" style="left:415px;top:22px">\u2715</button>`;
+
 export function windowHtml(): string {
   const n = S.g.night;
-  if (!n || !n.game) return '';
+  if (!n) return '';
+  if (!n.game) {   // the phone in your hand without a call: sending a message, or Messages
+    if (phoneAction()) return phoneShell(phoneSendHtml(), 'preCancel');
+    if (n.preMenu === 'phone') return phoneShell(messagesHtml(), 'preMenu');
+    return '';
+  }
   // grey circle with a red X just outside the top-right corner: always a way out
   // windows sit over the battle area (#49), each with the close button just outside its top-right corner
   if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:532px;top:66px">\u2715</button>';

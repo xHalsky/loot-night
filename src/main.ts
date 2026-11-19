@@ -326,6 +326,7 @@ document.addEventListener('pointerdown', ev => {
   const act = t.dataset.act!;
   if (!S.g.night && !['newGame', 'continue', 'startNight', 'morning'].includes(act)) return;
   ev.preventDefault();
+  if (t.dataset.tip) hover.key = '';   // the button you just used: its tooltip goes (it may be gone, e.g. a chat in the phone)
   actions[act]?.(t.dataset.arg ?? '');
 });
 

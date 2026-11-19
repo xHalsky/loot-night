@@ -11,6 +11,7 @@ import { sfx } from '../ui/audio';
 import { MOM_LINES, MOM_REPLIES, COURIER_TALKS, FRIENDS_TALKS, type TalkStep } from '../data/content';
 import { weighted } from '../core/rng';
 import { deliverPackage, entryName } from './loot';
+import { PRE_BY_ID, type PreId } from '../data/preemptive';
 import { addBuff } from './curios';
 import { coach } from './coach';
 
@@ -25,7 +26,10 @@ export function scheduleInterrupt(first = false) {
   n.nextInterruptAt = n.threat + (first ? T.INTERRUPT_FIRST_DELAY_SEC : rand(...T.INTERRUPT_INTERVAL_SEC));
 }
 
-export const phoneBusy = () => { const n = N(); return n.interrupts.length > 0 || n.game?.kind === 'phone'; };
+/** The phone is taken: something is on it, or it is in your hand (a call or chat, the Messages list, sending a text). */
+export const phoneBusy = () => { const n = N(); return n.interrupts.length > 0 || n.game?.kind === 'phone' || n.preMenu === 'phone' || phoneAction(); };
+/** A phone action under way (texting her, asking the boys to raid): it plays out in the phone in your hand (#63). */
+export const phoneAction = () => { const p = N().pre; return !!p && PRE_BY_ID[p.id as PreId]?.where === 'phone'; };
 const timerMult = () => (N().tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_TIMER_MULT : 1);
 
 export function spawnInterrupt(kind?: InterruptKind) {

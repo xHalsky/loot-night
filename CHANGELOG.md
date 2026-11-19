@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.4 (2026-11-19)
+
+Everything on the phone happens inside the phone (#63).
+
+- Tapping the idle phone used to open a Messages card floating next to it on the desk, and texting her or asking
+  the boys to raid showed a "Typing..." card on the desk (the raid's even said "Making her tea..."). Now the tap
+  brings the phone into your hand at Messages, with two chats, Babe (Text her) and The Boys (3) (Raid night?).
+  Tap one and the message types itself into that chat, shows Delivered, and the phone goes down.
+- No call or text arrives while the phone is in your hand (it used to vanish from the desk with nothing to show a
+  call).
+- A button's tooltip goes away when you use it.
+- `test/phonemenu.py` now checks it: Messages in the phone, typing in the chat, nothing outside the phone, nothing
+  rings meanwhile. `test/rl_screens.py` captures Messages and the typing chat in the phone.
+
 ## 0.49.3 (2026-11-19)
 
 - The phone's Messages menu (tap the idle phone: Text her, Raid night?) opened over the monitor's taskbar, and the

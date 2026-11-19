@@ -30,9 +30,15 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
 - **Calm.** No visit roll while it runs, even past the guaranteed-visit gap. Heard Noise above
   `PRE_CALM_BREAK_NOISE` (70) ends it and she comes to check, so a calm does not make loud play free.
 - **Where they live.** Door actions in a "before" row under her note (hidden while she is at the door). Phone actions:
-  tap the phone while nothing is on it (its label says "tap: text her"); an iOS card ("Messages") opens next to
-  it, on the desk below the monitor's taskbar (opening upward over the taskbar hid its top under the taskbar, #63).
-  Only allowed while no visit is under way and your hands are free.
+  they live **in the phone**. Tap the phone while nothing is on it (its label says "tap: text her"): it comes into
+  your hand (the same phone window as calls) at **Messages**, two chats: **Babe** (Text her) and **The Boys (3)**
+  (Raid night?), each with its cost or why it's blocked. Tap a chat: the message types itself into that chat
+  (`PRE_TEXT_SEC`, hands busy), "Delivered", then the phone goes down; her reply lights the desk phone later. No
+  call or text arrives while the phone is in your hand. Only allowed while no visit is under way and your hands
+  are free. When the Shop app exists (handoff step 4.6) the tap opens the home screen and Messages is an app on it.
+  **Decision (#63): everything on the phone happens inside the phone.** Rejected: an iOS card floating next to
+  the phone with the two actions, and a "Typing..." busy card on the desk (it was outside the phone, and the raid's
+  card even read "Making her tea...").
 - **Debug:** F1 → "Calm +30s" (the framework's test action).
 
 | Action | Cost | Works when she is | Effect | Backfire |

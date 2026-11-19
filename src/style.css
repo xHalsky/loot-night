@@ -813,9 +813,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .pre-btn em.sus { color: #d02a2a; }
 .pre-btn.off { opacity: .5; cursor: not-allowed; }
 /* the idle phone's menu: iOS sheet next to the phone */
-.pre-phone { position: absolute; left: 116px; top: 540px; width: 168px; padding: 8px; background: rgba(242,242,247,.97); border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.55); font-family: Inter, sans-serif; pointer-events: auto; z-index: 6; }
-.pre-phone .pp-app { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #6e6e73; margin-bottom: 6px; }
-.pre-phone .pp-app i { width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(#5fe07a, #2fb84e); }
 .pre-btn.ios { font-family: Inter, sans-serif; border: none; border-radius: 10px; background: #fff; box-shadow: none; padding: 7px 9px; width: 100%; }
 .pre-btn.ios b { font-size: 13px; font-weight: 600; color: #007aff; }
 .pre-btn.ios span { font-size: 11px; color: #6e6e73; }
@@ -991,7 +988,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .phone-zoom .phone-wrap { left: 0 !important; top: 0 !important; }
 .phone-zoom .ios.call .ios-mrow { display: none; }
 .phone-zoom .ios.call .ios-mslide { margin-top: 12px; }
-.pre-phone { left: 150px !important; top: 520px !important; }   /* on the desk beside the phone, below the taskbar (#63) */
 #tonight { left: 470px !important; top: 498px !important; z-index: 6 !important; }
 #tonight .sticky { transform: rotate(3deg) !important; }
 

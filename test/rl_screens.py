@@ -8,6 +8,26 @@ from PIL import Image, ImageDraw, ImageFont
 OUT = 'test/rl'
 DESK = {'x': 296, 'y': 360, 'width': 540, 'height': 360}
 MONITOR = {'x': 304, 'y': 6, 'width': 968, 'height': 518}
+README = """Loot Night, real-life screens for the redesign (test/rl_screens.py)
+
+All PNGs are at 2x: the game's 1280 x 720 layout rendered as 2560 x 1440, so halve any pixel size you measure.
+Window crops include ~14 px of margin so the grey/red close button outside the top-right corner shows.
+"full_frame" files are the whole screen, for where each thing sits.
+
+phone/    Everything on the phone happens inside the phone. In your hand (the window over the battle area,
+          186 x 398): incoming calls (Mom, courier, the boys), the lock screen with 1 and 3 banners, Face ID hold,
+          the boss chat (pick the sum), her texts, Mom's call (reply timing, listening), the courier and the boys'
+          calls, Messages (tap the idle phone: Babe = Text her, The Boys = Raid night?) and a message typing
+          itself into her chat. On the desk: screen off, an incoming call with its countdown ring, the lock-screen
+          banners, face-down (glow, idle), her reply banner.
+dog/      The shiba up at the desk (waiting, petted), and his revenge: the NO SIGNAL cable screen behind the monitor.
+windows/  Every pop-up: the how-to card, the energy break (all 5 steps), the cuddle break, the plan, her on the
+          desk, the pre-emptive busy cards (tea, towel) and the tea question, the coach marks, a tooltip, pause,
+          and the RPG windows (service, build, curio, item details, bag full, the appraiser card) so one frame can
+          cover all of them. Also Excel (the monitor's other app), the microsleep and caught overlays, and the
+          results and morning screens.
+sheet_*.png  A labelled contact sheet per folder.
+"""
 shots = {'phone': [], 'dog': [], 'windows': []}
 fails = []
 
@@ -79,9 +99,7 @@ async def main():
         await ev(pg, "n.game=null; n.action='none'"); await pg.wait_for_timeout(300)
         # ---- the phone on the desk ----
         await shot(pg, 'phone', 'desk_idle_screen_off', clip=DESK)
-        await ev(pg, "n.preMenu='phone'"); await pg.wait_for_timeout(300)
-        await shot(pg, 'phone', 'desk_messages_menu', clip=DESK)
-        await ev(pg, "n.preMenu=null; n.interrupts=[{kind:'mom',t:12,max:20,msgs:[],pend:[],pingAt:-9}]"); await pg.wait_for_timeout(300)
+        await ev(pg, "n.interrupts=[{kind:'mom',t:12,max:20,msgs:[],pend:[],pingAt:-9}]"); await pg.wait_for_timeout(300)
         await shot(pg, 'phone', 'desk_incoming_call_ring', clip=DESK)
         await ev(pg, "n.interrupts=[{kind:'boss',t:12,max:20,msgs:['you there?','quick question','need the Q4 totals for the deck','asap pls'],pend:[],pingAt:-9}]"); await pg.wait_for_timeout(300)
         await shot(pg, 'phone', 'desk_lock_screen_banners', clip=DESK)
@@ -90,6 +108,16 @@ async def main():
         await ev(pg, "n.interrupts=[]"); await pg.wait_for_timeout(300)
         await shot(pg, 'phone', 'desk_face_down_idle', clip=DESK)
         await ev(pg, "n.phoneDown=0; g.timeScale=1"); await pg.wait_for_timeout(400)
+        # tap the idle phone: Messages in your hand; tap a chat: the message types itself in it (#63)
+        await ev(pg, "n.preMenu='phone'"); await pg.wait_for_timeout(400)
+        await shot(pg, 'phone', 'in_hand_messages', sel='.phone-win')
+        await ev(pg, "n.apt.activity='tv'; n.apt.room='living'; n.apt.moving=0")
+        await dbg(pg, 'pre', 'text'); await pg.wait_for_timeout(1100)
+        await shot(pg, 'phone', 'in_hand_texting_her', sel='.phone-win')
+        for _ in range(80):
+            if await ev(pg, "return !n.pre"): break
+            await pg.wait_for_timeout(100)
+        await ev(pg, "n.preUses={}")
         await ev(pg, "n.herReply={msg:'ok but 10 min max ♥', t:6, wait:0}"); await pg.wait_for_timeout(400)
         await shot(pg, 'phone', 'desk_her_reply_banner', clip=DESK)
         await ev(pg, "n.herReply=null")
@@ -156,12 +184,11 @@ async def main():
         await ev(pg, "n.lap=null"); await pg.wait_for_timeout(300)
 
         # ---- pre-emptive actions (the phone menu, texting her, tea, the episode question, the towel) ----
-        await ev(pg, "n.preMenu='phone'"); await pg.wait_for_timeout(250)
-        tb = await pg.evaluate("()=>{const e=document.querySelector('[data-tip^=\"pre:\"]'); if(!e) return null; const r=e.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
+        tb = await pg.evaluate("()=>{const e=document.querySelector('[data-tip^=\"pre:tea\"]'); if(!e) return null; const r=e.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
         if tb: await pg.mouse.move(*tb); await pg.wait_for_timeout(400)
-        await shot(pg, 'windows', 'tooltip_on_a_phone_action', clip={'x': 296, 'y': 300, 'width': 560, 'height': 420})
+        await shot(pg, 'windows', 'tooltip_on_an_action', clip={'x': 0, 'y': 360, 'width': 560, 'height': 360})
         await pg.mouse.move(640, 300)
-        await ev(pg, "n.preMenu=null; n.preUses={}; n.apt.calm=0; n.apt.activity='tv'; n.apt.room='living'; n.apt.moving=0")
+        await ev(pg, "n.preUses={}; n.apt.calm=0; n.apt.activity='tv'; n.apt.room='living'; n.apt.moving=0")
         await dbg(pg, 'pre', 'tea'); await pg.wait_for_timeout(500)
         await shot(pg, 'windows', 'pre_tea_away_empty_chair_full_frame')
         await shot(pg, 'windows', 'pre_busy_card_tea', sel='.pre-card')
@@ -242,6 +269,7 @@ async def main():
             for li, line in enumerate(lines[:2]): d.text((px, py - 18 + li * 18), line, fill='#e8e4f0', font=font)
             sheet.paste(im, (px, py + 22))
         sheet.save(f'{OUT}/sheet_{gname}.png')
+    open(f'{OUT}/README.txt', 'w').write(README)
     with zipfile.ZipFile('test/rl.zip', 'w', zipfile.ZIP_DEFLATED) as z:
         for root, _, files in os.walk(OUT):
             for fn in sorted(files): z.write(os.path.join(root, fn), os.path.relpath(os.path.join(root, fn), 'test'))
