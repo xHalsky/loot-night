@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.6 (2026-11-19)
+
+- **Your room is at the end of the hallway** (#64). The crack looks straight down the hallway, so your door is at
+  its end, where 0.49.5's plan had the front door. The plan is redrawn around that: the kitchen beside your room
+  (its opening first on the right), the bathroom further down, the living room along the left with its opening at
+  the far end next to the bedroom door. Both the kitchen and the living room still share your walls, so who hears
+  you is unchanged. No front door on the sheet (nothing uses it, the crack doesn't show one).
+- **His eyes match the crack.** A new sound from the bathroom or the bedroom now turns his glasses to the right
+  of the webcam picture, the side the crack shows them on (they turned left). The living room stays left, the
+  kitchen and the hallway right. Sims unchanged (his eyes are a tell, not a rule).
+
 ## 0.49.5 (2026-11-19)
 
 - **The plan matches the apartment again.** The blue sheet on his wall still showed the layout from before the

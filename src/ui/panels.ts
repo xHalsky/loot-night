@@ -182,8 +182,8 @@ export function planHtml(): string {
   return `<div class="plan-back"><div class="plan-sheet"><button class="mg-close" title="Back (Esc)">\u2715</button>
     <div class="plan-title">The plan <small>who hears you, what the crack shows</small></div>
     ${planSvg(340)}
-    <div class="plan-foot">Next to your room: the living room (through the wall) and the kitchen (right across, no door).
-    She hears you best there and in the hallway. The bathroom is across and further, the bedroom at the far end.
+    <div class="plan-foot">Your room is at the end of the hallway. Next to it: the kitchen and the living room (through the
+    walls) and the hallway. She hears you best there. The bathroom is further down, the bedroom at the far end.
     Through the crack: 1 the kitchen, 2 the bathroom door, 3 the far end only when the door is wide.</div></div></div>`;
 }
 

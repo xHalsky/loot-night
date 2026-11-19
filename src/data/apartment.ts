@@ -14,11 +14,11 @@ export const ACTIVITIES: ActivityDef[] = [
 export const ACT_BY_ID = Object.fromEntries(ACTIVITIES.map(a => [a.id, a])) as Record<ActivityId, ActivityDef>;
 export const ROOM_NAME: Record<Room, string> = { living: 'Living room', kitchen: 'Kitchen', bathroom: 'Bathroom', bedroom: 'Bedroom', hallway: 'Hallway' };
 // How far each room is from yours on the blueprint (docs/design/her.md, Noise by distance).
-// Your room shares walls with the living room and the kitchen and opens onto the hallway;
-// the bathroom is across the hallway; the bedroom is the far corner.
+// Your room is at the hallway's end (ui/plan.ts): it shares walls with the kitchen and the living room; the
+// bathroom is further down the hallway; the bedroom is at the far end.
 export const ROOM_DISTANCE: Record<Room, 'next' | 'middle' | 'far'> = { hallway: 'next', living: 'next', kitchen: 'next', bathroom: 'middle', bedroom: 'far' };
 /** Which side of the webcam picture each room is on, for his eyes (#37): -1 the viewer's left, 1 the right.
- *  He faces the camera on the south wall; west (living room, bathroom, bedroom) is left, the hallway door
- *  and the kitchen across it are right. */
-export const ROOM_LOOK: Record<Room, number> = { living: -1, bathroom: -1, bedroom: -1, kitchen: 1, hallway: 1 };
+ *  The camera looks at him from his desk; your door is behind him, the hallway straight beyond it. As in the
+ *  crack (#64): the kitchen, the bathroom and the bedroom are on the right, the living room on the left. */
+export const ROOM_LOOK: Record<Room, number> = { living: -1, bathroom: 1, bedroom: 1, kitchen: 1, hallway: 1 };
 export const ROOM_SHORT: Record<Room, string> = { living: 'Living', kitchen: 'Kitchen', bathroom: 'Bath', bedroom: 'Bedroom', hallway: 'Hallway' };

@@ -25,9 +25,9 @@ Moving takes `APT_MOVE_SEC` with quiet steps. At each activity end she heads to 
 Mom call sends her to your door next.
 
 **Noise by distance and masking.** How much of your Noise reaches her depends on where she is
-(`ROOM_DISTANCE` in `src/data/apartment.ts`, `HEAR_DISTANCE` / `HEAR_MASK` in `tuning.ts`). Your room shares
-walls with the living room and kitchen and opens onto the hallway (x2); the bathroom is across the hallway
-(x1); the bedroom is the far corner (x0.5). The TV masks an extra x0.5; the shower masks everything (x0).
+(`ROOM_DISTANCE` in `src/data/apartment.ts`, `HEAR_DISTANCE` / `HEAR_MASK` in `tuning.ts`). Your room is at the
+hallway's end and shares walls with the kitchen and the living room (x2, the hallway too); the bathroom is
+further down the hallway (x1); the bedroom is at the far end (x0.5). The TV masks an extra x0.5; the shower masks everything (x0).
 Moving between rooms counts as the hallway. This heard Noise drives her door chance and makes her wrap up
 early above 70. It is never shown; the player infers it from what they hear. `test/noise.ts`: a boss kill
 during her shower leaves the door chance at 35%; the same kill while she makes tea next door raises it to 85%.
@@ -36,11 +36,13 @@ during her shower leaves the door chance at 35%; the same kill while she makes t
 white walls, door swings, furniture, a dashed line of sight from your door. It never marks where she is. Click
 it for the large version: it teaches the layout, which rooms are next to yours (Noise by distance) and what the
 crack shows. It is drawn to match the hallway behind your door (`src/ui/plan.ts`, one layout for the sheet and
-its corner in the webcam view): your door opens onto the hallway; right across it the kitchen's open doorway
-(1), further along the same wall the bathroom door (2), at the far end the bedroom door and the living room's
-opening on your side (3); the living room shares your wall; the front door is at the hallway's near end. The
-numbers 1 to 3 are the order the crack reveals them. (0.49.5: the old sheet showed the layout from before the
-crack view, with the hallway running past the bedroom and the bathroom between them.)
+its corner in the webcam view): your room is at the hallway's end, so the crack looks straight down it; on the
+right wall the kitchen's open doorway (1), then the bathroom door (2); at the far end the living room's opening on
+the left and the bedroom door on the right (3). The kitchen is beside your room and the living room runs along the
+hallway's left side, so both share your walls. The numbers 1 to 3 are the order the crack reveals them. The sheet
+has no front door: nothing in the game uses it, and the crack doesn't show one. (0.49.6, #64: 0.49.5 put your
+room beside the hallway and the front door at its end, but the crack's one vanishing point means you look down
+the hallway's length; before that the sheet still showed the layout from before the crack view.)
 
 **Last heard** (one line under the webcam view, above the her-note, `heardHtml()`; hidden while she stands in
 the doorway): what you last heard of her, where,
@@ -58,8 +60,8 @@ warning is gone; in the webcam view his eyes no longer flick toward her sounds. 
 opens to a narrow crack (`PEEK_CRACK_MIN` of its width) in `PEEK_OPEN_SEC`, then creeps wider to
 `PEEK_CRACK_MAX` over `PEEK_CREEP_SEC` (7 s). Let go and it closes. Behind it is one fixed picture of the
 hallway, laid out like the blueprint and seen from your door. The crack opens from the door's right edge, so
-the kitchen opening right across shows first, then the bathroom door, and the far end (bedroom door, the
-living-room opening on your side) only when wide. Lights are on only where she is.
+the kitchen opening (first on the right) shows first, then the bathroom door, and the far end (the
+living-room opening on the left, the bedroom door on the right) only when wide. Lights are on only where she is.
 
 | She is | Through the crack | Crack | Can she see you |
 |---|---|---|---|
@@ -173,9 +175,9 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
 - **The blueprint never shows her exact position**, and peeking is risky; partial information is the FNAF part.
 - **Peeking shows the hallway, not a map marker** (0.34, replaces the pink cloud that shrank onto her on the
   blueprint). What you learn depends on how long you dare to hold the door: the crack creeps wider, the near
-  kitchen shows at once, the far rooms only when the door is wide and easiest to notice. The picture is
-  hand-placed, not strict perspective: from your door the living-room opening (on your side) would be
-  invisible. Rejected: an "eyes adjusting" blur or mosaic reveal (mixes pixel sizes with the pixel art);
+  kitchen shows at once, the far rooms only when the door is wide and easiest to notice. Your door is at
+  the hallway's end, so the picture is plain one-point perspective down its length (0.49.6, #64; it used to be
+  explained as hand-placed, from a door in the hallway's side wall). Rejected: an "eyes adjusting" blur or mosaic reveal (mixes pixel sizes with the pixel art);
   keeping the cloud on a smaller map (a marker in all but name).
 - **Last heard is one line of text** (0.34): the blueprint was meant to show it but never did. A line keeps
   the sound-first rule (the last sound, never her position) and frees the blueprint for the layout.

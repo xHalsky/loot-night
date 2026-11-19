@@ -133,7 +133,7 @@ front, below her: both read at once.
   | Chat answers | Good: a grin. Meh: a short flat line. Rude: a smirk and a glint on his glasses | Small |
   | Snack offered / taken | The grin | Emote |
   | Epic or better drop (`HIS_GRIN_RARITY`) | A wide, slightly evil grin and a glint, for `HIS_GRIN_SEC` | Emote |
-  | A new sound of her | His head and glasses turn to its side for `HIS_FLICK_SEC` (`ROOM_LOOK`: living room, bathroom, bedroom left; hallway and kitchen right). Not with the headset on: that is what the headset costs | Stoic |
+  | A new sound of her | His head and glasses turn to its side for `HIS_FLICK_SEC` (`ROOM_LOOK`: the living room left; the hallway, kitchen, bathroom and bedroom right, the sides the crack shows them on). Not with the headset on: that is what the headset costs | Stoic |
   | Tired (`TIRED_YAWN`+) | The glasses dim and sit lower; he yawns with the yawn (mouth wide) | Stoic / emote |
   | Microsleep (`TIRED_MICROSLEEP`+) | Nods off: glasses slide down his nose, eyes shut above them, head drops, "z" (seen while the lids close) | Emote |
   | Full Zone | Hands steepled in front of his face, a glint, a purple glow | Stoic |

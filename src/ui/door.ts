@@ -207,9 +207,10 @@ function daydream(c: CanvasRenderingContext2D, t: number) {
 }
 
 // ---------- The hallway behind your door (docs/design/her.md, Peeking) ----------
-// One fixed picture, laid out like the blueprint and seen from your door: the crack opens from the door's right
-// edge, so the kitchen right across shows at a narrow crack, the bathroom door at a medium one, and the bedroom
-// door and the living-room opening at the far end only when wide. Lights and her tell where she is.
+// One fixed picture, laid out like the blueprint (ui/plan.ts): your door is at the hallway's end, so you look
+// straight down it. The crack opens from the door's right edge: the kitchen opening (first on the right) shows at a
+// narrow crack, the bathroom door at a medium one, the living-room opening and the bedroom door at the far end
+// only when wide. Lights and her tell where she is.
 const VP: [number, number] = [150, 160];                        // vanishing point
 const RW = 175, END_L = 100;                                     // right wall starts at x 175; far end wall x 100..175
 const yTop = (x: number) => VP[1] - 1.44 * (x - VP[0]);         // right wall: ceiling line
@@ -235,7 +236,7 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
   // ceiling, walls, floor (a dim night light in the hallway)
   fillPoly(c, [[PX, TOP], [XR, TOP], [XR, yTop(XR)], [RW, yTop(RW)], [END_L, yTop(RW)], [PX, 87]], '#211a24');
   fillPoly(c, [[RW, yTop(RW)], [XR, yTop(XR)], [XR, yBot(XR)], [RW, yBot(RW)]], '#43363f');                 // right wall
-  fillPoly(c, [[PX, 87], [END_L, yTop(RW)], [END_L, yBot(RW)], [PX, 270]], '#3a2e37');                       // left wall (your side)
+  fillPoly(c, [[PX, 87], [END_L, yTop(RW)], [END_L, yBot(RW)], [PX, 270]], '#3a2e37');                       // left wall (the living room's side)
   fillPoly(c, [[END_L, yTop(RW)], [RW, yTop(RW)], [RW, yBot(RW)], [END_L, yBot(RW)]], '#4a3c46');           // the far end
   const fl = c.createLinearGradient(0, yBot(RW), 0, BOT); fl.addColorStop(0, '#3e2a1f'); fl.addColorStop(1, '#6a4630');
   fillPoly(c, [[PX, 270], [END_L, yBot(RW)], [RW, yBot(RW)], [XR, yBot(XR)], [XR, BOT], [PX, BOT]], fl);
@@ -245,7 +246,7 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
   const lamp = c.createRadialGradient(150, 70, 4, 150, 70, 150); lamp.addColorStop(0, 'rgba(255,200,140,.16)'); lamp.addColorStop(1, 'rgba(255,200,140,0)');
   c.fillStyle = lamp; c.fillRect(PX, TOP, DW, BOT - TOP);
 
-  // --- kitchen opening, right across your door (narrow crack)
+  // --- kitchen opening, first on the right (narrow crack)
   const kq = wallQuad(207, XR, 0.1);
   const kitchen = room === 'kitchen';
   if (kitchen) {
@@ -266,7 +267,7 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
   }
   c.fillStyle = '#2c2128'; c.fillRect(205, yTop(205) + 2, 3, yBot(205) - yTop(205));   // door frame edge
 
-  // --- bathroom door, across and a bit further (medium crack)
+  // --- bathroom door, further along the right wall (medium crack)
   const bq = wallQuad(182, 200, 0.2);
   const bath = room === 'bathroom';
   fillPoly(c, bq, bath ? '#cdbfa6' : '#a99c88');
@@ -283,7 +284,7 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
     c.fillStyle = bgw; c.fillRect(160, yBot(182) - 10, 60, 40);
   }
 
-  // --- the far end: living-room opening (your side) and the bedroom door (wide crack)
+  // --- the far end: living-room opening (left) and the bedroom door (right) (wide crack)
   const tv = room === 'living' && act === 'tv';
   c.fillStyle = '#120e15'; c.fillRect(106, 140, 32, yBot(RW) - 140);                      // living-room opening
   if (room === 'living') {
