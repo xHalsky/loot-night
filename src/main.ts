@@ -304,7 +304,7 @@ el('planUi').addEventListener('pointerdown', ev => {   // a click outside the sh
   if (!(ev.target as HTMLElement).closest('.plan-sheet') || (ev.target as HTMLElement).closest('.mg-close')) { ev.preventDefault(); ev.stopPropagation(); planOpen = false; }
 });
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
-document.addEventListener('keyup', ev => { if (ev.key === ' ') monsterTilt(false); });
+document.addEventListener('keyup', ev => { if (ev.key === ' ' || ev.code === 'Space') { monsterTilt(false); if (S.g.night?.game?.kind === 'monster') ev.preventDefault(); } });
 window.addEventListener('blur', () => monsterTilt(false));
 document.addEventListener('pointercancel', () => { drag = null; setDrag(0); setHold(false); });
 
@@ -401,7 +401,7 @@ window.addEventListener('keydown', ev => {
   if (n.game) {
     const i = ['1', '2', '3'].indexOf(k);
     const gm = n.game;
-    if (gm.kind === 'monster' && ev.key === ' ') { ev.preventDefault(); monsterTilt(true); return; }   // Space tilts the can (#61)
+    if (gm.kind === 'monster' && (ev.key === ' ' || ev.code === 'Space')) { ev.preventDefault(); monsterTilt(true); return; }   // Space tilts the can, wherever it is (#61, #62)
     if (i >= 0 && gm.kind === 'phone' && gm.stage === 'call') momReply(i);
     else if (i >= 0 && gm.kind === 'phone' && gm.stage === 'chat' && gm.app === 'boss') bossPick(gm.rows[gm.row].options[i]);
     return;

@@ -365,7 +365,7 @@ const M_STEPS: [MonsterGame['stage'], string, string][] = [
   ['drawer', 'Drawer', 'Grab the drawer handle and pull.'],
   ['grab', 'Grab', 'Drag a can to its spot on the desk.'],
   ['open', 'Open', 'Pull the tab up.'],
-  ['drink', 'Drink', 'Hold the can (mouse) at his mouth. Hold Space to tilt, let go to tilt back. 85% for the full boost.'],
+  ['drink', 'Drink', 'Click the can: it follows your mouse. Hold Space to tilt it, let go to tilt back. 85% for the full boost.'],
   ['toss', 'Toss', 'One throw. A miss stays on the floor.'],
 ];
 

@@ -107,9 +107,10 @@ on the scene: 1.4x and 1.6x); the physics works in the scene's own px.
    tab creaks, then the seal pops: PSSHHT, a green spray, the screen shakes, fizz rises out of the hole.
    Noise +`MONSTER_QUIET_NOISE`, one can used.
 4. **Drink** (a liquid-physics puzzle, close on him; no desk in the shot). He tips his head back (`HEAD_TILT` in
-   `systems/fuelPhysics.ts`), which turns his mouth up toward the can. The can floats: hold it with the mouse and
-   bring the opening to his lips. Hold Space to tilt it toward him (`MONSTER_TILT_SPEED`), let go and it eases back
-   (`MONSTER_TILT_BACK`, slower, so tapping holds an angle). Let go of the mouse and it floats back. The drink is
+   `systems/fuelPhysics.ts`), which turns his mouth up toward the can. The can floats: one click picks it up (a
+   click anywhere in the shot) and from then on it follows the mouse; bring the opening to his lips. Hold Space to
+   tilt it toward him wherever it is (`MONSTER_TILT_SPEED`), let go and it eases back (`MONSTER_TILT_BACK`, slower,
+   so tapping holds an angle). Tilting away from his mouth pours it on the floor. The drink is
    `MONSTER_FLUID_N` particles in a see-through can with a solid outline and a faint label. With his lips on the rim
    (`MONSTER_LIPS`) what comes out goes in, but he swallows only `MONSTER_SWALLOW` a second and his mouth holds
    `MONSTER_MOUTH_CAP`: pour faster and it runs down his chin; enough of that at once is a cough (spray, Noise
@@ -191,6 +192,9 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   reads right and pouring is a little easier (a careful pour reaches full more often; holding Space still fails).
   The drawer and drink shots are drawn closer (less desk, more of what you handle); the open step shows the whole
   can so its branding is seen. Rejected: a hand holding the can (it covered the liquid), keeping the wide shots.
+- **One click picks the can up; Space tilts it anywhere** (0.49.2, #62). Holding the mouse button down while
+  tapping Space was easy to miss: one click without holding left the can floating and Space did nothing.
+  Rejected: tilting only near his mouth (Space looked broken everywhere else).
 - **Goblin Fuel is a boost you operate, not an interrupt.** Hands busy = danger if she peeks.
 - **Alt-tab lag 1.0 to 2.5 s** (0.14) against a 0.9 s handle stage: last-second saves are impossible
   by construction.

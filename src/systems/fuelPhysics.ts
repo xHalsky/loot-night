@@ -93,7 +93,7 @@ function fluidStep(p: Pour, dt: number) {
   }
 }
 
-/** One frame of the drink. The can follows the hand while held; Space tilts it toward him, letting go tilts it back. */
+/** One frame of the drink. The can follows the mouse once picked up; Space tilts it toward him wherever it is, letting go tilts it back. */
 export function stepPour(p: Pour, dt: number, inp: PourInput, ev: PourEvents = {}) {
   p.t += dt;
   p.held = inp.held && !p.done;
@@ -102,7 +102,7 @@ export function stepPour(p: Pour, dt: number, inp: PourInput, ev: PourEvents = {
     const k = Math.min(1, dt * 10);
     p.x += (clamp(inp.tx, 160, 410) - p.x) * k; p.y += (clamp(inp.ty, 60, ry) - p.y) * k;
   } else { const k = Math.min(1, dt * 8); p.x += (rx - p.x) * k; p.y += (ry - p.y) * k; }
-  if (p.held && inp.tilt) p.a = Math.min(T.MONSTER_TILT_MAX, p.a + T.MONSTER_TILT_SPEED * dt);
+  if (inp.tilt && !p.done) p.a = Math.min(T.MONSTER_TILT_MAX, p.a + T.MONSTER_TILT_SPEED * dt);
   else p.a = Math.max(0, p.a - T.MONSTER_TILT_BACK * dt);
   for (let i = 0; i < 3; i++) fluidStep(p, dt / 3);
   // the mouth opens when the opening comes close to it

@@ -287,11 +287,7 @@ document.addEventListener('pointerdown', ev => {
     return;
   }
   if (g.stage === 'open' && popT < 0) { if (Math.abs(x - CAN3.x) < 44 && Math.abs(y - ringY()) < 26) tabHold = { py: y, l0: tab }; return; }
-  if (g.stage === 'drink' && doneT < 0) {
-    const cs = Math.cos(pour.a), sn = Math.sin(pour.a), dx = x - pour.x, dy = y - pour.y;
-    if (Math.abs(dx * cs + dy * sn) < 36 && Math.abs(-dx * sn + dy * cs) < 54) { pour.held = true; sfx.click(); }
-    return;
-  }
+  if (g.stage === 'drink' && doneT < 0) { if (!pour.held) { pour.held = true; sfx.click(); } return; }   // one click picks the can up; it follows the mouse
   if (g.stage === 'toss' && !toss.thrown && tossDone < 0 && Math.hypot(x - HAND[0], y - HAND[1]) < 40) { aim = [0, 0]; sfx.click(); }
 });
 document.addEventListener('pointermove', ev => {
@@ -310,7 +306,6 @@ document.addEventListener('pointerup', () => {
     carry = null;
   }
   tabHold = null;
-  pour.held = false;
   if (aim) throwCan();
 });
 function throwCan() {
@@ -534,12 +529,13 @@ function drawDrink(c: Ctx, g: MonsterGame, dt: number, t: number) {
   for (const [m, lab] of [[T.MONSTER_DRINK_HALF, 'half'], [T.MONSTER_DRINK_FULL, 'full']] as [number, string][]) { c.fillStyle = '#e8e4f0'; c.fillRect(bx2 + bw * m - 1, by2 + 9, 2, 16); say(c, lab, bx2 + bw * m, by2 + 31, '600 9px Inter, sans-serif', '#b8b0c8'); }
   say(c, `in you: ${Math.round(sh2 * 100)}%`, bx2, by2 + 3, '700 11px Inter, sans-serif', '#e8e4f0', 'left');
   if (live) {
-    if (!pour.held) { const [x, y] = toScr(pour.x, pour.y - 64); say(c, 'hold the can (mouse)', x, y, '700 13px Inter, sans-serif', FUEL); }
+    if (!pour.held) { const [x, y] = toScr(pour.x, pour.y - 64); say(c, 'click to pick up the can', x, y, '700 13px Inter, sans-serif', FUEL); }
     else if (Math.hypot(hx - MOUTH.x, hy - MOUTH.y) > T.MONSTER_LIPS * 1.6) { const [x, y] = toScr(MOUTH.x - 26, MOUTH.y - 34); say(c, 'to his mouth', x, y, '700 12px Inter, sans-serif', FUEL); }
-    else if (pour.a < 0.3 && !tilting) {
+    else if (full > 0.8) { const [x, y] = toScr(MOUTH.x - 36, MOUTH.y - 26); say(c, 'mmf!', x, y, '800 13px Inter, sans-serif', '#ffb070'); }
+    if (pour.a < 0.3 && !tilting) {
       c.fillStyle = 'rgba(0,0,0,.6)'; rr(c, 200, 262, 196, 26, 6); c.fill(); c.strokeStyle = '#e8e4f0'; c.lineWidth = 1.5; rr(c, 210, 267, 54, 16, 3); c.stroke();
       say(c, 'SPACE', 237, 275, '700 9px Inter, sans-serif', '#e8e4f0'); say(c, 'hold to tilt, tap to ease', 329, 275, '700 11px Inter, sans-serif', FUEL);
-    } else if (full > 0.8) { const [x, y] = toScr(MOUTH.x - 36, MOUTH.y - 26); say(c, 'mmf!', x, y, '800 13px Inter, sans-serif', '#ffb070'); }
+    }
   } else if (doneT >= 0) {
     const r = share(pour), fu = r >= T.MONSTER_DRINK_FULL, hf = r >= T.MONSTER_DRINK_HALF;
     say(c, `${Math.round(r * 100)}%: ${fu ? 'FULL BOOST' : hf ? 'HALF A BOOST' : 'NO BOOST'}`, 220, 150, '900 28px Inter, sans-serif', fu ? FUEL : hf ? '#f1b434' : '#ff8a80');
@@ -596,7 +592,7 @@ export function drawMonsterScene() {
   const cv = document.getElementById('mcv') as HTMLCanvasElement | null;
   const g = G();
   if (!cv || !g) { lastGame = null; return; }
-  if (lastGame !== g) reset(g);
+  if (lastGame !== g) { reset(g); (document.activeElement as HTMLElement | null)?.blur?.(); }   // a focused button would eat Space
   if (lastStage !== g.stage) { lastStage = g.stage; enterStage(g.stage); track(scr.x, scr.y, g.stage); }
   const now = performance.now() / 1000;
   const dt = Math.min(1 / 30, lastT ? now - lastT : 1 / 60); lastT = now;

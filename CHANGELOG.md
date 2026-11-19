@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.2 (2026-11-19)
+
+Space didn't tilt the Goblin Fuel can (#62).
+
+- Tilting needed the mouse button held down on the can at the same time; one click without holding left the can
+  floating and Space did nothing. Now one click (anywhere in the shot) picks the can up and it follows the mouse
+  from then on, and **Space tilts it wherever it is**, even before you pick it up. The Space hint shows whenever
+  the can is upright, not only at his mouth.
+- A focused button can no longer swallow Space (focus is cleared when the break opens).
+- New check `test/goblin_space.py`: real clicks, Space away from his mouth, the can must tilt and ease back.
+- Pour tuning unchanged (`test/pour.ts`: holding Space about 50%, a slow tilt about 90%).
+
 ## 0.49.1 (2026-11-19)
 
 The Goblin Fuel break after Paweł's review (#62).
