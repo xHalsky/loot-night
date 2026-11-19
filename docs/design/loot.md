@@ -48,7 +48,7 @@ while active.
 | Suffix | Bonus | While |
 |---|---|---|
 | of Focus | Crit % | the headset is on |
-| of Frenzy | Speed | a Monster boost runs |
+| of Frenzy | Speed | a Goblin Fuel boost runs |
 | of Silence | Attack | Noise is under `AFFIX_QUIET_NOISE` (30) |
 | of Devotion | Attack | her Mood is green |
 | of the Wolf | Luck | `AFFIX_DOG_SEC` (60 s) after you pet the dog |

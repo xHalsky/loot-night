@@ -91,7 +91,7 @@ export function doorInfoHtml(): string {
   const patience = 100 - n.mood;
   const tired = n.tired;
   const caught = [0, 1, 2].map(i => `<span class="bheart ${i < n.catches ? 'on' : ''}">&#9829;</span>`).join('');
-  const tiredFx = [tired >= T.TIRED_YAWN && 'yawning', tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Monster holds you up' : 'eyes closing'), tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
+  const tiredFx = [tired >= T.TIRED_YAWN && 'yawning', tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Goblin Fuel holds you up' : 'eyes closing'), tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
   const wakeRow = n.clock >= T.BED_FROM
     ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>` : '';
   void tiredFx; void tired;
@@ -693,8 +693,8 @@ export function youHtml(): string {
   const row = (name: string, cls2: string, v: number, mark?: number) =>
     `<div class="yc-row ${cls2}"><span>${name}</span><i class="yc-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, v)))}%"></i>${mark !== undefined ? `<em style="left:${mark}%"></em>` : ''}</i><b>${Math.round(v)}</b></div>`;
   return `<div class="yc-rows">${row('Tired', 'yc-tired', n.tired, T.TIRED_YAWN)}${row('Zone', 'yc-zone', n.headset ? n.zone * 100 : 0)}</div>
-    <button class="yc-can ${cls}" ${act ? `data-act="${act}"` : ''} aria-label="Monster: drink one (M), or hide the cans while she is coming">
-      <svg width="16" height="22" viewBox="0 0 16 22" aria-hidden="true"><rect x="2" y="2" width="12" height="19" rx="2.5" fill="#15161a" stroke="#9aa0ac"/><rect x="3.5" y=".8" width="9" height="2.2" rx="1" fill="#c9ced6"/><path d="M5.5 7 L6.5 16 M8 6.5 V16.5 M10.5 7 L9.5 16" stroke="#7cf08a" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <button class="yc-can ${cls}" ${act ? `data-act="${act}"` : ''} aria-label="Goblin Fuel: drink one (M), or hide the cans while she is coming">
+      <svg width="16" height="22" viewBox="0 0 16 22" aria-hidden="true"><rect x="2" y="2" width="12" height="19" rx="2.5" fill="#4f9a26" stroke="#9aa0ac"/><rect x="3.5" y=".8" width="9" height="2.2" rx="1" fill="#c9ced6"/><path d="M3.2 8 L6.6 9.8 L6 12.2 Z M12.8 8 L9.4 9.8 L10 12.2 Z" fill="#1a1424"/><circle cx="8" cy="11" r="2.8" fill="#1a1424"/><rect x="6.3" y="10.1" width="1.3" height="1" fill="#ffd23a"/><rect x="8.4" y="10.1" width="1.3" height="1" fill="#ffd23a"/></svg>
       <span><b>${label}</b><small>${sub}</small></span></button>`;
 }
 

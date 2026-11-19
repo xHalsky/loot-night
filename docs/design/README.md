@@ -19,7 +19,7 @@ section in place; never append "round N" notes.
 | [loot.md](loot.md) | Drops, rarity, items, the bag, lock and auto-salvage |
 | [city.md](city.md) | The city hub, services, buildings, currencies |
 | [her.md](her.md) | The girlfriend: apartment, visits, the door, peeking, bed phase, the desk visit |
-| [desk.md](desk.md) | The phone and interrupts, Excel and alt-tab, Monster, the dog and cables, buffs |
+| [desk.md](desk.md) | The phone and interrupts, Excel and alt-tab, Goblin Fuel, the dog and cables, buffs |
 | [screen.md](screen.md) | Screen layout, the three UI flavours, art direction, audio |
 | [preemptive.md](preemptive.md) | Actions before a visit: the framework, Text her, Make her tea, the towel; the rest planned |
 | [eye-candy.md](eye-candy.md) | Her moments: built and planned, with tone rules |

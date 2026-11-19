@@ -9,7 +9,7 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
 - One game state `S.g`; the current night is `N()` (`src/core/state.ts`).
 - A fixed 60 Hz loop (`src/core/loop.ts`) runs the systems in order; systems in `src/systems/` hold rules
   and never draw.
-- `src/ui/` renders from state: canvas for the monitor, door, desk effects and Monster scene; DOM for
+- `src/ui/` renders from state: canvas for the monitor, door, desk effects and Goblin Fuel scene; DOM for
   panels and windows via HTML strings with a diff cache (`setHtml`), plus `updateWindowDynamics` for
   per-frame tweaks.
 - Numbers in `src/config/tuning.ts`, content in `src/data/`.

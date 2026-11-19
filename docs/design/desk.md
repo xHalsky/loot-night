@@ -1,4 +1,4 @@
-# The desk: phone, Excel, Monster, dog, buffs
+# The desk: phone, Excel, Goblin Fuel, dog, buffs
 
 Everything here is "real life" and uses the modern look (Inter, iOS, Windows). Every minigame window
 has a grey circle with a red X just outside its top-right corner (`.mg-close`); closing counts as
@@ -8,13 +8,13 @@ ignoring the interrupt. While a minigame has your hands, skills are paused and F
 
 ### The YOU card (desk, bottom right; #49)
 
-Tired and Zone as bars, and the Monster button (see Monster energy break). Noise is a row in her panel, under
+Tired and Zone as bars, and the Goblin Fuel button (see Goblin Fuel energy break). Noise is a row in her panel, under
 Goodwill ([screen.md](screen.md)).
 
 | Meter | Rises from | Falls | Matters |
 |---|---|---|---|
-| Noise 0 to 100 | Every hero action `NOISE_ACTION`, crit, skill cast, level-up, boss kill, Treasure Vault, dog whining, Monster coughs and clanks | `NOISE_DECAY_PER_SEC` | Brings her sooner, scaled by how far she is ([her.md](her.md)); wakes her after midnight |
-| Tired | See [night.md](night.md) | Monster | Yawns, microsleeps, sluggish |
+| Noise 0 to 100 | Every hero action `NOISE_ACTION`, crit, skill cast, level-up, boss kill, Treasure Vault, dog whining, Goblin Fuel coughs and clanks | `NOISE_DECAY_PER_SEC` | Brings her sooner, scaled by how far she is ([her.md](her.md)); wakes her after midnight |
+| Tired | See [night.md](night.md) | Goblin Fuel | Yawns, microsleeps, sluggish |
 
 ### The phone
 
@@ -86,9 +86,9 @@ Q3_report.xls) while the window shrinks toward the taskbar in stutters, smearing
 with a monitor label ("1024 x 768 60Hz / Analog"); the new screen arrives blocky and sharpens.
 A Win9x hourglass cursor throughout; a relay click at the start, mode change and end.
 
-### Monster energy break
+### Goblin Fuel energy break
 
-The cans are not drawn on the desk (#49): the **Monster button** on the YOU card (or M) is the can pack. It
+The cans are not drawn on the desk (#49): the **Goblin Fuel button** on the YOU card (or M) is the can pack. It
 glows amber from `TIRED_YAWN` while a can is left (time to top up). It is also the Snack run's tell: during a
 visit's footsteps it reads "Hide the cans", and a click (or M) shoves the cans under the desk (they come back out
 when she leaves).
@@ -126,12 +126,16 @@ shape: it clicks in or bounces back.
 ### Buffs bar
 
 WoW-style squares at the top right of the battle area: green border for buffs, red for debuffs, with a
-cooldown sweep and seconds. Monster boost, sugar crash, Taunt, Ward, Guilt, Good Boy, the curio and Raid buffs.
+cooldown sweep and seconds. Goblin Fuel boost, sugar crash, Taunt, Ward, Guilt, Good Boy, the curio and Raid buffs.
 Flow, Zone and Tired are not here (#49): they have their own place (the corner, the YOU card). Hover for the effect.
 
 ## Decisions
 
-- **Monster is a button, not a can pack on the desk** (0.45, #49): it frees the desk and puts the stimulant next to
+- **Goblin Fuel, not Monster** (0.48.2, #60): a real energy-drink trademark can't ship on Steam. Gamers calling
+  each other goblins is always funny, and it nods to the loot goblin. The can is acid green with a grinning goblin
+  (the old black can with green claw marks was that brand's look). Rejected: Last Pull, ZZZERO, Crit Juice,
+  Overtime; Mana, Meltdown and Midnight Oil are existing drinks.
+- **Goblin Fuel is a button, not a can pack on the desk** (0.45, #49): it frees the desk and puts the stimulant next to
   the Tired bar it answers. It glows only when you are tired, so it asks for attention when it matters. Rejected:
   glowing during the snack run too (two meanings for one glow; the label change says it).
 
@@ -148,7 +152,7 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 - **Excel as Tetris** instead of a rhythm game: the rhythm game was too fast and gave nothing. Honest
   work pays (overtime gold) but is never required.
 - **No hand in the drinking shot**; the toss went slingshot → floating fling at the user's request.
-- **Monster is a boost you operate, not an interrupt.** Hands busy = danger if she peeks.
+- **Goblin Fuel is a boost you operate, not an interrupt.** Hands busy = danger if she peeks.
 - **Alt-tab lag 1.0 to 2.5 s** (0.14) against a 0.9 s handle stage: last-second saves are impossible
   by construction.
 - **Decline costs less than ignoring, more than answering.** Holds for the new calls too: the boys declined =
@@ -166,7 +170,7 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 - **Alt-tab crash** (parked idea, #16): repeated switches within 20 s risk a crash and a 15 s reload. Parked
   2026-11-16: lag plus the reckless autopilot (#15) should already make panic-switching costly. Revisit only if
   the sims show fake-outs are still free to react to.
-- **Monster stash in the kitchen fridge** (idea, #25): the desk holds 2 cans; a "Fridge run" pre-emptive
+- **Goblin Fuel stash in the kitchen fridge** (idea, #25): the desk holds 2 cans; a "Fridge run" pre-emptive
   action restocks, and backfires if she is in the kitchen or hallway.
 
 - Real-life requests worth taking (her evening texts, dinner shout, laundry request): #23. Dropped 2026-11-19 for

@@ -237,17 +237,23 @@ function canAt(c: CanvasRenderingContext2D, x: number, y: number, ang: number, s
   const L = CAN_L * s, W = CAN_W * s;
   c.save(); c.translate(x, y); c.rotate(ang);
   if (o.glow) { c.shadowColor = '#2f6fed'; c.shadowBlur = 14; }
+  // Goblin Fuel (0.48.2): acid green, a grinning goblin on the front; no real brand's look
   const gr = c.createLinearGradient(-W / 2, 0, W / 2, 0);
-  gr.addColorStop(0, '#060606'); gr.addColorStop(0.35, '#3c3c3c'); gr.addColorStop(0.55, '#141414'); gr.addColorStop(1, '#030303');
+  gr.addColorStop(0, '#1f3a0c'); gr.addColorStop(0.35, '#7cc843'); gr.addColorStop(0.55, '#4f9a26'); gr.addColorStop(1, '#16290a');
   c.fillStyle = gr; rr(c, -W / 2, -L / 2 + 2 * s, W, L - 2 * s, 4 * s); c.fill();
   c.shadowBlur = 0;
   c.fillStyle = '#c9ced6'; c.beginPath(); c.ellipse(0, -L / 2 + 3 * s, W / 2 - 1, 3 * s, 0, 0, Math.PI * 2); c.fill();
   c.strokeStyle = '#8a919c'; c.lineWidth = 1; c.stroke();
   if (o.open) { c.fillStyle = '#111'; c.beginPath(); c.ellipse(-2 * s, -L / 2 + 3 * s, 3 * s, 1.3 * s, 0, 0, Math.PI * 2); c.fill(); }
   c.fillStyle = '#e6e9ee'; c.fillRect(1 * s, -L / 2 + 1.5 * s, 6 * s, 2.5 * s);
-  c.strokeStyle = '#6fe08a'; c.lineWidth = 2.6 * s; c.lineCap = 'round';
-  c.beginPath(); c.moveTo(-6 * s, -L / 2 + 12 * s); c.lineTo(-4 * s, L / 2 - 16 * s); c.moveTo(0, -L / 2 + 10 * s); c.lineTo(0.6 * s, L / 2 - 14 * s); c.moveTo(6 * s, -L / 2 + 12 * s); c.lineTo(4 * s, L / 2 - 16 * s); c.stroke();
-  c.fillStyle = '#fff'; c.font = `800 ${Math.max(4, 4.6 * s)}px Inter, sans-serif`; c.textAlign = 'center'; c.fillText('MONSTER', 0, L / 2 - 7 * s);
+  const fy = -L / 2 + 17 * s;                                   // the goblin: pointy ears, yellow eyes, a grin
+  c.fillStyle = '#1a1424';
+  for (const d of [-1, 1]) { c.beginPath(); c.moveTo(d * (W / 2 - 1.5 * s), fy - 5 * s); c.lineTo(d * 3.5 * s, fy - 1.5 * s); c.lineTo(d * 3.2 * s, fy + 2.5 * s); c.closePath(); c.fill(); }
+  c.beginPath(); c.ellipse(0, fy + 1 * s, 5 * s, 5.5 * s, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#ffd23a'; c.fillRect(-3 * s, fy - 1 * s, 2 * s, 1.6 * s); c.fillRect(1 * s, fy - 1 * s, 2 * s, 1.6 * s);
+  c.strokeStyle = '#ffd23a'; c.lineWidth = 0.9 * s; c.beginPath(); c.arc(0, fy + 1.6 * s, 2.6 * s, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+  c.fillStyle = '#fff'; c.font = `800 ${Math.max(4, 4.2 * s)}px Inter, sans-serif`; c.textAlign = 'center';
+  c.fillText('GOBLIN', 0, L / 2 - 11 * s); c.fillText('FUEL', 0, L / 2 - 6 * s);
   if (o.empty) { c.fillStyle = 'rgba(255,255,255,.06)'; rr(c, -W / 2, -L / 2, W, L, 4 * s); c.fill(); }
   c.restore();
 }

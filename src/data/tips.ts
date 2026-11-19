@@ -10,7 +10,7 @@ export const TIPS: Record<TipId, { who: 'her' | 'Magoo' | 'Healero'; text: strin
   caught: { who: 'Magoo', text: 'F. excel has to be up BEFORE she opens the door. listen for the steps' },
   endcue: { who: 'Healero', text: "her thing just ended, she's getting up. what she was doing = what she'll want" },
   dog: { who: 'Magoo', text: 'the dog wants pets. ignore him and he goes for your cables' },
-  yawn: { who: 'Healero', text: "you're yawning. grab a Monster (M)" },
+  yawn: { who: 'Healero', text: "you're yawning. grab a Goblin Fuel (M)" },
   headset: { who: 'Magoo', text: "headset on: after 30 s you're in the Zone. but you won't hear her coming" },
   bed: { who: 'Healero', text: "she's asleep. crits, bosses and vaults are LOUD now. keep the Noise down" },
   peek: { who: 'Magoo', text: 'the wider you open the door, the more you see. and the more she sees you' },

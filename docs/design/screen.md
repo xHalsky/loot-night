@@ -39,7 +39,7 @@ a dark outline (`LOOT_FLY_SEC`; legendaries `LOOT_FLY_LEGENDARY_SEC`); a batch i
 apart and fanned sideways. Its bag slot shines with a NEW badge for `BAG_NEW_SEC`, and a LOOT line goes to the feed.
 
 **The YOU card** (real life, bottom right of the desk): Tired (violet, a mark where yawning starts,
-`TIRED_YAWN`) and Zone (cyan, the headset's colour), and the **Monster button** (key M): the can count and
+`TIRED_YAWN`) and Zone (cyan, the headset's colour), and the **Goblin Fuel button** (key M): the can count and
 "Drink · M". It glows amber only from `TIRED_YAWN` while a can is left and no boost runs (time to top up). During
 a visit's footsteps it reads "Hide the cans" (no glow); after hiding, "Hidden" until she leaves; greyed with no cans
 or while your hands are busy. Boost and crash stay in the buffs.
@@ -137,7 +137,7 @@ front, below her: both read at once.
   | Tired (`TIRED_YAWN`+) | The glasses dim and sit lower; he yawns with the yawn (mouth wide) | Stoic / emote |
   | Microsleep (`TIRED_MICROSLEEP`+) | Nods off: glasses slide down his nose, eyes shut above them, head drops, "z" (seen while the lids close) | Emote |
   | Full Zone | Hands steepled in front of his face, a glint, a purple glow | Stoic |
-  | Monster boost | Jittery | Stoic |
+  | Goblin Fuel boost | Jittery | Stoic |
   | Headset worn | On his head, a cyan strip on each cup (the Zone's colour) | Gear |
 
   Art: one head pose; the emotes and the glasses as layers on the silhouette; gear as separate layers, so a
@@ -171,7 +171,7 @@ the click panels and the design docs hold the detail. `python3 test/tooltips.py`
   smaller screens, more set dressing to read); one card for YOU and the feed (less room for the feed).
 - **No top bar in the game** (0.45): floor, battle and Flow are glanced at, not read, so they became a quiet corner
   overlay and the side panel runs full height. Flow's step-up glow tells you it grew without a number to watch.
-- **No cans, fridge or headset on the desk** (0.45): the Monster button (M) and his head (H) do their jobs, and the
+- **No cans, fridge or headset on the desk** (0.45): the Goblin Fuel button (M) and his head (H) do their jobs, and the
   desk got room for a bigger phone and keyboard. The snack run's rule stays: the button turns into "Hide the cans"
   during the footsteps. Rejected: keeping the cans for the snack-run tell (the button carries it).
 - **HP only on the sprites and the skill-bar portraits** (0.45): one value in one place; the party cards show what

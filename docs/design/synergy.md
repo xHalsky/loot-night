@@ -10,15 +10,15 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 
 | System | Feeds | Fed by | Gap |
 |---|---|---|---|
-| RPG combat | Noise, loot, XP | Flow, Zone, Monster, buildings, gear, Tiredness; curios (a real can, Noise, standing still) | Fine |
-| Loot | Gold, scraps, zł, party power; real-life affixes change headset, alt-tab, Tiredness, excuses, waking, cans | Flow, Zone, green Mood; cross-system affixes read headset, Monster, Noise, Mood, the dog, Excel | zł is a dead end until the store (#4) |
+| RPG combat | Noise, loot, XP | Flow, Zone, Goblin Fuel, buildings, gear, Tiredness; curios (a real can, Noise, standing still) | Fine |
+| Loot | Gold, scraps, zł, party power; real-life affixes change headset, alt-tab, Tiredness, excuses, waking, cans | Flow, Zone, green Mood; cross-system affixes read headset, Goblin Fuel, Noise, Mood, the dog, Excel | zł is a dead end until the store (#4) |
 | Her Mood | Night end, stars, visit chance, loot luck | Visits, interrupts, peeking, drift, pre-emptive actions | Fine: good visits now pay Goodwill and Loved (0.29, 0.30) |
 | Goodwill | Forgiveness, the Raid pass (calm, Noise allowed) | Cuddle, good chat, lean visit, sweet answers on the desk, her text answered; catches take it | New in 0.30 |
-| Noise | Visit timing, waking her | Combat, dog, Monster, loud curio choices, a legendary yell, a wipe slam | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
+| Noise | Visit timing, waking her | Combat, dog, Goblin Fuel, loud curio choices, a legendary yell, a wipe slam | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
 | Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise, her text Goodwill | Timers, the headset (the boys) | Fine |
 | Dog and cables | Noise, NO SIGNAL; Good Boy (goblins x2), a fast fix keeps Flow; a wipe calls him over | A timer, a wipe | Fine (0.29) |
-| Tiredness | Yawns, microsleeps, sluggish, Drowsy misses; of Madness affix | Clock, sleep debt, Monster | Fine: the Witching Hour gives staying up a reward side (0.31) |
+| Tiredness | Yawns, microsleeps, sluggish, Drowsy misses; of Madness affix | Clock, sleep debt, Goblin Fuel | Fine: the Witching Hour gives staying up a reward side (0.31) |
 
 ## Slice set vs. arc set (decided 2026-11-16)
 

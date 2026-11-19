@@ -25,7 +25,7 @@ export const CURIOS: CurioDef[] = [
     choices: [{ id: 'open', label: 'Open it', cost: 'Gold, a rare or a curse. Noise +{groan} (the lid grinds)' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
     reckless: 'open', awayLine: 'Magoo: "Ooh, a coffin. Mine."' },
   { id: 'shrine', name: 'Shrine of the green flame', line: 'A flame on a stone altar. It wants an offering.', sprite: shrine, w: 14,
-    choices: [{ id: 'offer', label: 'Make an offering', cost: 'Costs a real Monster can from your desk. Party +{canDmg}% damage, +{canSpd}% speed for {canSec} s' }, { id: 'pray', label: 'Pray', cost: 'Coin flip: a small blessing, or the shrine roars (Noise +{burp})' }],
+    choices: [{ id: 'offer', label: 'Make an offering', cost: 'Costs a real can of Goblin Fuel from your desk. Party +{canDmg}% damage, +{canSpd}% speed for {canSec} s' }, { id: 'pray', label: 'Pray', cost: 'Coin flip: a small blessing, or the shrine roars (Noise +{burp})' }],
     reckless: 'pray', awayLine: 'Healero: "Free blessings, lads."' },
   { id: 'troll', name: 'Sleeping troll on a loot pile', line: 'Every snore rattles the coins.', sprite: troll, w: 18,
     choices: [{ id: 'sneak', label: 'Sneak and grab', cost: '{sneak} s on this screen. Alt-tab and he wakes up' }, { id: 'fight', label: 'Fight him', cost: 'A mini-boss. Noise +{roar} (he roars)' }],

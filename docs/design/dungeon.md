@@ -80,7 +80,7 @@ the ✕ or "walk past" leaves at once. Curio time is your time: the night clock 
 |---|---|---|
 | Locked chest | Pick the lock: 8 s standing still, quiet | Smash it: instant, Noise +25 |
 | Sealed coffin | Open: Noise +5; 50% gold (20 x floor), 30% a rare, 20% a curse (party -15% damage until the next floor) | Leave it |
-| Shrine of the green flame | Make an offering (costs a real Monster can from the desk): party +30% damage, +20% speed for 60 s | Pray: 50% +15% damage for 30 s, 50% it roars (Noise +10) |
+| Shrine of the green flame | Make an offering (costs a real Goblin Fuel can from the desk): party +30% damage, +20% speed for 60 s | Pray: 50% +15% damage for 30 s, 50% it roars (Noise +10) |
 | Snoring troll on a loot pile | Sneak: 6 s on the RPG screen; alt-tab (or the monitor going off) wakes him | Fight: a mini-boss (330 HP at floor 1 scale), Noise +15 |
 | Guild bank vault | Take one item: a free rare; 40 to 90 s later Magoo reads the log in guild chat and sulks (mage -20% damage for 45 s) | Close it |
 | Potion cart | Pay 12 gold x floor: party heals 30% | Shake it: Noise +15, 50% the same heal, else broken glass |

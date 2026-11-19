@@ -42,7 +42,7 @@ drops (boss set pieces, one night legendary), depth milestones, that night's scr
 ## Desk shop (zł), #4
 
 Real-life upgrades and consumables bought in the morning. Candidates: noise-cancelling headphones,
-desk drawer (hides cans in one click), quieter keyboard, phone stand (+3 s on phone timers), Monster
+desk drawer (hides cans in one click), quieter keyboard, phone stand (+3 s on phone timers), Goblin Fuel
 4-pack, Zyn tin, a "premium stash tab" joke, and a borderless-window upgrade that shortens alt-tab lag
 (careful: below 0.9 s it brings back last-second saves).
 

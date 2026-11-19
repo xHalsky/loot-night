@@ -69,7 +69,7 @@ function boost() {
   n.tired = Math.max(0, n.tired + T.MONSTER_TIRED);
   n.boost = T.MONSTER_BOOST_SEC; n.crash = 0;
   n.blink = { state: 'open', lid: 0, nextIn: Math.max(n.blink.nextIn, T.MONSTER_BOOST_SEC) };
-  toast(`MONSTER! Party acts 30% faster for ${T.MONSTER_BOOST_SEC} s. Tiredness ${T.MONSTER_TIRED}.`, '#6fcf7f');
+  toast(`GOBLIN FUEL! Party acts 30% faster for ${T.MONSTER_BOOST_SEC} s. Tiredness ${T.MONSTER_TIRED}.`, '#6fcf7f');
   sfx.level();
 }
 

@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.48.2 (2026-11-19)
+
+The energy drink is now **Goblin Fuel** (#60: no real brands on Steam).
+
+- Every line that said Monster says Goblin Fuel: the coach tip, the buff ("Goblin Fuel: party acts 30% faster"),
+  the "of Frenzy" affix, the shrine curio's cost, the drink toast, the tiredness row, the button's label for
+  screen readers. The key stays M ("Drink · M").
+- The can is redrawn: acid green with a grinning goblin and "GOBLIN FUEL", in the energy-break scene and on the
+  YOU card's button. The old black can with green claw marks copied a real brand's look.
+- Code names (`monster.ts`, `MONSTER_*`, the save field) stay as they are, so saves and tests are untouched.
+- No gameplay change.
+
 ## 0.48.1 (2026-11-19)
 
 No more real people in the game, now that it is heading for Steam.

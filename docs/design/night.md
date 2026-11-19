@@ -53,7 +53,7 @@ Auction listings pay out here in zł.
 | 70+ | Sluggish: phone timers 15% shorter, Flow builds 25% slower |
 | 90+ | Wrecked (threshold exists; extra effect not built) |
 
-Monster lowers Tiredness and blocks microsleeps while the boost lasts (see [desk.md](desk.md)).
+Goblin Fuel lowers Tiredness and blocks microsleeps while the boost lasts (see [desk.md](desk.md)).
 
 **Onboarding (the first night, #28).** No tutorial level and no walls of text; the first night teaches by
 happening.
@@ -105,7 +105,7 @@ happening.
 
 - **Earliest sleep 23:00.** Logging off at 20:00 used to earn 3 stars for free.
 - **Tiredness replaced the sleep-debt effects table** (yawn at 4 debt, shorter timers at 8, and so on).
-  A live meter makes even a little debt matter and gives the Monster a job.
+  A live meter makes even a little debt matter and gives the Goblin Fuel a job.
 - **Slow pace after the first playtest:** turns about every 3.3 s, battles about 15 s, nights about
   8 minutes to bedtime. The first pace was too fast to watch the door.
 - Mood drifts up 1 every `MOOD_DRIFT_EVERY_SEC` (30 s, was 20 s) to suit the longer nights.

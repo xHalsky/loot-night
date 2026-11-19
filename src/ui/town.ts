@@ -326,7 +326,7 @@ const BI: Record<string, string> = {
 function buffsHtml(n: NonNullable<typeof S.g.night>): string {
   type B = { k: string; name: string; de?: boolean; left?: number; max?: number; label?: string };
   const list: B[] = [];
-  if (n.boost > 0) list.push({ k: 'monster', name: 'Monster: party acts 30% faster', left: n.boost, max: T.MONSTER_BOOST_SEC });
+  if (n.boost > 0) list.push({ k: 'monster', name: 'Goblin Fuel: party acts 30% faster', left: n.boost, max: T.MONSTER_BOOST_SEC });
   if (n.crash > 0) list.push({ k: 'crash', name: 'Sugar crash: party slower', de: true, left: n.crash, max: T.MONSTER_CRASH_SEC });
   if (n.taunt > 0) list.push({ k: 'taunt', name: 'Taunt: enemies hit the knight', left: n.taunt, max: 5 });
   if (n.ward > 0) list.push({ k: 'ward', name: 'Ward: party protected', left: n.ward, max: 6 });

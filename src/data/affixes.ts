@@ -21,7 +21,7 @@ export const LIFE_AFFIXES: LifeAffix[] = [
 ];
 export const CROSS_AFFIXES: CrossAffix[] = [
   { kind: 'cross', id: 'headset', suffix: 'of Focus', when: 'headset', stat: 'crit', desc: '+{n} Crit % while the headset is on.' },
-  { kind: 'cross', id: 'caffeine', suffix: 'of Frenzy', when: 'boost', stat: 'speed', desc: '+{n} Speed while a Monster kicks in.' },
+  { kind: 'cross', id: 'caffeine', suffix: 'of Frenzy', when: 'boost', stat: 'speed', desc: '+{n} Speed while a Goblin Fuel kicks in.' },
   { kind: 'cross', id: 'spreadsheet', suffix: 'of Greed', when: 'excel', desc: '+{gold} gold per kill while Excel is up.' },
   { kind: 'cross', id: 'library', suffix: 'of Silence', when: 'quiet', stat: 'atk', desc: '+{n} Attack while the Noise is under {quiet}.' },
   { kind: 'cross', id: 'dogs', suffix: 'of the Wolf', when: 'dog', stat: 'luck', desc: '+{n} Luck for {dogSec} s after you pet the dog.' },

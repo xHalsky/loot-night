@@ -480,7 +480,7 @@ Levels; each level costs `base × 1.15^level`. All of it keeps running while you
 | Silent keyboard and mouse | 249 | Q4 actions make half the Noise (permanent) |
 | Flowers | 89 | +20 Goodwill at once, a pink feed line (one use, buy again) |
 | Dog chew | 29 | The dog's next visit comes 120 s later (one use) |
-| Mini fridge | 599 | The Monster scene skips the Fridge step (permanent) |
+| Mini fridge | 599 | The Goblin Fuel scene skips the Fridge step (permanent) |
 | Ergonomic chair | 899 | Tiredness builds 15% slower (permanent) |
 | New phone | 2999 | Listed as "coming soon" until step 6 |
 
@@ -502,7 +502,7 @@ Levels; each level costs `base × 1.15^level`. All of it keeps running while you
 | Monday | Her (peek and snack visits), Q4 |
 | Tuesday | The Rogue joins (RPG), chat visits, the headset, the door moves (tea, towel) |
 | Wednesday | The phone (the script from 3.2), the Shop app, Messages (Text her, Raid night?) |
-| Thursday | The dog, cuddle visits, Tiredness and the Monster button |
+| Thursday | The dog, cuddle visits, Tiredness and the Goblin Fuel button |
 | Friday | She goes to bed: the wake-up meter, her texts after midnight, the Witching Hour |
 | Saturday | Everything, and visits come `SATURDAY_VISIT_MULT` (*start* 1.3) times as often |
 | Sunday and after | Custom Night |
