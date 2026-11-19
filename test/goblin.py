@@ -17,32 +17,36 @@ async def main():
         await act(pg, '[data-act=portal]'); await pg.wait_for_timeout(400)
         await act(pg, '[data-act=openMonster]'); await pg.wait_for_timeout(300)
         r = await pg.evaluate("()=>{const r=document.getElementById('mcv').getBoundingClientRect(); return [r.left,r.top,r.width/600]}")
-        X = lambda x: r[0] + x * r[2]; Y = lambda y: r[1] + y * r[2]
-        async def drag(x0, y0, x1, y1, steps=14, ms=25, shot=None, up=True):
-            await pg.mouse.move(X(x0), Y(y0)); await pg.mouse.down()
+        async def W(x, y):   # world px of the current shot -> page px
+            sx, sy = await pg.evaluate(f"()=>window.__lnScreen({x},{y})")
+            return r[0] + sx * r[2], r[1] + sy * r[2]
+        async def drag(p0, p1, steps=14, ms=25, shot=None):
+            await pg.mouse.move(*p0); await pg.mouse.down()
             for i in range(1, steps + 1):
-                await pg.mouse.move(X(x0 + (x1 - x0) * i / steps), Y(y0 + (y1 - y0) * i / steps)); await pg.wait_for_timeout(ms)
+                await pg.mouse.move(p0[0] + (p1[0] - p0[0]) * i / steps, p0[1] + (p1[1] - p0[1]) * i / steps); await pg.wait_for_timeout(ms)
             if shot: await pg.wait_for_timeout(120); await pg.screenshot(path=shot, clip=CLIP)
-            if up: await pg.mouse.up()
+            await pg.mouse.up()
         await pg.screenshot(path='test/goblin_1_drawer.png', clip=CLIP)
-        await drag(430, 180, 430, 240, shot='test/goblin_1b_pulling.png')
+        await drag(await W(430, 180), await W(430, 240), shot='test/goblin_1b_pulling.png')
         await pg.wait_for_timeout(500); print('after drawer:', await stage(pg))
-        await drag(358, 232, 336, 90, steps=16, shot='test/goblin_2_carry.png')
+        await pg.screenshot(path='test/goblin_2_open.png', clip=CLIP)
+        await drag(await W(358, 232), await W(424, 104), steps=16, shot='test/goblin_2_carry.png')
         await pg.wait_for_timeout(1300); print('after can:', await stage(pg))
         await pg.screenshot(path='test/goblin_3_lid.png', clip=CLIP)
-        await drag(300, 185, 300, 90, steps=18, ms=30)
+        await drag(await W(300, 75), await W(300, 10), steps=18, ms=30)
         await pg.wait_for_timeout(180); await pg.screenshot(path='test/goblin_3b_pop.png', clip=CLIP)
         await pg.wait_for_timeout(1300); print('after tab:', await stage(pg))
         await pg.screenshot(path='test/goblin_4_drink.png', clip=CLIP)
-        # pour: grab the can, keep the opening at his lips, feather Space (a slow, steady tilt)
-        await pg.mouse.move(X(292), Y(194)); await pg.mouse.down(); await pg.wait_for_timeout(100)
-        mouth = (431, 144); space = False; shots = 0; t0 = await pg.evaluate("()=>performance.now()")
+        # pour: grab the floating can, keep the opening at his lips, feather Space (a slow, steady tilt)
+        f = await pg.evaluate("()=>window.__lnFluid()")
+        await pg.mouse.move(*(await W(f['x'], f['y']))); await pg.mouse.down(); await pg.wait_for_timeout(100)
+        mouth = (f['mx'], f['my']); space = False; shots = 0; t0 = await pg.evaluate("()=>performance.now()")
         for i in range(600):
             f = await pg.evaluate("()=>window.__lnFluid()")
             if await stage(pg) != 'drink': break
             a = max(f['a'], 0.5)
             cx = mouth[0] - (12 * math.cos(a) + 40 * math.sin(a)); cy = mouth[1] - (12 * math.sin(a) - 40 * math.cos(a))
-            await pg.mouse.move(X(cx), Y(cy))
+            await pg.mouse.move(*(await W(cx, cy)))
             now = (await pg.evaluate("()=>performance.now()") - t0) / 1000
             want = now > 0.5 and (now % 0.5) < 0.33
             if want and not space: await pg.keyboard.down(' '); space = True
@@ -52,7 +56,7 @@ async def main():
             await pg.wait_for_timeout(16)
         if space: await pg.keyboard.up(' ')
         await pg.mouse.up()
-        f = await pg.evaluate("()=>window.__lnFluid()"); print('pour:', f)
+        f = await pg.evaluate("()=>window.__lnFluid()"); print('pour:', {k: round(v, 2) if isinstance(v, float) else v for k, v in f.items()})
         await pg.wait_for_timeout(250); await pg.screenshot(path='test/goblin_4c_result.png', clip=CLIP)
         await pg.wait_for_timeout(1400)
         g = await pg.evaluate("()=>{const g=window.__lootnight.S.g.night.game; return g?{stage:g.stage,drunk:g.drunk,result:g.result}:null}"); print('after drink:', g)

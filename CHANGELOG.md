@@ -3,6 +3,23 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.1 (2026-11-19)
+
+The Goblin Fuel break after Paweł's review (#62).
+
+- **Drawer** shot is closer: the mouse pad sits right next to the keyboard, and the can's spot (the old green rings)
+  is right of the pad. Under the desk: a power strip and cables instead of him.
+- **Open** shows the whole can standing on the desk, smaller, with its branding in view; the tab is pulled on its lid.
+- **Drink** is close on him, with no desk in the shot. He tips his head back, which turns his mouth up toward the can,
+  and the can floats (no hand). Pour check (`test/pour.ts`): holding Space 48-50% (was 56-57%), easing off as his
+  cheeks fill 80-93% (was 79-88%), a slow tilt 88-91%: a little easier, holding Space still fails.
+- **Toss** has no character: the floating can, the bin and the room.
+- No hands anywhere: the cursor moves the drawer, the can and the tab.
+- **The can is B "Chest Burst"** (the design chat's pick): plum neck band "100% GREED", acid green, a gold burst, the
+  crowned goblin bursting out of a loot chest, "Goblin FUEL" on a plum band. Drawn in vector from one painter as a
+  stand-in until the pixel sprites are committed.
+- Bots unchanged (the drink's look and feel only).
+
 ## 0.49.0 (2026-11-19)
 
 The Goblin Fuel break is remade as five hands-on steps in a dark room (#61). He is the left panel's character in every

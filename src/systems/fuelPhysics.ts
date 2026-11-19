@@ -8,18 +8,24 @@ const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 export const GRAV = 1100;
 
 // ---------- the drink (side view) ----------
-export const DESK_TOP = 236;
-export const REST: V = [292, DESK_TOP - 42];
-/** His head (the profile sprite's origin) and his lips. */
+export const DESK_TOP = 236;                       // off screen in the zoomed drink view, but spills still land on it
+export const REST: V = [322, 168];                 // where the can floats when you let go of it
+/** His head (the profile sprite's origin). He tips it back to drink: the head turns by HEAD_TILT about the neck. */
 export const HEAD_O: V = [470, 118];
-export const MOUTH = { x: HEAD_O[0] - 39, y: HEAD_O[1] + 26, rx: 8, ry: 7 };
+export const HEAD_TILT = 0.3, NECK: V = [-4, 38];
+/** A point of his profile (head coords) where it is now, with the head tipped back. */
+export function headPt(px: number, py: number): V {
+  const dx = px - NECK[0], dy = py - NECK[1], c = Math.cos(HEAD_TILT), s = Math.sin(HEAD_TILT);
+  return [HEAD_O[0] + NECK[0] + dx * c - dy * s, HEAD_O[1] + NECK[1] + dx * s + dy * c];
+}
+const LIPS = headPt(-38, 26);
+export const MOUTH = { x: LIPS[0], y: LIPS[1], rx: 8, ry: 7 };
 /** The can's inside in its own coords (y down, the top at -39), and the opening in the lid. */
 export const IN = { l: -19, r: 19, t: -39, b: 40 }, HOLE = { l: 4, r: 19 };
 /** A rough outline of his face and of his body: drink that hits them is spilled. */
 const FACE_HIT: V[] = [[34, -6], [30, -34], [10, -48], [-16, -46], [-30, -34], [-35, -18], [-38, -2], [-46, 10], [-38, 15], [-38, 21], [-35, 25], [-38, 29], [-35, 36], [-33, 44], [-20, 50], [0, 46], [18, 30], [30, 14]];
 const BODY_HIT: V[] = [[-26, 62], [-6, 56], [30, 60], [56, 76], [66, 110], [70, 190], [-40, 190], [-44, 130], [-38, 96]];
-const toWorld = (p: V[]): V[] => p.map(([x, y]) => [HEAD_O[0] + x, HEAD_O[1] + y] as V);
-const FACE_W = toWorld(FACE_HIT), BODY_W = toWorld(BODY_HIT);
+const FACE_W = FACE_HIT.map(([x, y]) => headPt(x, y)), BODY_W = BODY_HIT.map(([x, y]) => [HEAD_O[0] + x, HEAD_O[1] + y] as V);
 export function inPoly(pts: V[], x: number, y: number) {
   let inside = false;
   for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {

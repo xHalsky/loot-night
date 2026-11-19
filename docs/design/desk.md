@@ -94,34 +94,43 @@ visit's footsteps it reads "Hide the cans", and a click (or M) shoves the cans u
 when she leaves).
 
 Click the button; a dark window over the battle area with one 600 x 300 canvas, five steps, `MONSTER_PER_NIGHT` (3) cans
-per night. The room is dark and lit by the monitor. He is the left panel's character in every shot (dark
-silhouette, white glasses), drawn through the same pixel pipeline (`ui/pixel.ts`, 1px outline): from above in the
-drawer shot (the top of his head, his lenses peeking over his brow), in profile for the drink, swivelled on his
-chair for the throw. His arms reach in with a simple two-bone elbow.
-1. **Drawer** (top-down at the desk's corner: keyboard, mouse pad, old green rings where the can always goes).
-   Grab the handle and pull down. It sticks for a moment, then slides with a wooden rasp; let go past half and it
-   runs out with a thunk. Inside: the cans lying down, a coiled cable, a receipt, wrappers, a dead controller.
-2. **Grab**: drag a can onto the desk. It stands up (a tin clink) and the drawer slides shut.
-3. **Open** (a close-up of the lid): pull the ring up. The tab creaks, then the seal pops: PSSHHT, a green spray,
-   the screen shakes, the fizz keeps rising out of the hole. Noise +`MONSTER_QUIET_NOISE`, one can used.
-4. **Drink** (side view, a liquid-physics puzzle). Hold the can with the mouse (it follows) and bring the opening to
-   his lips. Hold Space to tilt it toward him (`MONSTER_TILT_SPEED`), let go and it eases back
-   (`MONSTER_TILT_BACK`, slower, so tapping holds an angle). The drink is `MONSTER_FLUID_N` particles in a
-   see-through can with a solid outline. With his lips on the rim (`MONSTER_LIPS`) what comes out goes in, but he
-   swallows only `MONSTER_SWALLOW` a second and his mouth holds `MONSTER_MOUTH_CAP`: pour faster and it runs down his
-   chin; enough of that at once is a cough (spray, Noise +`MONSTER_COUGH_NOISE`). His cheeks puff as his mouth
-   fills ("mmf!"), his throat bobs on each gulp. Away from his lips it splashes his face or the desk. A meter shows
+per night. The room is dark and lit by the monitor. The cursor does the handling: no hands in any shot, things
+follow the mouse. He appears only in the drink, as the left panel's character (dark silhouette, white glasses) in
+profile, through the same pixel pipeline (`ui/pixel.ts`, 1px outline). Steps 1-2 and 4 are drawn closer (a camera
+on the scene: 1.4x and 1.6x); the physics works in the scene's own px.
+1. **Drawer** (top-down, close on the drawer: the end of the keyboard, the mouse pad right next to it, and his spot
+   right of the pad, marked by old green rings; under the desk a power strip and cables). Grab the handle and pull
+   down. It sticks for a moment, then slides with a wooden rasp; let go past half and it runs out with a thunk.
+   Inside: the cans lying down, a coiled cable, a receipt, wrappers, a dead controller.
+2. **Grab**: drag a can to its spot on the desk. It stands up (a tin clink) and the drawer slides shut.
+3. **Open**: the whole can standing on the desk, its branding in view (see The can below). Pull the ring up: the
+   tab creaks, then the seal pops: PSSHHT, a green spray, the screen shakes, fizz rises out of the hole.
+   Noise +`MONSTER_QUIET_NOISE`, one can used.
+4. **Drink** (a liquid-physics puzzle, close on him; no desk in the shot). He tips his head back (`HEAD_TILT` in
+   `systems/fuelPhysics.ts`), which turns his mouth up toward the can. The can floats: hold it with the mouse and
+   bring the opening to his lips. Hold Space to tilt it toward him (`MONSTER_TILT_SPEED`), let go and it eases back
+   (`MONSTER_TILT_BACK`, slower, so tapping holds an angle). Let go of the mouse and it floats back. The drink is
+   `MONSTER_FLUID_N` particles in a see-through can with a solid outline and a faint label. With his lips on the rim
+   (`MONSTER_LIPS`) what comes out goes in, but he swallows only `MONSTER_SWALLOW` a second and his mouth holds
+   `MONSTER_MOUTH_CAP`: pour faster and it runs down his chin; enough of that at once is a cough (spray, Noise
+   +`MONSTER_COUGH_NOISE`). His cheeks puff as his mouth fills ("mmf!"), his throat bobs on each gulp. A meter shows
    "in you" with the half and full marks. When the can is empty: `MONSTER_DRINK_FULL` (85%) or more is the full
    boost, `MONSTER_DRINK_HALF` (60%) or more half of it (half the time, half the Tiredness drop), less is nothing.
-   How it plays (`test/pour.ts`): holding Space the whole time about 57% (nothing), reacting to his cheeks about
-   80% (half), a slow feathered tilt about 88% in 6 s (full).
-5. **Toss** (side view: he swivels toward the bin; the poster, the desk and monitor behind him). One throw: grab the
-   can in his hand, pull back (slingshot, dashed reach), the first part of the arc shows, let go. Rigid capsules with
-   friction and sleeping (`systems/fuelPhysics.ts`). In: Swish, Bank shot (off the wall or ceiling) or In off the rim;
-   a clean or bank shot gives a little Flow (`MONSTER_SWISH_FLOW`); hard bounces add Noise. **A miss stays where it
-   lands, for good**: `S.g.floorCans` keeps every missed can across nights (up to `MONSTER_FLOOR_CANS_MAX`), later
-   throws land among them and knock them about, and the mess grows. Cans in the bin pile up for the night. Closing
-   the window at this step drops the can by his chair (it stays too).
+   How it plays (`test/pour.ts`): holding Space the whole time about 50% (nothing), tilting until his mouth is
+   full about 72% (half), easing off as his cheeks fill 80-93%, a slow feathered tilt about 90% in 6 s (full).
+5. **Toss**: the empty floats in the room (desk and monitor at the left, a poster, the bin at the right); no one
+   in the shot. One throw: grab the can, pull back (slingshot, dashed reach), the first part of the arc shows, let
+   go. Rigid capsules with friction and sleeping (`systems/fuelPhysics.ts`). In: Swish, Bank shot (off the wall or
+   ceiling) or In off the rim; a clean or bank shot gives a little Flow (`MONSTER_SWISH_FLOW`); hard bounces add
+   Noise. **A miss stays where it lands, for good**: `S.g.floorCans` keeps every missed can across nights (up to
+   `MONSTER_FLOOR_CANS_MAX`), later throws land among them and knock them about, and the mess grows. Cans in the
+   bin pile up for the night. Closing the window at this step drops the can on the floor (it stays too).
+
+**The can** is B "Chest Burst" (chosen in the design chat; canvas https://claude.ai/artifact/35VGMvUbqxQJ7eqztBALP1):
+a plum neck band with "100% GREED" in gold, an acid-green field, a gold comic burst, a crowned goblin bursting out of
+a loot chest with a coin and a ruby held up, gold spilling over the lip, a plum band with "Goblin" over a gold "FUEL".
+The scene paints it in vector from one painter (`paintLabel`, every view of the can uses it) as a stand-in until the
+pixel sprites (76x184, 38x92, 15x36, the energy-break states) are committed to the repo (#62).
 
 Effect: party `MONSTER_SPEED` faster for `MONSTER_BOOST_SEC`, Tiredness `MONSTER_TIRED`, no
 microsleeps; then a `MONSTER_CRASH_SEC` crash (slower, Tiredness +`MONSTER_CRASH_TIRED`).
@@ -176,8 +185,12 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   the meter but filling it faster (the same thing with extra UI).
 - **Excel as Tetris** instead of a rhythm game: the rhythm game was too fast and gave nothing. Honest
   work pays (overtime gold) but is never required.
-- **His hand holds the can in every shot** (0.49, #61); the throw is a slingshot from his hand. (Before: no hand
-  in the drinking shot and a floating can to fling.)
+- **No hands; he is only in the drink** (0.49.1, #62). The cursor handles the drawer, the can and the tab, and the
+  can floats in the drink and the throw. Showing him in every shot (0.49.0) cluttered the drawer and throw shots
+  without adding anything. In the drink he tips his head back, which turns his mouth up toward the can: drinking
+  reads right and pouring is a little easier (a careful pour reaches full more often; holding Space still fails).
+  The drawer and drink shots are drawn closer (less desk, more of what you handle); the open step shows the whole
+  can so its branding is seen. Rejected: a hand holding the can (it covered the liquid), keeping the wide shots.
 - **Goblin Fuel is a boost you operate, not an interrupt.** Hands busy = danger if she peeks.
 - **Alt-tab lag 1.0 to 2.5 s** (0.14) against a 0.9 s handle stage: last-second saves are impossible
   by construction.
