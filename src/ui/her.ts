@@ -489,3 +489,6 @@ export function drawShowerPanel(c: CanvasRenderingContext2D, t: number, fog: num
   c.strokeStyle = '#8fa2ad'; c.lineWidth = 1; c.strokeRect(gx - 1.5, gy - 1.5, gw + 3, gh + 3);
   c.fillStyle = '#eef3f6'; c.fillRect(gx + gw - 8, gy + gh / 2 - 12, 3, 24);   // handle
 }
+
+// Test hook: test/her_screens.py draws her model sheets (every outfit, every face) with the game's own code.
+if (typeof window !== 'undefined') (window as unknown as { __lnHer: unknown }).__lnHer = { drawHer, OUTFIT_BY_ACTIVITY };

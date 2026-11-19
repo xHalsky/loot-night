@@ -3,6 +3,12 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.49.8 (2026-11-19)
+
+- `test/her_screens.py`: every place she appears, for redrawing her (her at the door in every outfit, through the
+  crack, the shower daydream, leaning in, the mornings, the caught face), plus a model sheet of every outfit and
+  face drawn by the game's own code (test hook `window.__lnHer`). No game changes.
+
 ## 0.49.7 (2026-11-19)
 
 - **Her questions lean into your face** (#65). She no longer sits on the desk over the battle area. She leans in
