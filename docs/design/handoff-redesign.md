@@ -24,7 +24,7 @@ the config object and tune them with the debug overlay.
   icons, the tree screen, the Q4 screen and the phone apps. Keep the Moonwell 32 look, the grid and the
   meaning colours; lay the new parts out on the same grid. Code-drawn stand-ins are fine until the art pass.
   The PC (taskbar, windows, Excel, dialogs) looks like Windows 98/XP. The phone is a touch smartphone: mouse
-  only, no keys. The battle is being redrawn for 4 heroes and at most 6 to 8 enemies at once.
+  only, no keys. The battle is being redrawn for 4 evenly spaced heroes and a mob of six.
 
 ---
 
@@ -65,7 +65,8 @@ Build and test this with real life switched off. It has to hold 15 minutes alone
 ### 1.3 Floors: walk, packs, pickup
 - A floor is walk, encounter, walk, encounter, walk, encounter, then the floor end. Every 5th floor is a boss
   floor: two encounters, then the boss.
-- **Packs:** an encounter is a pack, at most 6 to 8 enemies on screen (the battle redesign sets the layout). Pack size `= min(PACK_MAX, PACK_MIN +
+- **Packs:** an encounter is a pack, six on screen: fodder in two close lanes, bosses, sub-bosses and lieutenants
+  behind them on the party's own lane. Pack size `= min(PACK_MAX, PACK_MIN +
   floor(f / 2))` (*start* `PACK_MIN` 5, `PACK_MAX` 12). The rest wait off screen on the right and step into
   the free rank as the front ones die. Imp swarms stay as they are (one swarm fills one rank).
 - **Keep the walk** (`WALK_SEC` stays) and the Diablo pickup. Drops fall where the enemy died, in their
@@ -196,7 +197,7 @@ No blessing cards. The choice at the end of a floor is the route, on the parchme
 
 ### 1.7 The Rogue (4th hero)
 - **Joins on night 2** (`nightsPlayed >= 1` until the week exists in step 5), with a feed line when the night
-  starts. Name: placeholder "Rogue" until Paweł names it (the others are Knightenstein, Magoo, Healero).
+  starts. Name: **Garrote** (the others are Knightenstein, Magoo, Healero).
 - **Base stats (*start*):** HP 85, ATK 12, armor 3, speed 13, crit 12, luck 5.
 - **The looter:** from night 2 the Rogue does the pickup runs in 1.3 (the Knight's role text changes to
   match).
@@ -563,7 +564,7 @@ Last before the playtest. These replace the placeholder pre-emptive moves.
 
 ## Open (ask Paweł, don't guess)
 
-1. The Rogue's name.
+1. Decided: the Rogue is Garrote.
 2. Node names are placeholders; the effects are the spec. Skill names are decided: the ones in this doc,
    simple and tied to the class theme.
 3. The week schedule in step 5.
