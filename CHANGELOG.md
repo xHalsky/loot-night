@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.48.1 (2026-11-19)
+
+No more real people in the game, now that it is heading for Steam.
+
+- The friends on the phone are Danny and Mike (were the real friends' names). Their characters keep their names
+  (Magoo, Healero).
+- Design bible: the personal pillar now asks for relatable jokes about a gamer's night, not jokes about one
+  real friend; the eye-candy tone notes drop the one friend's personal taste (the generic look stays); the
+  birthday ending is gone from the campaign plan.
+- No gameplay change: bots unchanged.
+
 ## 0.48.0 (2026-11-18)
 
 The town, second pass (#51), after Paweł's look at 0.47.

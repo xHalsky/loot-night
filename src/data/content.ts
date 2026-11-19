@@ -65,8 +65,8 @@ export const COURIER_TALKS: TalkStep[][] = [
 ];
 // The boys call on speaker, loud. Decline politely; rude replies make them louder.
 export const FRIENDS_TALKS: TalkStep[][] = [
-  [{ line: 'Jacek: "YOOO are you on?? We need a tank!"', right: 'Can\'t talk, she\'s home. Text me?', wrong: ['YES LET\'S GOOO', 'Who is this?'] },
-   { line: 'Rafał: "Just one boss, come ooon."', right: 'I\'m already in your party. Check. Muting!', wrong: ['Shut up, she\'ll hear you!', 'Ask my mom'] }],
-  [{ line: 'Rafał: "BRO. Raid. Now. Bring snacks."', right: 'Shh, she\'s next door. Text only, love you guys.', wrong: ['WHAT? I CAN\'T HEAR YOU', 'Nah'] },
-   { line: 'Jacek: "Is she listening? HI BABE!"', right: 'Bye lads, see you in guild chat.', wrong: ['Say hi louder', '*hang up*'] }],
+  [{ line: 'Mike: "YOOO are you on?? We need a tank!"', right: 'Can\'t talk, she\'s home. Text me?', wrong: ['YES LET\'S GOOO', 'Who is this?'] },
+   { line: 'Danny: "Just one boss, come ooon."', right: 'I\'m already in your party. Check. Muting!', wrong: ['Shut up, she\'ll hear you!', 'Ask my mom'] }],
+  [{ line: 'Danny: "BRO. Raid. Now. Bring snacks."', right: 'Shh, she\'s next door. Text only, love you guys.', wrong: ['WHAT? I CAN\'T HEAR YOU', 'Nah'] },
+   { line: 'Mike: "Is she listening? HI BABE!"', right: 'Bye lads, see you in guild chat.', wrong: ['Say hi louder', '*hang up*'] }],
 ];

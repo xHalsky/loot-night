@@ -4,7 +4,7 @@ import type { HeroId, Stat } from '../core/state';
  *  dur: seconds of an effect; hits: number of hits. use: when to fire it. Marks: docs/design/dungeon.md. */
 export interface AbilityDef { name: string; short: string; cd: number; desc: string; tip?: string; power?: number; flat?: number; dur?: number; hits?: number; use?: string }   // tip: the tooltip, one line (#43); desc: the full rule
 /** The party's in-game names (#44). Knightenstein is you; Magoo and Healero are your friends' characters
- *  (Rafał and Jacek on the phone). Party and guild chat use these names, as an MMO would. */
+ *  (Danny and Mike on the phone). Party and guild chat use these names, as an MMO would. */
 export const HERO_NAME: Record<HeroId, string> = { knight: 'Knightenstein', mage: 'Magoo', healer: 'Healero' };
 export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
   knight: { role: 'Tank. Stands in front, carries the torch, picks up loot.', auto: 'Slashes the front enemy.' },

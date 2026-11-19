@@ -1,5 +1,5 @@
 // First-time tips (docs/design/night.md, Onboarding; #28). Each one shows once per save, the first time its thing
-// happens, as a line in the feed from her or from the guild chat (Magoo and Healero are your party: your friends Rafał and Jacek). Short, in their
+// happens, as a line in the feed from her or from the guild chat (Magoo and Healero are your party: your friends Danny and Mike). Short, in their
 // voice, no walls of text. Plain text only (no em dashes).
 export type TipId = 'her_show' | 'plan' | 'pass' | 'caught' | 'endcue' | 'dog' | 'yawn'
   | 'headset' | 'bed' | 'peek' | 'map' | 'shower';   // the core loop's firsts are coach marks instead (COACH below)

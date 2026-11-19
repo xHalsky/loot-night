@@ -176,7 +176,7 @@ visits and on the desk. A small reaction bubble (?, !, heart, ...) over her head
   the sound-first rule (the last sound, never her position) and frees the blueprint for the layout.
 - **FNAF mechanics, not the horror look.** Her world is warm and sweet; danger shows through her face,
   the note colour and the sounds.
-- **Tone:** tasteful pin-up. Clothed adults, flattering poses, bare-feet moments (the friend likes feet).
+- **Tone:** tasteful pin-up. Clothed adults, flattering poses, bare-feet moments.
   Nothing explicit.
 - The visit type is labelled only on the first night; afterwards the sound is the only tell.
 

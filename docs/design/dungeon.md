@@ -4,7 +4,7 @@
 
 **Party.** Three heroes, persistent across nights (data: `src/data/heroes.ts`, `HERO_NAME`): Knightenstein
 (Knight, tank, in front, carries the torch: you), Magoo (Mage) and Healero (Healer, at the back), the
-characters of your friends Rafał and Jacek. Party and guild chat use the character names, as an MMO would;
+characters of your friends Danny and Mike. Party and guild chat use the character names, as an MMO would;
 the friends' phone calls use their real names.
 Stats: HP, attack, armor, speed, crit, luck; level and XP; six gear slots (weapon, helm, armor, boots,
 ring, trinket). Old saves are renamed on load.

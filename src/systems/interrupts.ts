@@ -223,7 +223,7 @@ function succeed(kind: InterruptKind) {
     toast(`"Okay, flat 12." The parcel is yours: ${entryName(e)}.`, '#6fcf7f'); sfx.good();
   } else if (kind === 'friends') {
     addBuff({ name: 'Raid buff', dmg: T.FRIENDS_BUFF_DMG, speed: T.FRIENDS_BUFF_SPD, t: T.FRIENDS_BUFF_SEC, max: T.FRIENDS_BUFF_SEC, icon: 'raid' });
-    toast(`Rafał: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage for ${T.FRIENDS_BUFF_SEC} s.`, '#6fcf7f'); sfx.good();
+    toast(`Danny: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage for ${T.FRIENDS_BUFF_SEC} s.`, '#6fcf7f'); sfx.good();
   } else replyText(true);
 }
 

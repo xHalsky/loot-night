@@ -4,7 +4,7 @@ A cross-cutting theme: her, the reward the player trades loot for. The core joke
 best moments make her attention the temptation rather than decoration.
 
 **Tone rules.** Babe is a fictional character, not anyone real. Cheeky pin-up, clothed adults, flattering
-poses, bare feet (the friend likes feet). Suggestive only: fades, fog and silhouettes do the work. Nothing
+poses, bare feet. Suggestive only: fades, fog and silhouettes do the work. Nothing
 explicit. A Steam game gets streamed and shown around.
 
 ## Now (built)

@@ -55,9 +55,7 @@ of the night's best drops, pending auction listings.
 
 ## The ending
 
-After the Lich Lord dies on Sunday: a Truck-kun cameo, a level-up screen for the friend ("LEVEL UP!
-{NAME} reached level {AGE}") with confetti, credits with his friends' real names and gamertags, then the
-morning screen with her saying happy birthday. The save stays playable afterwards.
+Dropped 2026-11-19: no birthday ending (the goal is a Steam release).
 
 ## Open questions
 

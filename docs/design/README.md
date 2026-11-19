@@ -35,7 +35,7 @@ section in place; never append "round N" notes.
 3. **Everything feeds everything.** RPG success makes the room louder; handling real life buffs the party.
 4. **Progress is never wiped.** Party, gear and city persist. A failed night still moves you forward.
 5. **One more night.** Short nights, near misses, unidentified loot waiting in town.
-6. **Personal and funny, in real life.** Jokes about the real friend beat pop-culture references. The jokes
+6. **Funny, in real life.** Relatable jokes about a gamer's night beat pop-culture references. The jokes
    live in the real-life half (her, mom, the dog, the friends' chat); the RPG plays it straight (plain fantasy
    names, WoW and D&D tropes), so the contrast does the work ([dungeon.md](dungeon.md), #44).
 
