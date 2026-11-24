@@ -3,6 +3,14 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.62.1 (2026-11-24)
+
+- **The Town portal plate makes room for what it banks.** It grows to fit "bank 12 · 1240 g" (it was 54 px and the
+  line spilled over its edges), the two lines get more air, and it is drawn in two flat bands so the text never
+  sits on a dither. The floor map's plate says what it banks too (it said "15 min" there). The unbanked count stays
+  on the plate, not in the corner (Paweł's call). `test/portal.py` shoots the corner empty and full, the floor
+  map, and clicks the plate's right end.
+
 ## 0.62.0 (2026-11-24)
 
 - **Ravenhold in the redesign's look** (V2 with #53; grid doc §6). The town on the monitor is the redesign's map,

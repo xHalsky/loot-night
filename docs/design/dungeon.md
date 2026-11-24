@@ -242,7 +242,9 @@ Maps (dropped as loot, 8% per drop):
 checkpoint you unlocked (the side panel's ◀ floor N ▶ by Enter the dungeon). Beating the boss of floor 5n unlocks
 starting at 5n+1, for good (`S.g.checkpoints`), and gives `SOULS_PER_BOSS` (20) Souls. The run goes floor after
 floor until the town portal (the run is banked) or a wipe (it is lost). Items and gold picked up in a run are
-**unbanked**: a dashed mark on their bag cell, and the town portal plate says what it banks ("bank 7 · 420 g").
+**unbanked**: a dashed mark on their bag cell, and the town portal plate says what it banks ("bank 7 · 420 g"),
+in the battle corner and on the floor map; with nothing to bank it says "15 min". The plate is as wide as that
+line and drawn in two flat bands (the name on arcane, the line on deep dusk), so neither sits on a dither.
 Floor bounty and the other RPG gold go to the run first. Each floor cleared gives `SOULS_PER_FLOOR_BASE` + floor
 Souls; Souls go straight to the pool and are never lost. **When the night ends mid-run,** your choice banks and a
 forced end loses: Sleep (and "Coming, babe" when it lands, which ends the night like Sleep) banks the run, what lies
@@ -346,7 +348,9 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   gone). The corpse run is gone: a wipe now costs the run's unbanked loot, which makes the town portal a choice
   (bank now, or push for the next floor). The unbanked count sits on the town portal plate,
   not as a fourth corner line: on the grid there is no room under Flow above the plate, and the portal is what
-  banks it. Rank targeting (melee on ranks 1 and 2) came early with the packs: six attackers hitting at random wiped
+  banks it (Paweł kept it there, 2026-11-24, with the plate widened: at 54 px "bank 12 · 1240 g" spilled over
+  its edges and the gradient's dither ran under the second line; the trip's 15 min moves to the tooltip while
+  the run holds something). Rank targeting (melee on ranks 1 and 2) came early with the packs: six attackers hitting at random wiped
   the back row.
 - **Real-time combat, three slots, ultimates on charge** (0.51, #52 1.2). The ATB turns were already timers; now
   each unit attacks on `BASE_ATTACK_SEC` × 10 / speed, about 2.8x the old pace, and turn counts are seconds. The
