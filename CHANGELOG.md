@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.59.0 (2026-11-24)
+
+- **Pacing tuned to the targets** (#52, 1.9). Rarity weights 68/28/3.3/0.55/0.15 (were 60/25/10/4/1) with a slower
+  shift per floor; the first legendary comes within 50 drops (was 80), so on night 1. Pack HP x1.25 (was x1.4), pack
+  attack x0.7 (was x0.5), enemy attack x1.15 a floor (was x1.12).
+- Sims, good bot, night 1 (4 runs each), before → after: fights 10 to 15 s → 9 to 12 s; items every 3.2 to 4 s → 2.7
+  to 5 s; a rare or better every 8 to 16 s → 16 to 24 s (about half now from bosses, elites, Cursed paths, curios and
+  pity; target 30 s); runs ended on floors 5 to 9 with no wipes → floors 6 to 10, most ending in a wipe (the Ogre on
+  floor 5 stops some); first legendary at drop 14 to 81 → by drop 50. Idle: unplugged, caught 1 to 2, 2 to 3 wipes.
+  Autopilot test: floor-10 boss careful 6/30 wipes (was 1/30), floor 5 0/30, normal floor 3 lowest HP 89% (was 97%).
+- The sim reports each run's end (floor, banked or wiped, seconds), the first legendary's drop, and why each rare came
+  (roll, sure, pity, first, cursed).
+- Not met: night-1 runs ending on floors 3 to 5 (the bot plays better than a person; waits for the playtest, #80).
+
 ## 0.58.0 (2026-11-24)
 
 - **Loot rules** (#52, 1.8). An item is a main stat line plus at most three affix lines (common 0, uncommon 1, rare 2,

@@ -16,8 +16,9 @@ ring, trinket). Old saves are renamed on load.
 **An encounter is a pack:** `PACK_MIN` + floor / 2 enemies (5 on floor 1, at most `PACK_MAX` 12), six on screen
 (`src/core/arena.ts`): fodder in two close lanes (front x 186, 226, 266; back x 205, 245, darker), a boss or a caster
 (the Shaman) behind them on the party's lane. The rest wait off screen and step into a free rank as the front ones
-die (`STEP_IN_SEC`, 0.6 s, sliding in). A pack member has `PACK_HP_MULT` (1.4) of a lone enemy's HP and
-`PACK_ATK_MULT` (0.5) of its attack (*start*; the good bot's fights take 10 to 11 s against the 8 to 12 s target).
+die (`STEP_IN_SEC`, 0.6 s, sliding in). A pack member has `PACK_HP_MULT` (1.25) of a lone enemy's HP and
+`PACK_ATK_MULT` (0.7) of its attack (tuned in 0.59, #52 1.9: the good bot's fights take 9 to 12 s against the 8 to 12 s
+target, and its night-1 runs end on floors 5 to 10, the Ogre on floor 5 now a real wall).
 Enemies compound per floor (1.2); levels add `HERO_LEVEL_SCALE` (+4%) and the gear has to keep up
 ([loot.md](loot.md), #49). **Who they hit:** Taunt takes everything (everything hits the Knight, wherever he
 stands); otherwise melee hits the front living hero (70%) or the next, the Shaman hits ranks 3 and 4, bats hit anyone
@@ -69,7 +70,7 @@ timer: attack interval = `BASE_ATTACK_SEC` (1.2) × 10 / speed, so speed 10 atta
 (Bash: `BASH_STUN_SEC`, 1.5 s). Auto attacks are not skills: Knight slashes the front enemy, Mage bolts the weakest,
 Healer heals an ally under `HEALER_AUTO_HEAL_BELOW` (60%) HP or smites, Garrote stabs the front enemy. At max Flow the party attacks `FLOW_SPEED`
 (25%) faster, linear from Flow x1. Numbers compound (#52): enemy HP x`ENEMY_HP_GROWTH` (1.15) and attack
-x`ENEMY_ATK_GROWTH` (1.12) per floor, item attack, HP and armor x`ITEM_POWER_GROWTH` (1.12) per item level (speed,
+x`ENEMY_ATK_GROWTH` (1.15) per floor, item attack, HP and armor x`ITEM_POWER_GROWTH` (1.12) per item level (speed,
 crit and luck stay linear); big numbers show as 1.2K, 34.5K, 1.2M. Floating
 numbers, crits in gold, every action has a visible effect (lunge, slash arc, bolt, beam, claw marks,
 shockwaves, sparks).
@@ -291,6 +292,15 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 ([city.md](city.md)).
 
 ## Decisions
+
+- **Pacing tuned to the 1.9 targets** (0.59, #52 1.9). Fights were a little long and the floors too safe: night-1 runs
+  went to floor 6 to 9 and never wiped. Pack HP down (x1.25 from x1.4), pack attack up (x0.7 from x0.5), enemy
+  attack growth up (1.15 a floor from 1.12). Measured with the good bot: fights 9 to 12 s, items every 3 to 5 s, the
+  first legendary on night 1; night-1 runs now end on floors 5 to 10, often wiping (the floor-5 Ogre is a wall now,
+  the floor-10 Warlock wipes a careful party 6 times in 30). The target of runs ending on floors 3 to 5 is not met:
+  the bot reacts instantly and never looks away from a fight it can see, so a player should stop earlier; pushing
+  enemies harder for the bot would make night 2 and later a wall. Rejected for now: a steeper curve (waits for the
+  playtest, with longer floors as Paweł expects, #80).
 
 - **A night's end and the run** (0.57, #52 1.4; Paweł, 2026-11-24): going further in the RPG always carries a risk;
   short runs give less, long risky ones more. So your choice banks (Sleep) and a forced end loses the unbanked run

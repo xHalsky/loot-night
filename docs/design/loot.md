@@ -4,7 +4,7 @@
 
 **Loot drives progress** (#49, #52 1.3). Each kill drops an item with `DROP_CHANCE` (35%); an Elite Pack's lieutenant
 always drops a rare; a boss drops `BOSS_DROPS` (3, the first a rare or better). A fight won can add a map or a
-feather. The first legendary of a save drops within its first `LEGENDARY_FIRST_BY` (80) drops (`S.g.drops`). An item's main stats grow with its item level (= the floor) as fast as
+feather. The first legendary of a save drops within its first `LEGENDARY_FIRST_BY` (50) drops (`S.g.drops`), so on night 1. An item's main stats grow with its item level (= the floor) as fast as
 the enemies do (`STAT_BASE` in `src/data/items.ts`: attack +2, HP +9, armor +1.2 per level), while levels add only
 +4% (`HERO_LEVEL_SCALE`). So the party keeps up only by equipping what drops: about one upgrade a battle.
 Measured with the bots (`python3 test/balance.py 24 good 1500 gear` against the same without `gear`): a bot that
@@ -12,7 +12,7 @@ never equips during the night wipes at the first boss in two nights of three and
 equips upgrades as they come reaches floor 9.3 with gear giving 62% of its attack and half its HP. Maps (`MAP_DROP_CHANCE`) and Phoenix Feathers
 (`FEATHER_DROP_CHANCE`) also drop.
 
-**Rarity.** Common, uncommon, rare, epic, legendary. Floor 1 weights `RARITY_WEIGHTS` (60/25/10/4/1),
+**Rarity.** Common, uncommon, rare, epic, legendary. Floor 1 weights `RARITY_WEIGHTS` (68/28/3.3/0.55/0.15, 0.59),
 shifted up each floor by `RARITY_SHIFT_PER_FLOOR`. Luck from Flow (`FLOW_LUCK`), green Mood
 (`GREEN_MOOD_LUCK`) and full Zone (`ZONE_LUCK`) pushes it further. A pity counter guarantees an epic
 after `PITY_EPIC` drops without one.
@@ -125,6 +125,12 @@ swapped out. A locked item you haven't banked is still lost on a wipe (#52; tune
 Souls.
 
 ## Decisions
+
+- **Fewer rares from the plain roll** (0.59, #52 1.9; target: a rare or better about every 30 s of combat). The roll
+  gave one every 8 to 16 s, so a rare meant nothing. Now the plain roll makes about 4% rares, and most rares come from
+  something you did: a boss, an Elite Pack, a Cursed path, a curio, a goblin, the pity epic. Measured (good bot, night
+  1): one every 16 to 24 s, about half of them from those. Rejected for now: trimming the boss and elite guarantees to
+  reach 30 s (they are the rewards for the risk; the playtest decides).
 
 - **Loot rules** (0.58, #52 1.8). At most three affix lines so an item reads at a glance; the downside and a special
   count as lines, so a special is a trade (a stat line for a rule about her) rather than a free extra. A legendary is

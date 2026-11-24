@@ -8,7 +8,7 @@ import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, SPECIAL_BY_ID, type Spe
 import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
 import { coach } from './coach';
-import { noteDrop } from './pacing';
+import { noteDrop, rareWhy, setRareWhy } from './pacing';
 import { blessPow } from './run';
 import { ENEMY_SLOTS } from '../core/arena';
 import { LEGENDS, SETS, SET_SLOTS } from '../data/legendaries';
@@ -39,10 +39,11 @@ export function rollRarity(floor: number, minIdx = 0): Rarity {
   for (let i = 1; i < w.length; i++) w[i] *= luck;
   for (let i = 0; i < minIdx; i++) w[i] = 0;
   let idx = weighted(w);
-  if (S.g.pity >= T.PITY_EPIC && idx < 3) idx = 3;
+  setRareWhy(minIdx >= 2 ? 'sure' : 'roll');
+  if (S.g.pity >= T.PITY_EPIC && idx < 3) { idx = 3; setRareWhy('pity'); }
   // the first legendary of a save comes within LEGENDARY_FIRST_BY drops (#52, 1.3)
   S.g.drops++;
-  if (!S.g.legendaryFound && S.g.drops >= T.LEGENDARY_FIRST_BY) idx = 4;
+  if (!S.g.legendaryFound && S.g.drops >= T.LEGENDARY_FIRST_BY) { idx = 4; setRareWhy('first'); }
   if (idx === 4) S.g.legendaryFound = true;
   if (idx >= 3) S.g.pity = 0; else S.g.pity++;
   return RARITIES[idx];
@@ -62,7 +63,7 @@ function rollSpecial(rarity: Rarity): SpecialAffix | null {
 export function genItem(ilvl: number, minRarity = 0, up = 0): Item {
   let rarity = rollRarity(ilvl, minRarity);
   if (up) rarity = RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(rarity) + up)];
-  if (S.g.night?.floorMap === 'cursed' && S.g.night.location === 'dungeon') rarity = RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(rarity) + 1)];
+  if (S.g.night?.floorMap === 'cursed' && S.g.night.location === 'dungeon') { if (RARITIES.indexOf(rarity) === 1) setRareWhy('cursed'); rarity = RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(rarity) + 1)]; }
   let witched = false;
   if (isWitching() && rarity !== 'legendary' && chance(T.WITCHING_UPGRADE)) { rarity = RARITIES[RARITIES.indexOf(rarity) + 1]; witched = true; }   // the Witching Hour shifts it up
   const inParty = (id: string) => S.g.heroes.some(h => h.id === id);
@@ -175,14 +176,14 @@ export function rollBattleExtras() {
 export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: boolean; count?: number; minRare?: boolean; at?: number[]; up?: number }) {
   const n = N();
   const count = opts.count ?? (opts.boss ? T.BOSS_DROPS : 1);
-  const out: BagEntry[] = [];
+  const out: BagEntry[] = [], whys: string[] = [];
   for (let i = 0; i < count; i++) {
     const guaranteed = (opts.boss || opts.elite || opts.minRare) && i === 0;
-    out.push(itemEntry(genItem(floor, guaranteed ? 2 : 0, opts.up ?? 0)));
+    out.push(itemEntry(genItem(floor, guaranteed ? 2 : 0, opts.up ?? 0))); whys.push(rareWhy);
   }
   // each drop lands where an enemy fell (spread a little when several share a body)
   const at = opts.at?.length ? opts.at : [186, 226, 266];
-  out.forEach(e => noteDrop(e.kind === 'item' ? e.item.rarity : null));
+  out.forEach((e, i) => noteDrop(e.kind === 'item' ? e.item.rarity : null, whys[i]));
   out.forEach((e, i) => n.floorLoot.push({ entry: e, x: at[i % at.length] + (Math.floor(i / at.length) * 11) + (Math.random() - 0.5) * 7, t: 0 }));
 }
 

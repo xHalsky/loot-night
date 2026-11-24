@@ -72,12 +72,12 @@ export const T = {
   WALK_SEC: 4,
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))
-  PACK_HP_MULT: 1.4,              // a pack member's HP and attack against a lone enemy's (*start*, tuned to 8 to 12 s fights)
-  PACK_ATK_MULT: 0.5,
+  PACK_HP_MULT: 1.25,              // a pack member's HP and attack against a lone enemy's (*start*, tuned to 8 to 12 s fights)
+  PACK_ATK_MULT: 0.7,
   STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free rank (it doesn't attack meanwhile)
   // Drops per kill (#52, 1.3): they fall where the enemy died; the looter picks them up during the walk
   DROP_CHANCE: 0.35,              // each kill drops an item; elites always; bosses BOSS_DROPS
-  LEGENDARY_FIRST_BY: 80,         // the first legendary of a save drops within its first 80 drops
+  LEGENDARY_FIRST_BY: 50,         // the first legendary of a save drops within its first 50 drops (night 1 has 60 to 100)
   // Runs (#52, 1.4): from the town portal until the town portal (banked) or a wipe (lost)
   SOULS_PER_FLOOR_BASE: 3,        // each floor cleared gives 3 + floor Souls
   SOULS_PER_BOSS: 20,
@@ -97,7 +97,7 @@ export const T = {
   FLOW_SPEED: 0.25,               // at max Flow the party attacks this much faster, linear from Flow x1
   // Big numbers (#52, 1.2): compounding per floor and per item level; numbers show as 1.2K, 34.5K, 1.2M
   ENEMY_HP_GROWTH: 1.15,          // enemy HP x this per floor
-  ENEMY_ATK_GROWTH: 1.12,         // enemy attack x this per floor
+  ENEMY_ATK_GROWTH: 1.15,         // enemy attack x this per floor
   ITEM_POWER_GROWTH: 1.12,        // item stats x this per item level
   FURY_AFTER_SEC: 10,             // Fury: an enemy alive longer than this hits harder every second (was "Interest")
   FURY_PER_SEC: 0.03,
@@ -164,8 +164,8 @@ export const T = {
   POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag
   DROP_WAIT_SEC: 8,
   BOSS_DROPS: 3, VAULT_DROPS: 5,
-  RARITY_WEIGHTS: [60, 25, 10, 4, 1],
-  RARITY_SHIFT_PER_FLOOR: [-1, 0.5, 0.3, 0.15, 0.05],
+  RARITY_WEIGHTS: [68, 28, 3.3, 0.55, 0.15],   // 1.9: a rare or better about every 30 s of combat (was 60/25/10/4/1: every 12 to 16 s)
+  RARITY_SHIFT_PER_FLOOR: [-0.6, 0.4, 0.13, 0.05, 0.02],
   PITY_EPIC: 40,
   GOBLIN_CHANCE: 0.03, GOBLIN_SEC: 6, GOBLIN_DROPS: 3,
   // Special affixes (docs/design/loot.md): chance per rarity to roll one; life ones only from epic up.

@@ -43,7 +43,7 @@ const cast = (id: HeroId, slot: number) => { const h = H(id); h.cd[slot] = 0; qu
 // legendaries
 party(2); let n = fight(); legend('frostbinder'); cast('mage', 2);
 ok(n.enemies.filter(e => e.marks?.chill! > 0).length === 2, 'Frostbinder: Frost chills two enemies');
-party(2); n = fight(); legend('lantern'); H('knight').cd[1] = 9; n.enemies[0].marks = { stagger: 5 }; cast('knight', 2);
+party(2); n = fight(); legend('lantern'); H('knight').cd[1] = 9; n.enemies.forEach(e => { e.marks = { stagger: 5 }; }); cast('knight', 2);
 ok(H('knight').cd[1] === 0, 'Last Lantern: Bash on a Staggered enemy resets Taunt');
 party(2); n = fight(); legend('widow'); let crits = 0;
 for (let i = 0; i < 20; i++) { n.enemies[0].marks = { chill: 5 }; n.fx = []; cast('rogue', 1); if (n.fx.some(f => f.text.endsWith('!') && f.text.startsWith('-'))) crits++; }
