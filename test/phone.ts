@@ -5,7 +5,7 @@
 import { T } from '../src/config/tuning';
 import { S, N, initialState } from '../src/core/state';
 import { startNight } from '../src/systems/night';
-import { spawnInterrupt, openPhone, answerSlide, answerSpeaker, talkPick, momReply, bossPick, updateInterrupts, declineCall, togglePhoneDown } from '../src/systems/interrupts';
+import { spawnInterrupt, openPhone, answerSlide, answerSpeaker, talkPick, momReply, bossPick, updateInterrupts, closeGame, togglePhoneDown, declineCall } from '../src/systems/interrupts';
 import { updateRealLife, realLifeFree } from '../src/systems/reallife';
 import { battleEnded, partyCdMult } from '../src/systems/curios';
 
@@ -51,7 +51,8 @@ n = fresh(); S.g.heroes[1].downed = true; S.g.heroes[1].hp = 0; S.g.heroes[0].hp
 for (let b = 0; b < T.MOM_BEATS; b++) { const g = n.game; if (!g) break; g.read = 0; g.sweep = g.zone + 0.01; momReply(g.need); }
 ok(!n.game && S.g.heroes.every(h => !h.downed && h.hp > 1), `Mom, ${T.MOM_BEATS} beats: party healed, the fallen get up`);
 n = fresh(); const m0 = n.mood; spawnInterrupt('mom', true); tick(T.MOM_TIMER + 0.1); ok(n.mood === m0 + T.MOM_FAIL_MOOD, 'Mom ignored: she calls your girlfriend');
-n = fresh(); spawnInterrupt('mom', true); declineCall(); ok(n.momCallback > 0, 'Mom declined: she calls back once');
+n = fresh(); { const m0 = n.mood; spawnInterrupt('mom', true); openPhone(); closeGame(false); ok(n.momCallback > 0 && n.mood - m0 === T.MOM_DECLINE_MOOD, 'Mom declined on the ringing screen: she calls back once, a little Mood, she does not call her'); }
+n = fresh(); spawnInterrupt('mom', true); declineCall(); ok(n.momCallback > 0 && !n.interrupts.length, 'Mom declined on the desk (the red button): she calls back once');
 n = fresh(); spawnInterrupt('courier', true); openPhone(); answerSlide(1); talkPick(n.game!.need); talkPick(n.game!.need);
 ok(n.partyBuffs.some(b => b.name === 'Gaming mouse' && b.night) && Math.abs(partyCdMult() - (1 - T.COURIER_MOUSE_CD)) < 1e-9 && !n.dropQueue.length, 'the courier: a gaming mouse, cooldowns down until dawn, no loot');
 battleEnded(true); ok(n.partyBuffs.some(b => b.name === 'Gaming mouse'), 'the mouse outlasts a boss');

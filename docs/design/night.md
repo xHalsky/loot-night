@@ -72,9 +72,8 @@ happening.
   (or Esc / Enter). Four tiles, two lines each: 1 Listen (the sounds, the last-heard line, hold the door to
   peek), 2 Tab to Excel (footsteps: switch now, never wait for the handle), 3 Answer her (each visit wants
   something else), 4 Headset (the Zone, but you are deaf to her). The pause menu reopens it.
-- **Tonight, a sticky note** (`tonightHtml`, #42): stuck on the monitor's bottom edge over the middle of the taskbar
-  (#49), always visible in the
-  game and in Excel. Three handwritten lines, the night's goals, with a live mark each and no star ladder: "floor N"
+- **Tonight, a sticky note** (#42; drawn on the desk since 0.66, `tonightNote` in `render/page/desk.js`): stuck on
+  the monitor's bottom edge over the middle of the taskbar (#49), always visible in the game and in Excel. Three handwritten lines, the night's goals, with a live mark each and no star ladder: "floor N"
   (! until a run reaches it, then ✓ for good), "don't get caught" (✓, ✗ once caught), "keep her happy" (✓ green or
   yellow, ! red); and when Sleep opens (⏻ 23:00+). Hover: each is a star that pays in the morning. Before this the stars first appeared on the results
   screen, so a new player knew the rules but not what a good night was.

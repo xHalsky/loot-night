@@ -192,6 +192,9 @@ function buildDeskLayer() {
 }
 
 // ---------------------------------------------------------------- desk states (moments)
+// hit regions for the live desk (V3, #68): filled while drawDeskLive draws, in right-screen grid px
+let DESK_HITS = null;
+const dhit = (x, y, w, h, act, arg = '', tip = '') => { if (DESK_HITS) DESK_HITS.push({ x, y, w, h, act, arg: String(arg), tip }); };
 const FEED_TAG = { YOU: 'u6', HER: 'd6', PHONE: 'moon', GAME: 'gold', LOOT: 's6', EXCEL: 'g6', DOG: 'copper', NIGHT: 's5', PARTY: 'u5', GUILD: 'u5', MAGOO: 'arcane', HEALERO: 'g5' };
 const DESK_MOMENTS = {
   calm: { clock: '20:40', zl: 50, tired: 10, zone: 0, cans: 3, note: ['y', 'y', 'y'], feed: [
@@ -268,7 +271,8 @@ function tonightNote(st) {
   const ink = P.s2, ok = { y: ['check', P.g3], '!': ['bang', P.copper], x: ['cross', P.crimson] };
   const line = (k) => y0 + 4 + k * 8;
   let x = x0 + 3;
-  x += scrawl('Tonight', x, line(0), ink, { x0, sd: 3, tilt: 25 }) + 5; glyph('power', x, line(0) - tiltAt(x), ink); scrawl(st.witching ? 'any time' : '23:00+', x + 7, line(0), ink, { x0, sd: 4, tilt: 25 });
+  x += scrawl('Tonight', x, line(0), ink, { x0, sd: 3, tilt: 25 }) + 5; glyph('power', x, line(0) - tiltAt(x), ink); scrawl((st.sleepOk ?? st.witching) ? 'any time' : '23:00+', x + 7, line(0), ink, { x0, sd: 4, tilt: 25 });
+  dhit(x0, y0 - 2, w, h + 2, '', '', 'tonight');
   // tonight's three stars as three handwritten lines (Deep, Unseen, Sweet), each ticked, warned or crossed out
   for (let k = 0; k < 3; k++) {
     let xx = x0 + 3; const y = line(k + 1) + 1;
@@ -310,15 +314,18 @@ function youCard(st, t) {
     if (mark) rectI(bx + Math.round((bw * mark) / max), yy - 1, 1, 7, v >= mark ? P.gold : P.u5);
     text(String(v), x + 86, yy, 'tiny', P.moon, { align: 'r' });
   };
-  bar(y + 5, 'TIRED', st.tired, 100, P.arcane, 30);
+  const yawn = st.yawn ?? 30;   // where yawning starts (the game passes TIRED_YAWN)
+  bar(y + 5, 'TIRED', st.tired, 100, P.arcane, yawn);
   bar(y + 15, 'ZONE', st.zone, 30, P.s6, 0);
+  dhit(x, y, 88, 13, '', '', 'tired'); dhit(x, y + 13, 88, 13, '', '', 'zone');
   // the Monster button: glows gold (the next action) from the yawn mark while a can is left
-  const bx = x + 90, by = y + 3, bw = 40, bh = 20, glow = (st.tired >= 30 && st.cans > 0) || st.hideCans, pulse = 0.5 + 0.5 * Math.sin(t * (st.hideCans ? 8 : 4));
+  const bx = x + 90, by = y + 3, bw = 40, bh = 20, glow = (st.tired >= yawn && st.cans > 0) || st.hideCans, pulse = 0.5 + 0.5 * Math.sin(t * (st.hideCans ? 8 : 4));
   if (glow) for (let j = -2; j < bh + 2; j++) for (let i = -2; i < bw + 2; i++) { const e = i < 0 || j < 0 || i >= bw || j >= bh; if (e && (i + j) % 2 === (pulse > 0.5 ? 0 : 1)) putI(bx + i, by + j, P.copper); }
   rectI(bx, by, bw, bh, glow ? P.gold : st.cans ? P.s3 : P.s2); rectI(bx + 1, by + 1, bw - 2, bh - 2, glow ? P.d2 : P.s2); rectI(bx + 1, by + 1, bw - 2, 1, glow ? P.copper : P.s3);
   // the Goblin Fuel can (its 6 x 13 icon, in its own print colours) goes on after compose: canIconOverlay
   const cx = bx + 3, cy = by + 4; YOU_CAN = [cx, cy - 1, st.cans];
-  text(st.hideCans ? 'Hide' : 'x' + st.cans, bx + 12, by + 4, 'tiny', st.hideCans ? P.void : st.cans ? P.moon : P.u4);
+  text(st.hideCans ? 'Hide' : st.cansHidden ? 'Hidden' : 'x' + st.cans, bx + 12, by + 4, 'tiny', st.hideCans ? P.void : st.cans && !st.cansHidden ? P.moon : P.u4);
+  if (st.drinkAct) dhit(bx, by, bw, bh, st.drinkAct, '', 'drink'); else dhit(bx, by, bw, bh, '', '', 'drink');
   // a little keycap with G on it
   const kx = bx + bw - 10; rectI(kx, by + 3, 8, 8, P.s3); rectI(kx + 1, by + 3, 6, 6, P.s4); text('G', kx + 4, by + 4, 'tiny', P.moon, { align: 'c' });
   text(st.hideCans ? 'cans' : 'Drink', bx + 12, by + 12, 'tiny', st.hideCans ? P.void : glow ? P.pale : P.u5);
@@ -414,10 +421,15 @@ function phone(st, t, lights) {
     if (glow > 0) { const dd = sd - (u > 0 ? 0.012 : 0); if (dd > 0 && dd < 0.05) { const f = (1 - dd / 0.05) ** 1.8 * glow; if (f > BAYER8[((y & 7) << 3) | (x & 7)] * 1.15) putI(x, y, f > 0.8 ? P.moon : f > 0.5 ? P.s5 : f > 0.25 ? P.s4 : P.s3); } }
   }
   const at = (u, v) => { const [x, y] = phoneLocal(u, v); return [Math.round(x) + jx, Math.round(y)]; };
+  dhit(Math.floor(x0), Math.floor(y0), Math.ceil(x1 - x0) + 1, RS_H - Math.floor(y0), 'phone', '', 'phone');
+  if (ring) {   // the red Decline under the slide pill (phone.js deskScreen draws it at 32, 73 on its 64 x 100 texture)
+    const [dx, dy] = phoneLocal((32 / DT.w) * 2 - 1, 73 / DT.h);
+    dhit(Math.round(dx) - 7, Math.round(dy) - 6, 14, 12, 'decline', '', 'decline');
+  }
   if (glow > 0) { const c = at(0.3, 0.45); lights.push({ x: c[0], y: c[1], r: 70, i: 0.9 * glow, c: [0.85, 0.95, 1.2] }); }
   if (ring) {
     // outside the phone, only the gold chip above it: the countdown and the hint in one (gold = the next action)
-    const left = 8 - ((t * 0.96) % 8), lab = 'pick up · ' + Math.ceil(left) + ' s', [cx, cy] = at(0.35, -0.1), lw = measure(lab, 'tiny') + 8;
+    const left = st.ringLeft ?? 8 - ((t * 0.96) % 8), lab = 'pick up · ' + Math.ceil(left) + ' s', [cx, cy] = at(0.35, -0.1), lw = measure(lab, 'tiny') + 8;
     rectI(cx - (lw >> 1), cy - 4, lw, 9, P.gold); putI(cx - (lw >> 1), cy - 4, -1); putI(cx - (lw >> 1) + lw - 1, cy - 4, -1); putI(cx - (lw >> 1), cy + 4, -1); putI(cx - (lw >> 1) + lw - 1, cy + 4, -1);
     rectI(cx - (lw >> 1) + 1, cy + 5, lw - 2, 1, P.wine);
     text(lab, cx, cy - 2, 'tiny', P.void, { align: 'c' });
@@ -594,6 +606,52 @@ function drawDesk(screen, tScreen, t, moment = 'calm', o = {}) {
   if (o.eb) drawEnergyBreak(ctx, o.eb, o.ebT ?? t);
   if (DV && DV.kind === 'cables' && typeof drawCableFix === 'function') drawCableFix(ctx, o.dogT ?? t);
   return RS_CANVAS;
+}
+
+// ---------------------------------------------------------------- the live desk (V3, #68): the game's own right screen
+// drawDesk above shows the page's fixed moments; this draws the same right screen from the game's state (st, from
+// src/render/deskView.ts) around the game screen (src: what the monitor shows, 474 x 232, for the light), and
+// returns the hit regions of what you can click or hover. The dog and the energy break stay the game's own for now.
+// The game's desk (V3): the same pipeline in two halves the game can put on different frames (phase 1 builds the
+// frame: geometry, lights, cards, hits; phase 2 lights it and pastes the screen in). Phase 0 does both at once.
+let DESK_PENDING = null;
+function drawDeskLive(src, st, t, phase = 0) {
+  const v = DESK_VARIANT, D = DESK_VARIANTS[v], set = deskSet(v);
+  if (!RS_CANVAS) { RS_CANVAS = document.createElement('canvas'); RS_CANVAS.width = RS_W; RS_CANVAS.height = RS_H; }
+  const ctx = RS_CANVAS.getContext('2d', { willReadFrequently: true });
+  setRes(RS_W, RS_H);
+  if (phase === 2) return deskLight(ctx, set, D);
+  const L = DESK_LAYER || buildDeskLayer();
+  const F = buf('desk', RS_W, RS_H); bind(F); CLIP = null;
+  F.V.set(L.V); F.M.set(L.M); F.E.set(L.E); F.A.set(L.A); F.I.set(L.I); F.T.fill(0); F.DX.fill(0); F.G.fill(1); F.X.fill(0);
+  MAT = M_STONE; EMI = 0; TAG = 0;
+  DESK_HITS = [];
+  const lights = [];
+  F.LM = screenLights(src, lights, st, v);
+  for (let y = 8; y < 240; y++) F.I.fill(P.void, y * W + 9, y * W + 483);      // the game screen goes here
+  bezel(st, t);
+  (typeof taskbar98 === 'function' ? taskbar98 : taskbar)(st, t, st.screen);
+  keyLights(lights, st, false, v);
+  phone(st, t, lights);
+  zoneAura(st, t, lights);
+  if (D.led) ledWash(t);
+  tonightNote(st);
+  youCard(st, t);
+  feedCard(st);
+  DESK_PENDING = { F, lights, src, hits: DESK_HITS }; DESK_HITS = null;
+  return phase === 1 ? null : deskLight(ctx, set, D);
+}
+function deskLight(ctx, set, D) {
+  const p = DESK_PENDING; if (!p) return null;
+  DESK_PENDING = null; bind(p.F); CLIP = null;
+  const ds = VIEW.strength; VIEW.strength = 0.09;
+  usePal(set);
+  composeInto(ctx, p.F, { lights: p.lights, ambient: D.amb, tint: 0.5, vig: 0 }, 0);
+  usePal(PAL_BASE);
+  VIEW.strength = ds;
+  canIconOverlay(ctx);
+  ctx.drawImage(p.src, 0, 0, p.src.width, p.src.height, 9, 8, 474, 232);
+  return { canvas: RS_CANVAS, hits: p.hits };
 }
 
 // ---------------------------------------------------------------- Excel (Tab): a Mac OS 8 spreadsheet window with Tetris in it

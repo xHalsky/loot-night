@@ -33,6 +33,8 @@ const FRAME_MS = 1000 / 30;
 
 /** True while the live battle area is on screen (the old canvas and its DOM overlays stand down). */
 export function liveShown(): boolean { return shown; }
+/** When the battle area or the panel last drew: the desk (V3) draws on the frames in between. */
+export const liveDrewAt = () => Math.max(lastDraw, lastPanel);
 
 export function drawLiveRpg(cv: HTMLCanvasElement) {
   if (!started) { started = true; PK.init().then(() => { ready = true; }); }

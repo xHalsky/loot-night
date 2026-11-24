@@ -1,12 +1,12 @@
 import './style.css';
 import './ios.css';
 import { T } from './config/tuning';
-import { isCall, S, N, initialState } from './core/state';
+import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { DESK_W } from './ui/layout';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
+import { herHeadHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -21,7 +21,7 @@ import type { PreId } from './data/preemptive';
 import { buildCity, openService, servicePick, serviceRun } from './systems/town';
 import { monUiLiveHtml } from './ui/town';
 import { altTab, excelInput } from './systems/excel';
-import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, answerSpeaker, phoneAction, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
+import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, answerSpeaker, phoneAction, setPhoneHold, textReply, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, cancelMonster } from './systems/monster';
 import { drawMonsterScene, monsterTilt } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
@@ -33,14 +33,14 @@ import { swapHeroes, ensureParty, hookLine, shoveLine } from './systems/ranks';
 import { toggleAutocast, buyNode, respec } from './systems/tree';
 import type { NodeId } from './data/trees';
 import type { HeroId } from './core/state';
-import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown } from './render/liveRpg';
+import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown, liveDrewAt } from './render/liveRpg';
 import { PK } from 'virtual:pagekit';
 import { phoneShown, phoneView } from './render/phoneView';
+import { deskView, deskTip } from './render/deskView';
 import { herRead, phoneScroll } from './systems/messages';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
-import { keyboardSvg, mouseSvg } from './ui/peripherals';
 import { wakeUp } from './systems/tired';
 import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans } from './systems/visits';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
@@ -61,8 +61,7 @@ stage.innerHTML = `
   <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"><span class="hh-tip" id="hhTip"></span></div><div id="herHead"></div><div id="doorInfo"></div></div>
   <div id="desk">
     <div id="deskInner">
-      <div class="desk-surface"></div>
-      <div class="bezel"></div><div class="webcam" title="The webcam: the left panel is what it sees"><i></i></div>
+      <canvas id="rsArea" width="492" height="360"></canvas><div id="deskPhone" aria-hidden="true"></div>
       <div id="screen">
         <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
         <canvas id="rpgArea" width="334" height="232"></canvas><div id="rpgBar" aria-hidden="true"></div>
@@ -72,12 +71,6 @@ stage.innerHTML = `
         <div id="winLayer"></div>
         <div id="toasts"></div>
       </div>
-      <div id="taskbar"></div>
-      <div class="kb"><div class="mat"></div><div class="keyboard">${keyboardSvg()}</div><div class="mouse">${mouseSvg()}</div></div>
-      <div id="deskObjects"></div>
-      <div id="tonight"></div>
-      <div id="youCard"></div>
-      <div id="feedCard"></div>
       <canvas id="deskFx" width="${DESK_W}" height="720"></canvas>
       <div id="preUi"></div>
       <canvas id="phHand" width="126" height="252"></canvas><button id="phClose" class="mg-close" data-act="closeGame" title="Put the phone down">✕</button>
@@ -179,6 +172,7 @@ const actions: Record<string, (arg: string) => void> = {
   textReply: () => textReply(),
   mom: a => momReply(Number(a)),
   speaker: () => answerSpeaker(),
+  decline: () => declineCall(),   // the red button on the ringing desk phone (V3)
   talk: a => talkPick(Number(a)),
   boss: a => bossPick(Number(a)),
   closeGame: () => closeGame(false),
@@ -245,7 +239,7 @@ document.addEventListener('pointermove', ev => {
       ghost().classList.toggle('hero', !!h); ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
-  } else if ((ev.target as HTMLElement).id !== 'rpgArea' && (ev.target as HTMLElement).id !== 'spArea') {   // the live battle area and the panel's canvas set their own hover (V2)
+  } else if (!['rpgArea', 'spArea', 'rsArea'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases set their own hover (V2, V3)
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
   }
@@ -281,13 +275,10 @@ document.addEventListener('pointerup', ev => {
 });
 // Desk phone: grab it and swipe left or right to flip it over; a tap (no swipe) answers.
 let pswipe: { x0: number; dx: number; moved: boolean } | null = null;
-let phoneAngle = 0, downSign = 1;
 document.addEventListener('pointerdown', ev => {
   const t = ev.target as HTMLElement;
   if (!S.g.night || S.g.paused) return;
-  if (t.closest('[data-decline]')) { ev.preventDefault(); ev.stopImmediatePropagation(); declineCall(); return; }
-  if (t.closest('[data-speaker]')) { ev.preventDefault(); ev.stopImmediatePropagation(); answerSpeaker(); return; }   // answer on speaker, the phone stays on the desk
-  if (t.closest('[data-phone]')) { ev.preventDefault(); ev.stopImmediatePropagation(); pswipe = { x0: ev.clientX, dx: 0, moved: false }; sfx.click(); }
+  if (t.id === 'rsArea' && deskHitAt(ev)?.act === 'phone') { ev.preventDefault(); ev.stopImmediatePropagation(); pswipe = { x0: ev.clientX, dx: 0, moved: false }; sfx.click(); }   // the phone lying on the desk (V3)
 }, true);
 document.addEventListener('pointermove', ev => {
   const box = document.getElementById('cuddleBox');
@@ -297,41 +288,12 @@ document.addEventListener('pointermove', ev => {
   if (Math.abs(pswipe.dx) > 6) pswipe.moved = true;
 });
 document.addEventListener('pointerup', () => {
-  if (S.g.night) setDeclineHold(false);   // (a click on the title screen has no night yet)
   if (!pswipe) return;
   const { dx, moved } = pswipe; pswipe = null;
-  if (Math.abs(dx) >= 45) { if (!(S.g.night && S.g.night.phoneDown > 0)) downSign = dx > 0 ? 1 : -1; togglePhoneDown(); }
+  if (Math.abs(dx) >= 45) togglePhoneDown();
   else if (!moved) openPhone();
+  hover.key = '';   // the desk's tip goes with it (the phone is in your hand, or face down)
 });
-/** The phone's 3D pose: follows the swipe, then eases to face-up (0) or face-down (180). Vibration shakes it in a
- *  call rhythm (long buzzes) or a message rhythm (short double buzz). All transforms are set here, never by CSS animations. */
-function applyPhoneDrag() {
-  const n = S.g.night;
-  const ph = document.querySelector('.phone3d') as HTMLElement | null;
-  if (!n || !ph) return;
-  const base = n.phoneDown > 0 ? 180 * downSign : 0;
-  let target = base, lift = 0;
-  if (pswipe) { target = base + Math.max(-180, Math.min(180, pswipe.dx * 1.6)); lift = 1; }
-  phoneAngle += (target - phoneAngle) * (pswipe ? 0.5 : 0.2);
-  if (!pswipe && Math.abs(phoneAngle - base) < 0.5) phoneAngle = base;
-  let vx = 0, vr = 0, glow = 0;
-  const it = n.interrupts[0];
-  if (it && n.phoneDown > 0) {   // face-down (#47): no shaking, the screen glows out from under the phone
-    const e = it.max - it.t, d = e - it.pingAt, now = performance.now() / 1000;
-    glow = isCall(it.kind) ? 0.55 + Math.sin(now * 4.5) * 0.12 : d < 4 ? 0.9 - d * 0.12 : 0.42;
-  } else if (it && !pswipe) {
-    const e = it.max - it.t, now = performance.now() / 1000;
-    const d = e - it.pingAt;     // each message: one short double buzz, in sync with its banner popping in
-    const on = isCall(it.kind) ? e % 1.4 < 0.75 : d < 0.14 || (d > 0.2 && d < 0.34);
-    if (on) { vx = Math.sin(now * 90) * 2.2; vr = Math.sin(now * 70) * 1.4; }
-  }
-  const wrap = ph.parentElement as HTMLElement;
-  wrap.style.transform = `rotate(${-7 + vr}deg) translate(${vx}px, ${-lift * 10}px) scale(${1 + lift * 0.06})`;
-  wrap.classList.toggle('held', !!pswipe);
-  const gl = wrap.querySelector('.ph-glow') as HTMLElement | null;
-  if (gl) gl.style.opacity = glow.toFixed(2);
-  ph.style.transform = `perspective(600px) rotateY(${phoneAngle}deg)`;
-}
 // The webcam view: hold the door to peek; click the plan on the wall to open it (#35).
 let planOpen = false;
 const camXY = (ev: PointerEvent) => { const r = el('doorCanvas').getBoundingClientRect(); return [(ev.clientX - r.left) / stageScale, (ev.clientY - r.top) / stageScale] as const; };
@@ -489,7 +451,7 @@ window.addEventListener('keydown', ev => {
   const k = ev.key.toLowerCase();
   const handsFree = !n.game || (n.game.kind === 'phone' && !!n.game.speaker);   // a call on speaker keeps your hands free
   if (k === 'h' && handsFree) { toggleHeadset(); return; }
-  if (k === 'm' && !n.game) { monsterKey(); return; }   // the Monster button on the YOU card (#49)
+  if (k === 'g' && !n.game) { monsterKey(); return; }   // Goblin Fuel: the Drink button on the YOU card, its G keycap (V3)
   if (k === 'l' && hover.key) { const [kind, a, b] = hover.key.split(':'); const id = kind === 'bag' ? a : S.g.heroes[Number(a)]?.gear[b as 'weapon']?.id; if (id) toggleLock(id); return; }
   // The phone is touch only (#54, 3.2): no keys answer it. A call on speaker leaves your hands free, so the skill
   // keys and the rest still work while it lasts.
@@ -541,6 +503,60 @@ function placeCoach() {
   Object.assign(box.style, { left: `${bx}px`, top: `${by}px`, visibility: 'visible' });
 }
 
+// ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
+const rsCanvas = el('rsArea') as HTMLCanvasElement, rsCtx = rsCanvas.getContext('2d')!;
+const rsSrc = document.createElement('canvas'); rsSrc.width = 474; rsSrc.height = 232;
+let deskHits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] = [], deskLast = 0, deskPhoneHover = false, deskBuilt = false;
+function drawDesk() {
+  const n = S.g.night, on = !!n && PK.ready();
+  rsCanvas.style.display = on ? 'block' : 'none';
+  if (!on) { deskHits = []; deskBuilt = false; return; }
+  const now = performance.now();
+  // 15 fps, in two halves on the frames the battle area and the panel skip (they draw at 30): building the desk and
+  // lighting it cost a few ms each, so neither shares a frame with them; after 200 ms a half runs anyway
+  const free = now - liveDrewAt() >= 8;
+  if (deskBuilt) {
+    if (!free && now - deskLast < 200) return;
+    deskBuilt = false;
+    const r = PK.desk(rsSrc, null, now / 1000, 2);
+    if (r) { rsCtx.drawImage(r.canvas, 0, 0); deskHitsSet(r.hits); }
+    return;
+  }
+  if (now - deskLast < 66 || (!free && now - deskLast < 200)) return;
+  deskLast = now;
+  // what the monitor shows, for the desk's light: the renderer's battle area and panel, or the monitor (Excel, off)
+  const sc = rsSrc.getContext('2d')!; sc.imageSmoothingEnabled = false;
+  if (liveShown()) { sc.drawImage(el('rpgArea') as HTMLCanvasElement, 0, 0); sc.drawImage(el('spArea') as HTMLCanvasElement, 334, 0); }
+  else sc.drawImage(monCanvas, 0, 0, monCanvas.width, monCanvas.height, 0, 0, 474, 232);
+  PK.desk(rsSrc, deskView(deskPhoneHover), now / 1000, 1);
+  deskBuilt = true;
+}
+function deskHitsSet(hits: typeof deskHits) {
+  deskHits = hits; (window as unknown as { __lootnight: { deskHits?: unknown } }).__lootnight.deskHits = deskHits;   // where things sit on the desk, for the tests
+  const ph = deskHits.find(h => h.act === 'phone'), px = el('deskPhone');   // a DOM stand-in for the coach mark
+  if (ph) {   // the part of it on screen: it lies half off the desk's left edge
+    const x0 = Math.max(0, ph.x), y0 = Math.max(0, ph.y);
+    Object.assign(px.style, { left: `${x0 * 2}px`, top: `${y0 * 2}px`, width: `${(ph.x + ph.w - x0) * 2}px`, height: `${(Math.min(ph.y + ph.h, 360) - y0) * 2}px` });
+  }
+}
+const rsXY = (ev: PointerEvent) => { const r = rsCanvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 492, ((ev.clientY - r.top) / r.height) * 360] as const; };
+function deskHitAt(ev: PointerEvent) { const [x, y] = rsXY(ev); for (let i = deskHits.length - 1; i >= 0; i--) { const h = deskHits[i]; if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) return h; } return null; }
+rsCanvas.addEventListener('pointerdown', ev => {
+  if (!S.g.night || S.g.paused || ev.button !== 0) return;
+  const h = deskHitAt(ev);
+  if (!h || !h.act || h.act === 'phone') return;   // the phone: the swipe handler above
+  ev.preventDefault();
+  actions[h.act]?.(h.arg);
+});
+rsCanvas.addEventListener('pointermove', ev => {
+  const h = deskHitAt(ev), p = toStage(ev);
+  rsCanvas.style.cursor = h?.act ? (h.act === 'phone' ? 'grab' : 'pointer') : 'default';
+  deskPhoneHover = h?.act === 'phone';
+  const tip = h?.tip ? deskTip(h.tip) : '';
+  hover.key = tip ? `text:${tip}` : ''; hover.x = p.x; hover.y = p.y;
+});
+rsCanvas.addEventListener('pointerleave', () => { deskPhoneHover = false; });
+
 // ---------- The phone in your hand (V8, #73; grid doc 7f): the renderer's phone over the battle area and the desk ----------
 const phCanvas = el('phHand') as HTMLCanvasElement, phCtx = phCanvas.getContext('2d')!;
 let phHits: { x: number; y: number; w: number; h: number; act: string; arg: string }[] = [], phLast = 0, phWas = false;
@@ -580,25 +596,20 @@ function render() {
   drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
   drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
   drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
+  drawDesk();    // V3 (#68): the right screen round the monitor, drawn by the renderer
   document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {
     setHtml('doorInfo', doorInfoHtml());
     setHtml('herHead', herHeadHtml());
-    setHtml('tonight', tonightHtml());
-    setHtml('deskObjects', deskHtml());
     setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
-    setHtml('youCard', youHtml());
-    setHtml('feedCard', feedHtml());
     setHtml('monUi', monUiLiveHtml());   // the run end card over the town; the rest of the RPG is the renderer's
     setHtml('winLayer', windowHtml());
     el('ui').classList.toggle('cv', livePanelShown());   // the panel is drawn by the renderer: the DOM keeps only its item windows
     setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : '');   // dark until the renderer's fonts load
     setHtml('toasts', toastsHtml());
-    setHtml('taskbar', taskbarHtml());
     updateWindowDynamics();
     drawMonsterScene();
-    applyPhoneDrag();
     drawDeskFx();
     drawLapFx();
     setHtml('lapUi', lapUiHtml());

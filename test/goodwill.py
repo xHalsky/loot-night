@@ -12,7 +12,7 @@ async def main():
         await act(pg,'[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
         await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.tired=0; n.apt.t=999; S.g.goodwill=52; n.catches=1}")
         await act(pg,'[data-act=portal]'); await pg.wait_for_timeout(300)
-        box = await pg.evaluate("()=>{const r=document.querySelector('[data-phone]').getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
+        box = await pg.evaluate("()=>{const r=document.querySelector('#deskPhone').getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
         await pg.mouse.move(*box); await pg.mouse.down(); await pg.mouse.up(); await pg.wait_for_timeout(300)
         await pg.screenshot(path='test/goodwill.png', clip={'x':0,'y':400,'width':700,'height':320})
         print('ERRORS', errs)

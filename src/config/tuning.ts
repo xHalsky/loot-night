@@ -44,8 +44,7 @@ export const T = {
   MONSTER_QUIET_NOISE: 3,         // the click + psst of opening
   MONSTER_CLANK_NOISE: 4,         // a hard bounce of a thrown can
   MONSTER_SWISH_FLOW: 0.15,       // clean bin shot: a little Flow
-  // Phone declines: slower than nothing, faster than answering
-  DECLINE_SEC: 1.6, FLIP_SEC: 1.0, PHONE_DOWN_SEC: 25,
+  // Phone declines: costs less than ignoring, more than answering
   MOM_DECLINE_MOOD: 3, MOM_CALLBACK_SEC: [40, 60] as [number, number],
   // Door peek (hold the door)
   // Peeking: hold the door. It opens to a narrow crack in PEEK_OPEN_SEC, then creeps wider to PEEK_CRACK_MAX over

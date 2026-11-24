@@ -66,7 +66,6 @@ export function updateInterrupts(dt: number) {
   if (due && spawnInterrupt(due.kind)) due.done = true;
   else if (friendsDue() && spawnInterrupt('friends')) { n.friendsLeft--; n.friendsFloor = n.floor; }
   else if (n.momCallback && n.threat >= n.momCallback && n.clock < T.BED_FROM && spawnInterrupt('mom')) n.momCallback = 0;
-  updateDeclines(dt);
   for (const i of n.interrupts) i.t -= dt;
   const expired = n.interrupts.filter(i => i.t <= 0);
   n.interrupts = n.interrupts.filter(i => i.t > 0);
@@ -231,7 +230,9 @@ export function closeGame(success: boolean) {
   // the chats keep what was said (V8): her texts and your answer; the boys' exchange and how it ended
   if (g.app === 'text') { g.msgs.forEach(m => herSay('l', m)); if (success) herSay('r', 'Five more minutes, love ♥'); herRead(); }
   if (g.app === 'friends' && g.log?.length) boysLog([...g.log, ['l', success ? 'Danny: ok np, buffing you from here' : "Mike: fine, raid's on without you"]]);
-  if (success) succeed(g.app); else fail(g.app, g.stage === 'ringing' ? 'declined' : 'failed');
+  if (success) succeed(g.app);
+  else if (g.stage === 'ringing' && isCall(g.app)) declined(g.app);   // Decline on the ringing screen: Mom calls back, the others give up
+  else fail(g.app, 'failed');
 }
 
 function succeed(kind: InterruptKind) {
@@ -277,10 +278,6 @@ function friendsBlast(how: string) {
 // Face-down is Do Not Disturb (#54, 3.2): swipe the phone over and everything is silent until you flip it back; the
 // screen only glows out from under it. What runs out meanwhile counts as ignored (Mom calls your girlfriend).
 
-export function setDeclineHold(on: boolean) {
-  const n = N();
-  n.declineHold = on && !!n.interrupts[0] && isCall(n.interrupts[0].kind) && !n.game;
-}
 
 /** Swipe the desk phone over: Do Not Disturb until you flip it back. */
 export function togglePhoneDown() {
@@ -291,22 +288,14 @@ export function togglePhoneDown() {
   if (n.phoneDown) toast('Phone face-down: Do Not Disturb.', '#a999bd');
 }
 
-function updateDeclines(dt: number) {
-  const n = N();
-  if (n.declineHold && n.interrupts[0] && isCall(n.interrupts[0].kind) && n.phoneDown <= 0) {
-    n.decline += dt / T.DECLINE_SEC;
-    if (n.decline >= 1) { n.decline = 0; n.declineHold = false; declined(n.interrupts.shift()!.kind); }
-  } else n.decline = Math.max(0, n.decline - dt * 2);
-}
 
-/** Tap the red button on the ringing desk phone: the call is declined at once. */
+/** A call declined (Decline on the ringing screen): Mom calls back once, the courier leaves, the boys spam the chat. */
+/** Decline on the phone lying on the desk, without picking it up. */
 export function declineCall() {
-  const n = N();
-  if (!n.interrupts[0] || !isCall(n.interrupts[0].kind) || n.game) return;
-  n.decline = 0;
-  declined(n.interrupts.shift()!.kind);
+  const n = N(), it = n.interrupts[0];
+  if (!it || !isCall(it.kind) || n.game) return;
+  n.interrupts.shift(); declined(it.kind);
 }
-/** A call declined from the desk: Mom calls back, the courier leaves, the boys spam the chat. */
 function declined(kind: InterruptKind) {
   const n = N();
   sfx.click();

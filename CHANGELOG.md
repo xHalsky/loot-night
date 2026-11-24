@@ -3,6 +3,28 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.66.0 (2026-11-24)
+
+- **The desk and the monitor are the redesign's** (V3, #68; grid doc §7). The renderer draws the whole right screen
+  round the game screen as one picture: the thin bezel with the webcam module, the Win98 taskbar (Start, Loot Night,
+  Excel, Sleep, zł, the clock), the keyboard with the skill keys lit in their colours, the phone lying on the desk,
+  the Tonight note, the YOU card and the feed card. What the monitor shows lights the desk and the keys: the battle,
+  the town, Excel or the monitor off.
+- **The phone on the desk** is the same OS as in your hand, seen lying down: a call in the caller's colours with the
+  "pick up · 8 s" chip, banners for texts, the back with a cool glow when face down. Tap to pick up, swipe 45 px to
+  turn it face down, and its red **Decline** works on the desk.
+- **The drink key is G** (decisions 2026-11-19), with its keycap on the Drink button and the G key lit.
+- **Fix: Decline in your hand counted as ignoring** since 0.65 (Mom called your girlfriend, Mood +10). It is a
+  decline again: Mood +3 and she calls back once.
+- The desk's DOM is gone: the bezel, the taskbar, the keyboard and mouse, the 3D phone, the sticky note and both
+  cards, `ui/peripherals.ts`, the hold-to-decline (nothing drove it), and 161 CSS rules (a selector check over the
+  game's screens found none in use). A DOM stand-in over the phone only anchors the coach mark.
+- The desk draws at 15 fps in two halves on the frames the battle area and the panel skip: a whole desk costs about
+  7 ms on the CPU, which at 20 fps on any frame dropped a frame in three (frame times now as 0.65).
+- `test/desk.py`: the desk in eight states, with real clicks on the taskbar, the phone, Decline and Drink, and a
+  contact sheet. `test/coach.py`, `test/goodwill.py`, `test/phone.py` and `test/stars.py` follow the drawn desk; the old
+  DOM phone's tests are deleted. UI and one fix only: sims as 0.64 (good: 3 stars, caught 0; idle: caught).
+
 ## 0.65.0 (2026-11-24)
 
 - **The phone in your hand is the redesign's phone** (V8, #73; grid doc 7f). The renderer draws it (124 × 252 on the

@@ -43,17 +43,21 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
 
 - **Only calls buzz.** A call rattles every 1.4 s. Texts arrive silently: they only light the lock screen with
   banners, and wait `TEXT_DEADLINE_SEC` (60 s). You notice them by looking at the desk.
-- **Speaker or pick up, on every call.** On the desk's incoming-call screen and in your hand: **Speaker** answers
-  with the phone on the desk; your hands stay free (keep playing, skills still cast, the headset key works) but the
+- **Speaker or pick up, on every call.** On the incoming-call screen in your hand: **Speaker** answers with the
+  phone back on the desk; your hands stay free (keep playing, skills still cast, the headset key works) but the
   call adds Noise +`SPEAKER_NOISE`/s while it lasts (none with the headset on: it plays in your ears). **Pick up**
   (tap the phone, slide to answer) is hands busy and quiet.
 - **Touch only.** Every answer is a tap, a slide or a hold with the mouse; the 1 2 3 keys for Mom's replies and the
   boss's sums are gone.
-- **Face-down is Do Not Disturb.** Grab and swipe it over, any time; it lifts and turns in 3D and stays down until you
+- **Face-down is Do Not Disturb.** Grab and swipe it over (45 px), any time; it lies with its back up until you
   flip it back. Everything is silent: no buzz, no shake, no countdown ring; a call or a text only lights the desk
   around it (a soft cool glow). Whatever runs out meanwhile counts as ignored (Mom calls your girlfriend).
-- **On the desk it is big** (#49): the 90 × 186 phone drawn 1.38x at the desk's left edge, running off the bottom.
-  The incoming-call screen has Decline and Speaker under the slider; a tap anywhere else picks up.
+- **On the desk** (V3, #68; grid doc §7): the renderer draws it lying on the desk in perspective, half off the right
+  screen's left edge, lit by the monitor and lighting the desk in turn. Off: dark glass with the monitor in it.
+  Ringing: the caller's colours, the slide pill and a red **Decline** (a click declines without picking up), and
+  one gold chip above it, "pick up · 8 s"; it jumps with the buzz and lights the desk in the caller's warmth. Texts:
+  the lock screen with the newest banners. Face down: the back, and a cool glow round it for a call or a message.
+  Pointed at, idle, a gold "pick up" chip. A click anywhere else on it picks it up.
 - **In your hand** (V8, #73; grid doc 7f): the renderer draws the phone (`render/page/phone.js`, the live screens at
   its end; the view in `render/phoneView.ts`), 124 × 252 on the grid at 2x over the heroes' side of the battle area,
   its bottom running off the frame; it rises from below in 0.32 s. One night-mode OS in the desk's Graphite: gold is
@@ -182,8 +186,12 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 - **The phone in the renderer** (0.65, V8 #73). The DOM iPhone was the prototype's placeholder; the redesign's
   phone is the game's pixel OS, so the phone matches the battle area and the desk. Left out for now: the incoming
   call's Message button (no rule behind it; Speaker sits alone), the battery widget and the Shop and Home apps (they
-  come with steps 4 and 6), her photos in the chat (fan-service step 5, #59), the desk phone through the desk's
-  camera (with V3, #68). Rejected: keeping the DOM phone under the new look (two phone looks in one game).
+  come with steps 4 and 6), her photos in the chat (fan-service step 5, #59). Rejected: keeping the DOM phone under the new look (two phone looks in one game).
+- **The desk phone is drawn too, and declines on the desk** (0.66, V3 #68): the same OS seen lying down, through the
+  desk's camera and in its light. Its red Decline stays clickable, so a call can be turned down without picking it
+  up, as before; Speaker moved into your hand (pick up, then Speaker), which the redesign's ringing desk screen has
+  no room for. Declining in your hand now counts as a decline too (it had counted as ignoring since 0.65: Mom called
+  your girlfriend). Rejected: making the desk phone a picture you only pick up (a red button that does nothing).
 - **The phone retune: fewer events, each worth taking** (0.64, #54 3.2; Paweł's brief from testing v0.48). A
   random timer every 20 to 35 s made the phone noise: Mood taxes you could only avoid by stopping play. Now a night
   script places 4 to 6 events, each pays something you want (a heal and revive, zł, a cooldown mouse, a raid buff)

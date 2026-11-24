@@ -20,7 +20,10 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
   buffers on the CPU (Moonwell 32, Graphite, PC-98; Bayer 8 × 8 dither; UI palette-exact) and hands back canvases
   at grid size. `grid.ts` holds the 640 × 360 grid and its whole-number scale. `rpgView.ts` reads the game into a view
   model (no rules), `liveRpg.ts` draws it into `#rpgArea` at 30 fps and turns clicks and hovers into the game's
-  actions through the hit regions the renderer returns (grid px).
+  actions through the hit regions the renderer returns (grid px). The panel goes the same way into `#spArea`, the phone in your hand
+  (`phoneView.ts`) into `#phHand`, and the right screen round the game screen (`deskView.ts`) into `#rsArea` under
+  them all: 15 fps, built on one frame and lit on the next, both on frames the battle area and the panel skip
+  (`liveDrewAt`), because a whole desk costs about 7 ms on the CPU.
 
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.

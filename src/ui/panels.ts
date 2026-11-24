@@ -3,7 +3,7 @@ import { VERSION } from '../config/version';
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
-import { isCall, S, N, type BagEntry, type Item, type Hero, type MonsterGame } from '../core/state';
+import {  S, N, type BagEntry, type Item, type Hero, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, ULT_SLOT } from '../data/heroes';
 import { autocastBought, autocastOn } from '../systems/tree';
 import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
@@ -21,18 +21,16 @@ import { phoneAction } from '../systems/interrupts';
 import { planSvg } from './plan';
 import { RARITY_COLOR, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { SW, SH } from './monsterScene';
-import { isAway } from '../systems/autopilot';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
 import { CHAT_QS, VISIT_CUE } from '../data/content';
-import { heroStats, maxHp, itemPower, heroPower } from '../systems/stats';
+import { heroStats, itemPower, heroPower } from '../systems/stats';
 import {  abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, cap } from '../systems/loot';
 import { icon } from './icons';
 import { moodZone } from '../systems/meters';
-import { fmtClock, parseTag } from '../core/fx';
+import { fmtClock } from '../core/fx';
 import type { MorningScene } from './her';
 import { hasSave } from '../systems/save';
-import { canSleep } from '../systems/night';
 import {  ROOM_NAME } from '../data/apartment';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -179,73 +177,11 @@ export function planHtml(): string {
     Through the crack: 1 the kitchen, 2 the bathroom door, 3 the far end only when the door is wide.</div></div></div>`;
 }
 
-/** The feed card (#49): newest line on top, older ones fading; a tag says whose line it is. No header, no tabs. */
-const TAG_COLOR: Record<string, string> = { YOU: '#a08cff', HER: '#ff9ab8', PHONE: '#6aa8ff', GAME: '#f2c46b', DOG: '#e48f3e', EXCEL: '#4fbf7a',
-  NIGHT: '#c77dff', PARTY: '#8fd0ff', GUILD: '#6fe08a', MAGOO: '#b59bff', HEALERO: '#6fcfa0', KNIGHTENSTEIN: '#8fb3ff' };
-export function feedHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  const line = (time: string, tag: string, text: string, color: string, i: number, cls = '') =>
-    `<div class="fl ${cls}" style="opacity:${Math.max(0.35, 1 - i * 0.13).toFixed(2)}"><i>${time}</i>${tag ? `<b style="color:${tag === 'LOOT' ? color : TAG_COLOR[tag] ?? '#c9c0d8'}">${esc(tag)}</b>` : ''}<span style="color:${color}">${esc(text)}</span></div>`;
-  const pin = n.tip ? parseTag(n.tip.text) : null;
-  const rows = n.log.filter(l => !pin || l.text !== pin.text).slice(-6).reverse();
-  const out = (pin ? [line(fmtClock(n.clock), pin.tag.toUpperCase(), pin.text, n.tip!.color, 0, 'tip')] : [])
-    .concat(rows.map((l, i) => line(l.time, l.tag ?? '', l.text, l.color, i + (pin ? 1 : 0))));
-  return out.slice(0, 6).join('') || '<div class="fl dim">Welcome to Loot Night. Have fun, don\'t get caught.</div>';
-}
 
-// ---------------- Desk objects ----------------
-function ring(t: number, max: number) {
-  // Quantized to whole seconds so the desk DOM only re-renders once a second.
-  const deg = Math.max(0, Math.min(360, (Math.ceil(t) / Math.ceil(max)) * 360));
-  return `<div class="ring" style="background:conic-gradient(#f2b84b ${deg}deg,#3a2f47 0)"><span>${Math.ceil(t)}</span></div>`;
-}
 const PHONE_NOTE: Record<string, [string, string]> = {
   mom: ['MOM', 'calling...'], boss: ['BOSS', '"you there?"'], text: ['BABE', 'coming to bed?'], courier: ['COURIER', 'calling...'], friends: ['THE BOYS', 'group call'],
 };
 void PHONE_NOTE;
-/** Who is calling: name and the line under it on the incoming-call screen. */
-const CALLER: Record<string, [string, string]> = { mom: ['Mom', 'mobile'], courier: ['Courier', '+48 22 555 0199'], friends: ['The Boys (3)', 'group call'] };
-// The desk phone: a 3D card you grab and swipe sideways to flip. iOS look: the screen is off until something
-// arrives; messages wake it with stacked lock-screen banners (one per buzz), a call shows the incoming-call screen.
-const APP: Record<string, [string, string, string]> = { boss: ['Work', 'Boss', '#2f6fed'], text: ['Messages', 'Babe \u2665', '#34c759'] };
-function phoneObjHtml(): string {
-  const n = N();
-  const it = n.interrupts[0];
-  const inPhone = n.game?.kind === 'phone' || n.preMenu === 'phone' || phoneAction();   // in your hand (#63)
-  const down = n.phoneDown > 0;
-  let screen = '<div class="ios off"></div>';
-  // picked up: the phone leaves the desk until the minigame ends or its window is closed
-  if (inPhone) return '';   // picked up: it is in your hand (the window over the monitor)
-  else if (it && isCall(it.kind)) {
-    // same incoming-call screen as in your hand: tap red to decline at once, tap anywhere else to pick up
-    screen = `<div class="ios call"><div class="ios-di"></div><div class="ios-cname">${CALLER[it.kind][0]}</div><div class="ios-csub">${CALLER[it.kind][1]}</div>
-      <div class="ios-mrow"><span>\u23F0<br>Remind</span><span>\u2709<br>Message</span></div>
-      <div class="ios-mslide"><i>&#9742;</i><span>slide to answer</span></div>
-      <div class="ios-cbtns"><div class="ios-cbtn red" data-decline="1"><span>&#9742;</span></div><div class="ios-cbtn spk" data-speaker="1"><span>&#128266;</span></div></div>
-      <div class="ios-clab"><span>Decline</span><span>Speaker</span></div></div>`;
-  } else if (it && it.msgs.length) {
-    const [app, who, col] = APP[it.kind];
-    const banners = it.msgs.slice(-3).reverse().map((m, i) => `<div class="ios-ban ${i === 0 && it.max - it.t - it.pingAt < 0.4 ? 'new' : ''}"><i style="background:${col}"></i><div><b>${who}</b><small>${app}</small><span>${esc(m)}</span></div></div>`).join('');
-    screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div>${banners}${it.msgs.length > 3 ? `<div class="ios-more">+${it.msgs.length - 3} more</div>` : ''}</div>`;
-  } else if (it) screen = '<div class="ios off"></div>';
-  else if (n.herReply && n.herReply.wait <= 0) screen = `<div class="ios lock"><div class="ios-di"></div><div class="ios-time">${fmtClock(n.clock)}</div><div class="ios-ban new"><i style="background:#34c759"></i><div><b>Babe \u2665</b><small>Messages</small><span>${esc(n.herReply.msg)}</span></div></div></div>`;
-  return `<div class="phone-zoom"><div class="phone-wrap"><i class="ph-glow"></i>
-    <div class="phone3d ${down ? 'down' : ''} ${it ? 'active' : ''}" data-phone="1">
-      <div class="pface front">${screen}</div>
-      <div class="pface back"><i class="cam"></i><i class="logo"></i></div>
-    </div>${it && !down ? ring(it.t, it.max) : ''}</div></div>`;
-}
-export function deskHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  // No headset, cans or fridge on the desk (#49): he wears the headset (click his head, or H), and Monster is the
-  // button on the YOU card (M). The desk keeps the phone; the Zone lights the monitor's edge in the headset's cyan.
-  const z = Math.round(n.zone * 20) / 20;
-  return `${n.headset ? `<div class="zone-glow ${n.zone >= 1 ? 'full' : ''}" style="--z:${z}"></div>` : ''}
-  ${phoneObjHtml()}
-`;
-}
 
 // ---------------- Morning vignette by how the night ended (#22) ----------------
 export function morningScene(): MorningScene {
@@ -478,46 +414,7 @@ function itemPopHtml(): string {
   return e ? detailHtml(e) : '';
 }
 
-/** Real life, bottom right of the desk (#49): Tired and Zone, and the Monster button (key M). */
-export function youHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  const g = S.g;
-  const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing' && n.visit.stage !== 'in';
-  const hide = coming && g.monsters > 0 && !n.cansHidden;
-  const canDrink = g.monsters > 0 && !n.game && !n.pre;
-  const tired = n.tired >= T.TIRED_YAWN && canDrink && n.boost <= 0 && !hide;   // time to top up: the button glows
-  let label = `\u00d7${g.monsters}`, sub = 'Drink · M', cls = '', act = 'openMonster';
-  if (hide) { label = 'Hide'; sub = 'the cans · M'; cls = 'hide'; act = 'hideCans'; }
-  else if (n.cansHidden && n.visit.stage !== 'idle') { label = 'Hidden'; sub = 'under the desk'; cls = 'off'; act = ''; }
-  else if (!canDrink) cls = 'off';
-  if (tired) cls += ' tired';
-  const row = (name: string, cls2: string, v: number, mark?: number) =>
-    `<div class="yc-row ${cls2}"><span>${name}</span><i class="yc-bar"><i style="width:${Math.round(Math.max(0, Math.min(100, v)))}%"></i>${mark !== undefined ? `<em style="left:${mark}%"></em>` : ''}</i><b>${Math.round(v)}</b></div>`;
-  return `<div class="yc-rows">${row('Tired', 'yc-tired', n.tired, T.TIRED_YAWN)}${row('Zone', 'yc-zone', n.headset ? n.zone * 100 : 0)}</div>
-    <button class="yc-can ${cls}" ${act ? `data-act="${act}"` : ''} aria-label="Goblin Fuel: drink one (M), or hide the cans while she is coming">
-      <svg width="16" height="22" viewBox="0 0 16 22" aria-hidden="true"><rect x="2" y="2" width="12" height="19" rx="2.5" fill="#4f9a26" stroke="#9aa0ac"/><rect x="3.5" y=".8" width="9" height="2.2" rx="1" fill="#c9ced6"/><path d="M3.2 8 L6.6 9.8 L6 12.2 Z M12.8 8 L9.4 9.8 L10 12.2 Z" fill="#1a1424"/><circle cx="8" cy="11" r="2.8" fill="#1a1424"/><rect x="6.3" y="10.1" width="1.3" height="1" fill="#ffd23a"/><rect x="8.4" y="10.1" width="1.3" height="1" fill="#ffd23a"/></svg>
-      <span><b>${label}</b><small>${sub}</small></span></button>`;
-}
 
-// ---------------- OS taskbar (real life) ----------------
-export function taskbarHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  const late = n.clock >= T.BEDTIME;
-  // Windows-style attention flash: the game wants you back (party in trouble while you are away).
-  const hp = S.g.heroes.reduce((a, h) => a + (h.downed ? 0 : h.hp), 0) / S.g.heroes.reduce((a, h) => a + maxHp(h), 0);
-  const flash = n.monitor !== 'rpg' && isAway() && (S.g.heroes.some(h => h.downed) || hp < T.AUTOPILOT_FLASH_HP);
-  return `<div class="tb-start">⊞</div>
-    <button class="tb-app ${n.monitor === 'rpg' ? 'on' : ''} ${flash ? 'flash' : ''}" data-act="showRpg"><span class="tb-ico game">⚔</span>Loot Night</button>
-    <button class="tb-app ${n.monitor === 'excel' ? 'on' : ''}" data-act="showExcel"><span class="tb-ico xl">X</span>Excel</button>
-    <span class="tb-hint">Tab = switch</span>
-    <span class="tb-tray">
-      <span class="tb-wallet">${S.g.zl} zł</span>
-      <span class="tb-clock ${late ? 'late witching' : ''}" title="${late ? 'Witching Hour: better drops, more sleep debt.' : ''}"><b>${fmtClock(n.clock)}</b>${late ? '<small>witching hour</small>' : ''}</span>
-      <button class="tb-power ${canSleep() ? '' : 'off'}" data-act="sleep" title="Log off and sleep">⏻ ${n.clock < T.EARLIEST_SLEEP ? 'Sleep (23:00+)' : 'Sleep'}</button>
-    </span>`;
-}
 
 // ---------------- Full-screen screens ----------------
 export function screenHtml(): string {
@@ -642,18 +539,6 @@ export function toastsHtml(): string {
 
 /** Tonight (#42): a sticky note on his desk with the three stars, live. What a good night looks like, while you
  *  play it (the results screen used to be the first place that said so). Always on screen, in both RPG and Excel. */
-export function tonightHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  const zone = moodZone(n.mood);
-  const mark = (s: 'ok' | 'risk' | 'lost') => `<b class="${s}">${s === 'ok' ? '✓' : s === 'risk' ? '!' : '✗'}</b>`;
-  // three goals, a star each (#54, 3.1): no ladder; ! is at risk, a tick is met (floor N stays ticked once reached)
-  return `<div class="sticky" title="Tonight's three stars, counted when you log off. Each pays a reward in the morning.">
-    <div class="st-h">Tonight <small>⏻ ${n.clock >= T.EARLIEST_SLEEP ? 'sleep any time' : '23:00+'}</small></div>
-    <div>floor ${n.deepTarget} ${mark(n.deepest >= n.deepTarget ? 'ok' : 'risk')}</div>
-    <div>don't get caught ${mark(n.everCaught ? 'lost' : 'ok')}</div>
-    <div>keep her happy ${mark(zone === 'red' ? 'risk' : 'ok')}</div></div>`;
-}
 
 /** Coach mark (#42): a callout next to the thing, while the game crawls. Positioned by main.ts. */
 export function coachHtml(): string {

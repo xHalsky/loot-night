@@ -17,6 +17,12 @@ gameplay steps). This file says how the build gets there and where it stands. It
   checkpoint picker, unbanked loot, wipes that lose the run, Souls. The run card and the floor picker are on the
   old town drawing until V2 reaches the town.
 - **#52 1.5b, 0.54.0:** run blessings from curios (dungeon.md).
+- **Real life, step 3 (#54), 0.63.0 and 0.64.0:** the three stars and their morning rewards (night.md); the phone
+  retune: the night script, one demand at a time, Speaker, Do Not Disturb (desk.md).
+- **V8, the phone in your hand, 0.65.0;** **V3, the desk and monitor, 0.66.0:** the whole right screen round the game
+  screen is drawn by the renderer from `render/deskView.ts` (desk.js `drawDeskLive`), lit by what the monitor shows;
+  the desk's DOM (bezel, taskbar, keyboard, phone, the Tonight note, the YOU and feed cards) is gone (screen.md).
+  Left as DOM for now: the webcam column, the pop-up windows, Excel's content (its step), the dog.
 
 - **The 15-minute gate** (handoff step 1: the RPG alone must hold 15 minutes before step 3) moved to after the
   redesign (Paweł, 2026-11-24): it needs number tuning first. Step 3 starts without it.
@@ -47,3 +53,6 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 6 | #52 1.6 and 1.7: marching order, auras, swaps, the Hook (§5d); Garrote | 0.56.0 |
 | 7 | #52 1.8 and 1.9: loot rules, sets, legendaries; tuning to the pacing targets | 0.58.0 (loot rules), 0.59.0 (tuning) |
 | 8 | V2: town (Ravenhold, §6) with #53 | 0.60.0: the trees, the Skill Tree tab and the tree screen; 0.61.0: the whole side panel in the renderer; 0.62.0: the town map in the renderer, services as Town-tab pages, party cards drag to reorder |
+| 9 | #54: the three stars; the phone retune | 0.63.0, 0.64.0 |
+| 10 | V8 (#73): the phone in your hand | 0.65.0 |
+| 11 | V3 (#68): the desk and monitor round the game screen | 0.66.0 |

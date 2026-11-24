@@ -34,6 +34,9 @@ export const PK = {
   panel: pkPanel,
   /** The phone in your hand (V8, #73): a 126 x 252 canvas and its hit regions (its pixels). */
   phone: (vm, t) => livePhone(vm, t),
+  /** The right screen around the game screen (V3, #68): desk, bezel, taskbar, keyboard, phone, cards; 492 x 360.
+   *  phase 1 builds the frame and returns null, phase 2 lights it and returns it (two frames' work); 0 does both. */
+  desk: (src, st, t, phase = 0) => drawDeskLive(src, st, t, phase),
   init: pkInit,
   /** The whole 640 x 360 frame as the mockup draws it (V1's check against still 00-default). */
   drawFrame: (scene, tScreen, t, moment, her, o) => drawFrame(scene, tScreen, t, moment, her, o || {}),

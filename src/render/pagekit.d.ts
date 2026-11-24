@@ -5,6 +5,7 @@ declare module 'virtual:pagekit' {
     ready(): boolean;
     battleArea(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     panel(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
+    desk(src: HTMLCanvasElement, st: unknown, t: number, phase?: 0 | 1 | 2): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] } | null;
     phone(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string }[] };
     drawFrame(scene: string, tScreen: number, t: number, moment: string, her: string, o?: Record<string, unknown>): HTMLCanvasElement;
     drawScreen(scene: string, t: number, o?: Record<string, unknown>): HTMLCanvasElement;

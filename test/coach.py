@@ -4,7 +4,8 @@
 import asyncio
 from playwright.async_api import async_playwright
 async def act(pg, sel):
-    await pg.evaluate("s=>{const e=document.querySelector(s); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(150)
+    # a DOM button, or an action the renderer draws (the town's portal): a stand-in button carries it
+    await pg.evaluate("s=>{let e=document.querySelector(s), tmp=null; const m=s.match(/^\\[data-act=(\\w+)\\]$/); if(!e&&m){tmp=e=document.createElement('button'); e.dataset.act=m[1]; document.getElementById('stage').appendChild(e)} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); if(tmp) tmp.remove()}", sel); await pg.wait_for_timeout(150)
 N = "const g=window.__lootnight.S.g, n=g.night;"
 def fresh(cid):   # forget a coach mark was seen, clear the current one, nobody at the door
     return N + f"g.tipsSeen=g.tipsSeen.filter(t=>t!=='coach:{cid}'); n.coach=null; Object.assign(n.visit,{{stage:'idle',result:'',chat:null}}); n.game=null; n.interrupts=[];"
@@ -23,8 +24,8 @@ async def main():
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(400)
         await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
         await pg.evaluate("()=>{" + N + "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9;}")
-        tn = await pg.evaluate("()=>document.querySelector('#tonight .sticky')?.innerText || ''")
-        print('tonight:', tn.replace('\n', ' | ')); ok &= 'not caught' in tn
+        tn = await pg.evaluate("()=>getComputedStyle(document.getElementById('rsArea')).display")   # the Tonight note is drawn on the desk (V3)
+        print('desk drawn:', tn); ok &= tn == 'block'
         await act(pg, '[data-act=portal]'); await pg.wait_for_timeout(300)
         coach = lambda: pg.evaluate("()=>window.__lootnight.S.g.night.coach?.id || null")
         async def rate():
@@ -46,7 +47,7 @@ async def main():
         await pg.evaluate("()=>{" + fresh('phone') + "n.scare=0; n.monitor='rpg';}"); await dbg(pg, '[data-act=dbgMom]'); await pg.wait_for_timeout(300)
         c = await coach(); print('phone:', c); ok &= c == 'phone'
         await pg.screenshot(path='test/coach_phone.png')
-        r2 = await pg.evaluate("()=>{const e=document.querySelector('[data-phone]').getBoundingClientRect(); return [e.left+e.width/2, e.top+e.height/2]}")
+        r2 = await pg.evaluate("()=>{const e=document.querySelector('#deskPhone').getBoundingClientRect(); return [e.left+e.width/2, e.top+e.height/2]}")
         await pg.mouse.click(r2[0], r2[1]); await pg.wait_for_timeout(300)
         c = await coach(); print('  opening the phone clears it:', c is None); ok &= c is None
         # 4. loot, then footsteps bump it

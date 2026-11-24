@@ -10,10 +10,10 @@ even) while they move onto the grid; the redesign's renderer (`src/render/`, tec
 | Zone | Where | Shows |
 |---|---|---|
 | Left: webcam and her | 0 to 296, full height | The webcam view (296 × 532): his dark room, him at the bottom, your door behind him (hold it to peek), the plan on the wall. His head is the headset button. Under it: the last-heard line, her note, the pre-emptive buttons, her stats (Patience and Caught, Goodwill, Noise, Waking up after midnight) |
-| Monitor | the desk's top: a 968 × 518 bezel with a webcam on its top edge | The game screen (948 × 464) and, under it, the OS taskbar (30 px) |
+| Monitor | the right screen's top: a thin bezel with the webcam module on its top edge | The game screen (948 × 464, 474 × 232 on the grid) and, under it, the Win98 taskbar. All of the right screen round the game screen is one picture drawn by the renderer (V3, below) |
 | · Battle area | the game screen's left 668 px (334 × 232 on the grid) | In the dungeon, drawn by the redesign's renderer (V2, [dungeon.md](dungeon.md)): the band (64) with the curio card, the picture (142), the skill bar (26), the corner, the portal, the buffs. The city and the floor map are still the old drawing (668 × 464, see [city.md](city.md)) with their DOM overlays. Item windows and minigame windows stay on top |
 | · Side panel | the game screen's right 280 px, full height | Dungeon: party cards, the selected hero's gear and stats, the bag with its Treasury row, gold, scraps and record. City: the build list, the "Enter the dungeon" button, the bag (the services are the buildings on the map) |
-| Desk | under the monitor, 192 px | The phone (drawn 1.38x, running off the bottom edge), the keyboard, mat and mouse (1.5x, top rows only), tonight's sticky note stuck on the bezel's bottom edge. The YOU card and the feed card sit bottom right. The dog rises over the desk edge; her desk visit covers the battle area |
+| Desk | under the monitor | The phone lying half off the left edge, the keyboard (its top rows; the skill keys lit in their colours, R F 4 dark while locked, G for Goblin Fuel), tonight's sticky note on the bezel's bottom edge, the YOU card and the feed card bottom right. The dog rises over the desk edge; her desk visit covers the battle area |
 
 **Everything RPG is on the monitor.** Excel, the monitor going off and the alt-tab switch hide all of it, the
 side panel included. Real life stays: her panel, the desk, the YOU card and the feed.
@@ -47,19 +47,29 @@ They slow nothing: the fight and the clock keep going while you look (#49).
 a dark outline (`LOOT_FLY_SEC`; legendaries `LOOT_FLY_LEGENDARY_SEC`); a batch is spaced `LOOT_FLY_STAGGER_SEC`
 apart and fanned sideways. Its bag slot shines with a NEW badge for `BAG_NEW_SEC`, and a LOOT line goes to the feed.
 
-**The YOU card** (real life, bottom right of the desk): Tired (violet, a mark where yawning starts,
-`TIRED_YAWN`) and Zone (cyan, the headset's colour), and the **Goblin Fuel button** (key M): the can count and
-"Drink · M". It glows amber only from `TIRED_YAWN` while a can is left and no boost runs (time to top up). During
-a visit's footsteps it reads "Hide the cans" (no glow); after hiding, "Hidden" until she leaves; greyed with no cans
-or while your hands are busy. Boost and crash stay in the buffs.
+**The desk is drawn by the renderer** (V3, #68; grid doc §7): the whole right screen (492 × 360 on the grid) is one
+picture, `drawDeskLive` in `src/render/page/desk.js` from the view in `src/render/deskView.ts`, under the monitor's
+live canvases. It takes its light from the screen: what the monitor shows (the battle, the town, Excel, off) lights
+the desk, the bezel and the keys in its colours, in the desk's Graphite palette. Clicks and tooltips come from the
+picture's hit regions: the taskbar buttons, Sleep, the clock, the Drink button, the phone, the Tonight note and the
+YOU card's bars. It draws at 15 fps, in two halves on the frames the battle area and the panel skip (building it and
+lighting it cost a few ms each), so it never costs the battle a frame.
 
-**The feed card**, under it: the last six lines, newest on top, older ones fading, two lines at most each. Each line
+**The YOU card** (bottom right of the desk): Tired (violet, a mark where yawning starts, `TIRED_YAWN`) and Zone
+(cyan, the headset's colour), and the **Goblin Fuel button** (key G, its keycap drawn on it): the can and "x3 /
+Drink". It glows gold from `TIRED_YAWN` while a can is left (time to top up). During a visit's footsteps it reads
+"Hide cans" and pulses; after hiding, "Hidden" until she leaves; dark with no cans. Boost and crash stay in the
+buffs.
+
+**The feed card**, under it: the last lines that fit (six at most), newest on top, older ones fading, two lines at
+most each. Each line
 has its time and a tag for whose it is: YOU, LOOT (in the rarity colour), HER, PHONE, GAME, EXCEL, DOG, NIGHT,
 PARTY, GUILD, or a friend's name (MAGOO, HEALERO). A first-time tip is pinned on top while it lasts. No header, no tabs.
 
-**Monitor chrome.** The taskbar under the screen: app buttons for Loot Night and Excel ("Tab = switch"), the zł
-wallet, the night clock (red with "witching hour" after 01:00) and the power button "Sleep" (from 23:00). The
-Loot Night button flashes when the party is in trouble while you are away. Buffs: top right of the battle area.
+**Monitor chrome.** The Win98 taskbar under the screen: Start, the app buttons for Loot Night and Excel ("Tab"
+on the one you would switch to), the power button "Sleep" (greyed with "23:00+" until bedtime), the zł wallet and
+the night clock (red with "witching hour" after 01:00). The Loot Night button flashes when the party is in trouble
+while you are away. Buffs: top right of the battle area.
 
 **Three UI flavours.** Every element belongs to one world, so the player knows at a glance what it is for.
 
@@ -180,9 +190,17 @@ the click panels and the design docs hold the detail. `python3 test/tooltips.py`
   smaller screens, more set dressing to read); one card for YOU and the feed (less room for the feed).
 - **No top bar in the game** (0.45): floor, battle and Flow are glanced at, not read, so they became a quiet corner
   overlay and the side panel runs full height. Flow's step-up glow tells you it grew without a number to watch.
-- **No cans, fridge or headset on the desk** (0.45): the Goblin Fuel button (M) and his head (H) do their jobs, and the
+- **No cans, fridge or headset on the desk** (0.45): the Goblin Fuel button (G since 0.66) and his head (H) do their jobs, and the
   desk got room for a bigger phone and keyboard. The snack run's rule stays: the button turns into "Hide the cans"
   during the footsteps. Rejected: keeping the cans for the snack-run tell (the button carries it).
+- **The desk is one picture, lit by the screen** (0.66, V3, #68): the desk, bezel, taskbar, keyboard, phone, the
+  Tonight note and both cards are drawn by the renderer as in the redesign's mockup, so the monitor's light falls on
+  all of it and it reads as one room. Clicks come from the picture's hit regions; a DOM stand-in over the phone only
+  anchors the coach mark. It draws at 15 fps in two halves on the frames the battle skips: a whole desk costs about
+  7 ms, which at 20 fps on any frame dropped every third battle frame. Rejected: DOM cards and taskbar over a drawn
+  desk (two looks, and the light cannot reach them); the old CSS 3D phone (it could not take the desk's light).
+- **The drink key is G** (0.66; decisions 2026-11-19): G for Goblin, the keycap is drawn on the Drink button and the
+  keyboard's G key lights up. M was for Monster. G was free (F is the Priest's ultimate, H the headset).
 - **HP only on the sprites and the skill-bar portraits** (0.45): one value in one place; the party cards show what
   you decide gear with (level, power, "needs gear").
 - **Item windows over the party block, and they slow nothing** (0.46, #49): the fight used to slow to 30% while one

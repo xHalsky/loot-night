@@ -172,7 +172,6 @@ export interface Night {
   bin: CanPose[];                // where they lie in the bin (tonight)
   log: { text: string; color: string; time: string; tag?: string }[];   // the feed (tag: YOU, LOOT, HER, PHONE, GAME, or a name)
   peeking: boolean; peek: number; peekSus: number;   // peek: how open the door is, 0 shut .. 1 = PEEK_CRACK_MAX   // door peek
-  declineHold: boolean; decline: number;   // holding Decline on a ringing call
   phoneDown: number; flipFx: number;       // phone face-down timer, flip animation
   momCallback: number;                     // threat time Mom calls again (0 = none)
   switching: { to: 'rpg' | 'excel'; t: number; max: number } | null;   // alt-tab blackout in progress

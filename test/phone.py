@@ -32,7 +32,8 @@ async def main():
         await ev("g.herThread=[{s:'l',text:'dinner was nice ♥',night:-1,clock:1300},{s:'r',text:'it was ♥',night:-1,clock:1302},{s:'l',text:'going to bed',night:0,clock:1385},{s:'l',text:'dont stay up too late',night:0,clock:1386}]; g.nightsPlayed=1; g.herSeen=2; 0")
         await go('dbgMom'); await pg.wait_for_timeout(200)
         await shot('desk_call', 300)
-        await ev("document.querySelector('[data-phone]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); document.querySelector('[data-phone]').dispatchEvent(new PointerEvent('pointerup',{bubbles:true,button:0})); 0")
+        dp = await pg.evaluate("()=>{const r=document.getElementById('deskPhone').getBoundingClientRect(); return [r.x+r.width/2, r.y+r.height*0.35]}")   # the phone on the desk (V3): a real click
+        await pg.mouse.click(*dp)
         await shot('ring', 700)
         # slide to answer, with the mouse
         c = await pg.evaluate("()=>{const c=document.getElementById('phHand'), r=c.getBoundingClientRect(); return [r.x,r.y,r.width/c.width]}")

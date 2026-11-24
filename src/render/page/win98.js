@@ -88,6 +88,7 @@ function taskbar98(st, t, screen) {
   };
   let x = x0 + 48;
   // the app in front is pressed; the other one carries the key that switches to it (the Tonight note is taped from x 208)
+  if (typeof dhit === 'function') { dhit(x, y0 + 3, 76, 11, 'showRpg', '', 'tab:rpg'); dhit(x + 79, y0 + 3, 76, 11, 'showExcel', '', 'tab:excel'); }
   x += task(x, screen === 'excel' ? 'Loot Night · Tab' : 'Loot Night', lnIcon8, screen !== 'excel', flash) + 3;
   x += task(x, screen === 'excel' ? 'Excel' : 'Excel · Tab', xlIcon8, screen === 'excel', false) + 6;
   // tray: the wallet and the clock in a sunken well
@@ -97,8 +98,9 @@ function taskbar98(st, t, screen) {
   text(zs, tx + 4, y0 + 6, 'tiny', P.g3); glyph('lstroke', tx + 4 + measure(zs, 'tiny') - 1, y0 + 5, P.g3);
   text(cs, tx + tw - 4, y0 + 6, 'tiny', st.witching ? P.crimson : P.u1, { align: 'r' });
   // Sleep: a button with the power glyph, greyed until 23:00
-  const on = st.clock < '20' && st.clock >= '00' ? true : st.clock >= '23';
+  const on = st.sleepOk ?? (st.clock < '20' && st.clock >= '00' ? true : st.clock >= '23');
   const sl = on ? 'Sleep' : 'Sleep (23:00+)', sw = measure(sl, 'tiny') + 17, sx = tx - sw - 3;
+  if (typeof dhit === 'function') { dhit(sx, y0 + 3, sw, 11, 'sleep', '', 'sleep'); dhit(tx, y0 + 3, tw, 11, '', '', st.witching ? 'witching' : 'clock'); }
   w98Raised(sx, y0 + 3, sw, 11);
   glyph('power', sx + 4, y0 + 6, on ? P.u1 : P.u5);
   if (on) text(sl, sx + 12, y0 + 6, 'tiny', P.u1); else { text(sl, sx + 13, y0 + 7, 'tiny', P.moon); text(sl, sx + 12, y0 + 6, 'tiny', P.u5); }
