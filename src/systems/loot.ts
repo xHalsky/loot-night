@@ -9,6 +9,7 @@ import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
 import { coach } from './coach';
 import { noteDrop } from './pacing';
+import { blessPow } from './run';
 import { ENEMY_SLOTS } from '../core/arena';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
@@ -144,7 +145,7 @@ export function dropFromKill(e: Enemy) {
   const x = ENEMY_SLOTS[e.slot]?.x ?? 200;
   if (e.boss) rollBattleDrops(n.floor, { count: T.BOSS_DROPS, minRare: true, at: [x - 20, x, x + 20] });
   else if (e.elite) rollBattleDrops(n.floor, { count: 1, minRare: true, at: [x] });
-  else if (chance(T.DROP_CHANCE)) rollBattleDrops(n.floor, { count: 1, at: [x] });
+  else if (chance(T.DROP_CHANCE * blessPow('supply', T.BLESS_SUPPLY_DROPS))) rollBattleDrops(n.floor, { count: 1, at: [x] });
 }
 /** Once a fight is won: a map or a feather now and then. */
 export function rollBattleExtras() {

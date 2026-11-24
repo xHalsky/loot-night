@@ -6,8 +6,11 @@ import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { rollBattleDrops } from './loot';
-import { spawnCurioFight, healParty } from './battle';
+import { spawnCurioFight } from './battle';
 import { isAway } from './autopilot';
+import { addBlessing, blessCount } from './run';
+import { maxHp } from './stats';
+import { BLESSINGS, type BlessingId } from '../data/blessings';
 
 // Curios in the corridor (docs/design/dungeon.md, #30). The party stops at one during a walk; you choose,
 // and every choice costs something from real life: Noise, time standing still, a real can, Mood-adjacent trouble.
@@ -58,12 +61,9 @@ export function updateCurio(realDt: number) {
 }
 
 /** Can this choice be taken right now? Returns the reason if not. */
-export function curioBlocked(choice: string): string {
-  if (choice === 'offer' && S.g.monsters <= 0) return 'No cans on the desk';
-  if (choice === 'pay' && S.g.gold < vendCost()) return 'Not enough gold';
+export function curioBlocked(_choice: string): string {
   return '';
 }
-export const vendCost = () => T.CURIO_VEND_GOLD * N().floor;
 
 export function chooseCurio(choice: string) {
   const n = N();
@@ -81,14 +81,17 @@ export function chooseCurio(choice: string) {
       else { addBuff({ name: 'Curse', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'curse', floor: true }); toast(CURIO_LINES.curse.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
       break;
     }
-    case 'offer':
-      S.g.monsters--;
-      addBuff({ name: 'Green flame', dmg: T.CURIO_CAN_DMG, speed: T.CURIO_CAN_SPD, t: T.CURIO_CAN_SEC, max: T.CURIO_CAN_SEC, icon: 'blessing' });
-      toast(`The flame takes your offering (one real can) and flares up. Party +${Math.round(T.CURIO_CAN_DMG * 100)}% damage, +${Math.round(T.CURIO_CAN_SPD * 100)}% speed.`, '#6ef06e'); sfx.heal();
-      break;
-    case 'pray':
-      if (chance(0.5)) { addBuff({ name: 'Small blessing', dmg: T.CURIO_PRAY_DMG, speed: 0, t: T.CURIO_PRAY_SEC, max: T.CURIO_PRAY_SEC, icon: 'blessing' }); toast(`A small blessing. Party +${Math.round(T.CURIO_PRAY_DMG * 100)}% damage.`, '#6ef06e'); sfx.heal(); }
-      else { noise(T.CURIO_BURP_NOISE); toast(`The shrine roars. Noise +${T.CURIO_BURP_NOISE}.`, '#ff9a4d'); sfx.bad(); }
+    // run blessings (#52, 1.5b): each lasts until the run ends and has its cost
+    case 'shrine': noise(T.BLESS_SHRINE_NOISE); sfx.bad(); bless('shrine'); break;
+    case 'pilgrim': n.run && (n.run.oath = true); sfx.good(); bless('pilgrim'); break;
+    case 'supply': bless('supply'); S.g.heroes.forEach(h => { h.hp = Math.min(h.hp, maxHp(h)); }); sfx.heal(); break;
+    case 'altar': bless('altar'); sfx.bad(); break;
+    case 'moonwell': n.flow = T.FLOW_MIN; bless('moonwell'); sfx.heal(); break;
+    case 'ritual': bless('ritual'); sfx.windup(); break;
+    case 'potion':
+      noise(T.CURIO_KICK_NOISE); sfx.slam();
+      if (chance(0.5)) bless('potion');
+      else { S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); }
       break;
     case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking. Stay on this screen.', '#8fd0ff'); return;
     case 'fight': return trollFight();
@@ -101,15 +104,16 @@ export function chooseCurio(choice: string) {
       toast('You take one item. Nobody saw. Probably.', '#f2b84b'); sfx.coin();
       break;
     }
-    case 'pay': S.g.gold -= vendCost(); healParty(T.CURIO_VEND_HEAL); toast(`Potions for everyone. Party heals ${Math.round(T.CURIO_VEND_HEAL * 100)}%.`, '#6fcf7f'); sfx.coin(); break;
-    case 'kick':
-      noise(T.CURIO_KICK_NOISE);
-      if (chance(0.5)) { healParty(T.CURIO_VEND_HEAL); toast(`CLINK. Potions roll out. Party heals. Noise +${T.CURIO_KICK_NOISE}.`, '#6fcf7f'); sfx.slam(); }
-      else { toast(`CRASH. Broken glass, nothing else. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); sfx.slam(); }
-      break;
     case 'leave': toast('You leave it alone.', '#a999bd'); break;
   }
   endCurio();
+}
+
+/** A run blessing joins the run (it shows in the buffs row with a dashed frame and "run"). */
+function bless(id: BlessingId) {
+  addBlessing(id);
+  const b = BLESSINGS[id], k = blessCount(id);
+  toast(`${b.name}${k > 1 ? ` x${k}` : ''}, this run: ${b.got}. ${b.cost}.`, '#6ef06e');
 }
 
 function trollFight() {
@@ -153,7 +157,7 @@ export function curioFloorEnd() { const n = N(); n.partyBuffs = n.partyBuffs.fil
 
 /** A battle ended: "next fight" buffs (Loved) are used up. */
 export function battleEnded() { const n = N(); n.partyBuffs = n.partyBuffs.filter(b => b.fights === undefined || --b.fights > 0); }
-export const partyCrit = () => N().partyBuffs.reduce((s, b) => s + (b.crit ?? 0), 0);
+export const partyCrit = () => N().partyBuffs.reduce((s, b) => s + (b.crit ?? 0), 0) + T.BLESS_ALTAR_CRIT * blessCount('altar');
 export const curioDmgMult = () => N().partyBuffs.reduce((m, b) => m * (1 + b.dmg), 1);
 export const curioSpeedMult = () => N().partyBuffs.reduce((m, b) => m * (1 + b.speed), 1);
 export const curioDef = (c: CurioState | null): CurioDef | undefined => c ? CURIO_BY_ID[c.id] : undefined;
@@ -161,7 +165,6 @@ export const curioDef = (c: CurioState | null): CurioDef | undefined => c ? CURI
 /** Button text with the numbers filled in. */
 export function curioText(s: string): string {
   return s.replace('{pick}', String(T.CURIO_PICK_SEC)).replace('{smash}', String(T.CURIO_SMASH_NOISE)).replace('{groan}', String(T.CURIO_GROAN_NOISE))
-    .replace('{canDmg}', String(Math.round(T.CURIO_CAN_DMG * 100))).replace('{canSpd}', String(Math.round(T.CURIO_CAN_SPD * 100))).replace('{canSec}', String(T.CURIO_CAN_SEC))
-    .replace('{burp}', String(T.CURIO_BURP_NOISE)).replace('{sneak}', String(T.CURIO_SNEAK_SEC)).replace('{roar}', String(T.CURIO_ROAR_NOISE))
-    .replace('{vendGold}', String(vendCost())).replace('{vendHeal}', String(Math.round(T.CURIO_VEND_HEAL * 100))).replace('{kick}', String(T.CURIO_KICK_NOISE));
+    .replace('{bell}', String(T.BLESS_SHRINE_NOISE)).replace('{sneak}', String(T.CURIO_SNEAK_SEC)).replace('{roar}', String(T.CURIO_ROAR_NOISE))
+    .replace('{kick}', String(T.CURIO_KICK_NOISE));
 }

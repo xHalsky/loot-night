@@ -3,7 +3,7 @@ import { S, N, type MapKind } from '../core/state';
 import { spawnBattle, updateBattle, reviveHero } from './battle';
 import { rollBattleDrops, rollBattleExtras, removeEntry, entryName, moveFloorLoot, sweepFloorLoot } from './loot';
 import { RANK_X, ENEMY_SLOTS, MID_SLOT, LOOTER_REACH } from '../core/arena';
-import { gainGold, gainSouls, startRun, bankRun, loseRun } from './run';
+import { gainGold, gainSouls, startRun, bankRun, loseRun, blessCount } from './run';
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
@@ -80,6 +80,9 @@ export function updateDungeon(realDt: number) {
   if (n.location !== 'dungeon') return;
   const dt = realDt;   // an open item window does not slow the fight: gearing is part of the juggle (#49)
   if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); sfx.goblinLost(); } }
+  // the Blood pact (#52, 1.5b): heroes bleed outside fights, never below 1 HP
+  const pact = blessCount('altar');
+  if (pact && n.phase !== 'battle') S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, h.hp - maxHp(h) * T.BLESS_ALTAR_DRAIN * pact * realDt); });
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt;
   if (n.phase === 'walk' && curioDue()) { startCurio(); return; }
@@ -150,12 +153,12 @@ export function useFeather(id: string) {
   toast(`${downed.name} revived!`, '#ff7ab8'); sfx.heal();
 }
 
-export function canLeaveDungeon() { const n = N(); return n.location === 'dungeon' && n.phase !== 'battle'; }
+export function canLeaveDungeon() { const n = N(); return n.location === 'dungeon' && n.phase !== 'battle' && !n.run?.oath; }
 
 /** The town portal: the run is banked (#52, 1.4). */
 export function returnToTown() {
   const n = N();
-  if (!canLeaveDungeon()) { toast('Finish the battle first.', '#a999bd'); return; }
+  if (!canLeaveDungeon()) { toast(n.run?.oath ? "The Pilgrim's oath: no portal until the next boss is dead." : 'Finish the battle first.', '#a999bd'); return; }
   n.clock += T.COST_TRAVEL_MIN;
   sweepFloorLoot();
   bankRun();

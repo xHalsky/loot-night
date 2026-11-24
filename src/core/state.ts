@@ -188,7 +188,7 @@ export interface Night {
 }
 
 /** A run (#52, 1.4): from the town portal until the town portal (banked) or a wipe (lost). */
-export interface RunState { startFloor: number; deepest: number; gold: number; items: number; souls: number }
+export interface RunState { startFloor: number; deepest: number; gold: number; items: number; souls: number; blessings: string[]; oath: boolean }   // blessings: run blessings (data/blessings.ts), stacking; oath: the Pilgrim's, no portal till the boss
 
 export interface Results {
   ending: 'sleep' | 'dawn' | 'unplugged';

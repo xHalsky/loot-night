@@ -90,10 +90,25 @@ the ✕ or "walk past" leaves at once. Curio time is your time: the night clock 
 |---|---|---|
 | Locked chest | Pick the lock: 8 s standing still, quiet | Smash it: instant, Noise +25 |
 | Sealed coffin | Open: Noise +5; 50% gold (20 x floor), 30% a rare, 20% a curse (party -15% damage until the next floor) | Leave it |
-| Shrine of the green flame | Make an offering (costs a real Goblin Fuel can from the desk): party +30% damage, +20% speed for 60 s | Pray: 50% +15% damage for 30 s, 50% it roars (Noise +10) |
 | Snoring troll on a loot pile | Sneak: 6 s on the RPG screen; alt-tab (or the monitor going off) wakes him | Fight: a mini-boss (330 HP at floor 1 scale), Noise +15 |
 | Guild bank vault | Take one item: a free rare; 40 to 90 s later Magoo reads the log in guild chat and sulks (mage -20% damage for 45 s) | Close it |
-| Potion cart | Pay 12 gold x floor: party heals 30% | Shake it: Noise +15, 50% the same heal, else broken glass |
+
+
+**Run blessings** (#52, 1.5b; `src/data/blessings.ts`, numbers `BLESS_*`). Curios are their only source. A
+blessing lasts until the run ends (banked or wiped), stacks with itself, and every one has a cost that reaches real
+life or the run. Each of these curios offers its bargain and "Leave it" (away, the party takes the bargain
+`CURIO_AWAY_RECKLESS` of the time, cost included). In the buffs row a blessing is the curio's icon in a dashed frame
+with "run" (x2 when stacked), right-most; hovering says what you got and what it cost; the run end card lists them.
+
+| Curio | Bargain | Run blessing | Cost |
+|---|---|---|---|
+| Wayside Shrine | Pray | +20% damage | The bell rings: Noise +15 |
+| Pilgrim | Swear his oath | Cooldowns -15% | No town portal until the next boss is dead |
+| Supply Cart | Eat the rations | +25% item drops | Party max HP -10% |
+| Potion cart | Shake it | 50/50: +30% healing, or broken glass (the party loses 10% HP now) | Noise +15 |
+| Blood Altar | Bleed on it | +30 crit | Heroes lose 1% HP a second outside fights (never below 1) |
+| Moonwell | Drink | Ultimates charge 40% faster | Flow drops to x1 |
+| Ritual Circle | Join the chant | Souls +50% | Enemies +20% HP |
 
 Strongbox and troll both pay 2 items (the first rare or better); the troll fight adds normal battle drops.
 His fight is not one of the floor's three battles and never counts as the boss. Away when the party reaches
@@ -222,6 +237,9 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   night. Rejected: longer cooldowns (the party would feel slow on the screen you are risking it all for) and
   more Noise per skill (the bed phase would end in a wake-up every time).
 
+- **Run blessings replace the short curio buffs** (0.54, #52 1.5b). A buff that ran out in 30 to 60 s was decided by
+  the clock, not by the run; a blessing that lasts the run and has a real cost makes the curio a bet on how far this
+  run goes. The green flame's can offering and the potion cart's "Pay" are gone (the bargain and "Leave it" only).
 - **Packs, runs and banking** (0.53, #52 1.3 and 1.4). Encounters are packs of six on screen with the rest waiting,
   so a fight reads as a mob; drops come per kill where the enemy fell, and the walk picks them up (the loot pause is
   gone). The corpse run is gone: a wipe now costs the run's unbanked loot, which makes the town portal a choice

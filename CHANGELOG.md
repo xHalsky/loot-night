@@ -3,6 +3,19 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.54.0 (2026-11-24)
+
+- **Run blessings** (#52, 1.5b). Curios are their only source; a blessing lasts until the run ends, stacks, and
+  every one has a cost. Five new curios and two reworked, each with its bargain and "Leave it": the Wayside Shrine
+  (+20% damage, the bell: Noise +15), the Pilgrim (cooldowns -15%, no town portal until the next boss is dead), the
+  Supply Cart (+25% drops, max HP -10%), the Potion cart (50/50: +30% healing, or broken glass for 10% HP; Noise
+  +15), the Blood Altar (+30 crit, heroes bleed 1% HP a second outside fights), the Moonwell (ultimates charge 40%
+  faster, Flow drops to x1), the Ritual Circle (Souls +50%, enemies +20% HP). Away, the party may take the bargain
+  on its own. Blessings sit right-most in the buffs row (dashed frame, "run" or x2); the run end card lists them.
+  The green flame's can offering and the cart's "Pay" are gone; the chest, coffin, bank and troll stay as they were.
+- Sims (good, 2 runs): depth 6 to 8, Souls 140 to 198 (the chant), encounters 9 to 13 s. New curios have stand-in
+  sprites until Paweł's.
+
 ## 0.53.0 (2026-11-24)
 
 The RPG on its own, part 2 (#52, steps 1.3 and 1.4).

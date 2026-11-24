@@ -11,6 +11,7 @@ import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
 import { RANK_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
 import { unbanked } from '../systems/run';
+import { BLESSINGS, type BlessingId } from '../data/blessings';
 
 /** The live battle area replaces the old one whenever the party is in the dungeon (not the floor map). */
 export function liveActive(): boolean {
@@ -93,7 +94,11 @@ function rarityIdxOf(color: string): string {
 
 // buffs, right to left from the top-right corner (grid doc §5)
 function buffList() {
-  const n = N(), out: { icon: string; label: string; bad?: boolean; sweep?: number; tip: string }[] = [];
+  const n = N(), out: { icon?: string; picon?: string; run?: boolean; label: string; bad?: boolean; sweep?: number; tip: string }[] = [];
+  // run blessings sit right-most: the curio's icon in a dashed frame, "run" (grid doc §5c)
+  const counts = new Map<string, number>();
+  for (const b of n.run?.blessings ?? []) counts.set(b, (counts.get(b) ?? 0) + 1);
+  for (const [id, k] of counts) { const d = BLESSINGS[id as BlessingId]; out.push({ picon: d.icon, run: true, label: k > 1 ? `x${k}` : 'run', tip: `${d.name}, this run: ${d.got}. Cost: ${d.cost}.` }); }
   const add = (icon: string, left: number, max: number, tip: string, bad = false) => out.push({ icon, label: `${Math.ceil(left)}s`, bad, sweep: max ? 1 - left / max : undefined, tip });
   if (n.boost > 0) add('can', n.boost, T.MONSTER_BOOST_SEC, 'Goblin Fuel: party acts 30% faster');
   if (n.crash > 0) add('crash', n.crash, T.MONSTER_CRASH_SEC, 'Sugar crash: party slower', true);
@@ -108,7 +113,7 @@ function buffList() {
   if (n.goodDog > 0) add('judge', n.goodDog, T.GOOD_BOY_SEC, `Good Boy: loot goblins x${T.GOOD_BOY_GOBLIN}`);
   if (n.sulk > 0) add('crash', n.sulk, T.CURIO_SULK_SEC, 'Magoo sulks about the guild bank', true);
   if (n.guilt > 0) add('crash', n.guilt, T.GUILT_SEC, 'Guilt: party -10% damage', true);
-  return out.slice(0, 6);
+  return out.slice(0, 7);
 }
 
 // the curio's parchment card in the band, its two choices (the page's layout: 85 x 20 buttons)

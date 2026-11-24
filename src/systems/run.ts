@@ -1,5 +1,6 @@
 import { T } from '../config/tuning';
 import { S, N, type RunState } from '../core/state';
+import type { BlessingId } from '../data/blessings';
 import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');
 
@@ -13,13 +14,20 @@ export function gainGold(amount: number) {
 }
 /** Souls the run earns go straight to the pool (one pool for the trees and the buildings); the run counts them. */
 export function gainSouls(amount: number) {
+  amount = Math.round(amount * blessPow('ritual', T.BLESS_RITUAL_SOULS));   // the chant
   S.g.mats += amount;
   const n = S.g.night;
   if (n?.run) n.run.souls += amount;
 }
+/** How many of this run blessing the run carries (they stack). */
+export function blessCount(id: BlessingId): number { const r = S.g.night?.run; return r ? r.blessings.filter(b => b === id).length : 0; }
+/** (1 + k)^count for a stacking run blessing: the multiplier its rule applies. */
+export function blessPow(id: BlessingId, k: number): number { return (1 + k) ** blessCount(id); }
+export function addBlessing(id: BlessingId) { const r = S.g.night?.run; if (r) r.blessings.push(id); }
+
 export function startRun(floor: number) {
   const n = N();
-  n.run = { startFloor: floor, deepest: floor, gold: 0, items: 0, souls: 0 };
+  n.run = { startFloor: floor, deepest: floor, gold: 0, items: 0, souls: 0, blessings: [], oath: false };
 }
 /** What the run would bank or lose now: items and maps in the bag and on the heroes picked up this run. */
 export function unbanked(): { items: number; gold: number } {

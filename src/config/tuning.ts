@@ -155,11 +155,17 @@ export const T = {
   CURIO_PICK_SEC: 8, CURIO_SMASH_NOISE: 25, CURIO_BOX_DROPS: 2,
   CURIO_GROAN_NOISE: 5, CURIO_MAIL_GOLD: 20, CURIO_MAIL_ODDS: [0.5, 0.3] as [number, number],   // coffin: gold, rare; the rest a curse
   CURIO_FEE_DMG: 0.15,            // coffin curse: party damage down until the next floor
-  CURIO_CAN_DMG: 0.3, CURIO_CAN_SPD: 0.2, CURIO_CAN_SEC: 60,   // offering a real can
-  CURIO_PRAY_DMG: 0.15, CURIO_PRAY_SEC: 30, CURIO_BURP_NOISE: 10,
   CURIO_SNEAK_SEC: 6, CURIO_ROAR_NOISE: 15, CURIO_TROLL_DROPS: 2,
   CURIO_BANK_NOTICE_SEC: [40, 90] as [number, number], CURIO_SULK_DMG: 0.2, CURIO_SULK_SEC: 45,   // Magoo sulks: mage damage down
-  CURIO_VEND_GOLD: 12, CURIO_VEND_HEAL: 0.3, CURIO_KICK_NOISE: 15,   // vend gold is per floor
+  CURIO_KICK_NOISE: 15,           // shaking the potion cart
+  // Run blessings (#52, 1.5b): each lasts the run and stacks (multiplies) with itself
+  BLESS_SHRINE_DMG: 0.2, BLESS_SHRINE_NOISE: 15,
+  BLESS_PILGRIM_CD: 0.15,
+  BLESS_SUPPLY_DROPS: 0.25, BLESS_SUPPLY_HP: 0.1,
+  BLESS_POTION_HEAL: 0.3, BLESS_POTION_GLASS: 0.1,   // the other half: broken glass, the party loses 10% HP now
+  BLESS_ALTAR_CRIT: 30, BLESS_ALTAR_DRAIN: 0.01,      // crit points; HP share a second outside fights
+  BLESS_MOON_ULT: 0.4,
+  BLESS_RITUAL_SOULS: 0.5, BLESS_RITUAL_HP: 0.2,
   // Pre-emptive actions (docs/design/preemptive.md, #19). Content: data/preemptive.ts.
   PRE_SECOND_MULT: 0.5,           // the 2nd use of the same action in a night has this much effect
   PRE_SUSPICIOUS_AT: 3,           // ...from this use on she gets suspicious: no effect, the next visit is a Peek

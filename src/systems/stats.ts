@@ -1,3 +1,4 @@
+import { blessCount } from './run';
 import { T } from '../config/tuning';
 import { S, type Hero, type Stat, type Item } from '../core/state';
 import { HERO_BASE } from '../data/heroes';
@@ -28,7 +29,8 @@ export function heroStats(h: Hero, gearOverride?: Partial<Record<string, Item | 
   return out;
 }
 
-export const maxHp = (h: Hero) => heroStats(h).hp;
+/** Max HP; the Rations run blessing takes BLESS_SUPPLY_HP of it per stack (#52, 1.5b). */
+export const maxHp = (h: Hero) => Math.round(heroStats(h).hp * (1 - T.BLESS_SUPPLY_HP) ** blessCount('supply'));
 
 // ---------- Power (Destiny-style Light): one number for how strong a hero's gear is ----------
 /** An item's power: item level x rarity, the same scale that sets its stats. Unidentified items give no

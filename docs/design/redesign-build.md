@@ -16,6 +16,7 @@ gameplay steps). This file says how the build gets there and where it stands. It
 - **#52 1.3 and 1.4, 0.53.0:** packs of six on screen with a reserve, drops per kill, no loot pause, runs from a
   checkpoint picker, unbanked loot, wipes that lose the run, Souls. The run card and the floor picker are on the
   old town drawing until V2 reaches the town.
+- **#52 1.5b, 0.54.0:** run blessings from curios (dungeon.md).
 
 ## Approach
 

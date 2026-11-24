@@ -3,7 +3,7 @@ import { S, N, type Enemy, type Hero, type VfxKind, type MarkId } from '../core/
 import { ENEMIES, BOSSES, ENEMY_BY_ID, bossFor, type EnemyDef } from '../data/enemies';
 import { ABILITIES, ULT_SLOT } from '../data/heroes';
 import { pick, rand, chance } from '../core/rng';
-import { gainGold } from './run';
+import { gainGold, blessPow, blessCount } from './run';
 import { heroStats, maxHp, xpNeeded } from './stats';
 import { floatText, toastAs, fmtNum } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
@@ -35,7 +35,7 @@ function vfx(kind: VfxKind, at: { x: number; y: number }, from?: { x: number; y:
 
 function makeEnemy(def: EnemyDef, floor: number, elite: boolean, slot = 0, pack = false): Enemy {
   const packM = pack && !def.boss ? 1 : 0;   // a pack member is weaker than a lone enemy (#52, 1.3)
-  const hpM = T.ENEMY_HP_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1) * (packM ? T.PACK_HP_MULT : 1);   // compounding (#52, 1.2)
+  const hpM = T.ENEMY_HP_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1) * (packM ? T.PACK_HP_MULT : 1) * blessPow('ritual', T.BLESS_RITUAL_HP);   // compounding (#52, 1.2); the chant
   const atkM = T.ENEMY_ATK_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1) * (packM ? T.PACK_ATK_MULT : 1);
   const hp = Math.round(def.hp * hpM);
   const e: Enemy = { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), aliveSec: 0, stunned: 0, boss: !!def.boss, flash: 0, slot };
@@ -140,7 +140,7 @@ function castAbility(h: Hero, slot: number) {
   const mult = heroDamageMult(h);
   h.queued = null;
   if (slot === ULT_SLOT) return castUlt(h, st, mult, me);
-  h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]);
+  h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim');
   n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);
   sfx.ability();
   const A = ABILITIES[h.id][slot];
@@ -219,7 +219,7 @@ const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / max
 
 function heroDamageMult(h?: Hero): number {
   const n = N();
-  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * curioDmgMult()
+  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * curioDmgMult() * blessPow('shrine', T.BLESS_SHRINE_DMG)
     * (h?.id === 'mage' && n.sulk > 0 ? 1 - T.CURIO_SULK_DMG : 1);   // Magoo read the guild bank log
 }
 
@@ -255,6 +255,7 @@ function healHero(h: Hero, amount: number) {
   vfx('heal', heroCenter(S.g.heroes.indexOf(h)), undefined, 0.8);
   const mx = maxHp(h);
   const before = h.hp;
+  amount *= blessPow('potion', T.BLESS_POTION_HEAL);   // the Potions run blessing
   if (N().floorMap === 'cursed') amount *= T.CURSED_HEAL;
   h.hp = Math.min(mx, h.hp + Math.round(amount));
   const i = S.g.heroes.indexOf(h);
@@ -469,7 +470,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   const flowK = 1 + T.FLOW_SPEED * clamp01((n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN));
   for (const h of S.g.heroes) {
     if (h.downed) continue;
-    h.ult = Math.min(1, h.ult + dt / T.ULT_CHARGE_SEC);   // the ultimate charges only during fights
+    h.ult = Math.min(1, h.ult + dt / T.ULT_CHARGE_SEC * blessPow('moonwell', T.BLESS_MOON_ULT));   // the ultimate charges only during fights
     h.atb += atbRate(heroStats(h).speed) * dt * speedMult() * curioSpeedMult() * flowK;
     if (h.atb >= 100) { h.atb -= 100; heroAct(h); }
   }
@@ -493,6 +494,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
         n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b');
         n.enemies.forEach(x => { if (x !== e && x.hp > 0) { x.hp = 0; x.maxHp = 0; } });   // without the boss the rest run
         n.reserve = [];
+        if (N().run) N().run!.oath = false;   // the Pilgrim's oath is kept: the portal opens again
       }
       e.maxHp = 0;
     }

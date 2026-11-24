@@ -6,6 +6,7 @@ import { CITY_BY_ID, type CityId } from '../data/city';
 import { MAP_INFO } from '../data/items';
 import { bossFor, ENEMY_BY_ID } from '../data/enemies';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
+import { BLESSINGS, type BlessingId } from '../data/blessings';
 import { RARITY_COLOR } from '../data/items';
 import { entryName, entryValue } from '../systems/loot';
 import { vendorValue, salvageYield, listValue } from '../systems/town';
@@ -221,7 +222,8 @@ function runCardHtml(n: NonNullable<typeof S.g.night>): string {
   return `<div class="run-card ${c.banked ? 'ok' : 'lost'}"><b>${c.banked ? 'Run banked' : 'PARTY WIPE'}</b>
     <span>Deepest floor ${c.deepest}</span>
     <span>${c.banked ? `Banked ${c.items} items · ${c.gold} gold` : `Lost ${c.items} items · ${c.gold} gold`}</span>
-    <span>${c.banked ? '' : 'Kept '}${c.souls} Souls</span></div>`;
+    <span>${c.banked ? '' : 'Kept '}${c.souls} Souls</span>
+    ${c.blessings.length ? `<span class="dim">Blessings: ${[...new Set(c.blessings)].map(id => BLESSINGS[id as BlessingId].name).join(', ')}</span>` : ''}</div>`;
 }
 export function monUiHtml(): string {
   const n = S.g.night;
