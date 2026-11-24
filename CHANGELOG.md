@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.62.2 (2026-11-24)
+
+- **The looter runs for the loot** (#52 1.3, the last open piece of step 1). On the walk Garrote (the Knight on night
+  1) runs ahead to each drop, grabs it and runs back into his rank; the walk waits for him. Before, the front hero
+  just walked over the drops, so nobody looked like the looter.
+- **The F1 pacing line has everything 1.1 asked for:** the run's length and its Souls so far, and what each hero's
+  next stat node costs, besides encounter and floor time and drops per minute. Q4's income joins it in step 4.
+- The 15-minute RPG session (handoff step 1's gate) moves to after the redesign, with the number tuning (Paweł).
+- Sims: good bot sleeps, caught 0, runs end on floors 5 and 6, 3 nodes, first legendary at drop 40; idle bot
+  unplugged, 2 wipes (as 0.62).
+
 ## 0.62.1 (2026-11-24)
 
 - **The Town portal plate makes room for what it banks.** It grows to fit "bank 12 · 1240 g" (it was 54 px and the

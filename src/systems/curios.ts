@@ -30,7 +30,7 @@ export function planCurios() {
 /** During a walk: is it time to stop at a curio? Halfway through the walk before a planned battle. */
 export function curioDue(): boolean {
   const n = N();
-  return n.phase === 'walk' && n.curioPlan.includes(n.battleIdx) && n.phaseT >= T.WALK_SEC * 0.5 && !n.floorLoot.length;
+  return n.phase === 'walk' && n.curioPlan.includes(n.battleIdx) && n.phaseT >= T.WALK_SEC * 0.5 && !n.floorLoot.length && !n.looterDx;
 }
 
 export function startCurio() {

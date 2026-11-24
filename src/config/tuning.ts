@@ -166,6 +166,7 @@ export const T = {
   BAG_SIZE: 18,
   TREASURY_ROW: 6,                // the bag's last row: the Treasury opens 2 slots per level; the rest show a lock (#49)
   BAG_NEW_SEC: 1.5,               // a fresh item's bag slot shines with NEW this long
+  LOOTER_RUN_PX: 150,   // grid px/s: the looter (Garrote, or the Knight on night 1) runs ahead to each drop and back (#52 1.3)
   LOOT_FLY_SEC: 1.6, LOOT_FLY_LEGENDARY_SEC: 2.6, LOOT_FLY_STAGGER_SEC: 0.3,   // picked-up loot: its name flies up from the floor (#49)
   POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots
   POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag

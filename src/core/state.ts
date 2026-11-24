@@ -146,6 +146,7 @@ export interface Night {
   action: 'none' | 'miniGame' | 'pre';   // pre: busy with a pre-emptive action (systems/preemptive.ts)
   dropQueue: BagEntry[];
   floorLoot: { entry: BagEntry; x: number; t: number }[];   // drops lying on the dungeon floor (screen x)
+  looterDx?: number;             // the looter's run ahead of his rank to the loot and back (grid px, #52 1.3)
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
   lootFly: { x: number; text: string; color: string; t: number; max: number; delay: number; dx: number }[];   // picked-up loot: names flying up from the floor (#49)
   dropPopup: { entry: BagEntry; t: number } | null;

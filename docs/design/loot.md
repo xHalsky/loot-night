@@ -90,9 +90,12 @@ while active.
 **Loot on the floor.** Drops land where each enemy fell (spread out when several share a spot) and
 bounce once. Each shows a bundle with a gleam, an additive beam in its rarity colour (taller and wider
 for better rarities) with a soft halo, a glow pool, rising sparkles and a pool of light in the darkness.
-Drops fall where the enemy died; there is no loot pause: the walk after the fight lasts until the front hero has
-walked over every drop (at least `WALK_SEC`), the party walking faster (75 px/s instead of 40) while loot is on the
-floor. A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
+Drops fall where the enemy died; there is no loot pause. On the walk after the fight **the looter** (Garrote once he
+has joined, the Knight before; whoever is standing in front if Garrote is down) runs ahead of his rank to the nearest
+drop at `LOOTER_RUN_PX` (150 grid px/s), grabs it, goes on to the next, and runs back into rank. The walk lasts until
+every drop is picked up and he is back (at least `WALK_SEC`), the party walking faster (75 px/s instead of 40) while
+loot is on the floor; what reaches his rank on its own is picked up there. (0.62.2; before it the front hero just
+walked over the drops, which hid who loots. `test/looter.py` shoots the run.) A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
 shines with NEW (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
 leave by portal or the floor ends. Everything picked up in a run is unbanked (a dashed mark on its bag cell) until
 the town portal banks it; a wipe loses it ([dungeon.md](dungeon.md), runs).

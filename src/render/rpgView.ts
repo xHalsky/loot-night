@@ -22,6 +22,7 @@ import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
 import { RANK_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
 import { unbanked } from '../systems/run';
+import { looterIndex } from '../systems/loot';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
 
 /** The live battle area replaces the old one whenever the party is in the dungeon (the floor map too), and in town
@@ -210,8 +211,8 @@ function pathsView(hov: number, hovT: number) {
 export interface PartyPointer { drag: { from: number; x: number; y: number; over: number } | null; hover: number }
 /** Where a hero stands now: his rank's x, or on the way there after a swap, a Hook or a Shove. */
 export function heroX(i: number): number {
-  const h = S.g.heroes[i];
-  if (!h?.moving || h.from == null) return RANK_X[i];
+  const h = S.g.heroes[i], run = N()?.looterDx && i === looterIndex() ? Math.round(N().looterDx!) : 0;   // the looter's run (#52 1.3)
+  if (!h?.moving || h.from == null) return RANK_X[i] + run;
   const k = 1 - h.moving / T.SWAP_SEC, e = k * k * (3 - 2 * k);
   return Math.round(RANK_X[h.from] + (RANK_X[i] - RANK_X[h.from]) * e);
 }

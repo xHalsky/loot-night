@@ -2,7 +2,7 @@ import { T } from '../config/tuning';
 import { S, N, type MapKind } from '../core/state';
 import { spawnBattle, updateBattle, reviveHero } from './battle';
 import { rollBattleDrops, rollBattleExtras, removeEntry, entryName, moveFloorLoot, sweepFloorLoot } from './loot';
-import { RANK_X, ENEMY_SLOTS, MID_SLOT, LOOTER_REACH } from '../core/arena';
+import { ENEMY_SLOTS, MID_SLOT } from '../core/arena';
 import { gainGold, gainSouls, startRun, bankRun, loseRun, blessCount } from './run';
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
@@ -129,8 +129,8 @@ export function updateDungeon(realDt: number) {
   if (n.phase === 'walk') {   // the walk picks up the loot (#52, 1.3: no loot pause); it lasts at least WALK_SEC
     const sp = n.floorLoot.length ? 75 : 40;     // hurry over to the loot
     n.walkScroll += dt * sp;
-    moveFloorLoot(dt * sp * 0.7, RANK_X[0] + LOOTER_REACH);   // the camera's pace on the grid (render/rpgView.ts)
-    if (n.phaseT >= T.WALK_SEC && !n.floorLoot.length) {
+    moveFloorLoot(dt * sp * 0.7, dt);   // the camera's pace on the grid (render/rpgView.ts); the looter runs to it
+    if (n.phaseT >= T.WALK_SEC && !n.floorLoot.length && !n.looterDx) {   // until the pickup is done and he is back
       if (n.battleIdx >= T.BATTLES_PER_FLOOR) { floorEnd(); return; }
       spawnBattle(n.floor, isBossBattle(), n.floorMap === 'elite');
       n.phase = 'battle'; n.phaseT = 0;
@@ -168,7 +168,7 @@ function wipe() {
   n.noise = Math.min(100, n.noise + T.ECHO_SLAM_NOISE);   // echo: he slams the desk, the dog comes to see
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
   toast(`You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
-  n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.goblin = null;
+  n.floorLoot = []; n.looterDx = 0; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.goblin = null;
   loseRun();
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.atb = 0; h.queued = null; });
   n.clock += T.COST_TRAVEL_MIN;
