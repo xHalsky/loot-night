@@ -217,8 +217,8 @@ function units(c: CanvasRenderingContext2D, t: number) {
     }
     bar(c, x - 4, y - 18, e.boss ? 92 : 68, 9, e.hp / e.maxHp, '#e0524a');
     if (e.boss) text(c, e.name, x + 42, y - 24, 12, '#f2b84b', 'center', 600);
-    const over = e.turnsAlive - T.FURY_AFTER_TURNS;
-    if (over > 0) text(c, `FURY +${Math.round(over * T.FURY_PER_TURN * 100)}%`, x + 30, y - 30, 10, '#ffb3a8', 'center');
+    const over = e.aliveSec - T.FURY_AFTER_SEC;
+    if (over > 0) text(c, `FURY +${Math.round(over * T.FURY_PER_SEC * 100)}%`, x + 30, y - 30, 10, '#ffb3a8', 'center');
     if (e.stunned > 0) text(c, 'STUN', x + 30, y - 24, 11, '#8fb3ff', 'center');
     if (e.enraged) text(c, 'ENRAGED', x + 42, y + 2 + Math.sin(t * 10) * 2, 12, '#ff5a3a', 'center', 700);
     if (e.per) text(c, `x${bodies(e)}`, x + 62, y - 8, 11, '#efe6cf', 'right', 700);

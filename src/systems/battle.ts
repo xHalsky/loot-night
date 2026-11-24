@@ -1,15 +1,15 @@
 import { T } from '../config/tuning';
 import { S, N, type Enemy, type Hero, type VfxKind, type MarkId } from '../core/state';
 import { ENEMIES, BOSSES, ENEMY_BY_ID, bossFor, type EnemyDef } from '../data/enemies';
-import { ABILITIES } from '../data/heroes';
+import { ABILITIES, ULT_SLOT } from '../data/heroes';
 import { pick, randi, rand, chance } from '../core/rng';
 import { heroStats, maxHp, xpNeeded } from './stats';
-import { floatText, toastAs } from '../core/fx';
+import { floatText, toastAs, fmtNum } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { speedMult } from './tired';
 import { CD_PCT } from '../data/city';
-import { isAway, autopilotPull, autopilotHurt } from './autopilot';
+import { isAway, autopilotPull } from './autopilot';
 import { MARKS } from '../data/marks';
 import { overtimeGold } from './affixes';
 import { curioDmgMult, curioSpeedMult, partyCrit } from './curios';
@@ -19,7 +19,7 @@ export const HERO_X = [208, 124, 40];   // knight in front (right), healer at th
 export const ENEMY_X = [380, 457, 534];
 export const UNIT_Y = 212;
 let enemyUid = 1;
-// A multi-hit skill (Storm, Rally) is one noisy moment: its crits add Noise once, its extra actions don't clack.
+// A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once.
 let loudOnce = false, critHeard = false;
 
 // Visual effects on the monitor (docs/design/dungeon.md: every action must be visible).
@@ -30,10 +30,10 @@ function vfx(kind: VfxKind, at: { x: number; y: number }, from?: { x: number; y:
 }
 
 function makeEnemy(def: EnemyDef, floor: number, elite: boolean): Enemy {
-  const hpM = (1 + T.ENEMY_HP_PER_FLOOR * (floor - 1)) * (elite ? T.ELITE_MULT : 1);
-  const atkM = (1 + T.ENEMY_ATK_PER_FLOOR * (floor - 1)) * (elite ? T.ELITE_MULT : 1);
+  const hpM = T.ENEMY_HP_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1);   // compounding (#52, 1.2)
+  const atkM = T.ENEMY_ATK_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1);
   const hp = Math.round(def.hp * hpM);
-  const e: Enemy = { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), turnsAlive: 0, stunned: 0, boss: !!def.boss, flash: 0 };
+  const e: Enemy = { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), aliveSec: 0, stunned: 0, boss: !!def.boss, flash: 0 };
   if (def.role === 'shield') e.shield = true;
   if (def.role === 'swarm') e.per = hp / def.stacks!;
   meet(def);
@@ -58,7 +58,7 @@ export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
     const count = randi(2, 3);
     n.enemies = Array.from({ length: count }, () => makeEnemy(pick(pool), floor, elite));
   }
-  if (isAway()) { n.enemies.forEach(e => { e.atb = rand(...T.AUTOPILOT_AMBUSH_ATB); }); autopilotPull(); }
+  if (isAway()) autopilotPull();
 }
 export { BOSSES };
 
@@ -66,13 +66,15 @@ export { BOSSES };
 export function spawnCurioFight(def: EnemyDef) {
   const n = N();
   n.enemies = [makeEnemy(def, n.floor, n.floorMap === 'elite')];
-  if (isAway()) { n.enemies[0].atb = rand(...T.AUTOPILOT_AMBUSH_ATB); autopilotPull(); }
+  if (isAway()) autopilotPull();
 }
 /** Heals every living hero for a share of their max HP. */
 export function healParty(pct: number) { aliveHeroes().forEach(h => healHero(h, maxHp(h) * pct)); }
 
 export const aliveHeroes = () => S.g.heroes.filter(h => !h.downed);
-export const abilityUnlocked = (h: Hero, slot: number) => slot <= 3 && h.level >= T.ABILITY_UNLOCK[slot];
+export const abilityUnlocked = (h: Hero, slot: number) => slot <= ULT_SLOT && h.level >= T.ABILITY_UNLOCK[slot];
+/** The ultimate is ready when its charge is full. */
+export const ultReady = (h: Hero) => h.ult >= 1;
 
 export function abilitiesLocked(): string | null {
   const n = S.g.night;
@@ -89,7 +91,7 @@ export function queueAbility(heroIdx: number, slot: number) {
   const h = S.g.heroes[heroIdx];
   if (!h || slot === 0 || h.downed) return;
   if (abilitiesLocked()) { sfx.bad(); return; }
-  if (!abilityUnlocked(h, slot) || h.cd[slot] > 0) { sfx.bad(); return; }
+  if (!abilityUnlocked(h, slot) || h.cd[slot] > 0 || (slot === ULT_SLOT && !ultReady(h))) { sfx.bad(); return; }
   const n = N();
   if (n.phase !== 'battle' || !n.enemies.some(e => e.hp > 0)) { toast('No enemies in reach.', '#a999bd'); sfx.bad(); return; }
   // Cast right now: no waiting for the hero's turn, no global cooldown.
@@ -103,6 +105,7 @@ function castAbility(h: Hero, slot: number) {
   const st = heroStats(h);
   const mult = heroDamageMult(h);
   h.queued = null;
+  if (slot === ULT_SLOT) return castUlt(h, st, mult, me);
   h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]);
   n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);
   sfx.ability();
@@ -122,15 +125,8 @@ function castAbility(h: Hero, slot: number) {
       const slam = (e.wind ?? 0) > 0 && moveOf(e) === 'slam';
       if (slam && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
       else if ((e.wind ?? 0) > 0 && !slam) { /* only SMASH can be interrupted */ }
-      else { e.stunned = 1; if (slam) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts SMASH! The boss braces for the next one.`, '#8fb3ff'); sfx.good(); } }
+      else { e.stunned = T.BASH_STUN_SEC; if (slam) { e.wind = 0; e.braced = true; toast(`${h.name} interrupts SMASH! The boss braces for the next one.`, '#8fb3ff'); sfx.good(); } }
     }
-    return;
-  }
-  if (h.id === 'knight' && slot === 3) {
-    n.rally = A.dur!; toast(`${h.name}: RALLY! Everyone, now!`, '#f2b84b');
-    loudOnce = true; critHeard = false;
-    aliveHeroes().forEach(x => { vfx('taunt', heroCenter(S.g.heroes.indexOf(x)), undefined, 0.5); heroAct(x, true); });
-    loudOnce = false;
     return;
   }
   if (h.id === 'mage' && slot === 1) {
@@ -141,26 +137,32 @@ function castAbility(h: Hero, slot: number) {
     return;
   }
   if (h.id === 'mage' && slot === 2) { const e = frostTarget(); if (e) { hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); if (e.hp > 0) mark(e, 'chill'); } return; }
-  if (h.id === 'mage' && slot === 3) {
+  if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, st.atk * A.power! + A.flat!)); return; }
+  if (h.id === 'healer' && slot === 2) { n.ward = A.dur!; vfx('ward', heroCenter(1), undefined, 0.8); toast(`${h.name}: WARD`, '#6fcf7f'); return; }
+}
+
+/** The ultimates (#52, 1.2): the third slot, cast when its charge is full; the charge empties. */
+function castUlt(h: Hero, st: ReturnType<typeof heroStats>, mult: number, me: { x: number; y: number }) {
+  const n = N();
+  h.ult = 0;
+  if (h.id === 'knight') {
+    n.lastStand = T.LAST_STAND_SEC; vfx('taunt', me, undefined, 0.9); sfx.level();
+    toast(`${h.name}: LAST STAND! Nobody falls for ${T.LAST_STAND_SEC} s.`, '#f2b84b');
+    return;
+  }
+  if (h.id === 'mage') {
     loudOnce = true; critHeard = false;
-    for (let i = 0; i < A.hits!; i++) {
-      const alive = n.enemies.filter(e => e.hp > 0);
-      if (!alive.length) break;
-      const e = pick(alive), c = enemyCenter(e);
-      hitEnemy(e, st.atk * A.power! * mult, st.crit, 'bolt', { x: c.x + rand(-40, 40), y: 30 });
-    }
+    toast(`${h.name}: CATACLYSM!`, '#f2b84b');
+    n.enemies.filter(e => e.hp > 0).forEach(e => {
+      const marked = (e.marks?.stagger ?? 0) > 0 || (e.marks?.chill ?? 0) > 0;
+      hitEnemy(e, st.atk * T.CATACLYSM_POWER * mult * (marked ? T.CATACLYSM_MARK_MULT : 1), st.crit, 'fire', me);
+    });
     loudOnce = false;
     return;
   }
-  if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, st.atk * A.power! + A.flat!)); return; }
-  if (h.id === 'healer' && slot === 2) { n.ward = A.dur!; vfx('ward', heroCenter(1), undefined, 0.8); toast(`${h.name}: WARD`, '#6fcf7f'); return; }
-  if (h.id === 'healer' && slot === 3) {
-    const down = S.g.heroes.find(x => x.downed);
-    sfx.heal();
-    if (down) { reviveHero(down, A.power!); vfx('heal', heroCenter(S.g.heroes.indexOf(down)), undefined, 1); toast(`${h.name}: REVIVE! ${down.name} is back.`, '#6fcf7f'); return; }
-    const low = mostHurt();
-    if (low) healHero(low, maxHp(low) * A.power!);
-    return;
+  if (h.id === 'healer') {
+    sfx.heal(); toast(`${h.name}: MIRACLE!`, '#f2b84b');
+    S.g.heroes.forEach(x => { if (x.downed) reviveHero(x, 1); x.hp = maxHp(x); vfx('heal', heroCenter(S.g.heroes.indexOf(x)), undefined, 1); });
   }
 }
 
@@ -183,7 +185,7 @@ const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / max
 
 function heroDamageMult(h?: Hero): number {
   const n = N();
-  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * (n.rally > 0 ? 1 + ABILITIES.knight[3].power! : 1) * curioDmgMult()
+  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * curioDmgMult()
     * (h?.id === 'mage' && n.sulk > 0 ? 1 - T.CURIO_SULK_DMG : 1);   // Magoo read the guild bank log
 }
 
@@ -209,7 +211,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
     toast(`${e.name} is ENRAGED! Flow builds faster. Alt-tab now and you lose it.`, '#ff5a3a');
   }
   const idx = n.enemies.indexOf(e);
-  floatText(ENEMY_X[Math.max(0, idx)] + 18, UNIT_Y - 30, isCrit ? `-${dmg}!` : `-${dmg}`, isCrit ? '#f2b84b' : '#ff8a80');
+  floatText(ENEMY_X[Math.max(0, idx)] + 18, UNIT_Y - 30, isCrit ? `-${fmtNum(dmg)}!` : `-${fmtNum(dmg)}`, isCrit ? '#f2b84b' : '#ff8a80');
   if (isCrit) sfx.crit(); else sfx.hit();
   if (skill && e.marks?.judged! > 0) { const low = mostHurt(); if (low && low.hp < maxHp(low)) healHero(low, dmg * T.MARK_JUDGED_HEAL); }
   return dmg;
@@ -223,7 +225,7 @@ function healHero(h: Hero, amount: number) {
   if (N().floorMap === 'cursed') amount *= T.CURSED_HEAL;
   h.hp = Math.min(mx, h.hp + Math.round(amount));
   const i = S.g.heroes.indexOf(h);
-  if (h.hp > before) floatText(HERO_X[i] + 18, UNIT_Y - 30, `+${h.hp - before}`, '#6fcf7f');
+  if (h.hp > before) floatText(HERO_X[i] + 18, UNIT_Y - 30, `+${fmtNum(h.hp - before)}`, '#6fcf7f');
 }
 
 function frontEnemy(): Enemy | undefined { return N().enemies.find(e => e.hp > 0); }
@@ -233,7 +235,7 @@ export function bashTarget(): Enemy | undefined { const a = N().enemies.filter(e
 export function frostTarget(): Enemy | undefined { const a = N().enemies.filter(e => e.hp > 0); return a.find(e => roleOf(e) === 'healer') ?? a[0]; }
 function weakestEnemy(): Enemy | undefined { return [...N().enemies].filter(e => e.hp > 0).sort((a, b) => a.hp - b.hp)[0]; }
 
-/** A hero's auto action. skill: it came from Rally (counts as a skill hit for Judged). */
+/** A hero's auto attack (not a skill: it doesn't cash in Judged). */
 function heroAct(h: Hero, skill = false) {
   const n = N();
   h.lunge = 0.3;
@@ -243,7 +245,7 @@ function heroAct(h: Hero, skill = false) {
   const mult = heroDamageMult(h);
   // Auto attack (slot 0).
   if (h.id === 'healer') {
-    const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * (isAway() ? T.AUTOPILOT_HEAL_BELOW : 0.6)).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
+    const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * T.HEALER_AUTO_HEAL_BELOW).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
     if (hurt) { sfx.heal(); healHero(hurt, st.atk * 1.6 + 8); return; }
   }
   const target = h.id === 'mage' ? weakestEnemy() : frontEnemy();
@@ -254,8 +256,7 @@ function heroAct(h: Hero, skill = false) {
 
 function enemyAct(e: Enemy) {
   const n = N();
-  e.turnsAlive++;
-  if (e.stunned > 0) { e.stunned--; return; }
+  if (e.stunned > 0) return;   // stunned (seconds, ticked in updateBattle)
   if (e.boss && bossMove(e)) return;
   const role = roleOf(e);
   if (role === 'healer') {   // the Shaman heals the most hurt friend
@@ -279,21 +280,24 @@ function attackHero(e: Enemy, atk: number) {
   if (!alive.length) return;
   let target: Hero;
   if (n.taunt > 0 && !S.g.heroes[0].downed) target = S.g.heroes[0];
-  else if (T.AUTOPILOT_NO_TANK && isAway()) target = pick(alive);
   else target = chance(0.5) && !S.g.heroes[0].downed ? S.g.heroes[0] : pick(alive);
   const st = heroStats(target);
   let raw = atk;
-  const over = e.turnsAlive - T.FURY_AFTER_TURNS;
-  if (over > 0) raw *= 1 + T.FURY_PER_TURN * over;
+  const over = e.aliveSec - T.FURY_AFTER_SEC;
+  if (over > 0) raw *= 1 + T.FURY_PER_SEC * over;
   if (n.ward > 0) raw *= ABILITIES.healer[2].power!;
   const dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - st.armor * 0.5));
-  target.hp -= dmg;
   const i = S.g.heroes.indexOf(target);
   vfx('claw', heroCenter(i), undefined, 0.35);
-  floatText(HERO_X[i] + 18 + rand(-8, 8), UNIT_Y - 30, `-${dmg}`, '#ff8a80');
+  floatText(HERO_X[i] + 18 + rand(-8, 8), UNIT_Y - 30, `-${fmtNum(dmg)}`, '#ff8a80');
+  hurtHero(target, dmg);
   reflect(e, dmg);
-  if (isAway() && target.hp < maxHp(target) * T.AUTOPILOT_HEAL_BELOW) autopilotHurt();
-  if (target.hp <= 0) { target.hp = 0; target.downed = true; target.queued = null; toast(`${target.name} is down!`, '#ff8a80'); sfx.down(); }
+}
+/** Damage on a hero. Last Stand keeps everyone at 1 HP or more. */
+function hurtHero(h: Hero, dmg: number) {
+  h.hp -= dmg;
+  if (h.hp <= 0 && N().lastStand > 0) { h.hp = 1; return; }
+  if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); sfx.down(); }
 }
 
 /** A boss's telegraphed move starts instead of a normal action. Returns true when it did. */
@@ -309,7 +313,7 @@ function bossMove(e: Enemy): boolean {
   if (move === 'loan' && e.acts % T.LOAN_EVERY === 0) {
     e.wind = e.windMax = T.LOAN_WINDUP_SEC;
     const friend = n.enemies.find(x => x !== e && x.hp > 0);
-    toast(friend ? `${e.name} empowers the ${friend.name}! Kill it first!` : `${e.name} summons help. Fire or Storm it!`, '#ff8a80'); sfx.windup();
+    toast(friend ? `${e.name} empowers the ${friend.name}! Kill it first!` : `${e.name} summons help. Fire it!`, '#ff8a80'); sfx.windup();
     return true;
   }
   if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {
@@ -335,7 +339,7 @@ function loanFriend(e: Enemy) {
   const n = N();
   const old = n.enemies.find(x => x !== e && x.hp > 0);
   if (old) {   // empowered: back to full and meaner
-    old.hp = old.maxHp; old.atk *= T.LOAN_REFI; old.turnsAlive = 0;
+    old.hp = old.maxHp; old.atk *= T.LOAN_REFI; old.aliveSec = 0;
     const c = enemyCenter(old); floatText(c.x, UNIT_Y - 46, 'EMPOWERED', '#ff8a80'); vfx('heal', c, undefined, 0.7);
     e.lunge = 0.3; sfx.handle();
     return;
@@ -362,13 +366,12 @@ function eviction(e: Enemy) {
     const taunted = n.taunt > 0 && !knight.downed;
     const h = taunted ? knight : v;
     const dmg = Math.max(1, Math.round(maxHp(h) * (taunted ? T.BOSS_SLAM_TAUNT_PCT : T.EVICT_PCT) * (n.ward > 0 ? T.BOSS_SLAM_WARD_MULT : 1)));
-    h.hp -= dmg;
     const i = S.g.heroes.indexOf(h);
     vfx('claw', heroCenter(i), undefined, 0.5);
-    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
+    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${fmtNum(dmg)}!`, '#ff5a5a');
     reflect(e, dmg);
     toast(taunted ? `${knight.name} takes the EXECUTE for ${v.name}.` : `EXECUTE! ${h.name} takes a brutal hit.`, '#ff8a80');
-    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); sfx.down(); }
+    hurtHero(h, dmg);
   }
   if (e.hp > 0) { e.shield = true; toast(`${e.name} raises his shield again. Bash it off.`, '#8fd8ff'); }
 }
@@ -407,11 +410,10 @@ function bossSlam(e: Enemy) {
   const pct = targets.length === 1 && targets[0] === knight && n.taunt > 0 ? T.BOSS_SLAM_TAUNT_PCT : T.BOSS_SLAM_PCT;
   for (const h of targets) {
     const dmg = Math.max(1, Math.round(maxHp(h) * pct * ward));
-    h.hp -= dmg;
     const i = S.g.heroes.indexOf(h);
     vfx('claw', heroCenter(i), undefined, 0.5);
-    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${dmg}!`, '#ff5a5a');
-    if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${h.name} is down!`, '#ff8a80'); sfx.down(); }
+    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${fmtNum(dmg)}!`, '#ff5a5a');
+    hurtHero(h, dmg);
     reflect(e, dmg);
   }
   toast(n.taunt > 0 && !knight.downed ? `SMASH hits ${knight.name} (taunted).` : ward < 1 ? 'SMASH, softened by Ward.' : 'SMASH hits everyone!', '#ff8a80');
@@ -425,15 +427,20 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
     e.flash = Math.max(0, e.flash - dt);
     if (e.marks) for (const k of Object.keys(e.marks) as MarkId[]) { e.marks[k]! -= dt; if (e.marks[k]! <= 0) delete e.marks[k]; }
   }
+  // Real time (#52, 1.2): each unit attacks every BASE_ATTACK_SEC x 10 / speed seconds (atb is the progress, 0..100).
+  const flowK = 1 + T.FLOW_SPEED * clamp01((n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN));
   for (const h of S.g.heroes) {
     if (h.downed) continue;
-    h.atb += heroStats(h).speed * T.ATB_RATE * dt * speedMult() * curioSpeedMult();
+    h.ult = Math.min(1, h.ult + dt / T.ULT_CHARGE_SEC);   // the ultimate charges only during fights
+    h.atb += atbRate(heroStats(h).speed) * dt * speedMult() * curioSpeedMult() * flowK;
     if (h.atb >= 100) { h.atb -= 100; heroAct(h); }
   }
   for (const e of n.enemies) {
     if (e.hp <= 0) continue;
-    if ((e.wind ?? 0) > 0) { e.wind! -= dt; if (e.wind! <= 0) { e.wind = 0; landMove(e); } continue; }   // winding up: no normal turns
-    e.atb += e.speed * T.ATB_RATE * dt;
+    e.aliveSec += dt;
+    if ((e.wind ?? 0) > 0) { e.wind! -= dt; if (e.wind! <= 0) { e.wind = 0; landMove(e); } continue; }   // winding up: no normal attacks
+    if (e.stunned > 0) { e.stunned = Math.max(0, e.stunned - dt); continue; }
+    e.atb += atbRate(e.speed) * dt;
     if (e.atb >= 100) { e.atb -= 100; enemyAct(e); }
   }
   // Remove the dead, grant XP.
@@ -453,6 +460,10 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   if (n.enemies.every(e => e.hp <= 0)) return 'victory';
   return null;
 }
+
+/** atb gained per second at this speed: 100 per attack interval (BASE_ATTACK_SEC x 10 / speed). */
+const atbRate = (speed: number) => (100 * speed) / (T.BASE_ATTACK_SEC * 10);
+const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 export function reviveHero(h: Hero, pct: number) {
   if (!h.downed) return;

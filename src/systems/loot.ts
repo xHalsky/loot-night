@@ -8,8 +8,16 @@ import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, SPECIAL_BY_ID, type Spe
 import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
 import { coach } from './coach';
+import { noteDrop } from './pacing';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
+/** A stat's base roll at this item level. Attack, HP and armor compound (ITEM_POWER_GROWTH a level, #52 1.2) to keep pace
+ *  with the enemies; speed, crit and luck stay linear (they are percentages and would run away). */
+const GROWS: Stat[] = ['atk', 'hp', 'armor'];
+export function statBase(stat: Stat, ilvl: number): number {
+  const [a, b] = STAT_BASE[stat];
+  return GROWS.includes(stat) ? (a + b) * T.ITEM_POWER_GROWTH ** (ilvl - 1) : a + b * ilvl;
+}
 
 export function rollRarity(floor: number, minIdx = 0): Rarity {
   const n = S.g.night;
@@ -52,22 +60,20 @@ export function genItem(ilvl: number, minRarity = 0): Item {
   const positives = POSITIVE_AFFIXES[rarity];
   for (let i = 0; i < positives; i++) {
     const stat = i < pool.length ? pool[i] : pick(pool);
-    const [a, b] = STAT_BASE[stat];
-    const amt = round1((a + b * ilvl) * mult * rand(0.8, 1.15) * (i === 0 ? 1 : 0.6));
+    const amt = round1(statBase(stat, ilvl) * mult * rand(0.8, 1.15) * (i === 0 ? 1 : 0.6));
     const existing = affixes.find(x => x.stat === stat);
     if (existing) existing.amount = round1(existing.amount + amt); else affixes.push({ stat, amount: amt });
   }
   if (HAS_DOWNSIDE[rarity]) {
     const others: Stat[] = (['atk', 'hp', 'armor', 'speed', 'crit'] as Stat[]).filter(s => !affixes.some(a => a.stat === s));
     const stat = pick(others);
-    const [a, b] = STAT_BASE[stat];
-    affixes.push({ stat, amount: -round1((a + b * ilvl) * 0.6 * rand(0.8, 1.2)) });
+    affixes.push({ stat, amount: -round1(statBase(stat, ilvl) * 0.6 * rand(0.8, 1.2)) });
   }
   const ri = RARITIES.indexOf(rarity);
   const sp = rollSpecial(rarity);
   let specialAmt: number | undefined;
   if (sp?.kind === 'cross') {
-    if (sp.stat) { const [a, b] = STAT_BASE[sp.stat]; specialAmt = Math.max(1, round1((a + b * ilvl) * mult * T.AFFIX_CROSS_PCT)); }
+    if (sp.stat) specialAmt = Math.max(1, round1(statBase(sp.stat, ilvl) * mult * T.AFFIX_CROSS_PCT));
     else specialAmt = T.AFFIX_SPREADSHEET_GOLD;
   }
   const name = itemName(slot, rarity, sp?.id);
@@ -142,6 +148,7 @@ export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: b
   // drops fall where the enemies stood; the front hero picks them up while walking
   // each drop lands where an enemy fell (spread a little when several share a body)
   const at = opts.at?.length ? opts.at : [340, 420, 500];
+  out.forEach(e => noteDrop(e.kind === 'item' ? e.item.rarity : null));
   out.forEach((e, i) => n.floorLoot.push({ entry: e, x: at[i % at.length] + (Math.floor(i / at.length) * 22) + (Math.random() - 0.5) * 14, t: 0 }));
 }
 

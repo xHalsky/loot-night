@@ -70,14 +70,25 @@ export const T = {
   CHECKPOINT_EVERY: 5,
   WALK_SEC: 4,
   LOOT_PAUSE_SEC: 2.5,
-  ATB_RATE: 3,                    // atb gain per second per point of speed; acts at 100 (speed 10 = a turn every 3.3 s)
-  ENEMY_HP_PER_FLOOR: 0.6,        // enemies outgrow a party that does not gear up: the first boss (floor 5) is the wall (#49)
-  ENEMY_ATK_PER_FLOOR: 0.45,
-  FURY_AFTER_TURNS: 3,            // Fury: an enemy alive longer than this hits harder each turn (was "Interest")
-  FURY_PER_TURN: 0.10,
+  // Real-time combat (#52, 1.2): every unit attacks on its own timer, attack interval = BASE_ATTACK_SEC x 10 / speed
+  BASE_ATTACK_SEC: 1.2,           // speed 10: an attack every 1.2 s
+  FLOW_SPEED: 0.25,               // at max Flow the party attacks this much faster, linear from Flow x1
+  // Big numbers (#52, 1.2): compounding per floor and per item level; numbers show as 1.2K, 34.5K, 1.2M
+  ENEMY_HP_GROWTH: 1.15,          // enemy HP x this per floor
+  ENEMY_ATK_GROWTH: 1.12,         // enemy attack x this per floor
+  ITEM_POWER_GROWTH: 1.12,        // item stats x this per item level
+  FURY_AFTER_SEC: 10,             // Fury: an enemy alive longer than this hits harder every second (was "Interest")
+  FURY_PER_SEC: 0.03,
+  BASH_STUN_SEC: 1.5,             // Bash stuns for this long (was "a turn")
+  // Ultimates (#52, 1.2): the third slot, a charge that fills only during fights; always manual, never autocast
+  ULT_CHARGE_SEC: 20,
+  LAST_STAND_SEC: 6,              // Knight: for this long no hero can drop below 1 HP
+  CATACLYSM_POWER: 8,             // Mage: hits every enemy for this x attack...
+  CATACLYSM_MARK_MULT: 2,         // ...and Staggered or Chilled ones take this much more
+  HEALER_AUTO_HEAL_BELOW: 0.6,    // Smite heals an ally under this share of max HP instead of smiting
   HERO_LEVEL_SCALE: 0.04,         // levels unlock skills; strength comes from gear (#49)
   XP_PER_KILL: 5, XP_PER_BOSS: 40, XP_PER_LEVEL: 40, XP_LEVEL_EXP: 1.7,
-  ABILITY_UNLOCK: [1, 1, 3, 5, 99],   // slot 4 (ultimates) is for later nights
+  ABILITY_UNLOCK: [1, 1, 3, 1],   // auto, skill 1, skill 2, the ultimate (needs its charge; the trees gate it in #53)
   // Ability marks (docs/design/dungeon.md): a skill marks an enemy, another skill cashes the mark in.
   MARK_SEC: 6,                    // how long a mark stays on an enemy (Taunted lasts as long as the taunt)
   MARK_STAGGER_FIRE: 2,           // Fire on a Staggered enemy (Bash marks it)
@@ -103,13 +114,9 @@ export const T = {
   SHIELD_TAKEN: 0.25,             // a shielded enemy takes this share of damage until a Bash breaks the shield
   AUDITOR_HEAL: 0.6,              // the Shaman heals a friend for this share of his own max HP
   AUDITOR_HEAL_BELOW: 0.75,       // ...when that friend is under this share of their max HP; else he attacks
-  // Reckless autopilot: when the player chose to leave the game (Excel, switching, minigames, cables out)
-  AUTOPILOT_HEAL_BELOW: 0.35,      // the healer only heals below this (normal: 0.6)
-  AUTOPILOT_NO_TANK: true,        // nobody holds aggro: enemies pick targets at random
-  AUTOPILOT_PACE: 1.6,            // walking and the loot pause run this much faster: they pull without resting
-  AUTOPILOT_AMBUSH_ATB: [40, 80] as [number, number],   // a careless pull: enemies start with this much ATB
-  AUTOPILOT_CHAT_GAP_SEC: 12,
-  AUTOPILOT_FLASH_HP: 0.5,        // the Loot Night taskbar button flashes when party HP is under this (or someone is down)     // party chat lines about you being away, at most this often
+  // Away from the game (Excel, switching, minigames, cables out): no manual skills, auto attacks only (#52, 1.2)
+  AUTOPILOT_CHAT_GAP_SEC: 12,     // party chat lines about you being away, at most this often
+  AUTOPILOT_FLASH_HP: 0.5,        // the Loot Night taskbar button flashes when party HP is under this (or someone is down)
 
   // --- Loot ---
   BAG_SIZE: 18,

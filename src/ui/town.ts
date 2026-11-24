@@ -10,8 +10,8 @@ import { RARITY_COLOR } from '../data/items';
 import { entryName, entryValue } from '../systems/loot';
 import { vendorValue, salvageYield, listValue } from '../systems/town';
 import { icon, glyph, ABILITY_GLYPHS } from './icons';
-import { ABILITIES, HOTKEYS, HERO_COLORS } from '../data/heroes';
-import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
+import { ABILITIES, HOTKEYS, HERO_COLORS, ULT_SLOT } from '../data/heroes';
+import { abilitiesLocked, abilityUnlocked, ultReady } from '../systems/battle';
 import { maxHp } from '../systems/stats';
 
 const FONT = '"Pixelify Sans", monospace';
@@ -247,12 +247,12 @@ function monUiInner(n: NonNullable<typeof S.g.night>): string {
 }
 
 /** Skills that answer the boss's wind-up pulse red: SMASH = Taunt, Bash (unless braced), Ward;
- *  EXECUTE = Taunt, Ward; SUMMON = Fire and Storm for the friend that is coming. */
+ *  EXECUTE = Taunt, Ward; SUMMON = Fire and Cataclysm for the friend that is coming. */
 function answersMove(e: { defId: string; braced?: boolean }, id: string, si: number): boolean {
   const move = ENEMY_BY_ID[e.defId]?.move;
   if (move === 'slam') return (id === 'knight' && (si === 1 || (si === 2 && !e.braced))) || (id === 'healer' && si === 2);
   if (move === 'evict') return (id === 'knight' && si === 1) || (id === 'healer' && si === 2);
-  if (move === 'loan') return id === 'mage' && (si === 1 || si === 3);
+  if (move === 'loan') return id === 'mage' && (si === 1 || si === ULT_SLOT);
   return false;
 }
 
@@ -274,14 +274,15 @@ function skillBarHtml(): string {
     const mx = maxHp(h), hp = h.downed ? 0 : h.hp / mx;
     const por = `<button class="ie-por ${n.heroTab === hi ? 'sel' : ''} ${h.downed ? 'down' : ''}" data-act="heroTab" data-arg="${hi}" data-tip="hero:${hi}" style="--hc:${HERO_COLORS[h.id]}">
       <span class="ie-face">${portrait(h.id)}</span><span class="ie-hp"><i style="height:${Math.round(hp * 100)}%;background:${hp > 0.5 ? '#4fbf5f' : hp > 0 ? '#d9a33a' : '#a33'}"></i></span></button>`;   // no name here: the party cards carry it (#49)
-    const sk = ABILITIES[h.id].map((a, si) => {
+    const sk = ABILITIES[h.id].map((a, si) => {   // auto, two skills, the ultimate (#52)
       if (si === 0) return '';                    // auto attack is always on: no button
       const unlocked = si === 0 || abilityUnlocked(h, si);
       const cd = h.cd[si];
       const [gname, gcol] = ABILITY_GLYPHS[h.id][si];
       let cls = 'ie-sk', over = '';
       if (si === 0) cls += ' auto';
-      else if (!unlocked) { cls += ' locked'; over = `<b class="ie-tag">${si <= 3 ? `Lv${T.ABILITY_UNLOCK[si]}` : '--'}</b>`; }
+      else if (!unlocked) { cls += ' locked'; over = `<b class="ie-tag">Lv${T.ABILITY_UNLOCK[si]}</b>`; }
+      else if (si === ULT_SLOT && !ultReady(h)) { cls += ' cd ult'; over = `<i class="ie-sweep" style="--p:${Math.round((1 - h.ult) * 36) * 10}deg"></i><b class="ie-cd">${Math.floor(h.ult * 100)}%</b>`; }
       else if (cd > 0) { cls += ' cd'; over = `<i class="ie-sweep" style="--p:${Math.round((cd / ABILITIES[h.id][si].cd) * 36) * 10}deg"></i><b class="ie-cd">${Math.ceil(cd)}</b>`; }
       else cls += ' ready';
       if (h.queued === si) cls += ' queued';

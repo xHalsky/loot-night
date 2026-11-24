@@ -24,9 +24,10 @@ export type BagEntry =
 export type HeroId = 'knight' | 'mage' | 'healer';
 export interface Hero {
   id: HeroId; name: string; role: string; level: number; xp: number;
-  hp: number; downed: boolean; atb: number;
+  hp: number; downed: boolean; atb: number;   // atb: progress to the next auto attack, 0..100 (real time, #52)
   gear: Partial<Record<Slot, Item>>;
-  cd: number[];          // seconds left per ability slot (5)
+  cd: number[];          // seconds left per ability slot (auto, skill 1, skill 2, the ultimate)
+  ult: number;           // the ultimate's charge, 0..1 (fills during fights, #52)
   queued: number | null; // ability slot queued for next turn
   lunge?: number;        // attack animation timer
 }
@@ -34,7 +35,7 @@ export interface Hero {
 export interface Enemy {
   uid: number; defId: string; name: string; hp: number; maxHp: number;
   atk: number; armor: number; speed: number; atb: number;
-  turnsAlive: number; stunned: number; boss: boolean; flash: number; lunge?: number;
+  aliveSec: number; stunned: number; boss: boolean; flash: number; lunge?: number;   // stunned: seconds left
   marks?: Partial<Record<MarkId, number>>;          // seconds left per ability mark (docs/design/dungeon.md)
   shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
   per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
@@ -166,7 +167,7 @@ export interface Night {
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
-  taunt: number; ward: number; rally: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
+  taunt: number; ward: number; lastStand: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
   goldStart: number;   // gold when the night began: the F1 line shows tonight's income (#2)
@@ -212,12 +213,13 @@ export interface GameState {
   night: Night | null;
   townWin?: 'merchant' | 'appraiser' | 'salvage' | 'auction' | `build:${'training' | 'inn' | 'library' | 'treasury'}` | null;   // a service window, or a plot's build window (#50)
   screen: Screen; paused: boolean; debug: boolean; timeScale: number;
+  realLifeOff: boolean;   // debug (#52, 1.1): nobody is home; the RPG runs alone (not saved)
   results: Results | null;
   morning: { paid: number; listings: number } | null;
 }
 
 export function newHero(id: HeroId, name: string, role: string, hp: number): Hero {
-  return { id, name, role, level: 1, xp: 0, hp, downed: false, atb: Math.random() * 50, gear: {}, cd: [0, 0, 0, 0, 0], queued: null };
+  return { id, name, role, level: 1, xp: 0, hp, downed: false, atb: Math.random() * 50, gear: {}, cd: [0, 0, 0, 0], ult: 0, queued: null };
 }
 
 export function initialState(): GameState {
@@ -228,7 +230,7 @@ export function initialState(): GameState {
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
     sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0, floorCans: [],
     pendingListings: [], pity: 0, uid: 1,
-    night: null, screen: 'title', paused: false, debug: false, timeScale: 1,
+    night: null, screen: 'title', paused: false, debug: false, timeScale: 1, realLifeOff: false,
     results: null, morning: null,
   };
 }

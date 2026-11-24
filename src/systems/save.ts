@@ -4,7 +4,7 @@ import { HERO_NAME } from '../data/heroes';
 import { itemName, nameIsCurrent } from './loot';
 
 // localStorage save of persistent progress only (not a night in progress).
-const KEY = 'lootnight.save.v1';
+const KEY = 'lootnight.save.v2';   // v2 (#52): the RPG's data changes a lot; old saves start fresh
 const PERSIST: (keyof GameState)[] = ['heroes', 'bag', 'bagSize', 'gold', 'mats', 'zl', 'furniture', 'sleepDebt', 'monsters', 'bestStars', 'record', 'nightsPlayed', 'mapPath', 'tipsSeen', 'pendingListings', 'pity', 'uid', 'autoSalvage', 'seen', 'curiosSeen', 'goodwill', 'floorCans'];
 
 export function save() {
@@ -29,7 +29,7 @@ export function load(): boolean {
     const fresh = initialState() as unknown as Record<string, unknown>;
     PERSIST.forEach(k => { if (k in data) fresh[k] = data[k]; });
     S.g = fresh as unknown as GameState;
-    S.g.heroes.forEach(h => { h.downed = false; h.queued = null; h.cd = [0, 0, 0, 0, 0]; h.name = HERO_NAME[h.id] ?? h.name; });   // old saves get the current names (#44)
+    S.g.heroes.forEach(h => { h.downed = false; h.queued = null; h.cd = [0, 0, 0, 0]; h.ult = 0; h.name = HERO_NAME[h.id] ?? h.name; });   // old saves get the current names (#44)
     // Items named before the RPG content pass (#44) get a name from the current lists, once.
     const items = [...S.g.bag.flatMap(e => e.kind === 'item' ? [e.item] : []), ...S.g.heroes.flatMap(h => Object.values(h.gear))];
     items.forEach(it => { if (it && !nameIsCurrent(it)) it.name = itemName(it.slot, it.rarity, it.special); });

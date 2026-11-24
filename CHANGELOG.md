@@ -3,6 +3,30 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.51.0 (2026-11-24)
+
+The RPG on its own, part 1 (#52, steps 1.1 and 1.2).
+
+- **Real-time combat.** Every unit attacks on its own timer: `BASE_ATTACK_SEC` (1.2) × 10 / speed, so speed 10
+  attacks every 1.2 s (the old ATB took 3.3 s). Stuns and Fury count seconds (Bash stuns for 1.5 s; Fury starts after
+  10 s, +3% a second). At max Flow the party attacks 25% faster (`FLOW_SPEED`).
+- **Three slots per hero: two skills and the ultimate** (decisions 2026-11-20). Rally, Storm and Revive are gone. The
+  third key (3, E, D) is the ultimate, charged over 20 s of combat (only during fights) and always cast by hand:
+  Last Stand (6 s, nobody drops below 1 HP), Cataclysm (8x to every enemy, double on Staggered or Chilled), Miracle
+  (revives everyone, full heal). 4, R and F are dark. Until the trees (#53) the ultimates need only their charge.
+- **Away means no skills.** The reckless autopilot is gone (no random targets, no late heals, no faster pulls, no
+  ambush); away from the game the party fights on with auto attacks only.
+- **Big numbers.** Enemy HP x1.15 and attack x1.12 a floor, item attack, HP and armor x1.12 an item level,
+  compounding; damage and heals show as 1.2K, 34.5K, 1.2M.
+- **Debug (F1): Real life on/off** turns off her, the phone, the dog, Tiredness, Noise, Mood and the night clock, and
+  the overlay shows live pacing: encounter and floor time, items and rare+ a minute of combat. `LIFE=off` does the
+  same for `test/sim.ts`, which now prints `pace`.
+- Saves move to `lootnight.save.v2`: old saves start fresh.
+- Sims (3 runs each), before → after: good depth 5, 5, 6 → 10, 10, 10, levels 4 → 7, epics 3 → 4 to 6, 0 or 1 wipe →
+  1; idle depth 2 to 3 → 4, catches 0 to 2 → 0 to 2. Pacing (good): an encounter 6 s, a floor 40 s, about 15 items
+  a minute of combat. `test/autopilot.ts`, 40 s on Excel: the floor-5 and floor-10 bosses wipe 29/30 and 18/30.
+  Tuning to the 1.9 targets comes with the packs (1.3).
+
 ## 0.50.0 (2026-11-24)
 
 - **The visual redesign is handed off.** Its package is in the repo at `design/redesign/` (the mockup page's code,

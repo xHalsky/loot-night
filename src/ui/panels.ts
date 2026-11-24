@@ -5,6 +5,7 @@ import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
 import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
+import { pacingLine } from '../systems/pacing';
 import { markText } from '../data/marks';
 import { specialText, hasLife } from '../systems/affixes';
 import { END_HINT, COACH } from '../data/tips';
@@ -490,7 +491,7 @@ export function tooltipHtml(): string {
         .replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{shatter}', String(T.MARK_CHILL_BASH)).replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))));
       body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
         <div>${desc}</div>
-        ${unlocked ? '' : `<div class="tt-hint" style="color:#f2c46b">${si <= 3 ? `Unlocks at level ${T.ABILITY_UNLOCK[si]}` : 'Later nights'}.</div>`}`;
+        ${!unlocked ? `<div class="tt-hint" style="color:#f2c46b">Unlocks at level ${T.ABILITY_UNLOCK[si]}.</div>` : a.ult ? `<div class="tt-hint" style="color:#f2c46b">Charge ${Math.floor(h.ult * 100)}%: fills during fights in ${T.ULT_CHARGE_SEC} s.</div>` : ''}`;
     }
     const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 150, 720 - 200));
     return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
@@ -802,7 +803,8 @@ export function debugHtml(): string {
   if (!g.debug) return '';
   const n = g.night;
   return `<div class="debug">
-    <div><b>DEBUG</b> · speed x${g.timeScale}</div>
+    <div><b>DEBUG</b> · speed x${g.timeScale} · ${btn('dbgLife', g.realLifeOff ? 'Real life: OFF' : 'Real life: on', '', 'sm')}</div>
+    ${n ? `<div class="dim">${pacingLine()}</div>` : ''}
     ${n ? (() => { const c = cityOutlook(); return `<div class="dim">income tonight ${S.g.gold - n.goldStart >= 0 ? '+' : ''}${S.g.gold - n.goldStart} g · bag ${c.bagGold} g / ${c.bagScraps} scraps · next ${c.next ? `${c.next.name} ${c.next.gold} g + ${c.next.mats}` : 'none'} ${c.now ? '(now)' : c.withBag ? '(with the bag)' : '(short)'}</div>`; })() : ''}
     ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>

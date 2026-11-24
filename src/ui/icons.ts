@@ -36,9 +36,9 @@ const GLYPH: Record<string, string[]> = {
   ankh: ['...####...', '..#....#..', '..#....#..', '...#..#...', '##########', '....##....', '....##....', '....##....', '....##....', '....##....'],
 };
 export const ABILITY_GLYPHS: Record<string, [string, string][]> = {
-  knight: [['sword', '#dfe6ef'], ['shout', '#ff8a4d'], ['hammer', '#c9a46a'], ['flag', '#e0524a'], ['star', '#f2b84b']],
-  mage: [['bolt', '#c9a0ff'], ['flame', '#ff8a4d'], ['frost', '#8fd8ff'], ['cloud', '#a9b3c9'], ['star', '#f2b84b']],
-  healer: [['cross', '#f2e9d8'], ['plus', '#6fcf7f'], ['shield', '#8fb3ff'], ['ankh', '#f2b84b'], ['star', '#f2b84b']],
+  knight: [['sword', '#dfe6ef'], ['shout', '#ff8a4d'], ['hammer', '#c9a46a'], ['star', '#f2b84b']],   // the ultimate is the gold star
+  mage: [['bolt', '#c9a0ff'], ['flame', '#ff8a4d'], ['frost', '#8fd8ff'], ['star', '#f2b84b']],
+  healer: [['cross', '#f2e9d8'], ['plus', '#6fcf7f'], ['shield', '#8fb3ff'], ['star', '#f2b84b']],
 };
 export function glyph(name: string, color: string, size = 28): string {
   const rows = GLYPH[name] ?? GLYPH.star;

@@ -25,7 +25,7 @@ different answer, joining from floors 2, 3 and 4. The first time you meet one, a
 |---|---|---|---|
 | Shaman | floor 2 | Heals the most hurt friend under `AUDITOR_HEAL_BELOW` (75%) for `AUDITOR_HEAL` (60%) of his own max HP instead of attacking | Frost goes for him first; the mage's auto Bolt picks the weakest, often him |
 | Guardian | floor 3 | Shielded: takes `SHIELD_TAKEN` (25%) damage until a Bash breaks the shield | Bash (it goes for a shield before the front enemy), then burst |
-| Imps | floor 4 | A swarm of 5 imps; each single hit takes one imp at most, and every imp bites on its turn | Fire hits every imp; Storm's bolts take one each; Taunt soaks the bites |
+| Imps | floor 4 | A swarm of 5 imps; each single hit takes one imp at most, and every imp bites when it attacks | Fire and Cataclysm hit every imp; Taunt soaks the bites |
 
 Skill targeting: Bash goes for a winding-up boss, then a shield, then the front enemy; Frost goes for a
 healer, then the front enemy.
@@ -37,8 +37,8 @@ that answer it pulsing red. The dungeon map names the boss on the path card for 
 | Boss (HP / attack at floor 1 scale) | Move | Answer |
 |---|---|---|
 | The Ogre (1700 / 28) | SMASH, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
-| The Warlock (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s SUMMON: a friend (Shaman or Imps) joins; a friend still standing is EMPOWERed instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next summon: Fire, Storm, Frost on the Shaman |
-| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the most hurt hero (a red EXECUTE tag over them): `EVICT_PCT` (90%) of their max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, Revive after; Bash the shield off again |
+| The Warlock (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s SUMMON: a friend (Shaman or Imps) joins; a friend still standing is EMPOWERed instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next summon: Fire, Cataclysm, Frost on the Shaman |
+| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the most hurt hero (a red EXECUTE tag over them): `EVICT_PCT` (90%) of their max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, Last Stand or Miracle after; Bash the shield off again |
 
 **Boss big attack: SMASH** (the Ogre). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
 a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
@@ -50,24 +50,29 @@ a boss cast bar at the top centre of the screen (MMO raid style, outside the cam
 So a boss fight is a rotation: Bash, then Ward or Taunt, then Bash again. On Excel during a wind-up,
 nobody answers.
 
-**Fury (Monday's mechanic, the red FURY +x% tag).** An enemy alive more than `FURY_AFTER_TURNS` turns deals
-+`FURY_PER_TURN` per extra turn. Rewards burst.
+**Fury (Monday's mechanic, the red FURY +x% tag).** An enemy alive more than `FURY_AFTER_SEC` (10 s) deals
++`FURY_PER_SEC` (3%) per extra second. Rewards burst.
 
-**Battle.** Side view, heroes left, up to 3 enemies right. Turn order by an ATB gauge
-(`ATB_RATE` × speed; speed 10 = a turn every 3.3 s). Each turn the unit auto-attacks: Knight slashes
-the front enemy, Mage bolts the weakest, Healer heals an ally under 60% HP or smites. Floating
+**Battle, in real time** (#52, 1.2). Side view, heroes left, up to 3 enemies right. Every unit attacks on its own
+timer: attack interval = `BASE_ATTACK_SEC` (1.2) × 10 / speed, so speed 10 attacks every 1.2 s. Stuns are seconds
+(Bash: `BASH_STUN_SEC`, 1.5 s). Auto attacks are not skills: Knight slashes the front enemy, Mage bolts the weakest,
+Healer heals an ally under `HEALER_AUTO_HEAL_BELOW` (60%) HP or smites. At max Flow the party attacks `FLOW_SPEED`
+(25%) faster, linear from Flow x1. Numbers compound (#52): enemy HP x`ENEMY_HP_GROWTH` (1.15) and attack
+x`ENEMY_ATK_GROWTH` (1.12) per floor, item attack, HP and armor x`ITEM_POWER_GROWTH` (1.12) per item level (speed,
+crit and luck stay linear); big numbers show as 1.2K, 34.5K, 1.2M. Floating
 numbers, crits in gold, every action has a visible effect (lunge, slash arc, bolt, beam, claw marks,
 shockwaves, sparks).
 
-**Skills.** Three per hero, unlocked at levels 1, 3 and 5 (`ABILITY_UNLOCK`), so a first night reaches the
-whole kit: level 3 comes before the first boss, level 5 with a few minutes left. Slot 4 (ultimates) is shown
-locked as "later nights".
+**Skills: three slots per hero, two skills and the ultimate** (#52; decisions 2026-11-20). Skill 1 from level 1,
+skill 2 from level 3 (`ABILITY_UNLOCK`; the trees take this over in #53). The third key is the ultimate: a charge
+that fills over `ULT_CHARGE_SEC` (20) seconds of combat, only during fights; cast it when full, never automatically.
+4, R and F stay dark.
 
-| Hero | Level 1 | Level 3 | Level 5 |
+| Hero | Skill 1 | Skill 2 (level 3) | Ultimate |
 |---|---|---|---|
-| Knight (1, 2, 3) | Taunt: enemies hit the knight for 5 s, marks them Taunted | Bash: 2x to the front enemy, stun, Stagger; interrupts SMASH | Rally: every hero acts right now, +25% party damage for 6 s |
-| Mage (Q, W, E) | Fire: 1x to every enemy | Frost: 2.6x to the front enemy, Chill | Storm: 6 bolts at random enemies, 0.6x each |
-| Healer (A, S, D) | Mend: heals the party | Ward: 40% less damage for 6 s | Revive: a downed hero back at 50%, else heals the most hurt for 50% |
+| Knight (1, 2, 3) | Taunt: enemies hit the knight for 5 s, marks them Taunted | Bash: 2x to the front enemy, 1.5 s stun, Stagger; interrupts SMASH | Last Stand: for `LAST_STAND_SEC` (6 s) no hero can drop below 1 HP |
+| Mage (Q, W, E) | Fire: 1x to every enemy | Frost: 2.6x to the front enemy, Chill | Cataclysm: `CATACLYSM_POWER` (8x) to every enemy, double on Staggered or Chilled |
+| Healer (A, S, D) | Mend: heals the party | Ward: 40% less damage for 6 s | Miracle: revives every downed hero and fully heals the party |
 
 **Curios in the corridor** (#30, the RPG's third verb; content `src/data/curios.ts`, rules
 `src/systems/curios.ts`, numbers `CURIO_*`). On a battle floor, `CURIO_PER_FLOOR` (1 or 2) of the walks stop
@@ -97,10 +102,10 @@ in, so the order you fire skills in matters:
 |---|---|---|---|
 | Staggered | Bash | Fire | That enemy takes x`MARK_STAGGER_FIRE` (2) from Fire |
 | Chilled | Frost | Bash | Shatter: x`MARK_CHILL_BASH` (2.5), then Bash staggers it |
-| Judged | the healer's auto Smite | any skill hit (Rally's actions count) | Heals the most hurt hero for `MARK_JUDGED_HEAL` (30%) of the damage |
+| Judged | the healer's auto Smite | any skill hit (auto attacks don't) | Heals the most hurt hero for `MARK_JUDGED_HEAL` (30%) of the damage |
 | Taunted | Taunt (all enemies, as long as the taunt) | Ward | With Ward up, its hits bounce `MARK_TAUNT_REFLECT` (50%) back |
 
-Marks last `MARK_SEC` (6 s). So the long chain is Rally → Frost → Bash (shatter, stagger) → Fire (x2). On a boss
+Marks last `MARK_SEC` (6 s). So the long chain is Frost → Bash (shatter, stagger) → Fire (x2) → Cataclysm (double). On a boss
 it collides with the wind-up: Bash spent on a shatter is not there for SMASH. A mark shows as a small
 coloured tag above the enemy's HP bar, its line shrinking as it runs out; its name floats up when it lands
 and the payoff floats up when it is cashed in. A skill that would cash in a mark right now glows gold on the
@@ -108,8 +113,7 @@ skill bar with a badge (x2, x2.5, ↩).
 
 Skills **cast instantly** on click or key, with no global cooldown; only their own cooldown applies
 (shortened by the Library). Outside a fight the key says "No enemies in reach". Each cast adds
-`NOISE_ABILITY` (3.5). A multi-hit skill (Storm, Rally) is one noisy moment: its crits add Noise once and its
-extra actions make no keyboard Noise. Skills are blocked while switching screens, while a minigame has your hands, and
+`NOISE_ABILITY` (3.5). A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once. Skills are blocked while switching screens, while a minigame has your hands, and
 during microsleeps.
 
 **Teaching the skills.** Hovering a skill shows its name and hotkey and one line on what it does in this hero's
@@ -164,18 +168,13 @@ chains, roots) sliding past faster, rim-lit by the torch.
 **Camera that acts.** Dollies with a sway while walking, pushes in when a fight starts, springs back on
 heavy hits (crits, Bash, Smite, Fire), shakes on crits, slowly zooms onto a legendary drop for about 3 s.
 
-**Reckless autopilot** (`src/systems/autopilot.ts`). When you *chose* to leave the game (Excel up, mid-switch,
-a minigame window open, or cables out because you ignored the dog), the party plays badly:
-- nobody holds aggro (`AUTOPILOT_NO_TANK`): enemies pick targets at random, so the mage and healer get hit;
-- the healer only heals below `AUTOPILOT_HEAL_BELOW` (35%, normally 60%);
-- walking and the loot pause run `AUTOPILOT_PACE` (1.6x) faster: they pull without resting;
-- a pack pulled while you are away starts with `AUTOPILOT_AMBUSH_ATB` (40 to 80) ATB, so it hits first;
-- no skills (they need you).
-Her desk visit and the monitor she switched off are forced on you, so they keep the normal autopilot.
-Party chat complains in the Feed ("Magoo: afk again? pulling"), and the Loot Night taskbar button flashes
-orange like a Windows app wanting attention when party HP is under `AUTOPILOT_FLASH_HP` or a hero is down.
-Measured by `test/autopilot.ts` (40 s on Excel): bosses on floor 5 and 10 wipe 16/20 and 20/20; normal
-floors 3 and 8 wipe 0/20 and 2/20 and end at 65% and 32% party HP.
+**Away from the game** (`src/systems/autopilot.ts`, #52 1.2). When you *chose* to leave the game (Excel up,
+mid-switch, a minigame window open, or cables out because you ignored the dog), nobody casts the skills or the
+ultimates: the party fights on with its auto attacks (bought autocasts will fire in #53). Her desk visit and the
+monitor she switched off are forced on you, so they don't count. Party chat complains in the Feed ("Magoo: afk
+again? pulling"), and the Loot Night taskbar button flashes orange like a Windows app wanting attention when party
+HP is under `AUTOPILOT_FLASH_HP` or a hero is down. Measured by `test/autopilot.ts` (40 s on Excel, 30 runs): the
+bosses on floors 5 and 10 wipe 29/30 and 18/30; normal floors 3 and 8 wipe 0/30 and end at 74% and 66% party HP.
 
 **City portal.** A button at the top left of the battle area, under the corner overlay (between battles): back to
 the city, 15 min. In the city, the Dungeon Portal returns to the checkpoint, 15 min.
@@ -201,6 +200,14 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   night. Rejected: longer cooldowns (the party would feel slow on the screen you are risking it all for) and
   more Noise per skill (the bed phase would end in a wake-up every time).
 
+- **Real-time combat, three slots, ultimates on charge** (0.51, #52 1.2). The ATB turns were already timers; now
+  each unit attacks on `BASE_ATTACK_SEC` × 10 / speed, about 2.8x the old pace, and turn counts are seconds. The
+  third skill (Rally, Storm, Revive) is gone: the skill bar has no room for four wells (decisions 2026-11-20), and
+  each ultimate covers the dropped skill's ground (Last Stand Rally's, Cataclysm Storm's, Miracle Revive's). The
+  reckless autopilot is gone too: away now simply means no skills, so watching is what pays. Rejected: keeping the
+  autopilot penalties on top (with no skills away was already punishing; 40 s on Excel during a boss still wipes).
+  Item growth compounds only for attack, HP and armor; speed, crit and luck stay linear (percentages would run
+  away). Until the trees (#53) the ultimates need only their charge.
 - **Instant skills, no GCD** (0.13). Waiting for the hero's turn felt unresponsive. Side effect: the bot
   reaches about floor 10 by bedtime (was 5 to 7) and skill spam can wake her. Open: #2.
 - **Tooltips over a manual** (0.19): the RPG is half of a split-attention game, so skills are taught at the

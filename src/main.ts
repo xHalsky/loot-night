@@ -158,6 +158,7 @@ const actions: Record<string, (arg: string) => void> = {
   closeGame: () => closeGame(false),
   // Debug (F1)
   dbgSpeed: a => { S.g.timeScale = Number(a); },
+  dbgLife: () => { S.g.realLifeOff = !S.g.realLifeOff; },   // #52, 1.1: nobody is home
   dbgVisit: a => triggerVisitNow((a || undefined) as VisitKind | undefined),
   hideCans: () => { hideCans(); },
   takePlate: () => takePlate(),

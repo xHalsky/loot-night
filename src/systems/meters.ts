@@ -21,9 +21,10 @@ export function addMood(d: number) { const n = N(); n.mood = clamp(n.mood + d, 0
 export function updateMeters(dt: number) {
   const n = N();
   n.threat += dt;
-  const clockDelta = clockRate() * dt;
+  const off = S.g.realLifeOff;   // debug (#52, 1.1): no night clock pressure, no Tiredness, Noise or Mood
+  const clockDelta = off ? 0 : clockRate() * dt;
   n.clock += clockDelta;
-  updateTired(dt, clockDelta);
+  if (!off) updateTired(dt, clockDelta);
 
   // Flow builds only while the RPG is on screen in the dungeon and the hands are free.
   const building = n.location === 'dungeon' && n.monitor === 'rpg' && n.action === 'none' && n.monitorOff <= 0;
@@ -40,12 +41,13 @@ export function updateMeters(dt: number) {
     n.witchingSaid = true;
     toast('01:00. The Witching Hour: drops can shift up a rarity, and insomniac affixes are out. Bed can wait?', '#c77dff');
   }
-  n.moodDrift += dt;
+  n.moodDrift += off ? 0 : dt;
   if (n.moodDrift >= T.MOOD_DRIFT_EVERY_SEC) { n.moodDrift = 0; addMood(1); }
-  n.noise = clamp(n.noise - T.NOISE_DECAY_PER_SEC * dt, 0, 100);
+  n.noise = off ? 0 : clamp(n.noise - T.NOISE_DECAY_PER_SEC * dt, 0, 100);
+  if (off) { n.tired = 0; n.mood = 0; }
 
   n.taunt = Math.max(0, n.taunt - dt);
-  n.rally = Math.max(0, n.rally - dt);
+  n.lastStand = Math.max(0, n.lastStand - dt);
   n.goodBoy = Math.max(0, n.goodBoy - dt);
   n.goodDog = Math.max(0, n.goodDog - dt);
   n.ward = Math.max(0, n.ward - dt);

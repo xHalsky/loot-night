@@ -23,11 +23,12 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.
 
-**Save.** `localStorage` key `lootnight.save.v1`: progress only (heroes, bag, gold, scraps, zł, buildings,
+**Save.** `localStorage` key `lootnight.save.v2` (v1 saves start fresh since 0.51): progress only (heroes, bag, gold, scraps, zł, buildings,
 sleep debt, cans, stars, record, pending listings, auto-salvage). Saved at night end, morning and on
 building. A night in progress is not saved.
 
-**Debug overlay** (F1): live state, time scale, spawn buttons for visits, interrupts and drops, meter setters,
+**Debug overlay** (F1): live state, time scale, Real life on/off (#52: nobody home, no Tiredness, Noise, Mood or night
+clock), live pacing numbers (`systems/pacing.ts`), spawn buttons for visits, interrupts and drops, meter setters,
 and "Redesign frame": the mockup's frame (Dungeon, Battle, Map, Town, Q4) drawn by the renderer over the game.
 
 **Tests.**

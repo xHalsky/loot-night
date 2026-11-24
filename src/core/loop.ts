@@ -16,6 +16,7 @@ import { checkNightEnd } from '../systems/night';
 import { updateHim } from '../systems/him';
 import { updateTips } from '../systems/tips';
 import { updateCoach, coachScale } from '../systems/coach';
+import { updatePacing } from '../systems/pacing';
 
 const STEP = 1 / 60;
 
@@ -23,22 +24,22 @@ const STEP = 1 / 60;
 export function step(dt: number) {
   const g = S.g;
   if (g.screen !== 'night' || g.paused || g.howto || !g.night) return;
+  const life = !g.realLifeOff;   // debug (#52, 1.1): real life off, nobody is home
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
   updatePre(dt);
   updateCurioTimers(dt);   // party buffs, Magoo's sulk
-  updateVisits(dt);
-  updatePeek(dt);
+  if (life) { updateVisits(dt); updatePeek(dt); }
   updateHim(dt);
   updateTips(dt);
-  updateLap(dt);
-  updateDog(dt);
+  if (life) { updateLap(dt); updateDog(dt); }
   const busyWithHer = !!g.night.lap || g.night.game?.kind === 'cuddle';
-  if (!busyWithHer) updateInterrupts(dt); else g.night.nextInterruptAt += dt;   // her time: the phone waits
+  if (life && !busyWithHer) updateInterrupts(dt); else g.night.nextInterruptAt += dt;   // her time (or nobody home): the phone waits
   updateCuddle(dt);
   updateSwitch(dt);
   updateExcel(dt);
   updateDungeon(dt);     // walking, battle, loot
   updateDrops(dt);
+  updatePacing(dt);
   checkNightEnd();
 }
 

@@ -13,6 +13,13 @@ export function toast(text: string, color = '#f2e9d8', tag = '') {
   if (n.log.length > 60) n.log.splice(0, n.log.length - 60);
 }
 
+/** Big numbers (#52, 1.2): 950, 1.2K, 34.5K, 1.2M, 3.4B. */
+export function fmtNum(v: number): string {
+  const a = Math.abs(v), sign = v < 0 ? '-' : '';
+  if (a < 1000) return sign + Math.round(a);
+  for (const [d, u] of [[1e9, 'B'], [1e6, 'M'], [1e3, 'K']] as const) if (a >= d) { const x = a / d; return sign + (x < 100 ? x.toFixed(1).replace(/\.0$/, '') : Math.round(x)) + u; }
+  return sign + Math.round(a);
+}
 export function floatText(x: number, y: number, text: string, color: string) {
   const n = S.g.night;
   if (!n) return;

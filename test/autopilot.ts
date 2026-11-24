@@ -1,4 +1,4 @@
-// Acceptance test for the reckless autopilot (#15).
+// Acceptance test for being away (#15; since #52 away means no manual skills or ultimates, auto attacks only).
 // A bot plays (casting skills, no threats) until a target fight starts, then the same moment is replayed
 // for 40 s three times: smart (answers the boss wind-up), spam (skills on cooldown) and away (on Excel).
 // Reports the LOWEST party HP during the fight (a boss kill levels the party up and heals it).
@@ -37,13 +37,14 @@ function calm() {
   n.apt.lastVisitEnd = n.threat; n.visit.stage = 'idle'; n.tired = 0; n.mood = 0;
   S.g.night!.dropPopup = null; n.selected = null;
 }
-/** A careful player: Bash saved for the wind-up on bosses (else Taunt, else Ward), Rally and Frost first so Bash
- *  shatters and Fire hits Staggered enemies, Mend when hurt, Revive when someone is down or nearly. */
+/** A careful player: Bash saved for the wind-up on bosses (else Taunt, else Ward), Frost first so Bash shatters and
+ *  Fire hits Staggered enemies, Mend when hurt; ultimates (slot 3) when charged: Last Stand and Cataclysm at once,
+ *  Miracle when someone is down or nearly. */
 function castSmart() {
   const n = N();
   if (n.phase !== 'battle' || !n.enemies.some(e => e.hp > 0)) return;
   const [k, m, h] = S.g.heroes;
-  const ok = (hero: typeof k, s: number) => !hero.downed && hero.cd[s] <= 0 && hero.level >= T.ABILITY_UNLOCK[s];
+  const ok = (hero: typeof k, s: number) => !hero.downed && hero.cd[s] <= 0 && hero.level >= T.ABILITY_UNLOCK[s] && (s !== 3 || hero.ult >= 1);
   const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
   const move = wind ? moveOf(wind) : undefined;
   const boss = n.enemies.some(e => e.boss && e.hp > 0 && moveOf(e) === 'slam');   // only SMASH needs Bash saved
@@ -62,8 +63,8 @@ function castSmart() {
 }
 function castReady() {
   const n = N();
-  S.g.heroes.forEach((h, i) => [1, 2, 3, 4].forEach(s => {
-    if (n.phase === 'battle' && !h.downed && h.cd[s] <= 0 && h.level >= T.ABILITY_UNLOCK[s] && n.enemies.some(e => e.hp > 0)) queueAbility(i, s);
+  S.g.heroes.forEach((h, i) => [1, 2, 3].forEach(s => {
+    if (n.phase === 'battle' && !h.downed && h.cd[s] <= 0 && h.level >= T.ABILITY_UNLOCK[s] && (s !== 3 || h.ult >= 1) && n.enemies.some(e => e.hp > 0)) queueAbility(i, s);
   }));
 }
 /** Plays present until a fight of the wanted kind starts on floor >= minFloor. Returns a snapshot or null. */
