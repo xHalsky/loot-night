@@ -75,12 +75,12 @@ crit and luck stay linear); big numbers show as 1.2K, 34.5K, 1.2M. Floating
 numbers, crits in gold, every action has a visible effect (lunge, slash arc, bolt, beam, claw marks,
 shockwaves, sparks).
 
-**Skills: three slots per hero, two skills and the ultimate** (#52; decisions 2026-11-20). Skill 1 from level 1,
-skill 2 from level 3 (`ABILITY_UNLOCK`; the trees take this over in #53). The third key is the ultimate: a charge
-that fills over `ULT_CHARGE_SEC` (20) seconds of combat, only during fights; cast it when full, never automatically.
-4, R and F stay dark.
+**Skills: three slots per hero, two skills and the ultimate** (#52; decisions 2026-11-20). Skill 1 from the start,
+skill 2 and the ultimate from the skill tree ([trees.md](trees.md), #53). The third key is the ultimate: a charge that
+fills over `ULT_CHARGE_SEC` (20) seconds of combat once it is bought, only during fights; cast it when full, never
+automatically. 4, R and F stay dark.
 
-| Hero | Skill 1 | Skill 2 (level 3) | Ultimate |
+| Hero | Skill 1 | Skill 2 (the tree) | Ultimate (the tree) |
 |---|---|---|---|
 | Knight (1, 2, 3) | Taunt: enemies hit the knight for 5 s, marks them Taunted | Bash: 2x to the front enemy, 1.5 s stun, Stagger; interrupts SMASH | Last Stand: for `LAST_STAND_SEC` (6 s) no hero can drop below 1 HP |
 | Rogue (Z, X, C) | Backstab: 3x to the front enemy, x`MARK_STAGGER_BACKSTAB` (2) on Staggered (spends it); cd 8 | Smoke Bomb: enemies miss `SMOKE_MISS` (50%) of their attacks for `SMOKE_SEC` (4 s); big moves still land; cd 14 | Heist: for `HEIST_SEC` (8 s) every kill drops an item |

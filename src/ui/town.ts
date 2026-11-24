@@ -168,7 +168,7 @@ function skillBarHtml(): string {
       const [gname, gcol] = ABILITY_GLYPHS[h.id][si];
       let cls = 'ie-sk', over = '';
       if (si === 0) cls += ' auto';
-      else if (!unlocked) { cls += ' locked'; over = `<b class="ie-tag">Lv${T.ABILITY_UNLOCK[si]}</b>`; }
+      else if (!unlocked) { cls += ' locked'; over = `<b class="ie-tag">tree</b>`; }
       else if (si === ULT_SLOT && !ultReady(h)) { cls += ' cd ult'; over = `<i class="ie-sweep" style="--p:${Math.round((1 - h.ult) * 36) * 10}deg"></i><b class="ie-cd">${Math.floor(h.ult * 100)}%</b>`; }
       else if (cd > 0) { cls += ' cd'; over = `<i class="ie-sweep" style="--p:${Math.round((cd / ABILITIES[h.id][si].cd) * 36) * 10}deg"></i><b class="ie-cd">${Math.ceil(cd)}</b>`; }
       else cls += ' ready';

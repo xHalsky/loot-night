@@ -4,7 +4,8 @@ import { VERSION } from '../config/version';
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
 import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
-import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME } from '../data/heroes';
+import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, ULT_SLOT } from '../data/heroes';
+import { autocastBought, autocastOn } from '../systems/tree';
 import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
 import { LEGEND_BY_ID, SET_BY_ID } from '../data/legendaries';
 import { legendOn, setPieces } from '../systems/gear';
@@ -515,7 +516,7 @@ export function tooltipHtml(): string {
         .replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{backstab}', String(T.MARK_STAGGER_BACKSTAB)).replace('{shatter}', String(T.MARK_CHILL_BASH)).replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))));
       body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
         <div>${desc}</div>
-        ${!unlocked ? `<div class="tt-hint" style="color:#f2c46b">Unlocks at level ${T.ABILITY_UNLOCK[si]}.</div>` : a.ult ? `<div class="tt-hint" style="color:#f2c46b">Charge ${Math.floor(h.ult * 100)}%: fills during fights in ${T.ULT_CHARGE_SEC} s.</div>` : ''}`;
+        ${!unlocked ? `<div class="tt-hint" style="color:#f2c46b">${si === ULT_SLOT ? `Buy it in ${h.name.split(' ')[0]}'s skill tree in town (needs ${T.TREE_ULT_NEEDS} nodes).` : `Unlock it in ${h.name.split(' ')[0]}'s skill tree in town.`}</div>` : autocastBought(h.id, si) ? `<div class="tt-hint" style="color:#9fe08a">Autocast ${autocastOn(h.id, si) ? 'on' : 'off'}: right-click to switch.</div>` : a.ult ? `<div class="tt-hint" style="color:#f2c46b">Charge ${Math.floor(h.ult * 100)}%: fills during fights in ${T.ULT_CHARGE_SEC} s.</div>` : ''}`;
     }
     const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 150, 720 - 200));
     return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
@@ -649,7 +650,11 @@ export function uiPanelHtml(): string {
     `<button class="as-tog ${g.autoSalvage ? 'on' : ''}" data-act="autoSalvage" data-tip="autosalvage">Auto-salvage ${g.autoSalvage ? 'on' : 'off'}</button>`)
     + `<div class="sp-bag" data-drop="bag">${cells}</div>`;
   const foot = `<div class="sp-foot"><span class="gold">${g.gold} g · ${g.mats} Souls</span><span>record ${Math.max(g.record, n.deepest)}</span></div>`;
-  if (town) {
+  // in town three tabs (#53, grid doc §6b): Town, Inventory, Skill Tree (the tree tab is drawn by the renderer)
+  const tab = town ? (n.townTab ?? 'town') : null;
+  const tabs = town ? `<div class="sp-tabs">${[['town', 'Town'], ['inventory', 'Inventory'], ['tree', 'Skill Tree']].map(([id, l]) => `<button class="sp-tab ${tab === id ? 'on' : ''}" data-act="townTab" data-arg="${id}">${l}</button>`).join('')}</div>` : '';
+  if (tab === 'tree') return tabs;
+  if (tab === 'town') {
     const rows = CITY.map(f => {
       const L = g.furniture[f.id] ?? 0;
       const pips = [0, 1, 2].map(k => `<i class="${k < L ? 'on' : ''}"></i>`).join('');
@@ -662,16 +667,16 @@ export function uiPanelHtml(): string {
     // the way down (#52, 1.4): floor 1 and every checkpoint you unlocked
     const cps = [...S.g.checkpoints].sort((x, y) => x - y), f = cps.includes(S.g.startFloor) ? S.g.startFloor : 1;
     const gate = `<div class="sp-svcs sp-pick"><button class="sp-arrow" data-act="pickFloor" data-arg="-1" ${cps[0] === f ? 'disabled' : ''}>\u25c0</button><button class="sp-gate" data-act="portal">Enter the dungeon · floor ${f}</button><button class="sp-arrow" data-act="pickFloor" data-arg="1" ${cps[cps.length - 1] === f ? 'disabled' : ''}>\u25b6</button></div>`;
-    return `<div class="sp-top">${head('RAVENHOLD · BUILD')}<div class="sp-cityrows">${rows}</div>${gate}${itemPopHtml()}</div>` + bag + foot;
+    return tabs + `<div class="sp-top">${head('RAVENHOLD · BUILD')}<div class="sp-cityrows">${rows}</div>${gate}${itemPopHtml()}</div>` + bag + foot;
   }
   // --- party: three cards (level, power, "!" when one falls behind); drop gear on a card to equip it ---
-  const tab = n.heroTab;
-  const gh = g.heroes[tab];
+  const ht = n.heroTab;
+  const gh = g.heroes[ht];
   const powers = g.heroes.map(h => heroPower(h));
   const best = Math.max(...powers);
   const cards = g.heroes.map((h, i) => {
     const behind = best > 0 && powers[i] < best * T.POWER_BEHIND;
-    return `<button class="sp-card ${i === tab ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
+    return `<button class="sp-card ${i === ht ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
       <span class="sp-ini">${h.name[0]}</span><span class="sp-nm"><b>${h.name}</b><small>Lv ${h.level} \u25c6${powers[i]}</small></span>${behind ? '<em class="sp-need">!</em>' : ''}
       <i class="sp-xp"><i style="width:${Math.round((h.xp / xpNeeded(h)) * 100)}%"></i></i></button>`;
   }).join('');
@@ -679,7 +684,7 @@ export function uiPanelHtml(): string {
   const slots = GEAR_ORDER.map(sl => {
     const it = gh.gear[sl];
     const style = it ? `background:${RARITY_BG[it.rarity]};border-color:${RARITY_COLOR[it.rarity]}` : '';
-    return `<div class="dslot ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${tab}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 22)}${it ? `<span class="spow">${it.identified ? itemPower(it) : '?'}</span>` : ''}</div>`;
+    return `<div class="dslot ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${ht}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 22)}${it ? `<span class="spow">${it.identified ? itemPower(it) : '?'}</span>` : ''}</div>`;
   }).join('');
   const st = heroStats(gh), base = heroBaseStats(gh);
   const r0 = (v: number) => String(Math.round(v)), r1 = (v: number) => String(Math.round(v * 10) / 10);
@@ -688,8 +693,8 @@ export function uiPanelHtml(): string {
     return `<div class="sp-stat"><span>${label}</span><b>${fmt(st[k])}${Math.abs(d) >= 0.05 ? `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : ''}${fmt(d)}</em>` : ''}</b></div>`;
   };
   const gear = `<div class="sp-gear"><div class="sp-slots">${slots}</div><div class="sp-stats">${stat('hp', 'HP', r0)}${stat('atk', 'ATK', r1)}${stat('armor', 'ARM', r1)}${stat('speed', 'SPD', r1)}${stat('crit', 'CRIT', r1)}${stat('luck', 'LUCK', r1)}</div></div>`;
-  return `<div class="sp-top">${head('PARTY')}<div class="sp-cards">${cards}</div>`
-    + head(`${gh.name.toUpperCase()} · ${gh.role}`, `<b class="sp-pow">\u25c6 ${powers[tab]}</b>`) + gear + itemPopHtml() + '</div>' + bag + foot;
+  return tabs + `<div class="sp-top">${head('PARTY')}<div class="sp-cards">${cards}</div>`
+    + head(`${gh.name.toUpperCase()} · ${gh.role}`, `<b class="sp-pow">\u25c6 ${powers[ht]}</b>`) + gear + itemPopHtml() + '</div>' + bag + foot;
 }
 
 /** The item window or the bag-full popup, if one is open (drawn over the side panel's top block). */

@@ -47,6 +47,7 @@ export interface Enemy {
   slot: number; elite?: boolean; enter?: number;   // where it stands (core/arena.ts); seconds left stepping into its rank
   marks?: Partial<Record<MarkId, number>>;          // seconds left per ability mark (docs/design/dungeon.md)
   shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
+  burn?: number; burnDps?: number;                   // Wildfire (a tree rule, #53): seconds left burning, damage a second
   per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
   windMax?: number; evict?: number;                  // boss: length of the current wind-up; EXECUTE's target hero
   wind?: number; acts?: number; braced?: boolean; enraged?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
@@ -182,6 +183,7 @@ export interface Night {
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   smoke: number; heist: number;   // seconds left of Garrote's Smoke Bomb and Heist (#52, 1.7)
+  sanctuary?: number;             // seconds left of Sanctuary's armor (a tree rule, #53)
   taunt: number; ward: number; lastStand: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
@@ -189,6 +191,7 @@ export interface Night {
   coach: { id: 'steps' | 'door' | 'phone' | 'loot' | 'windup' | 'headset'; t: number; mark: number } | null;   // a coach mark is up (#42)
   moodDrift: number;
   selected: string | null; heroTab: number;
+  townTab?: 'town' | 'inventory' | 'tree'; treeHero?: HeroId; treeSel?: string;   // the town side panel's tab; the skill tree shown (#53)
   everCaught: boolean; unidentifiedFound: number;
   goblin: { t: number } | null;
   fx: FloatFx[]; vfx: Vfx[]; beams: { x: number; color: string; t: number }[];
@@ -231,7 +234,9 @@ export interface GameState {
   checkpoints: number[];         // floors a run can start at: 1 and each 5n+1 whose boss you beat (#52, 1.4)
   startFloor: number;            // the floor the town's picker is on
   drops: number; legendaryFound: boolean;
-  orderSet?: boolean;   // the marching order has been set once (#52, 1.6): from then on it is the player's   // the first legendary of a save comes within LEGENDARY_FIRST_BY drops
+  orderSet?: boolean;   // the marching order has been set once (#52, 1.6): from then on it is the player's
+  trees?: Partial<Record<HeroId, string[]>>;   // skill tree nodes bought, per hero (#53)
+  autocast?: Record<string, boolean>;          // autocast switches, 'hero:slot' (#53)   // the first legendary of a save comes within LEGENDARY_FIRST_BY drops
   night: Night | null;
   townWin?: 'merchant' | 'appraiser' | 'salvage' | 'auction' | `build:${'training' | 'inn' | 'library' | 'treasury'}` | null;   // a service window, or a plot's build window (#50)
   screen: Screen; paused: boolean; debug: boolean; timeScale: number;

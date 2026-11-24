@@ -32,7 +32,10 @@ import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
 import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
 import { maxHp } from './systems/stats';
 import { swapHeroes, ensureParty, hookLine, shoveLine } from './systems/ranks';
-import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging } from './render/liveRpg';
+import { toggleAutocast, buyNode, respec } from './systems/tree';
+import type { NodeId } from './data/trees';
+import type { HeroId } from './core/state';
+import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt } from './render/liveRpg';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -62,6 +65,7 @@ stage.innerHTML = `
       <div id="screen">
         <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
         <canvas id="rpgArea" width="334" height="232"></canvas><div id="rpgBar" aria-hidden="true"></div>
+        <canvas id="spArea" width="140" height="232"></canvas>
         <div id="monUi"></div>
         <div id="ui"></div>
         <div id="winLayer"></div>
@@ -136,6 +140,11 @@ const actions: Record<string, (arg: string) => void> = {
   useSel: () => useSelected(),
   heroTab: a => setHeroTab(Number(a)),
   swap: a => { const [i, j] = a.split(',').map(Number); swapHeroes(i, j); },   // marching order (#52, 1.6)
+  townTab: a => { N().townTab = a as 'town' | 'inventory' | 'tree'; sfx.click(); },   // the town side panel's tabs (#53)
+  treeHero: a => { N().treeHero = a as HeroId; N().treeSel = undefined; sfx.click(); },
+  treeNode: a => { N().treeSel = a; sfx.click(); },
+  treeBuy: a => { const n = N(); if (n.treeHero || S.g.heroes[0]) buyNode((n.treeHero ?? S.g.heroes[0].id) as HeroId, a as NodeId); },
+  treeRespec: a => respec(a as HeroId),
   skipDrop: () => skipDrop(),
   nextFloor: () => choosePath(N().safest),   // the old map's button
   path: a => choosePath(Number(a)),          // a path card on the floor map (#52, 1.5)
@@ -320,6 +329,27 @@ el('rpgArea').addEventListener('pointerdown', ev => {
   if (liveDragStart(x, y)) { (el('rpgArea') as HTMLElement).setPointerCapture(ev.pointerId); return; }   // a portrait or a hero: maybe a swap
   actions[h.act]?.(h.arg);
 });
+// the side panel's canvas (#53): its hit regions are in panel px (140 x 232)
+const spXY = (ev: PointerEvent) => { const r = el('spArea').getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 140, ((ev.clientY - r.top) / r.height) * 232] as const; };
+el('spArea').addEventListener('pointerdown', ev => {
+  if (ev.button !== 0 || !S.g.night || S.g.paused) return;
+  const [x, y] = spXY(ev), h = panelHitAt(x, y);
+  if (!h || !h.act) return;
+  ev.preventDefault(); ev.stopPropagation(); hover.key = '';
+  actions[h.act]?.(h.arg);
+});
+el('spArea').addEventListener('pointermove', ev => {
+  const [x, y] = spXY(ev), h = panelHitAt(x, y), p = toStage(ev);
+  (el('spArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
+  hover.key = h?.tip ? `text:${h.tip}` : ''; hover.x = p.x; hover.y = p.y;
+});
+el('spArea').addEventListener('pointerleave', () => { hover.key = ''; });
+// right-click a skill well: switch its autocast on or off (#53, 2.3)
+el('rpgArea').addEventListener('contextmenu', ev => {
+  ev.preventDefault();
+  const [x, y] = rpgXY(ev as PointerEvent), h = liveHitAt(x, y);
+  if (h?.act === 'ability') { const [hi, si] = h.arg.split(',').map(Number); const hero = S.g.heroes[hi]; if (hero) toggleAutocast(hero.id, si); }
+});
 el('rpgArea').addEventListener('pointerup', () => {
   const d = liveDragEnd();
   if (!d) return;
@@ -498,6 +528,7 @@ function render() {
   const n = g.night;
   drawDoor(doorCtx);
   drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
+  drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
   document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {

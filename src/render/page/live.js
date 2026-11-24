@@ -247,3 +247,90 @@ function livePaths(ctx, st, t) {
   composeInto(ctx, F, { lights: [{ x: -30, y: -40, r: 820, i: 0.66 * fl, c: [1.1, 1.0, 0.86] }, { x: 380, y: 300, r: 330, i: 0.2, c: [0.72, 0.85, 1.3] }], ambient: [0.5, 0.49, 0.55], tint: 0.1, vig: 0 }, 0);
   return LIVE_HITS;
 }
+
+
+// ---- the skill tree (#53; grid doc §6c): the constellation over the battle area and the Skill Tree tab, from the game
+const TREE_PAGE_HERO = { knight: 'knight', rogue: 'rogue', mage: 'mage', healer: 'priest' };
+function liveTreeSetup(st) {
+  TREE_HERO = TREE_PAGE_HERO[st.hero];
+  const T = TREES[TREE_HERO];
+  T.bought = st.bought.slice(); TREE_SOULS = st.souls;
+  if (st.texts) { T.r1 = st.texts.r1; T.r2 = st.texts.r2; Object.assign(T.st, st.texts.st); }
+  return T;
+}
+const TREE_HIT_R = { skill: 11, unlock: 11, ult: 15, rule: 8, stat: 6, auto: 7, root: 8 };
+function liveTree(ctx, st, t) {
+  LIVE_HITS = [];
+  liveTreeSetup(st);
+  TREE_LIVE = true; TREE_LIVE_HOV = st.hov;
+  screenTree(ctx, t);
+  TREE_LIVE = false;
+  for (const id of Object.keys(TN)) { const n = TN[id]; if (n.kind === 'fork') continue; const r = TREE_HIT_R[n.kind]; liveHit(n.x - r, n.y - r, 2 * r, 2 * r, 'treeNode', id, ''); }
+  return LIVE_HITS;
+}
+// a party card from the game (hud.js partyCard reads the page's own heroes)
+function livePartyCard(x, y, c, sel) {
+  const w = 33, h = 40;
+  shadowU(x, y, w, h, { k: 0.55, r: 3, dx: 1, dy: 2 });
+  plateU(x, y, w, h, sel ? { top: 0.4, bot: 0.2, hi: 0.9, lo: 0.08 } : { top: 0.26, bot: 0.13, hi: 0.56, lo: 0.05 });
+  if (sel) frameI(x, y, w, h, P.gold);
+  portrait(c.id, x + 5, y + 3, { selected: false, downed: c.down });
+  rectI(x + 5, y + 27, 22, 1, P.void); rectI(x + 5, y + 27, Math.round(22 * clamp(c.xp)), 1, P.pale);
+  text(c.short, x + 1 + (w >> 1), y + 28, 'tiny', sel ? P.moon : P.u6, { align: 'c', shadow: P.void });
+  text('Lv' + c.lv, x + 2, y + 34, 'tiny', P.u5, { shadow: P.void });
+  power(x + w - 2, y + 34, c.pow, P.u6, 'r');
+}
+let LIVE_PANEL_HITS = [];
+function panelHit(x, y, w, h, act, arg, tip) { LIVE_PANEL_HITS.push({ x, y, w, h, act, arg: String(arg ?? ''), tip: tip || '' }); }
+function liveTreePanel(st, t) {
+  const T = liveTreeSetup(st), X0 = 4, PW = W - 4;
+  leatherU(0, 0, W, H, { v: 0.16, vig: 0.45 });
+  for (let j = 0; j < H; j++) { putU(0, j, 0.02); putU(1, j, 0.78 + 0.06 * (GR(1, j) - 0.5)); putU(2, j, 0.3); putU(3, j, 0.05); }
+  st.party.forEach((c, n) => { livePartyCard(X0 + n * 34, 15, c, c.hero === st.hero); panelHit(X0 + n * 34, 15, 33, 40, 'treeHero', c.hero, ''); });
+  for (let j = 0; j < 10; j++) for (let i = X0; i < X0 + PW; i++) putU(i, 57 + j, j === 0 ? 0.56 : j === 9 ? 0 : lerp(0.3, 0.14, j / 8) + 0.05 * (GR(i, 57 + j) - 0.5));
+  text(st.short.toUpperCase(), X0 + 4, 60, 'silkb', P.u6, { shadow: P.void });
+  const sw = text(String(st.souls), X0 + PW - 4, 60, 'tiny', P.moon, { align: 'r', shadow: P.void }); soulGlyph(X0 + PW - 12 - sw, 59);
+  const N0 = st.node;
+  let y = 71;
+  text(N0.name, X0 + 4, y, 'tiny', P.moon, { shadow: P.void }); y += 8;
+  text(N0.kind, X0 + 4, y, 'tiny', P.u4, { shadow: P.void }); y += 10;
+  for (const ln of wrapTiny(N0.fx, PW - 10)) { text(ln, X0 + 4, y, 'tiny', P.u6, { shadow: P.void }); y += 7; }
+  y += 3;
+  const note = (kind, str) => {
+    const col = kind === '+' ? P.g5 : P.crimson;
+    if (kind === '+') { putI(X0 + 5, y + 1, col); putI(X0 + 4, y + 2, col); putI(X0 + 5, y + 2, col); putI(X0 + 6, y + 2, col); putI(X0 + 5, y + 3, col); } else { putI(X0 + 4, y + 2, col); putI(X0 + 5, y + 2, col); putI(X0 + 6, y + 2, col); }
+    for (const ln of wrapTiny(str, PW - 16)) { text(ln, X0 + 10, y, 'tiny', P.u6, { shadow: P.void }); y += 7; }
+    y += 1;
+  };
+  for (const [k, s] of N0.notes) if (y < 140) note(k, s);
+  { const yy = 148, got = st.bought.length;
+    for (let i = X0 + 2; i < X0 + PW - 2; i++) { putU(i, yy - 4, 0.04); putU(i, yy - 3, 0.32); }
+    text(got + ' bought in this tree', X0 + 4, yy, 'tiny', P.u5, { shadow: P.void });
+    const uw = text(st.ultName + ':', X0 + 4, yy + 9, 'tiny', P.u5, { shadow: P.void });
+    for (let k = 0; k < 6; k++) { const px = X0 + 8 + uw + k * 6; rectI(px, yy + 9, 5, 5, P.void); rectI(px + 1, yy + 10, 3, 3, k < got ? P.gold : P.u2); if (k < got) putI(px + 1, yy + 10, P.pale); }
+    text(got >= 6 ? 'open' : got + '/6', X0 + 46 + uw, yy + 9, 'tiny', got >= 6 ? P.gold : P.u4, { shadow: P.void }); }
+  const by = 172;
+  if (N0.state !== 'owned') {
+    const s = N0.state, lbl = s === 'buy' || s === 'poor' ? 'Buy · ' + N0.cost : s === 'shut' ? 'Shut by its pair' : N0.isUlt ? 'Needs 6 nodes' : 'Locked';
+    flatButton(X0 + 4, by, PW - 8, lbl, s === 'buy', s === 'buy' || s === 'poor');
+    if (s === 'buy') panelHit(X0 + 4, by, PW - 8, 15, 'treeBuy', N0.id, '');
+  }
+  if (N0.state === 'poor') text('Not enough Souls: ' + st.souls + ' of ' + N0.cost + '.', X0 + 4, by + 18, 'tiny', P.crimson, { shadow: P.void });
+  else text('Each buy in this tree costs +15%.', X0 + 4, by + 18, 'tiny', P.u4, { shadow: P.void });
+  const ry = 200;
+  shadowU(X0 + 4, ry, PW - 8, 13, { k: 0.5, r: 2, dx: 1, dy: 2 }); plateU(X0 + 4, ry, PW - 8, 13, { top: 0.4, bot: 0.22, hi: 0.72 });
+  text('Respec · free while testing', X0 + PW / 2, ry + 4, 'tiny', P.u6, { align: 'c', shadow: P.void });
+  panelHit(X0 + 4, ry, PW - 8, 13, 'treeRespec', st.hero, 'Every Soul spent in this tree comes back.');
+  footerMoney(X0, PW, { gold: st.gold, souls: st.souls, record: st.record });
+}
+// the side panel (V2, #53): for now the Skill Tree tab; the other tabs are still the DOM panel
+function livePanel(ctx, st, t) {
+  LIVE_PANEL_HITS = [];
+  setRes(SP_W, GS_H);
+  const S = buf('lsp', SP_W, GS_H); clearFrame(S); bind(S); CLIP = null;
+  if (st.tab === 'tree') liveTreePanel(st, t);
+  tabStrip(st.tab);
+  let x = 4; for (const [id, , w] of TABS) { panelHit(x, 0, w, 11, 'townTab', id, ''); x += w; }
+  composeInto(ctx, S, { lights: [], ambient: [0.1, 0.1, 0.2], tint: 0, vig: 0 }, 0);
+  return LIVE_PANEL_HITS;
+}

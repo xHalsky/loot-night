@@ -77,7 +77,7 @@ export const T = {
   STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free rank (it doesn't attack meanwhile)
   // Drops per kill (#52, 1.3): they fall where the enemy died; the looter picks them up during the walk
   DROP_CHANCE: 0.35,              // each kill drops an item; elites always; bosses BOSS_DROPS
-  LEGENDARY_FIRST_BY: 50,         // the first legendary of a save drops within its first 50 drops (night 1 has 60 to 100)
+  LEGENDARY_FIRST_BY: 40,         // the first legendary of a save drops within its first 40 drops (night 1 has 45 to 75)
   // Runs (#52, 1.4): from the town portal until the town portal (banked) or a wipe (lost)
   SOULS_PER_FLOOR_BASE: 3,        // each floor cleared gives 3 + floor Souls
   SOULS_PER_BOSS: 20,
@@ -110,7 +110,14 @@ export const T = {
   HEALER_AUTO_HEAL_BELOW: 0.6,    // Smite heals an ally under this share of max HP instead of smiting
   HERO_LEVEL_SCALE: 0.04,         // levels unlock skills; strength comes from gear (#49)
   XP_PER_KILL: 5, XP_PER_BOSS: 40, XP_PER_LEVEL: 40, XP_LEVEL_EXP: 1.7,
-  ABILITY_UNLOCK: [1, 1, 3, 1],   // auto, skill 1, skill 2, the ultimate (needs its charge; the trees gate it in #53)
+  // Skill trees (#53; grid doc §6c): skills come only from the tree. Costs set 2026-11-20 against the Souls income
+  TREE_COST: { stat: 20, unlock: 40, rule: 40, auto: 60, ult: 120 } as Record<string, number>,
+  TREE_COST_STEP: 0.15,           // each node x (1 + this x nodes already bought in that tree)
+  TREE_ULT_NEEDS: 6,              // the ultimate needs this many nodes bought in his tree
+  RULE_HOLD_ARMOR: 0.3, RULE_THORNS: 0.3, RULE_CONCUSSION: 2,
+  RULE_SHIV: 0.3, RULE_CHOKE_DPS: 0.25,
+  RULE_WILDFIRE: 0.3, RULE_WILDFIRE_SEC: 3, RULE_INFERNO_DMG: 0.4, RULE_INFERNO_CD: 3, RULE_LINGER: 2, RULE_SHATTER: 4,
+  RULE_SANCTUARY_ARMOR: 0.2, RULE_SANCTUARY_SEC: 5, RULE_GREATER_MEND: 0.3, RULE_AEGIS_SEC: 3, RULE_RETRIBUTION: 0.25,
   // Ability marks (docs/design/dungeon.md): a skill marks an enemy, another skill cashes the mark in.
   MARK_SEC: 6,                    // how long a mark stays on an enemy (Taunted lasts as long as the taunt)
   MARK_STAGGER_FIRE: 2,           // Fire on a Staggered enemy (Bash marks it)

@@ -7,6 +7,7 @@ import { SLOTS } from '../core/state';
 import { ATK_PCT, HP_PCT } from '../data/city';
 import { crossBonus } from './affixes';
 import { setPieces } from './gear';
+import { fx, partyFx } from './tree';
 
 export function itemStat(item: Item | undefined, stat: Stat): number {
   if (!item || !item.identified) return 0;
@@ -26,6 +27,9 @@ export function heroStats(h: Hero, gearOverride?: Partial<Record<string, Item | 
   // set bonuses, two pieces worn by the set's own hero (#52, 1.8)
   if (setPieces(h, 'ironwake', gear) >= 2) out.armor *= 1 + T.SET_IRONWAKE_ARMOR;
   if (setPieces(h, 'nightglass', gear) >= 2) out.crit += T.SET_NIGHTGLASS_CRIT;
+  // the skill tree's stat nodes (#53): HP and armor in shares, crit and luck in points; Shepherd lifts the party's HP
+  out.hp *= 1 + fx(h.id, 'hp') + partyFx('partyHp'); out.armor *= 1 + fx(h.id, 'armor');
+  out.crit += fx(h.id, 'crit'); out.luck += fx(h.id, 'luck');
   out.atk *= 1 + ATK_PCT[S.g.furniture.training ?? 0];
   out.hp *= 1 + HP_PCT[S.g.furniture.inn ?? 0];
   out.hp = Math.round(out.hp); out.atk = Math.round(out.atk * 10) / 10;

@@ -18,12 +18,20 @@ let LIVE_CANVAS = null;
 function pkBattleArea(vm, t) {
   if (!LIVE_CANVAS) { LIVE_CANVAS = document.createElement('canvas'); LIVE_CANVAS.width = BA_W; LIVE_CANVAS.height = GS_H; }
   if (vm.curio && vm.curio.card) for (const c of vm.curio.card.choices) { c.label = c.label.map(([s, k]) => [s, P[k]]); c.cost = c.cost.map(([s, k]) => [s, P[k]]); }
-  const hits = vm.paths ? livePaths(LIVE_CANVAS.getContext('2d'), vm.paths, t) : liveBattleArea(LIVE_CANVAS.getContext('2d'), vm, t);
+  const hits = vm.tree ? liveTree(LIVE_CANVAS.getContext('2d'), vm.tree, t) : vm.paths ? livePaths(LIVE_CANVAS.getContext('2d'), vm.paths, t) : liveBattleArea(LIVE_CANVAS.getContext('2d'), vm, t);
   return { canvas: LIVE_CANVAS, hits };
+}
+let PANEL_CANVAS = null;
+/** The side panel from the game's view model (V2, #53): a 140 x 232 canvas and its hit regions (panel px). */
+function pkPanel(vm, t) {
+  if (!PANEL_CANVAS) { PANEL_CANVAS = document.createElement('canvas'); PANEL_CANVAS.width = SP_W; PANEL_CANVAS.height = GS_H; }
+  const hits = livePanel(PANEL_CANVAS.getContext('2d'), vm, t);
+  return { canvas: PANEL_CANVAS, hits };
 }
 export const PK = {
   ready: () => !!PK_READY && TC !== null,
   battleArea: pkBattleArea,
+  panel: pkPanel,
   init: pkInit,
   /** The whole 640 x 360 frame as the mockup draws it (V1's check against still 00-default). */
   drawFrame: (scene, tScreen, t, moment, her, o) => drawFrame(scene, tScreen, t, moment, her, o || {}),

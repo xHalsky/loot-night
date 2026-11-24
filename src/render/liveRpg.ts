@@ -2,7 +2,7 @@
 // stage's scale, redrawn at 30 fps. Clicks and hovers come back through the renderer's hit regions (grid px).
 import { PK } from 'virtual:pagekit';
 import { S } from '../core/state';
-import { buildBattleView, liveActive, type PartyPointer } from './rpgView';
+import { buildBattleView, liveActive, panelActive, panelView, type PartyPointer } from './rpgView';
 
 type Hit = { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string };
 let started = false, ready = false, lastDraw = 0, shown = false;
@@ -46,10 +46,30 @@ export function drawLiveRpg(cv: HTMLCanvasElement) {
   const h = ptr ? liveHitAt(ptr[0], ptr[1]) : null, hp = h?.act === 'path' ? Number(h.arg) : -1;
   if (hp !== hovPath) { hovPath = hp; hovT = now / 1000; }
   const pp: PartyPointer = { drag: drag?.moved ? { from: drag.from, x: drag.x, y: drag.y, over: heroAt(drag.x, drag.y) } : null, hover: h?.act === 'hero' ? Number(h.arg) : -1 };
-  const r = PK.battleArea(buildBattleView(now, hovPath, hovT, pp), now / 1000);
+  treeHov = h?.act === 'treeNode' ? h.arg : null;
+  const r = PK.battleArea(buildBattleView(now, hovPath, hovT, pp, treeHov), now / 1000);
   cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
   const ms = performance.now() - now; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms;
   hits = r.hits;
+}
+
+// ---- the side panel in the renderer (V2, #53): for now the Skill Tree tab, over the DOM panel
+let treeHov: string | null = null, panelShown = false, panelHits: Hit[] = [], lastPanel = 0;
+export const livePanelShown = () => panelShown;
+export function drawLivePanel(cv: HTMLCanvasElement) {
+  const on = ready && panelActive() && !S.g.night!.switching && S.g.night!.monitor === 'rpg' && S.g.night!.monitorOff <= 0;
+  if (on !== panelShown) { panelShown = on; cv.style.display = on ? 'block' : 'none'; if (!on) panelHits = []; }
+  if (!on) return;
+  const now = performance.now();
+  if (now - lastPanel < FRAME_MS - 1) return;
+  lastPanel = now;
+  const r = PK.panel(panelView(treeHov), now / 1000);
+  cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
+  panelHits = r.hits;
+}
+export function panelHitAt(x: number, y: number): Hit | null {
+  for (let i = panelHits.length - 1; i >= 0; i--) { const h = panelHits[i]; if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) return h; }
+  return null;
 }
 
 /** The topmost hit region under a point in grid px (later regions are drawn over earlier ones). */

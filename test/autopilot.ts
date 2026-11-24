@@ -13,7 +13,7 @@ import { S, N, initialState } from '../src/core/state';
 import { step } from '../src/core/loop';
 import { startNight } from '../src/systems/night';
 import { travelToDungeon, choosePath, isBossBattle } from '../src/systems/dungeon';
-import { queueAbility, moveOf } from '../src/systems/battle';
+import { queueAbility, moveOf, abilityUnlocked } from '../src/systems/battle';
 import { maxHp, heroStats } from '../src/systems/stats';
 import { equipItemOn } from '../src/systems/bag';
 import { skipDrop } from '../src/systems/loot';
@@ -43,33 +43,37 @@ function calm() {
 function castSmart() {
   const n = N();
   if (n.phase !== 'battle' || !n.enemies.some(e => e.hp > 0)) return;
-  const [k, m, h] = S.g.heroes;
-  const ok = (hero: typeof k, s: number) => !hero.downed && hero.cd[s] <= 0 && hero.level >= T.ABILITY_UNLOCK[s] && (s !== 3 || hero.ult >= 1);
+  const by = (id: string) => S.g.heroes.find(x => x.id === id)!, at = (id: string) => S.g.heroes.findIndex(x => x.id === id);
+  const k = by('knight'), m = by('mage'), h = by('healer');
+  const ok = (hero: typeof k, s: number) => !hero.downed && hero.cd[s] <= 0 && abilityUnlocked(hero, s) && (s !== 3 || hero.ult >= 1);
+  const K = (s: number) => queueAbility(at('knight'), s), M = (s: number) => queueAbility(at('mage'), s), H = (s: number) => queueAbility(at('healer'), s);
   const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
   const move = wind ? moveOf(wind) : undefined;
   const boss = n.enemies.some(e => e.boss && e.hp > 0 && moveOf(e) === 'slam');   // only SMASH needs Bash saved
-  if (move === 'slam') { if (ok(k, 2) && !wind!.braced) queueAbility(0, 2); else if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
-  if (move === 'evict') { if (ok(k, 1)) queueAbility(0, 1); else if (ok(h, 2)) queueAbility(2, 2); }
+  if (move === 'slam') { if (ok(k, 2) && !wind!.braced) K(2); else if (ok(k, 1)) K(1); else if (ok(h, 2)) H(2); }
+  if (move === 'evict') { if (ok(k, 1)) K(1); else if (ok(h, 2)) H(2); }
   const alive = n.enemies.filter(e => e.hp > 0);
-  if (ok(k, 3)) queueAbility(0, 3);
-  if (ok(m, 2)) queueAbility(1, 2);
-  if (!boss && ok(k, 2)) queueAbility(0, 2);
-  if (ok(m, 1) && (!boss || alive.some(e => (e.marks?.stagger ?? 0) > 0))) queueAbility(1, 1);
-  if (ok(m, 3)) queueAbility(1, 3);
+  if (ok(k, 3)) K(3);
+  if (ok(m, 2)) M(2);
+  if (!boss && ok(k, 2)) K(2);
+  if (ok(m, 1) && (!boss || alive.some(e => (e.marks?.stagger ?? 0) > 0))) M(1);
+  if (ok(m, 3)) M(3);
   const hp = S.g.heroes.reduce((a, x) => a + x.hp, 0) / S.g.heroes.reduce((a, x) => a + maxHp(x), 0);
-  if (hp < 0.8 && ok(h, 1)) queueAbility(2, 1);
-  if (ok(h, 3) && S.g.heroes.some(x => x.downed || x.hp < maxHp(x) * 0.35)) queueAbility(2, 3);
-  if (!boss && ok(k, 1)) queueAbility(0, 1);
+  if (hp < 0.8 && ok(h, 1)) H(1);
+  if (ok(h, 3) && S.g.heroes.some(x => x.downed || x.hp < maxHp(x) * 0.35)) H(3);
+  if (!boss && ok(k, 1)) K(1);
 }
 function castReady() {
   const n = N();
   S.g.heroes.forEach((h, i) => [1, 2, 3].forEach(s => {
-    if (n.phase === 'battle' && !h.downed && h.cd[s] <= 0 && h.level >= T.ABILITY_UNLOCK[s] && (s !== 3 || h.ult >= 1) && n.enemies.some(e => e.hp > 0)) queueAbility(i, s);
+    if (n.phase === 'battle' && !h.downed && h.cd[s] <= 0 && abilityUnlocked(h, s) && (s !== 3 || h.ult >= 1) && n.enemies.some(e => e.hp > 0)) queueAbility(i, s);
   }));
 }
 /** Plays present until a fight of the wanted kind starts on floor >= minFloor. Returns a snapshot or null. */
 function reach(boss: boolean, minFloor: number): string | null {
   S.g = initialState();
+  // a party some nights in (#53): skill 2 and the ultimate bought in every tree
+  S.g.trees = Object.fromEntries(S.g.heroes.map(h => [h.id, ['g1', 'g2', 's2', 'm1', 'm2', 'm3', 'ult']]));
   startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */ travelToDungeon();
   for (let i = 0; i < 60 * 60 * 40; i++) {
     calm();

@@ -7,6 +7,9 @@ import { MAP_INFO, RARITY_COLOR } from '../data/items';
 import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
 import { ULT_SLOT, ABILITIES, HOME_RANKS, AURAS, HERO_NAME } from '../data/heroes';
 import { outOfRank } from '../systems/ranks';
+import { boughtCount, autocastBought, autocastOn, nodeState, nodeCost } from '../systems/tree';
+import { NODES, TREES, BUYABLE, type NodeId } from '../data/trees';
+import { heroPower, xpNeeded } from '../systems/stats';
 import { maxHp } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
@@ -15,10 +18,59 @@ import { RANK_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
 import { unbanked } from '../systems/run';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
 
-/** The live battle area replaces the old one whenever the party is in the dungeon (not the floor map). */
+/** The live battle area replaces the old one whenever the party is in the dungeon (the floor map too), and in town
+ *  while the Skill Tree tab is open (the tree covers the town, #53). */
 export function liveActive(): boolean {
   const n = S.g.night;
-  return !!n && S.g.screen === 'night' && n.location === 'dungeon';
+  return !!n && S.g.screen === 'night' && (n.location === 'dungeon' || n.townTab === 'tree');
+}
+/** The side panel drawn by the renderer: for now only the Skill Tree tab in town (#53); the rest is the DOM panel. */
+export function panelActive(): boolean {
+  const n = S.g.night;
+  return !!n && S.g.screen === 'night' && n.location === 'town' && n.townTab === 'tree';
+}
+
+// ---- the skill tree (#53; grid doc §6c)
+const SHORT: Record<HeroId, string> = { knight: 'Knighten', rogue: 'Garrote', mage: 'Magoo', healer: 'Healero' };
+const treeHero = (): HeroId => { const n = N(); const id = n.treeHero && S.g.heroes.some(h => h.id === n.treeHero) ? n.treeHero : S.g.heroes[0].id; return id; };
+/** A skill's line in plain words, from its tooltip (placeholders filled, markup dropped). */
+function skillText(hero: HeroId, slot: number): string {
+  const A = ABILITIES[hero][slot];
+  return (A.tip ?? A.desc).replace(/^Ultimate: /, '').replace(/\[(\w+)\](.*?)\[\/\]/g, '$2').replace('{dmg}', `${A.power ?? 1}x attack`).replace('{heal}', 'a big heal')
+    .replace(/\{dur\}/g, String(A.dur ?? 0)).replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{shatter}', String(T.MARK_CHILL_BASH))
+    .replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))).replace('{backstab}', String(T.MARK_STAGGER_BACKSTAB));
+}
+function nodeInfo(hero: HeroId, id: NodeId): { name: string; kind: string; fx: string } {
+  const Tr = TREES[hero], n = NODES[id], sk = (s: number) => ABILITIES[hero][s].name;
+  if (id === 'root') return { name: sk(0), kind: 'Auto attack', fx: ABILITIES[hero][0].desc };
+  if (id === 's1') return { name: sk(1), kind: 'Skill 1 · from the start', fx: skillText(hero, 1) };
+  if (id === 's2') return { name: sk(2), kind: 'Unlock · skill 2', fx: skillText(hero, 2) };
+  if (id === 'ult') return { name: sk(3), kind: 'Ultimate', fx: skillText(hero, 3) + ' Never autocasts.' };
+  if (n.kind === 'rule') { const R = Tr.rules[id as 'r1a']; return { name: R.name, kind: `Rule · ${sk(id[1] === '1' ? 1 : 2)}`, fx: R.fx }; }
+  if (n.kind === 'auto') { const s = sk(id === 'a1' ? 1 : 2); return { name: `Autocast ${s}`, kind: `Autocast · ${s}`, fx: `${s} casts itself the moment it's ready. Dumb on purpose: no marks, no combos. It keeps firing while you're away.` }; }
+  const St = Tr.stats[id as 'g1'], to = n.to === 'ult' ? sk(3) : n.to === 's2' ? sk(2) : n.to === 'r1' ? `${sk(1)}'s rules` : n.to === 'r2' ? `${sk(2)}'s rules` : 'its autocast';
+  return { name: St.name, kind: `Stat · on the way to ${to}`, fx: St.fx };
+}
+export function treeView(hov: string | null) {
+  const hero = treeHero(), Tr = TREES[hero];
+  const pair = (r: 'r1' | 'r2') => [[Tr.rules[`${r}a`].name, Tr.rules[`${r}a`].fx], [Tr.rules[`${r}b`].name, Tr.rules[`${r}b`].fx]];
+  const st = Object.fromEntries(Object.entries(Tr.stats).map(([k, v]) => [k, [v.name, v.fx]]));
+  return { hero, bought: [...(S.g.trees?.[hero] ?? [])], souls: S.g.mats, hov, texts: { r1: pair('r1'), r2: pair('r2'), st } };
+}
+export function panelView(hov: string | null) {
+  const n = N(), g = S.g, hero = treeHero(), bought = [...(g.trees?.[hero] ?? [])] as NodeId[];
+  const id = ((hov ?? n.treeSel ?? BUYABLE.find(x => nodeState(hero, x) === 'buy') ?? 's2') as NodeId);
+  const info = nodeInfo(hero, id), state = id === 'root' || id === 's1' ? 'owned' : nodeState(hero, id), N0 = NODES[id];
+  const notes: [string, string][] = [];
+  if (state === 'owned') notes.push(['+', id === 'root' || id === 's1' ? 'He starts with it.' : 'Bought.']);
+  if (N0.pair) notes.push(['-', state === 'shut' ? `Shut: you took ${nodeInfo(hero, N0.pair).name}. Respec to swap.` : `Locks ${nodeInfo(hero, N0.pair).name}.`]);
+  if (state === 'locked' && N0.kind === 'ult') notes.push(['-', `Needs ${T.TREE_ULT_NEEDS} nodes in his tree: ${bought.length} of ${T.TREE_ULT_NEEDS}.`]);
+  else if (state === 'locked' && N0.req) notes.push(['-', `Needs ${nodeInfo(hero, N0.req).name}.`]);
+  if (N0.kind === 'auto') notes.push(['+', 'A loop mark on its well. Right-click the well to switch it off.']);
+  const party = g.heroes.map(h => ({ hero: h.id, id: PAGE_ID[h.id], short: SHORT[h.id], lv: h.level, pow: heroPower(h), xp: h.xp / xpNeeded(h), down: false }));
+  const tv = treeView(hov);
+  return { tab: 'tree', hero, short: SHORT[hero], souls: g.mats, gold: g.gold, record: Math.max(g.record, n.deepest), party, bought, ultName: ABILITIES[hero][3].name,
+    node: { id, ...info, state, cost: nodeCost(hero, id), isUlt: N0.kind === 'ult', notes }, texts: tv.texts };
 }
 
 const PAGE_ID: Record<HeroId, string> = { knight: 'knight', rogue: 'rogue', mage: 'mage', healer: 'priest' };
@@ -63,8 +115,9 @@ export function heroX(i: number): number {
   return Math.round(RANK_X[h.from] + (RANK_X[i] - RANK_X[h.from]) * e);
 }
 
-export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPointer = { drag: null, hover: -1 }) {
+export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPointer = { drag: null, hover: -1 }, treeHov: string | null = null) {
   const g = S.g, n = N();
+  if (n.location === 'town' && n.townTab === 'tree') return { tree: treeView(treeHov ?? n.treeSel ?? null) };
   if (n.phase === 'mapChoice' && n.paths) return { paths: pathsView(hov, hovT) };
   // the party in marching order, front first (#52, 1.6): rank 1 is S.g.heroes[0]
   const order = g.heroes.map((h, i) => ({ h, i }));
@@ -196,7 +249,7 @@ function goblinView() {
 // the skill bar (grid doc §5): groups in marching order, two skills and the ultimate's gilded well
 function barView(heroes: Hero[]) {
   const n = N();
-  const hp = [1, 1, 1, 1], cooldown: Record<string, { f: number; s: number }> = {}, ult: Record<string, string | { need: number }> = {};
+  const hp = [1, 1, 1, 1], cooldown: Record<string, { f: number; s: number | string }> = {}, ult: Record<string, string | { need: number | string }> = {}, autocast: Record<string, boolean> = {};
   let answer: string | null = null, combo: { key: string; label: string } | null = null;
   const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
   heroes.forEach(h => {
@@ -204,7 +257,9 @@ function barView(heroes: Hero[]) {
     hp[PAGE_SLOT[pid]] = h.downed ? 0 : h.hp / maxHp(h);
     KEYS[h.id].forEach((key, k) => {
       const si = k + 1, A = ABILITIES[h.id][si];
-      if (!abilityUnlocked(h, si)) { cooldown[key] = { f: 1, s: `L${T.ABILITY_UNLOCK[si]}` as unknown as number }; return; }   // locked until that level
+      if (si === ULT_SLOT && !abilityUnlocked(h, si)) { const need = T.TREE_ULT_NEEDS - boughtCount(h.id); ult[key] = { need: need > 0 ? need : '+' }; return; }   // the tree: nodes still missing
+      if (!abilityUnlocked(h, si)) { cooldown[key] = { f: 1, s: '' }; return; }   // skill 2: unlocked in the skill tree (#53)
+      if (autocastBought(h.id, si)) autocast[key] = autocastOn(h.id, si);
       if (si === ULT_SLOT) {
         if (h.ult < 1) cooldown[key] = { f: 1 - h.ult, s: Math.ceil((1 - h.ult) * T.ULT_CHARGE_SEC) };
         ult[key] = 'ready';
@@ -215,7 +270,7 @@ function barView(heroes: Hero[]) {
       else if (!combo && !h.downed) { const c = comboLabel(h.id, si); if (c) combo = { key, label: c }; }
     });
   });
-  return { order: heroes.map(h => PAGE_ID[h.id]), heroIdx: heroes.map((_, i) => i), selected: n.heroTab, hp, cooldown, ult, answer, combo, queued: null, autocast: {}, blocked: abilitiesLocked() && n.location === 'dungeon' ? abilitiesLocked() : null,
+  return { order: heroes.map(h => PAGE_ID[h.id]), heroIdx: heroes.map((_, i) => i), selected: n.heroTab, hp, cooldown, ult, answer, combo, queued: null, autocast, blocked: abilitiesLocked() && n.location === 'dungeon' ? abilitiesLocked() : null,
     outpos: heroes.filter(outOfRank).map(h => PAGE_ID[h.id]), stopped: heroes.filter(h => h.moving).map(h => PAGE_ID[h.id]), outLabel: `x${T.OUT_OF_RANK_MULT}`, dropOn: -1 };
 }
 /** A mark on the field that this skill cashes in (docs/design/dungeon.md, ability marks): the well glows gold. */

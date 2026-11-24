@@ -117,7 +117,8 @@ function edgeLine(a, b, s, t) {
   }
 }
 const TREE_HOVER = { knight: ['p1', 'r1b', 'ult', 'q2', 'r2b'], rogue: ['g1', 'r1b', 'q1', 'ult'], mage: ['ult', 'q2', 'a1', 'm3'], priest: ['g1', 's2', 'p1', 'ult'] };
-function treeHovered(t) { const L = TREE_HOVER[TREE_HERO]; return L[Math.floor(t / 3) % L.length]; }
+let TREE_LIVE = false, TREE_LIVE_HOV = null;   // the game drives the hover (live.js)
+function treeHovered(t) { if (TREE_LIVE) return TREE_LIVE_HOV; const L = TREE_HOVER[TREE_HERO]; return L[Math.floor(t / 3) % L.length]; }
 let TREE_SKY = {};
 function treeSky(T) {
   if (TREE_SKY[TREE_HERO]) return TREE_SKY[TREE_HERO];
@@ -167,7 +168,7 @@ function screenTree(ctx, t) {
   key((x, y) => sprite(x + 1, y - 2, TLOOP, { m: 'u5' }), 'autocast');
   { const s = 'gold ring: you can buy it'; text(s, W - 5, 5, 'tiny', P.gold, { align: 'r', shadow: P.void }); }
   // the pointer on the hovered node
-  if (typeof cursorAt === 'function') cursorAt(TN[hov].x + 3, TN[hov].y + 3);
+  if (!TREE_LIVE && typeof cursorAt === 'function') cursorAt(TN[hov].x + 3, TN[hov].y + 3);
   composeInto(ctx, F, { lights: [], ambient: [0.1, 0.1, 0.2], tint: 0, vig: 0 }, 0);
 }
 // ---------------------------------------------------------------- the Skill Tree tab

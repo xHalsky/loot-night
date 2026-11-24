@@ -17,6 +17,7 @@ section in place; never append "round N" notes.
 | [night.md](night.md) | The night: clocks, endings, stars, sleep debt, Tiredness |
 | [dungeon.md](dungeon.md) | Party, battle, skills, floors and maps, death, the cave diorama |
 | [loot.md](loot.md) | Drops, rarity, items, the bag, lock and auto-salvage |
+| [trees.md](trees.md) | Skill trees, Souls and autocast (#53) |
 | [city.md](city.md) | The city hub, services, buildings, currencies |
 | [her.md](her.md) | The girlfriend: apartment, visits, the door, peeking, bed phase, the desk visit |
 | [desk.md](desk.md) | The phone and interrupts, Excel and alt-tab, Goblin Fuel, the dog and cables, buffs |

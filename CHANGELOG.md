@@ -3,6 +3,26 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.60.0 (2026-11-24)
+
+- **Skill trees** (#53; grid doc §6c; `src/data/trees.ts`, `src/systems/tree.ts`). Skills come only from the tree:
+  every hero starts with his auto attack and skill 1; skill 2 is an unlock behind two stats; the ultimate needs 6
+  nodes and charges only once bought (levels give stats only, `ABILITY_UNLOCK` is gone). Per hero two rule pairs
+  (one shuts the other), two autocasts, nine class stats (the last on the way to the ultimate raises his aura).
+  Costs stat 20, unlock 40, rule 40, autocast 60, ultimate 120 Souls, +15% per node in that tree; respec free while
+  testing; buying in town only.
+- **Autocast**: a loop mark on the well, on when bought, right-click the well to switch it. Dumb on purpose (ready, it
+  casts on the default target), fires while you're away, never an ultimate.
+- **The Skill Tree tab**: the town side panel has three tabs (Town, Inventory, Skill Tree). The tree opens over the
+  town as a constellation and the tab shows the node, the Buy and the Respec, both drawn by the renderer. Town and
+  Inventory are the DOM panel for now.
+- Pacing with skill 2 now bought: pack HP back to x1.25, first legendary within 40 drops (night 1 has 43 to 75).
+- The sim's good bot now gears up on the walks and keeps auto-salvage off (with rares every 30 s it was starving its
+  own gear), and buys tree nodes in town. Night 1, 4 runs: fights 9 to 13 s, runs end on floors 5 to 7 (mostly banked
+  with a full bag), 3.5 to 4.5 min, a rare or better every 16 to 31 s, 3 to 4 nodes a night. Idle: unplugged, 3 wipes.
+- New `test/tree.ts` (23 checks), `test/tree.py`. The autopilot test gives its party skill 2 and the ultimates and finds
+  its heroes by id (it assumed the old order since 0.56).
+
 ## 0.59.0 (2026-11-24)
 
 - **Pacing tuned to the targets** (#52, 1.9). Rarity weights 68/28/3.3/0.55/0.15 (were 60/25/10/4/1) with a slower

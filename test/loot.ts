@@ -13,7 +13,8 @@ import { LEGENDS, SETS, type LegendId, type SetId } from '../src/data/legendarie
 
 let fail = 0;
 const ok = (c: boolean, what: string) => { console.log((c ? 'ok   ' : 'FAIL ') + what); if (!c) fail++; };
-function party(n: number) { S.g = initialState(); S.g.nightsPlayed = n - 1; S.g.realLifeOff = true; startNight(); S.g.howto = false; ensureParty(); for (const h of S.g.heroes) h.level = 6; }
+function party(n: number) { S.g = initialState(); S.g.nightsPlayed = n - 1; S.g.realLifeOff = true; startNight(); S.g.howto = false; ensureParty(); for (const h of S.g.heroes) h.level = 6;
+  S.g.trees = Object.fromEntries(S.g.heroes.map(h => [h.id, ['g1', 'g2', 's2', 'm1', 'm2', 'm3', 'ult']])); }   // skills come from the tree (#53)
 const H = (id: HeroId) => heroById(id)!;
 
 // affix lines

@@ -7,6 +7,7 @@ import { HOME_RANKS, AURAS, DEFAULT_ORDER, HERO_NAME, HERO_BASE } from '../data/
 import { toastAs, floatText } from '../core/fx';
 import { RANK_X } from '../core/arena';
 import { sfx } from '../ui/audio';
+import { fx } from './tree';
 const toast = toastAs('PARTY');
 
 export const rankOf = (h: Hero) => S.g.heroes.indexOf(h) + 1;
@@ -24,15 +25,17 @@ export function aurasOn(h: Hero): HeroId[] {
   return out;
 }
 const has = (h: Hero, giver: HeroId) => aurasOn(h).includes(giver);
+/** A giver's aura value: the tree's last stat on the way to his ultimate raises it (Shield Brother, Sly, Mentor, Halo). */
+const auraVal = (giver: HeroId, base: number) => fx(giver, 'aura') || base;
 /** Damage a hero takes, x this (the Knight's shield wall on the hero behind him). */
-export const auraTaken = (h: Hero) => (has(h, 'knight') ? 1 - T.AURA_KNIGHT_TAKEN : 1);
+export const auraTaken = (h: Hero) => (has(h, 'knight') ? 1 - auraVal('knight', T.AURA_KNIGHT_TAKEN) : 1);
 /** Extra crit (Garrote's keen eye on the hero in front of him). */
-export const auraCrit = (h: Hero) => (has(h, 'rogue') ? T.AURA_ROGUE_CRIT : 0);
+export const auraCrit = (h: Hero) => (has(h, 'rogue') ? auraVal('rogue', T.AURA_ROGUE_CRIT) : 0);
 /** Cooldowns x this (Magoo's haste on the hero in front of him). */
-export const auraCd = (h: Hero) => (has(h, 'mage') ? 1 - T.AURA_MAGE_CD : 1);
+export const auraCd = (h: Hero) => (has(h, 'mage') ? 1 - auraVal('mage', T.AURA_MAGE_CD) : 1);
 /** Healero's blessing: his neighbours regenerate in the dungeon. */
 export function auraRegen(dt: number, maxHp: (h: Hero) => number) {
-  for (const h of S.g.heroes) if (!h.downed && has(h, 'healer')) h.hp = Math.min(maxHp(h), h.hp + maxHp(h) * T.AURA_PRIEST_REGEN * dt);
+  for (const h of S.g.heroes) if (!h.downed && has(h, 'healer')) h.hp = Math.min(maxHp(h), h.hp + maxHp(h) * auraVal('healer', T.AURA_PRIEST_REGEN) * dt);
 }
 
 /** Moves heroes into a new order. In the dungeon, everyone whose rank changed walks there for SWAP_SEC and doesn't act. */
