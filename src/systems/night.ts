@@ -1,3 +1,4 @@
+import { bankRun } from './run';
 import { resetPacing } from './pacing';
 import { T } from '../config/tuning';
 import { carryGoodwill } from './goodwill';
@@ -19,9 +20,9 @@ import { cityOutlook } from './town';
 export function newNight(): Night {
   return {
     clock: T.NIGHT_START, threat: 0, location: 'town', phase: 'walk', phaseT: 0,
-    floor: 1, battleIdx: 0, floorMap: 'plain', checkpoint: 1, deepest: 0,
+    floor: 1, battleIdx: 0, floorMap: 'plain', checkpoint: Math.max(1, ...S.g.checkpoints), deepest: 0,
     enemies: [], mood: T.MOOD_START, noise: 0, catches: 0, bossQuiet: 0, bossCallback: 0, flow: T.FLOW_MIN,
-    monitor: 'rpg', action: 'none', dropQueue: [], floorLoot: [], fresh: [], lootFly: [], dropPopup: null, corpse: [], corpseFloor: 0,
+    monitor: 'rpg', action: 'none', dropQueue: [], floorLoot: [], fresh: [], lootFly: [], dropPopup: null, reserve: [], run: null, runCard: null,
     visit: { stage: 'idle', t: 0, nextAt: 0, fake: false, checked: false, result: '', kind: 'peek' },
     apt: { room: 'living', activity: 'tv', t: 0, moving: 0, soundT: 0, heard: null, heardWhat: '', heardAt: 0, showerUsed: false, lastVisitEnd: 0, forceDoor: false, asleep: false, wake: 0, textSent: false, cued: false, calm: 0, forceKind: null },
     headset: false, scare: 0, zone: 0, tired: 0, blink: { state: 'open', lid: 0, nextIn: 40 }, boost: 0, crash: 0, cans: 0, bin: [], log: [], peeking: false, peek: 0, peekSus: 0, declineHold: false, decline: 0, phoneDown: 0, flipFx: 0, momCallback: 0, switching: null, dog: { stage: 'away', t: 0, next: T.DOG_FIRST_SEC, ignores: 0, limit: 2, pet: 0, sweet: 0, flinch: 0 }, unplugged: null, lap: null, cansHidden: false,
@@ -69,6 +70,7 @@ export function endNight(ending: Results['ending']) {
   n.dropQueue.push(...n.floorLoot.map(l => l.entry)); n.floorLoot = [];
   n.dropQueue.forEach(e => { if (S.g.bag.length < S.g.bagSize) S.g.bag.push(e); });
   if (n.dropPopup && S.g.bag.length < S.g.bagSize) S.g.bag.push(n.dropPopup.entry);
+  if (n.run) bankRun();   // logging off ends the run safely (#52, 1.4; docs/design/dungeon.md)
   if (ending === 'unplugged') {
     const sorted = [...S.g.bag].sort((a, b) => entryValue(b) - entryValue(a));
     sorted.slice(Math.ceil(sorted.length / 2)).forEach(e => removeEntry(e.id));
@@ -94,9 +96,9 @@ export function endNight(ending: Results['ending']) {
   const city = cityOutlook();   // counts what your bag sells and salvages for, like you would in the city
   if (city.next) {
     const what = `${city.next.name} ${city.next.upgrade ? 'upgrade' : ''}`.trim();
-    if (city.now) near.push(`You can afford the ${what} in the city (${city.next.gold} gold, ${city.next.mats} scraps).`);
+    if (city.now) near.push(`You can afford the ${what} in the city (${city.next.gold} gold, ${city.next.mats} Souls).`);
     else if (city.withBag) near.push(`Sell and salvage your bag in the city: it pays for the ${what}.`);
-    else if (city.short) near.push(`${what}: ${city.short.gold ? city.short.gold + ' gold' : ''}${city.short.gold && city.short.mats ? ' and ' : ''}${city.short.mats ? city.short.mats + ' scraps' : ''} short, even selling your bag.`);
+    else if (city.short) near.push(`${what}: ${city.short.gold ? city.short.gold + ' gold' : ''}${city.short.gold && city.short.mats ? ' and ' : ''}${city.short.mats ? city.short.mats + ' Souls' : ''} short, even selling your bag.`);
   }
   const unidentified = S.g.bag.filter(e => e.kind === 'item' && !e.item.identified).length;
 

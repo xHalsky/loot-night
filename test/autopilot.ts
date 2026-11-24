@@ -76,10 +76,11 @@ function reach(boss: boolean, minFloor: number): string | null {
     const n = N();
     if (n.phase === 'mapChoice') chooseNextFloor(null);
     if (n.phase === 'battle' && n.floor >= minFloor && isBossBattle() === boss && n.phaseT < 0.05) return JSON.stringify(S.g);
-    if (n.phase === 'loot' || n.phase === 'walk') gearUp();
+    if (n.phase === 'walk') gearUp();
     castReady();
     step(DT);
     if (S.g.screen !== 'night') return null;
+    if (n.location === 'town') travelToDungeon(Math.max(...S.g.checkpoints));   // a wipe: the next run from the deepest checkpoint
   }
   return null;
 }
@@ -88,7 +89,7 @@ function play(snap: string, mode: 'smart' | 'spam' | 'away'): { wiped: boolean; 
   S.g = JSON.parse(snap);
   const n = N();
   n.monitor = away ? 'excel' : 'rpg';
-  const floor0 = n.floor;
+  const boss0 = isBossBattle();
   const LONG = Number(process.env.LONG ?? 70);
   let wiped = false, won = false, minHp = 1, secs = away ? 40 : LONG;
   const partyHp = () => S.g.heroes.reduce((a, h) => a + (h.downed ? 0 : h.hp), 0) / S.g.heroes.reduce((a, h) => a + maxHp(h), 0);
@@ -98,9 +99,10 @@ function play(snap: string, mode: 'smart' | 'spam' | 'away'): { wiped: boolean; 
     calm();
     if (mode === 'spam') castReady(); if (mode === 'smart') castSmart();
     if (n.phase === 'mapChoice') { won = true; break; }
+    const idx = n.battleIdx;
     step(DT);
-    if (n.floor !== floor0 || n.corpse.length) { wiped = n.corpse.length > 0 || n.floor < floor0; if (wiped) break; }
-    if (n.phase === 'loot' && isBossBattle()) won = true;
+    if (n.location === 'town') { wiped = true; break; }   // #52, 1.4: a wipe ends the run in town
+    if (boss0 && n.battleIdx > idx) won = true;
   }
   return { wiped, hpPct: Math.round(minHp * 100), won, secs };
 }

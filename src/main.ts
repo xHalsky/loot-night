@@ -3,7 +3,7 @@ import './ios.css';
 import { T } from './config/tuning';
 import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
-import { drawMonitor, MON_W, MON_H, goblinPos, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
+import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { DESK_W, BATTLE_W, BAND_H } from './ui/layout';
 import { townHit, townHover } from './ui/townMap';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
@@ -14,7 +14,7 @@ import { HOTKEYS } from './data/heroes';
 import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip } from './systems/bag';
 import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } from './systems/loot';
-import { chooseNextFloor, returnToTown, travelToDungeon, catchGoblin } from './systems/dungeon';
+import { chooseNextFloor, returnToTown, travelToDungeon, catchGoblin, pickStartFloor } from './systems/dungeon';
 import { chooseCurio, endCurio } from './systems/curios';
 import { toast } from './core/fx';
 import { ACT_BY_ID } from './data/apartment';
@@ -143,6 +143,7 @@ const actions: Record<string, (arg: string) => void> = {
   curioLeave: () => { toast('The party walks past.', '#a999bd'); endCurio(); },
   toTown: () => returnToTown(),
   goblin: () => catchGoblin(),   // the live battle area's goblin (V2)
+  pickFloor: a => pickStartFloor(Number(a)),   // #52, 1.4: the town's floor picker
   gate: () => travelToDungeon(),
   sleep: () => endNight('sleep'),
   identify: () => identify(), vendor: () => vendor(), salvage: () => salvage(), list: () => list(),
@@ -384,8 +385,6 @@ monCanvas.addEventListener('pointerdown', ev => {
     else if (id) openTownWin(id);
     return;
   }
-  const g = goblinPos();   // the scene sits under the band, 1:1 (#49)
-  if (g && x < BATTLE_W && Math.abs(x - (g.x + 18)) < 34 && Math.abs(y - BAND_H - (g.y + 20)) < 34) catchGoblin();
 });
 
 // The city (#50): a building under the mouse glows and shows its tooltip; the cursor says it can be clicked.

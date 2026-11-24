@@ -9,7 +9,8 @@ import { maxHp } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
-import { HERO_X, ENEMY_X } from '../systems/battle';
+import { RANK_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
+import { unbanked } from '../systems/run';
 
 /** The live battle area replaces the old one whenever the party is in the dungeon (not the floor map). */
 export function liveActive(): boolean {
@@ -21,12 +22,7 @@ const PAGE_ID: Record<HeroId, string> = { knight: 'knight', mage: 'mage', healer
 const PH: Record<string, number> = { knight: 2.6, rogue: 3.4, mage: 1.3, priest: 0 };
 const KEYS: Record<HeroId, string[]> = { knight: ['1', '2', '3'], mage: ['Q', 'W', 'E'], healer: ['A', 'S', 'D'] };
 const PAGE_SLOT: Record<string, number> = { knight: 0, rogue: 1, mage: 2, priest: 3 };   // hud.js HEROES order
-// the front rank stands at x 126, the others 35 px apart behind it (grid doc §4b)
-const rankX = (rank: number) => 126 - 35 * rank;
-// enemies: the mob in two lanes (grid doc §4c); up to three now (packs of six come with #52 1.3)
-const FRONT_X = [186, 226, 266], BOSS_X = 300;
-const LANE_Y: Record<string, number> = { front: 202, back: 190, mid: 196 };
-const BAR_Y: Record<string, number> = { front: 132, back: 117, mid: 121 };
+// where everyone stands: core/arena.ts (grid doc §4b, §4c); the systems place numbers and drops there too
 const RIG: Record<string, { rig: string; o?: Record<string, unknown> }> = {
   skeleton: { rig: 'skel' }, collector: { rig: 'zomb', o: { sword: true } }, auditor: { rig: 'necro' },
   shelter: { rig: 'skel', o: { helm: true, shield: true } },
@@ -44,17 +40,16 @@ export function buildBattleView(nowMs: number) {
   const order = g.heroes.map((h, i) => ({ h, i }));
   const party = order.map(({ h }, rank) => {
     const id = PAGE_ID[h.id];
-    return { id, x: rankX(rank), ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 ? 3 : 0 };
+    return { id, x: RANK_X[rank], ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 ? 3 : 0 };
   });
-  // the enemies: the boss on the party's lane behind the mob, the rest in the front lane
-  let slot = 0;
+  // the enemies: six ranks, fodder in two lanes, the boss or the lieutenant behind them; a newcomer slides in
   const enemies = n.enemies.map((e: Enemy) => {
-    const d = ENEMY_BY_ID[e.defId];
-    const boss = e.boss, lane = boss ? 'mid' : 'front', x = boss ? BOSS_X : FRONT_X[Math.min(2, slot++)];
+    const d = ENEMY_BY_ID[e.defId], sl = ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0];
+    const boss = e.boss, lane = sl.lane, x = sl.x + Math.round((e.enter ?? 0) / T.STEP_IN_SEC * 50);
     const rig = !boss ? RIG[e.defId] : undefined;
     const s = boss ? 4 : 3;
-    let barY = BAR_Y[lane];
-    if (!rig && d) { const h = Math.max(...d.sprite.map(r => r[1] + r[3])) * s; barY = Math.max(66, LANE_Y[lane] - h - (e.defId === 'bat' ? 26 : 8)); }
+    let barY = sl.bar;
+    if (!rig && d) { const h = Math.max(...d.sprite.map(r => r[1] + r[3])) * s; barY = Math.max(66, sl.y - h - (e.defId === 'bat' ? 26 : 8)); }
     const tags: [string, string][] = [];
     if (e.shield) tags.push(['SHIELD', 'stone']);
     if (e.enraged) tags.push(['ENRAGED', 'crimson']);
@@ -62,30 +57,15 @@ export function buildBattleView(nowMs: number) {
     if (e.stunned > 0) tags.push(['STUNNED', 'moon']);
     const wind = (e.wind ?? 0) > 0 && e.windMax ? { label: windLabel(e), f: 1 - (e.wind ?? 0) / e.windMax } : null;
     return {
-      dead: e.hp <= 0, boss, lane, x, barY, hp: Math.max(0, e.hp / (e.maxHp || 1)), flash: e.flash, lunge: (e.lunge ?? 0) > 0 ? 3 : 0, ph: (e.uid % 7) * 0.9,
+      dead: e.hp <= 0, boss, lane, x, barY, back: lane === 'back', hp: Math.max(0, e.hp / (e.maxHp || 1)), flash: e.flash, lunge: (e.lunge ?? 0) > 0 ? 3 : 0, ph: (e.uid % 7) * 0.9,
       rig: rig?.rig, o: rig?.o, px: rig ? null : d?.sprite, s, bodies: e.per ? bodies(e) : 1, fly: e.defId === 'bat', tags: tags.slice(0, 2), wind,
     };
   });
-  // floating numbers: the systems place them in the old screen's coordinates; put each over the unit it belongs to
-  const live = enemies.map((e, i) => ({ e, i }));
-  const floaters = n.fx.map(f => {
-    let x: number, y: number;
-    if (f.x < 330) { const k = nearest(HERO_X.map(v => v + 18), f.x); x = party[Math.min(k, party.length - 1)]?.x ?? f.x / 2; y = 110; }
-    else { const k = nearest(ENEMY_X.map(v => v + 18), f.x); const hit = live.find(q => q.i === k)?.e ?? live[0]?.e; x = hit ? hit.x : f.x / 2; y = hit ? hit.barY - 12 : 100; }
-    return { text: f.text, x, y: y - (1 - f.t) * 16, idx: colorIdx(f.color), big: f.text.endsWith('!') };
-  });
-  // effects: the systems aim them in the old screen's coordinates too (old battle area 668 x 464, scene under a 112 band)
-  const at = (ox: number) => {
-    if (ox < 330) { const k = nearest(HERO_X.map(v => v + 30), ox); return { x: party[Math.min(k, party.length - 1)]?.x ?? ox / 2, y: 168 }; }
-    const k = nearest(ENEMY_X.map(v => v + 30), ox), hit = live.find(q => q.i === k)?.e ?? live[0]?.e;
-    return { x: hit ? hit.x : ox / 2, y: hit && hit.boss ? 160 : 172 };
-  };
-  const vfx = n.vfx.map(v => {
-    const a = at(v.x), b = v.x2 === v.x && v.y2 === v.y ? a : (v.x2 < 330 ? at(v.x2) : { x: v.x2 / 2, y: Math.max(70, 64 + (v.y2 - 112) * 142 / 352) });
-    return { kind: v.kind, x: a.x, y: v.kind === 'ward' ? 196 : a.y, x2: b.x, y2: b.y, k: v.t / v.dur };
-  });
-  const loot = n.floorLoot.map(l => ({ x: l.x / 2, y: 201, r: l.entry.kind === 'item' ? l.entry.item.rarity : 'map' }));
-  const flies = n.lootFly.filter(f => f.t >= f.delay).map(f => { const k = (f.t - f.delay) / f.max; return { text: f.text, x: f.x / 2 + f.dx / 2, y: 186 - k * 48, idx: rarityIdxOf(f.color) }; });
+  // floating numbers and effects: the systems place them on the grid (core/arena.ts)
+  const floaters = n.fx.map(f => ({ text: f.text, x: f.x, y: f.y, idx: colorIdx(f.color), big: f.text.endsWith('!') }));
+  const vfx = n.vfx.map(v => ({ kind: v.kind, x: v.x, y: v.kind === 'ward' ? 196 : v.y, x2: v.x2, y2: v.y2, k: v.t / v.dur }));
+  const loot = n.floorLoot.map(l => ({ x: l.x, y: FLOOR_Y, r: l.entry.kind === 'item' ? l.entry.item.rarity : 'map' }));
+  const flies = n.lootFly.filter(f => f.t >= f.delay).map(f => { const k = (f.t - f.delay) / f.max; return { text: f.text, x: f.x + f.dx, y: 186 - k * 48, idx: rarityIdxOf(f.color) }; });
   // the corner
   const step = Math.floor((n.flow + 1e-6) / T.FLOW_GLOW_STEP);
   if (step > flowStep && n.flow > T.FLOW_MIN + 0.01) flowGlowUntil = nowMs + T.FLOW_GLOW_SEC * 1000;
@@ -96,7 +76,8 @@ export function buildBattleView(nowMs: number) {
     where: `Shadow Crypt · floor ${n.floor} · battle ${Math.min(n.battleIdx + 1, T.BATTLES_PER_FLOOR)}/${T.BATTLES_PER_FLOOR}${map}${boss}`,
     flow: n.flow.toFixed(1), flowBar: (n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN), flowGlow: nowMs < flowGlowUntil,
   };
-  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', buffs: buffList(), curio: curioView(), goblin: goblinView(), bar: barView(order.map(o => o.h)) };
+    const u = unbanked();
+  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', bank: u.items || u.gold ? `bank ${u.items} · ${u.gold} g` : '15 min', buffs: buffList(), curio: curioView(), goblin: goblinView(), bar: barView(order.map(o => o.h)) };
 }
 
 function windLabel(e: Enemy): string {
@@ -105,7 +86,6 @@ function windLabel(e: Enemy): string {
   if (m === 'evict' && e.evict != null) return `${base} · ${S.g.heroes[e.evict]?.name.split(' ')[0] ?? ''}`;
   return base;
 }
-const nearest = (xs: number[], x: number) => xs.reduce((b, v, i) => (Math.abs(v - x) < Math.abs(xs[b] - x) ? i : b), 0);
 function rarityIdxOf(color: string): string {
   for (const [r, c] of Object.entries(RARITY_COLOR)) if (c.toLowerCase() === color.toLowerCase()) return RARITY_IDX[r] ?? 'moon';
   return colorIdx(color);
@@ -149,7 +129,7 @@ const fit = (s: string, n: number) => (s.length <= n ? s : s.slice(0, n - 3).tri
 
 function goblinView() {
   const gp = goblinPos();
-  return gp ? { x: gp.x / 2 + 9, px: GOBLIN } : null;
+  return gp ? { x: gp.x, px: GOBLIN } : null;
 }
 
 // the skill bar (grid doc §5): groups in marching order, two skills and the ultimate's gilded well

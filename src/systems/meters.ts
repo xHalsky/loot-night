@@ -46,6 +46,7 @@ export function updateMeters(dt: number) {
   n.noise = off ? 0 : clamp(n.noise - T.NOISE_DECAY_PER_SEC * dt, 0, 100);
   if (off) { n.tired = 0; n.mood = 0; }
 
+  if (n.runCard) { n.runCard.t -= dt; if (n.runCard.t <= 0) n.runCard = null; }
   n.taunt = Math.max(0, n.taunt - dt);
   n.lastStand = Math.max(0, n.lastStand - dt);
   n.goodBoy = Math.max(0, n.goodBoy - dt);

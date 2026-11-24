@@ -3,6 +3,28 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.53.0 (2026-11-24)
+
+The RPG on its own, part 2 (#52, steps 1.3 and 1.4).
+
+- **Packs.** An encounter is a pack of 5 on floor 1, growing by one every two floors (at most 12): six stand on
+  screen, fodder in two close lanes and a boss or the Shaman behind them; the rest wait off screen and slide into a
+  free rank as the front ones die. Pack members have 1.4x a lone enemy's HP and half its attack. Enemies now pick
+  ranks: melee hits the front two (the knight 70%), the Shaman the back, bats anyone; Taunt still takes it all.
+- **Drops per kill**, where the enemy fell (35% a kill, a boss 3, an Elite Pack's lieutenant a rare). No more loot
+  pause: the walk picks everything up. The first legendary of a save comes within its first 80 drops.
+- **Runs.** A run starts at the Dungeon Portal, at floor 1 or a checkpoint you unlocked (◀ floor N ▶ by Enter the
+  dungeon); beating the boss of floor 5n unlocks 5n+1 for good. Loot and gold picked up are unbanked (a dashed mark
+  in the bag; the town portal plate says "bank 7 · 420 g") until the town portal banks them. A **party wipe** loses
+  the run's unbanked items and gold (worn and locked ones too), keeps its Souls, and wakes the party in the city at
+  full HP; the corpse run is gone. Logging off banks the run. A run end card shows what was banked or lost.
+- **Souls** replace scraps everywhere: +3 + floor for each floor cleared, +20 for a boss, salvage as before.
+- The old cave drawing (`ui/dungeon.ts`) is gone; units, numbers and drops are placed on the grid (`core/arena.ts`).
+- Sims (good, 3 runs; the bot banks when the party is under 45% HP or the bag is nearly full, and turns
+  auto-salvage on), before → after: depth 10 → 6 to 7, 3 runs a night (2 banked), level 7 to 8, Souls 31 → 120 to
+  143; pacing: an encounter 6 s → 10 to 11 s, a floor about 40 s, an item every 3.5 s of combat (target 3 to 5),
+  a rare or better every 12 s (target 30: tuning in 1.9). Idle: 2 wipes a night, depth 2 to 3.
+
 ## 0.52.0 (2026-11-24)
 
 - **The dungeon in the redesign's look** (V2, #67, the battle area). The walk, the fights, the curios and the loot are

@@ -62,7 +62,7 @@ export function salvage() {
   const e = removeEntry(n.selected);
   if (!e) return;
   S.g.mats += y;
-  toast(`Salvaged ${entryName(e)}: +${y} scraps`, '#c9a46a'); sfx.good();
+  toast(`Salvaged ${entryName(e)}: +${y} Souls`, '#c9a46a'); sfx.good();
 }
 
 export function listValue(id: string): number {
@@ -90,7 +90,7 @@ export function buildCity(id: CityId) {
   const lvl = S.g.furniture[id] ?? 0;
   if (lvl >= 3) return;
   const gold = f.gold[lvl], mats = f.mats[lvl];
-  if (S.g.gold < gold || S.g.mats < mats) { toast(`Need ${gold} gold and ${mats} scraps.`, '#ff8a80'); sfx.bad(); return; }
+  if (S.g.gold < gold || S.g.mats < mats) { toast(`Need ${gold} gold and ${mats} Souls.`, '#ff8a80'); sfx.bad(); return; }
   const hpRatios = S.g.heroes.map(h => h.hp / maxHp(h));
   S.g.gold -= gold; S.g.mats -= mats;
   S.g.furniture[id] = lvl + 1;

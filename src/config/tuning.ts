@@ -69,7 +69,18 @@ export const T = {
   BATTLES_PER_FLOOR: 3,
   CHECKPOINT_EVERY: 5,
   WALK_SEC: 4,
-  LOOT_PAUSE_SEC: 2.5,
+  // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
+  PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))
+  PACK_HP_MULT: 1.4,              // a pack member's HP and attack against a lone enemy's (*start*, tuned to 8 to 12 s fights)
+  PACK_ATK_MULT: 0.5,
+  STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free rank (it doesn't attack meanwhile)
+  // Drops per kill (#52, 1.3): they fall where the enemy died; the looter picks them up during the walk
+  DROP_CHANCE: 0.35,              // each kill drops an item; elites always; bosses BOSS_DROPS
+  LEGENDARY_FIRST_BY: 80,         // the first legendary of a save drops within its first 80 drops
+  // Runs (#52, 1.4): from the town portal until the town portal (banked) or a wipe (lost)
+  SOULS_PER_FLOOR_BASE: 3,        // each floor cleared gives 3 + floor Souls
+  SOULS_PER_BOSS: 20,
+  RUN_CARD_SEC: 2.5,              // the run end card over the battle area
   // Real-time combat (#52, 1.2): every unit attacks on its own timer, attack interval = BASE_ATTACK_SEC x 10 / speed
   BASE_ATTACK_SEC: 1.2,           // speed 10: an attack every 1.2 s
   FLOW_SPEED: 0.25,               // at max Flow the party attacks this much faster, linear from Flow x1
@@ -97,7 +108,6 @@ export const T = {
   MARK_TAUNT_REFLECT: 0.5,        // with Ward up, a Taunted enemy takes back this share of the damage it deals
   DOWNED_REVIVE_PCT: 0.3,
   FEATHER_REVIVE_PCT: 0.5,
-  WIPE_TIME_MIN: 60, WIPE_GOLD_PCT: 0.10, WIPE_BAG_LEFT: 0.5,
   ELITE_MULT: 1.5,
   // Boss big attack (the Ogre's SMASH): telegraphed, answerable with Bash (interrupt), Ward (halve) or Taunt (knight only)
   BOSS_SLAM_EVERY: 2,             // every Nth boss action is a wind-up instead of a hit
@@ -126,7 +136,6 @@ export const T = {
   POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots
   POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag
   DROP_WAIT_SEC: 8,
-  BATTLE_DROP_CHANCE: 1,          // every normal battle drops an item: an upgrade about every battle (#49)
   BOSS_DROPS: 3, VAULT_DROPS: 5,
   RARITY_WEIGHTS: [60, 25, 10, 4, 1],
   RARITY_SHIFT_PER_FLOOR: [-1, 0.5, 0.3, 0.15, 0.05],

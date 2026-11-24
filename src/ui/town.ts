@@ -37,13 +37,13 @@ function buildWindowHtml(id: CityId): string {
     : `<div class="bw-next">${L ? 'Next' : 'Built'}: <b>${d.effect[L]}</b></div>${b('build', `${L ? 'Upgrade' : 'Build'} · ${d.gold[L]} g · ${d.mats[L]}<i class="scrap"></i>`, id, `${afford ? 'gold' : 'off'} bw-btn`, '')}`;
   return `<div class="svc-win bld-win"><button class="mg-close" data-act="buildWin" data-arg="" title="Close">\u2715</button>
     <div class="svc-head"><b>${d.name}</b><span>${now}</span></div>
-    <div class="bw-body">${next}<div class="svc-foot">Gold ${g.gold} · Scraps ${g.mats}</div></div></div>`;
+    <div class="bw-body">${next}<div class="svc-foot">Gold ${g.gold} · Souls ${g.mats}</div></div></div>`;
 }
 
 export const SVC_INFO: Record<ServiceId, { title: string; hint: string }> = {
   merchant: { title: 'Merchant', hint: 'Sell items for gold, instantly.' },
   appraiser: { title: 'Appraiser', hint: 'Reveal epic and legendary items. 10 min each.' },
-  salvage: { title: 'Salvage Forge', hint: 'Break items into scraps for city buildings.' },
+  salvage: { title: 'Salvage Forge', hint: 'Break items into Souls for the city and the trees.' },
   auction: { title: 'Auction House', hint: 'List items for real money (zł). Paid tomorrow morning. 5 min each.' },
 };
 
@@ -57,7 +57,7 @@ function serviceWindowHtml(): string {
     const ico = e.kind === 'item' ? icon(e.item.slot, '#f2e9d8', 20, !e.item.identified) : icon(e.kind === 'map' ? 'map' : 'feather', col, 20);
     let action = '';
     if (w === 'merchant') action = b('svc', `Sell +${vendorValue(e.id)} g`, `vendor:${e.id}`, 'row', '');
-    if (w === 'salvage') action = b('svc', `+${salvageYield(e.id)} scraps`, `salvage:${e.id}`, 'row', '');
+    if (w === 'salvage') action = b('svc', `+${salvageYield(e.id)} Souls`, `salvage:${e.id}`, 'row', '');
     if (w === 'auction') action = b('svc', `List ~${listValue(e.id)} zł`, `list:${e.id}`, 'row green', '');
     if (w === 'appraiser' && e.kind === 'item') {
       const cost = e.item.rarity === 'legendary' ? T.IDENTIFY_COST.legendary : T.IDENTIFY_COST.epic;
@@ -162,17 +162,14 @@ function nodeMapHtml(): string {
       rooms += roomSvg(f, p.x, p.y, opts[0].kind, st, inner);
     } else rooms += roomSvg(f, p.x, p.y, st === 'later' ? (f % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'unknown') : kindAt(f), st);
   }
-  // you are here, the checkpoint flag, your corpse
+  // you are here, the checkpoint flag
   const here = roomAt(n.floor, firstRow), [hw, hh] = roomSize(kindAt(n.floor));
   marks += `<ellipse cx="${here.x}" cy="${here.y}" rx="${hw / 2 + 9}" ry="${hh / 2 + 8}" class="nm-here"/><text x="${here.x}" y="${here.y + hh / 2 + 19}" class="nm-you">you are here</text>`;
   if (n.checkpoint >= firstF && n.checkpoint <= maxF) {
     const c = roomAt(n.checkpoint, firstRow), [cw, ch] = roomSize(kindAt(n.checkpoint));
     marks += `<g transform="translate(${c.x + cw / 2 - 2} ${c.y - ch / 2 + 1})" class="nm-flag"><path d="M0 0 V-13 M0 -13 L9 -10 L0 -7"/></g>`;
   }
-  if (n.corpse.length && n.corpseFloor >= firstF && n.corpseFloor <= maxF) {
-    const c = roomAt(n.corpseFloor, firstRow);
-    marks += `<g transform="translate(${c.x + 20} ${c.y + 13})" class="nm-x"><path d="M-5 -5 L5 5 M5 -5 L-5 5"/></g><text x="${c.x + 28}" y="${c.y + 25}" class="nm-note red">your corpse</text>`;
-  }
+
   const buttons = opts.map((o, i) => `<button class="nm-opt" data-act="nextFloor" data-arg="${o.id}" data-i="${i}" style="--nc:${NODE_COL[o.kind]}">
       <svg viewBox="-14 -14 28 28" width="26" height="26">${nodeGlyph(o.kind, NODE_COL[o.kind])}</svg><b>${o.name}</b><i class="nm-desc">${o.desc}</i></button>`).join('');
   const sheet = `<defs>
@@ -192,7 +189,7 @@ function nodeMapHtml(): string {
         <text x="308" y="30" class="nm-title-ink">Shadow Crypt</text></g></svg>
     <div class="nm-sub">Floor ${n.floor} cleared · choose the stairs down</div>
     <div class="nm-opts">${buttons}</div>
-    <button class="tbtn tportal" data-act="toTown">Town portal <small>15 min · back to floor ${n.checkpoint}</small></button>
+    <button class="tbtn tportal" data-act="toTown">Town portal <small>15 min · banks the run</small></button>
     <div class="nm-foot">Maps from loot add paths. The clock runs at 25% while you choose.</div>
   </div></div>`;
 }
@@ -217,6 +214,15 @@ function curioHtml(c: CurioState): string {
     <div class="cu-timer work"><i style="width:${100 - pct}%"></i></div></div>`;
 }
 
+/** The run end card (#52, 1.4): what the run banked or lost, for a moment over the city. */
+function runCardHtml(n: NonNullable<typeof S.g.night>): string {
+  const c = n.runCard;
+  if (!c || c.t <= 0) return '';
+  return `<div class="run-card ${c.banked ? 'ok' : 'lost'}"><b>${c.banked ? 'Run banked' : 'PARTY WIPE'}</b>
+    <span>Deepest floor ${c.deepest}</span>
+    <span>${c.banked ? `Banked ${c.items} items · ${c.gold} gold` : `Lost ${c.items} items · ${c.gold} gold`}</span>
+    <span>${c.banked ? '' : 'Kept '}${c.souls} Souls</span></div>`;
+}
 export function monUiHtml(): string {
   const n = S.g.night;
   if (!n || n.monitor === 'excel' || n.monitorOff > 0 || n.switching) return '';
@@ -239,7 +245,7 @@ function cornerHtml(n: NonNullable<typeof S.g.night>): string {
     <div class="cn-flow ${now < flowGlowUntil ? 'step' : ''}"><span>Flow x${n.flow.toFixed(1)}</span><i><b style="width:${pct}%"></b></i></div></div>`;
 }
 function monUiInner(n: NonNullable<typeof S.g.night>): string {
-  if (n.location === 'town') return townOverlayHtml();
+  if (n.location === 'town') return runCardHtml(n) + townOverlayHtml();
   if (n.phase === 'mapChoice') return nodeMapHtml();
   const ok = n.phase !== 'battle';
   const portal = `<button class="tbtn tportal ${ok ? '' : 'off'}" data-act="toTown">Town portal <small>${ok ? '15 min' : 'after battle'}</small></button>`;

@@ -1,8 +1,9 @@
 import { T } from '../config/tuning';
 import { S, N, type MapKind } from '../core/state';
 import { spawnBattle, updateBattle, reviveHero } from './battle';
-import { rollBattleDrops, removeEntry, entryName, moveFloorLoot, sweepFloorLoot } from './loot';
-import { HERO_X, ENEMY_X } from './battle';
+import { rollBattleDrops, rollBattleExtras, removeEntry, entryName, moveFloorLoot, sweepFloorLoot } from './loot';
+import { RANK_X, ENEMY_SLOTS, MID_SLOT, LOOTER_REACH } from '../core/arena';
+import { gainGold, gainSouls, startRun, bankRun, loseRun } from './run';
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
@@ -29,20 +30,17 @@ function startFloor(map: MapKind | 'plain') {
   n.curio = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
   n.deepest = Math.max(n.deepest, n.floor);
   S.g.mapPath[n.floor] = map === 'plain' ? (n.floor % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'plain') : map;   // the dungeon map (#48)
-  if (n.corpse.length && n.floor === n.corpseFloor) {
-    n.dropQueue.push(...n.corpse); n.corpse = [];
-    toast('You found your corpse. Loot recovered!', '#6fcf7f');
-  }
+  if (n.run) n.run.deepest = Math.max(n.run.deepest, n.floor);
   if (map === 'shrine') {
     S.g.heroes.forEach(h => { reviveHero(h, 1); h.hp = maxHp(h); });
     toast('Shrine: party healed and revived', '#6fcf7f'); sfx.heal();
     floorEnd(); return;
   }
-  if (map === 'vault') {
+  if (map === 'vault') {   // no fights: the drops, the walk to pick them up, the floor end
     rollBattleDrops(n.floor, { count: T.VAULT_DROPS });
     n.noise += T.NOISE_VAULT;
     toast('Treasure Vault! (loud)', '#ff9a4d');
-    n.phase = 'loot'; n.battleIdx = T.BATTLES_PER_FLOOR - 1; return;
+    n.phase = 'walk'; n.phaseT = 0; n.battleIdx = T.BATTLES_PER_FLOOR; return;
   }
   planCurios();
   if (map === 'cursed') toast('Cursed Floor: your heals do half, every drop is one rarity better.', '#c77dff');
@@ -55,7 +53,9 @@ function floorEnd() {
   S.g.heroes.forEach(h => reviveHero(h, T.DOWNED_REVIVE_PCT));
   sweepFloorLoot();
   const pay = T.FLOOR_GOLD_BASE + T.FLOOR_GOLD_PER * n.floor;   // floor bounty: depth pays, not only lucky drops
-  S.g.gold += pay; toast(`Floor ${n.floor} cleared: +${pay} gold.`, '#f2b84b');
+  const souls = T.SOULS_PER_FLOOR_BASE + n.floor;              // #52, 1.4
+  gainGold(pay); gainSouls(souls);
+  toast(`Floor ${n.floor} cleared: +${pay} gold, +${souls} Souls.`, '#f2b84b');
   n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; tip('map');
 }
 
@@ -83,11 +83,12 @@ export function updateDungeon(realDt: number) {
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt;
   if (n.phase === 'walk' && curioDue()) { startCurio(); return; }
-  if (n.phase === 'walk') {
+  if (n.phase === 'walk') {   // the walk picks up the loot (#52, 1.3: no loot pause); it lasts at least WALK_SEC
     const sp = n.floorLoot.length ? 75 : 40;     // hurry over to the loot
     n.walkScroll += dt * sp;
-    moveFloorLoot(dt * sp, HERO_X[0] + 58);
+    moveFloorLoot(dt * sp * 0.7, RANK_X[0] + LOOTER_REACH);   // the camera's pace on the grid (render/rpgView.ts)
     if (n.phaseT >= T.WALK_SEC && !n.floorLoot.length) {
+      if (n.battleIdx >= T.BATTLES_PER_FLOOR) { floorEnd(); return; }
       spawnBattle(n.floor, isBossBattle(), n.floorMap === 'elite');
       n.phase = 'battle'; n.phaseT = 0;
     }
@@ -95,27 +96,28 @@ export function updateDungeon(realDt: number) {
     const r = updateBattle(dt);
     if (r === 'victory') battleEnded();
     if (r === 'victory' && n.curioFight) {   // the troll: extra loot, then the walk goes on (not one of the floor's battles)
-      rollBattleDrops(n.floor, { at: [ENEMY_X[0] + 30] });
-      rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true });
+      const x = ENEMY_SLOTS[MID_SLOT].x;
+      rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true, at: [x - 20, x, x + 20] });
       toast('The troll is down. His pile is yours.', '#f2b84b');
-      n.phase = 'loot'; n.phaseT = 0;
+      n.curioFight = false; n.phase = 'walk'; n.phaseT = T.WALK_SEC * 0.5;
     } else if (r === 'victory') {
       const boss = isBossBattle();
-      rollBattleDrops(n.floor, { boss, elite: n.floorMap === 'elite', at: n.enemies.map((e, i) => e.boss ? 542 : ENEMY_X[i] + 30) });
-      if (boss) { n.checkpoint = n.floor + 1; toast(`Checkpoint: floor ${n.checkpoint}`, '#8fb3ff'); }
+      rollBattleExtras();
+      if (boss) {   // a checkpoint for good: runs can start at the next floor (#52, 1.4)
+        n.checkpoint = n.floor + 1;
+        if (!S.g.checkpoints.includes(n.checkpoint)) S.g.checkpoints.push(n.checkpoint);
+        gainSouls(T.SOULS_PER_BOSS);
+        toast(`Checkpoint: runs can start at floor ${n.checkpoint}. +${T.SOULS_PER_BOSS} Souls.`, '#8fb3ff');
+      }
       if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE * (n.goodDog > 0 ? T.GOOD_BOY_GOBLIN : 1)))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); sfx.goblin(); }
-      n.phase = 'loot'; n.phaseT = 0;
-    } else if (r === 'wipe') wipe();
-  } else if (n.phase === 'loot') {
-    if (n.phaseT >= T.LOOT_PAUSE_SEC && n.curioFight) { n.curioFight = false; n.phase = 'walk'; n.phaseT = T.WALK_SEC * 0.5; }
-    else if (n.phaseT >= T.LOOT_PAUSE_SEC) {
       n.battleIdx++;
-      if (n.battleIdx >= T.BATTLES_PER_FLOOR) floorEnd();
-      else { n.phase = 'walk'; n.phaseT = 0; }
-    }
+      n.phase = 'walk'; n.phaseT = 0;
+    } else if (r === 'wipe') wipe();
   }
 }
 
+/** PARTY WIPE (#52, 1.4): the run is lost (its unbanked items and gold), its Souls stay; the party wakes in town at
+ *  full HP after the portal's travel time. He still slams the desk. */
 function wipe() {
   const n = N();
   sfx.wipe();
@@ -123,19 +125,11 @@ function wipe() {
   n.noise = Math.min(100, n.noise + T.ECHO_SLAM_NOISE);   // echo: he slams the desk, the dog comes to see
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
   toast(`You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
-  const lostGold = Math.floor(S.g.gold * T.WIPE_GOLD_PCT);
-  S.g.gold -= lostGold;
-  n.clock += T.WIPE_TIME_MIN;
-  // Half the bag (random) stays on the corpse.
-  const bag = [...S.g.bag].filter(e => !(e.kind === 'item' && e.item.locked)).sort(() => Math.random() - 0.5);   // locked items stay safe
-  const leave = bag.slice(0, Math.floor(S.g.bag.length * T.WIPE_BAG_LEFT));
-  leave.forEach(e => removeEntry(e.id));
-  n.corpse = [...leave, ...n.floorLoot.map(l => l.entry)]; n.corpseFloor = n.floor; n.floorLoot = [];
-  toast(`PARTY WIPE. -${lostGold} gold, -1h. ${leave.length} items left on floor ${n.floor}.`, '#ff8a80');
-  S.g.heroes.forEach(h => { h.downed = false; h.hp = Math.round(maxHp(h) * 0.5); h.atb = 0; h.queued = null; });
-  n.floor = n.checkpoint;
-  n.enemies = [];
-  startFloor('plain');
+  n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.goblin = null;
+  loseRun();
+  S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.atb = 0; h.queued = null; });
+  n.clock += T.COST_TRAVEL_MIN;
+  n.location = 'town'; n.phase = 'walk';
 }
 
 export function catchGoblin() {
@@ -158,20 +152,31 @@ export function useFeather(id: string) {
 
 export function canLeaveDungeon() { const n = N(); return n.location === 'dungeon' && n.phase !== 'battle'; }
 
+/** The town portal: the run is banked (#52, 1.4). */
 export function returnToTown() {
   const n = N();
   if (!canLeaveDungeon()) { toast('Finish the battle first.', '#a999bd'); return; }
   n.clock += T.COST_TRAVEL_MIN;
   sweepFloorLoot();
-  n.location = 'town'; n.enemies = []; n.goblin = null; n.phase = 'walk';
+  bankRun();
+  n.location = 'town'; n.enemies = []; n.reserve = []; n.goblin = null; n.phase = 'walk';
   toast('Back in town (15 min)', '#8fb3ff');
 }
 
-export function travelToDungeon() {
+/** A run starts at the Dungeon Portal, at floor 1 or an unlocked checkpoint (the town's floor picker). */
+export function travelToDungeon(floor = S.g.startFloor) {
   const n = N();
+  const start = S.g.checkpoints.includes(floor) ? floor : 1;
   n.clock += T.COST_TRAVEL_MIN;
-  enterDungeon(n.checkpoint);
-  toast(`Dungeon gate: floor ${n.checkpoint} (15 min)`, '#8fb3ff');
+  startRun(start);
+  enterDungeon(start);
+  toast(`Dungeon gate: floor ${start} (15 min)`, '#8fb3ff');
+}
+/** The town's floor picker: floor 1 and every unlocked checkpoint. */
+export function pickStartFloor(step: number) {
+  const list = [...S.g.checkpoints].sort((a, b) => a - b);
+  const i = Math.max(0, list.indexOf(S.g.startFloor));
+  S.g.startFloor = list[Math.max(0, Math.min(list.length - 1, i + step))] ?? 1;
 }
 
 export { entryName };

@@ -34,7 +34,7 @@ the tooltip says what it does. A click does what it says:
 | Appraiser | top left | A violet-slate tower: a crystal glowing on the spire with runes circling it, the eye window, star banners, a brass telescope; a curio shop with a crystal ball at its foot; the appraiser stands in a rune circle on the street | its window: identify epics (`IDENTIFY_COST.epic`) and legendaries; 2.5 s reveal | gold, 10 min |
 | Auction House | right of the portal | A pale guildhall: columned porch, a gold coin in the pediment, coin banners, a bell tower, lots glowing on two pedestals; the auctioneer on the steps, bidders raising paddles | its window: list for zł, paid next morning, price × the night's market factor (`MARKET_RANGE`) | 5 min |
 | Merchant | east side of the plaza | A wooden shop with a striped awning, a window of bottles, a counter of fruit and potions, two market stalls on the plaza | its window: sell for gold (unidentified items at `UNIDENTIFIED_VENDOR_MULT`) | free |
-| Salvage Forge | south, right of the avenue | A stone smithy with its hearth open to the street, a tall chimney; a lean-to with tools on the wall, a heap of broken blades, helms and shields, the anvil, a steaming quench barrel; the smith hammering, sparks | its window: break into scraps (`SALVAGE_YIELD` 1/2/4/8/16 by rarity) | free |
+| Salvage Forge | south, right of the avenue | A stone smithy with its hearth open to the street, a tall chimney; a lean-to with tools on the wall, a heap of broken blades, helms and shields, the anvil, a steaming quench barrel; the smith hammering, sparks | its window: break into Souls (`SALVAGE_YIELD` 1/2/4/8/16 by rarity) | free |
 | Dungeon Portal | top centre | See above | goes down: enter the dungeon at the checkpoint | 15 min |
 
 Each service window opens over the town listing the backpack with one action button per item, with the grey/red
@@ -77,7 +77,7 @@ Upgrades apply instantly.
 Start: `START_GOLD` 100, `START_ZL` 50.
 
 **The pace of the city** (measured with `NIGHTS=4` bot campaigns, `python3 test/campaign.py`; the bot
-salvages the cheapest items for the scraps it needs and sells the rest at 20:00, then builds what it can):
+salvages the cheapest items for the Souls it needs and sells the rest at 20:00, then builds what it can):
 a normal night (bed at 01:00, floor about 10) always pays for at least one building. Before night 2 every
 run built the first one, 7 in 12 built two; before night 3, 1.7 on average. So the city grows one or two
 buildings a night and a 7-night campaign does not finish it (all three levels cost about 10,000 gold).

@@ -2,8 +2,9 @@
 
 ## Now
 
-**Loot drives progress** (#49). Every normal battle drops an item (`BATTLE_DROP_CHANCE`, 100%); bosses drop
-`BOSS_DROPS`; elite floors guarantee a rare. An item's main stats grow with its item level (= the floor) as fast as
+**Loot drives progress** (#49, #52 1.3). Each kill drops an item with `DROP_CHANCE` (35%); an Elite Pack's lieutenant
+always drops a rare; a boss drops `BOSS_DROPS` (3, the first a rare or better). A fight won can add a map or a
+feather. The first legendary of a save drops within its first `LEGENDARY_FIRST_BY` (80) drops (`S.g.drops`). An item's main stats grow with its item level (= the floor) as fast as
 the enemies do (`STAT_BASE` in `src/data/items.ts`: attack +2, HP +9, armor +1.2 per level), while levels add only
 +4% (`HERO_LEVEL_SCALE`). So the party keeps up only by equipping what drops: about one upgrade a battle.
 Measured with the bots (`python3 test/balance.py 24 good 1500 gear` against the same without `gear`): a bot that
@@ -57,10 +58,12 @@ while active.
 **Loot on the floor.** Drops land where each enemy fell (spread out when several share a spot) and
 bounce once. Each shows a bundle with a gleam, an additive beam in its rarity colour (taller and wider
 for better rarities) with a soft halo, a glow pool, rising sparkles and a pool of light in the darkness.
-The front hero collects by walking over them; the party walks faster (75 px/s instead of 40) while
-loot is on the floor. A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
+Drops fall where the enemy died; there is no loot pause: the walk after the fight lasts until the front hero has
+walked over every drop (at least `WALK_SEC`), the party walking faster (75 px/s instead of 40) while loot is on the
+floor. A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
 shines with NEW (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
-leave by portal or the floor ends, and goes on the corpse in a wipe.
+leave by portal or the floor ends. Everything picked up in a run is unbanked (a dashed mark on its bag cell) until
+the town portal banks it; a wipe loses it ([dungeon.md](dungeon.md), runs).
 
 **Bag** (the side panel). A green ▲ in a slot's corner marks an upgrade: it would raise some hero's Power.
 `BAG_SIZE` (18) slots, 3 rows, plus the Treasury row (`TREASURY_ROW`, 6 slots shown,
@@ -84,10 +87,10 @@ selected hero; the detailed stat comparison is in the item's click panel. Next t
 hero's HP, ATK, ARM, SPD, CRIT and LUCK, with the share that comes from gear in green (red if gear lowers it).
 
 **Lock.** Hover an item and press L: a padlock; it cannot be sold, salvaged, listed, dropped or
-swapped out, and it never stays on the corpse.
+swapped out. A locked item you haven't banked is still lost on a wipe (#52; tune after the playtests).
 
 **Auto-salvage.** A toggle in the bag header: while on, common and uncommon pickups turn straight into
-scraps.
+Souls.
 
 ## Decisions
 

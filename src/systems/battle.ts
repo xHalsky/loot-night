@@ -2,7 +2,8 @@ import { T } from '../config/tuning';
 import { S, N, type Enemy, type Hero, type VfxKind, type MarkId } from '../core/state';
 import { ENEMIES, BOSSES, ENEMY_BY_ID, bossFor, type EnemyDef } from '../data/enemies';
 import { ABILITIES, ULT_SLOT } from '../data/heroes';
-import { pick, randi, rand, chance } from '../core/rng';
+import { pick, rand, chance } from '../core/rng';
+import { gainGold } from './run';
 import { heroStats, maxHp, xpNeeded } from './stats';
 import { floatText, toastAs, fmtNum } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
@@ -14,26 +15,30 @@ import { MARKS } from '../data/marks';
 import { overtimeGold } from './affixes';
 import { curioDmgMult, curioSpeedMult, partyCrit } from './curios';
 import { coach } from './coach';
+import { RANK_X, ENEMY_SLOTS, MID_SLOT, HEAD_Y } from '../core/arena';
+import { dropFromKill } from './loot';
 
-export const HERO_X = [208, 124, 40];   // knight in front (right), healer at the back
-export const ENEMY_X = [380, 457, 534];
-export const UNIT_Y = 212;
 let enemyUid = 1;
 // A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once.
 let loudOnce = false, critHeard = false;
 
-// Visual effects on the monitor (docs/design/dungeon.md: every action must be visible).
-export const heroCenter = (i: number) => ({ x: HERO_X[i] + 30, y: UNIT_Y + 40 });
-export function enemyCenter(e: Enemy) { const i = N().enemies.indexOf(e); return e.boss ? { x: 542, y: UNIT_Y + 24 } : { x: ENEMY_X[Math.max(0, i)] + 30, y: UNIT_Y + 40 }; }
+// Visual effects on the battle area, in grid px (core/arena.ts; docs/design/dungeon.md: every action must be visible).
+// Party ranks follow the heroes' order for now (marching order comes with #52 1.6).
+export const heroCenter = (i: number) => ({ x: RANK_X[Math.max(0, i)], y: HEAD_Y + 20 });
+export function enemyCenter(e: Enemy) { const sl = ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0]; return { x: sl.x, y: e.boss ? HEAD_Y + 6 : HEAD_Y + 22 }; }
+/** Where numbers float up from: over the HP bar. */
+const heroNumY = 108;
+const enemyNumY = (e: Enemy) => (ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0]).bar - (e.boss ? 30 : 12);
 function vfx(kind: VfxKind, at: { x: number; y: number }, from?: { x: number; y: number }, dur = 0.4) {
   N().vfx.push({ kind, x: at.x, y: at.y, x2: from?.x ?? at.x, y2: from?.y ?? at.y, t: 0, dur, seed: Math.random() });
 }
 
-function makeEnemy(def: EnemyDef, floor: number, elite: boolean): Enemy {
-  const hpM = T.ENEMY_HP_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1);   // compounding (#52, 1.2)
-  const atkM = T.ENEMY_ATK_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1);
+function makeEnemy(def: EnemyDef, floor: number, elite: boolean, slot = 0, pack = false): Enemy {
+  const packM = pack && !def.boss ? 1 : 0;   // a pack member is weaker than a lone enemy (#52, 1.3)
+  const hpM = T.ENEMY_HP_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1) * (packM ? T.PACK_HP_MULT : 1);   // compounding (#52, 1.2)
+  const atkM = T.ENEMY_ATK_GROWTH ** (floor - 1) * (elite ? T.ELITE_MULT : 1) * (packM ? T.PACK_ATK_MULT : 1);
   const hp = Math.round(def.hp * hpM);
-  const e: Enemy = { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), aliveSec: 0, stunned: 0, boss: !!def.boss, flash: 0 };
+  const e: Enemy = { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), aliveSec: 0, stunned: 0, boss: !!def.boss, flash: 0, slot };
   if (def.role === 'shield') e.shield = true;
   if (def.role === 'swarm') e.per = hp / def.stacks!;
   meet(def);
@@ -50,22 +55,51 @@ export const moveOf = (e: Enemy) => ENEMY_BY_ID[e.defId]?.move;
 /** Swarm bodies left (imps). */
 export const bodies = (e: Enemy) => e.per ? Math.max(0, Math.ceil(e.hp / e.per - 1e-6)) : e.hp > 0 ? 1 : 0;
 
+/** A pack (#52, 1.3): PACK_MIN + floor / 2 enemies, six on screen (the boss or the lieutenant behind the fodder
+ *  in two lanes), the rest waiting off screen. An Elite Pack is stronger and its lieutenant always drops a rare. */
 export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
   const n = N();
   const pool = ENEMIES.filter(d => (d.from ?? 1) <= floor);
-  if (boss) n.enemies = [makeEnemy(pick(pool), floor, elite), makeEnemy(bossFor(floor, T.CHECKPOINT_EVERY), floor, elite)];
-  else {
-    const count = randi(2, 3);
-    n.enemies = Array.from({ length: count }, () => makeEnemy(pick(pool), floor, elite));
+  const size = Math.min(T.PACK_MAX, T.PACK_MIN + Math.floor(floor / 2));
+  const defs: EnemyDef[] = boss ? [bossFor(floor, T.CHECKPOINT_EVERY)] : [];
+  while (defs.length < size) defs.push(pick(pool));
+  n.enemies = []; n.reserve = [];
+  for (const d of defs) {
+    const slot = freeSlot(d);
+    if (slot < 0) { n.reserve.push({ defId: d.id, elite }); continue; }
+    n.enemies.push(makeEnemy(d, floor, elite, slot, true));
   }
+  if (elite) { const lt = n.enemies.find(e => e.slot === MID_SLOT) ?? n.enemies[0]; if (lt) lt.elite = true; }
   if (isAway()) autopilotPull();
+}
+/** The rank a newcomer takes: a boss or a caster behind the mob, fodder in the front lane, then the back lane. */
+function freeSlot(d: EnemyDef): number {
+  const used = new Set(N().enemies.filter(e => e.hp > 0).map(e => e.slot));
+  if ((d.boss || d.role === 'healer') && !used.has(MID_SLOT)) return MID_SLOT;
+  if (d.boss) return -1;
+  for (const k of [0, 1, 2, 3, 4]) if (!used.has(k)) return k;
+  return used.has(MID_SLOT) ? -1 : MID_SLOT;
+}
+/** A waiting enemy steps into a rank the dead left free. */
+function stepIn() {
+  const n = N();
+  while (n.reserve.length) {
+    const d = ENEMY_BY_ID[n.reserve[0].defId];
+    const slot = freeSlot(d);
+    if (slot < 0) return;
+    const r = n.reserve.shift()!;
+    const e = makeEnemy(d, n.floor, r.elite, slot, true);
+    e.enter = T.STEP_IN_SEC;
+    const i = n.enemies.findIndex(x => x.hp <= 0 && x.slot === slot);
+    if (i >= 0) n.enemies[i] = e; else n.enemies.push(e);
+  }
 }
 export { BOSSES };
 
 /** A curio's fight (the troll): one mini-boss, scaled like the floor. */
 export function spawnCurioFight(def: EnemyDef) {
   const n = N();
-  n.enemies = [makeEnemy(def, n.floor, n.floorMap === 'elite')];
+  n.enemies = [makeEnemy(def, n.floor, n.floorMap === 'elite', MID_SLOT)]; n.reserve = [];
   if (isAway()) autopilotPull();
 }
 /** Heals every living hero for a share of their max HP. */
@@ -118,7 +152,7 @@ function castAbility(h: Hero, slot: number) {
   if (h.id === 'knight' && slot === 2) {
     const e = bashTarget();
     if (e) {
-      if (e.shield) { e.shield = false; const c = enemyCenter(e); floatText(c.x, UNIT_Y - 58, 'SHIELD BROKEN!', '#8fd8ff'); sfx.crit(); }
+      if (e.shield) { e.shield = false; const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 10, 'SHIELD BROKEN!', '#8fd8ff'); sfx.crit(); }
       const shatter = cashIn(e, 'chill', `SHATTER x${T.MARK_CHILL_BASH}`) ? T.MARK_CHILL_BASH : 1;
       hitEnemy(e, st.atk * A.power! * mult * shatter, st.crit, 'bash');
       if (e.hp > 0) mark(e, 'stagger');
@@ -171,13 +205,13 @@ function mark(e: Enemy, id: MarkId, sec = T.MARK_SEC) {
   e.marks ??= {};
   const fresh = !(e.marks[id]! > 0);
   e.marks[id] = Math.max(e.marks[id] ?? 0, sec);
-  if (fresh) { const c = enemyCenter(e); floatText(c.x, UNIT_Y - 46, MARKS[id].tag, MARKS[id].color); }
+  if (fresh) { const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 6, MARKS[id].tag, MARKS[id].color); }
 }
 /** Spends a mark if the enemy has it. Returns true when the combo fires. */
 function cashIn(e: Enemy, id: MarkId, label: string): boolean {
   if (!(e.marks?.[id]! > 0)) return false;
   delete e.marks![id];
-  const c = enemyCenter(e); floatText(c.x, UNIT_Y - 58, label + '!', MARKS[id].color);
+  const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 10, label + '!', MARKS[id].color);
   sfx.crit();
   return true;
 }
@@ -193,7 +227,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   const n = N();
   vfx(kind, enemyCenter(e), from, kind === 'bolt' ? 0.35 : kind === 'fire' ? 0.6 : 0.35);
   if (n.tired >= T.TIRED_SLUGGISH && chance(T.ECHO_DROWSY_MISS)) {   // Drowsy: your eyes close mid-swing
-    const c = enemyCenter(e); floatText(c.x + rand(-10, 10), UNIT_Y - 34, 'zzz', '#a999bd');
+    const c = enemyCenter(e); floatText(c.x + rand(-6, 6), enemyNumY(e), 'zzz', '#a999bd');
     return 0;
   }
   const isCrit = chance((crit + partyCrit()) / 100);
@@ -210,8 +244,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
     e.enraged = true; sfx.enrage();
     toast(`${e.name} is ENRAGED! Flow builds faster. Alt-tab now and you lose it.`, '#ff5a3a');
   }
-  const idx = n.enemies.indexOf(e);
-  floatText(ENEMY_X[Math.max(0, idx)] + 18, UNIT_Y - 30, isCrit ? `-${fmtNum(dmg)}!` : `-${fmtNum(dmg)}`, isCrit ? '#f2b84b' : '#ff8a80');
+  floatText(enemyCenter(e).x, enemyNumY(e), isCrit ? `-${fmtNum(dmg)}!` : `-${fmtNum(dmg)}`, isCrit ? '#f2b84b' : '#ff8a80');
   if (isCrit) sfx.crit(); else sfx.hit();
   if (skill && e.marks?.judged! > 0) { const low = mostHurt(); if (low && low.hp < maxHp(low)) healHero(low, dmg * T.MARK_JUDGED_HEAL); }
   return dmg;
@@ -225,7 +258,7 @@ function healHero(h: Hero, amount: number) {
   if (N().floorMap === 'cursed') amount *= T.CURSED_HEAL;
   h.hp = Math.min(mx, h.hp + Math.round(amount));
   const i = S.g.heroes.indexOf(h);
-  if (h.hp > before) floatText(HERO_X[i] + 18, UNIT_Y - 30, `+${fmtNum(h.hp - before)}`, '#6fcf7f');
+  if (h.hp > before) floatText(heroCenter(i).x, heroNumY, `+${fmtNum(h.hp - before)}`, '#6fcf7f');
 }
 
 function frontEnemy(): Enemy | undefined { return N().enemies.find(e => e.hp > 0); }
@@ -264,7 +297,7 @@ function enemyAct(e: Enemy) {
     if (hurt) {
       const amt = Math.min(hurt.maxHp - hurt.hp, Math.round(e.maxHp * T.AUDITOR_HEAL));
       hurt.hp += amt; e.lunge = 0.3;
-      const c = enemyCenter(hurt); vfx('heal', c, undefined, 0.7); floatText(c.x, UNIT_Y - 30, `+${amt}`, '#9fe08a');
+      const c = enemyCenter(hurt); vfx('heal', c, undefined, 0.7); floatText(c.x, enemyNumY(hurt), `+${fmtNum(amt)}`, '#9fe08a');
       return;
     }
   }
@@ -273,14 +306,18 @@ function enemyAct(e: Enemy) {
   for (let k = 0; k < hits; k++) attackHero(e, e.atk);
 }
 
-/** One enemy hit on a hero (target: taunt, else random when nobody tanks, else the knight half the time). */
+/** One enemy hit on a hero. Taunt overrides everything; melee hits rank 1 (70%) or 2; casters hit the back ranks;
+ *  fliers hit anyone (#52, 1.6; ranks follow the heroes' order until marching order comes in). */
 function attackHero(e: Enemy, atk: number) {
   const n = N();
   const alive = aliveHeroes();
   if (!alive.length) return;
   let target: Hero;
+  const role = roleOf(e);
   if (n.taunt > 0 && !S.g.heroes[0].downed) target = S.g.heroes[0];
-  else target = chance(0.5) && !S.g.heroes[0].downed ? S.g.heroes[0] : pick(alive);
+  else if (role === 'healer') target = pick(alive.filter(h => S.g.heroes.indexOf(h) >= 2).length ? alive.filter(h => S.g.heroes.indexOf(h) >= 2) : alive);
+  else if (e.defId === 'bat') target = pick(alive);
+  else target = alive[chance(0.7) || alive.length < 2 ? 0 : 1];
   const st = heroStats(target);
   let raw = atk;
   const over = e.aliveSec - T.FURY_AFTER_SEC;
@@ -289,7 +326,7 @@ function attackHero(e: Enemy, atk: number) {
   const dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - st.armor * 0.5));
   const i = S.g.heroes.indexOf(target);
   vfx('claw', heroCenter(i), undefined, 0.35);
-  floatText(HERO_X[i] + 18 + rand(-8, 8), UNIT_Y - 30, `-${fmtNum(dmg)}`, '#ff8a80');
+  floatText(heroCenter(i).x + rand(-6, 6), heroNumY, `-${fmtNum(dmg)}`, '#ff8a80');
   hurtHero(target, dmg);
   reflect(e, dmg);
 }
@@ -340,16 +377,17 @@ function loanFriend(e: Enemy) {
   const old = n.enemies.find(x => x !== e && x.hp > 0);
   if (old) {   // empowered: back to full and meaner
     old.hp = old.maxHp; old.atk *= T.LOAN_REFI; old.aliveSec = 0;
-    const c = enemyCenter(old); floatText(c.x, UNIT_Y - 46, 'EMPOWERED', '#ff8a80'); vfx('heal', c, undefined, 0.7);
+    const c = enemyCenter(old); floatText(c.x, enemyNumY(old) - 6, 'EMPOWERED', '#ff8a80'); vfx('heal', c, undefined, 0.7);
     e.lunge = 0.3; sfx.handle();
     return;
   }
-  const i = n.enemies.findIndex(x => x !== e && x.hp <= 0);
-  if (i < 0) return;
   const def = ENEMY_BY_ID[e.acts! % (2 * T.LOAN_EVERY) === 0 ? 'junk' : 'auditor'];
-  const add = makeEnemy(def, n.floor, n.floorMap === 'elite');
-  add.atb = 0;
-  n.enemies[i] = add;
+  const slot = freeSlot({ ...def, role: undefined });
+  if (slot < 0) return;
+  const add = makeEnemy(def, n.floor, n.floorMap === 'elite', slot, true);
+  add.atb = 0; add.enter = T.STEP_IN_SEC;
+  const i = n.enemies.findIndex(x => x.hp <= 0 && x.slot === slot);
+  if (i >= 0) n.enemies[i] = add; else n.enemies.push(add);
   e.lunge = 0.3; sfx.handle();
   toast(`The ${def.name} join${def.role === 'swarm' ? '' : 's'} the fight.`, '#ff8a80');
 }
@@ -368,7 +406,7 @@ function eviction(e: Enemy) {
     const dmg = Math.max(1, Math.round(maxHp(h) * (taunted ? T.BOSS_SLAM_TAUNT_PCT : T.EVICT_PCT) * (n.ward > 0 ? T.BOSS_SLAM_WARD_MULT : 1)));
     const i = S.g.heroes.indexOf(h);
     vfx('claw', heroCenter(i), undefined, 0.5);
-    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${fmtNum(dmg)}!`, '#ff5a5a');
+    floatText(heroCenter(i).x, heroNumY - 4, `-${fmtNum(dmg)}!`, '#ff5a5a');
     reflect(e, dmg);
     toast(taunted ? `${knight.name} takes the EXECUTE for ${v.name}.` : `EXECUTE! ${h.name} takes a brutal hit.`, '#ff8a80');
     hurtHero(h, dmg);
@@ -395,7 +433,7 @@ function reflect(e: Enemy, dmg: number) {
   if (!(N().ward > 0) || !(e.marks?.taunted! > 0)) return;
   const back = Math.max(1, Math.round(dmg * T.MARK_TAUNT_REFLECT));
   e.hp -= back; e.flash = 0.15;
-  const c = enemyCenter(e); floatText(c.x, UNIT_Y - 30, `-${back} bounced`, MARKS.taunted.color);
+  const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 6, `-${fmtNum(back)} bounced`, MARKS.taunted.color);
 }
 
 /** The boss's telegraphed big attack lands. */
@@ -412,7 +450,7 @@ function bossSlam(e: Enemy) {
     const dmg = Math.max(1, Math.round(maxHp(h) * pct * ward));
     const i = S.g.heroes.indexOf(h);
     vfx('claw', heroCenter(i), undefined, 0.5);
-    floatText(HERO_X[i] + 14, UNIT_Y - 34, `-${fmtNum(dmg)}!`, '#ff5a5a');
+    floatText(heroCenter(i).x, heroNumY - 4, `-${fmtNum(dmg)}!`, '#ff5a5a');
     hurtHero(h, dmg);
     reflect(e, dmg);
   }
@@ -440,6 +478,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
     e.aliveSec += dt;
     if ((e.wind ?? 0) > 0) { e.wind! -= dt; if (e.wind! <= 0) { e.wind = 0; landMove(e); } continue; }   // winding up: no normal attacks
     if (e.stunned > 0) { e.stunned = Math.max(0, e.stunned - dt); continue; }
+    if ((e.enter ?? 0) > 0) { e.enter = Math.max(0, e.enter! - dt); continue; }   // still stepping into its rank
     e.atb += atbRate(e.speed) * dt;
     if (e.atb >= 100) { e.atb -= 100; enemyAct(e); }
   }
@@ -448,16 +487,19 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
     if (e.hp <= 0 && e.maxHp > 0) {
       grantXp((e.boss ? T.XP_PER_BOSS : T.XP_PER_KILL) * n.floor);
       const ot = overtimeGold();   // Spreadsheet Warrior: kills while Excel is up pay overtime
-      if (ot) { S.g.gold += ot; const c = enemyCenter(e); floatText(c.x, UNIT_Y - 20, `+${ot}g overtime`, '#6fcf7f'); }
+      if (ot) { gainGold(ot); const c = enemyCenter(e); floatText(c.x, enemyNumY(e) + 8, `+${ot}g overtime`, '#6fcf7f'); }
+      dropFromKill(e);   // #52, 1.3: drops fall where the enemy died
       if (e.boss) {
         n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b');
         n.enemies.forEach(x => { if (x !== e && x.hp > 0) { x.hp = 0; x.maxHp = 0; } });   // without the boss the rest run
+        n.reserve = [];
       }
       e.maxHp = 0;
     }
   }
+  stepIn();
   if (aliveHeroes().length === 0) return 'wipe';
-  if (n.enemies.every(e => e.hp <= 0)) return 'victory';
+  if (n.enemies.every(e => e.hp <= 0) && !n.reserve.length) return 'victory';
   return null;
 }
 

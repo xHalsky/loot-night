@@ -15,11 +15,12 @@ export interface Item {
   locked?: boolean;              // locked items can't be sold, salvaged, listed or dropped
   special?: string; specialAmt?: number;   // a special affix id (src/data/affixes.ts) and its stat or gold amount
   witched?: boolean;             // the Witching Hour shifted it up a rarity
+  run?: boolean;                 // picked up this run, not banked yet (#52, 1.4): lost on a wipe, even worn
 }
-export type BagEntry =
+export type BagEntry = (
   | { kind: 'item'; id: string; item: Item }
   | { kind: 'map'; id: string; map: MapKind }
-  | { kind: 'feather'; id: string };
+  | { kind: 'feather'; id: string }) & { run?: boolean };   // run: picked up this run, not banked yet (#52, 1.4)
 
 export type HeroId = 'knight' | 'mage' | 'healer';
 export interface Hero {
@@ -36,6 +37,7 @@ export interface Enemy {
   uid: number; defId: string; name: string; hp: number; maxHp: number;
   atk: number; armor: number; speed: number; atb: number;
   aliveSec: number; stunned: number; boss: boolean; flash: number; lunge?: number;   // stunned: seconds left
+  slot: number; elite?: boolean; enter?: number;   // where it stands (core/arena.ts); seconds left stepping into its rank
   marks?: Partial<Record<MarkId, number>>;          // seconds left per ability mark (docs/design/dungeon.md)
   shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
   per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
@@ -137,7 +139,9 @@ export interface Night {
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
   lootFly: { x: number; text: string; color: string; t: number; max: number; delay: number; dx: number }[];   // picked-up loot: names flying up from the floor (#49)
   dropPopup: { entry: BagEntry; t: number } | null;
-  corpse: BagEntry[]; corpseFloor: number;
+  reserve: { defId: string; elite: boolean }[];   // the pack waiting off screen (#52, 1.3)
+  run: RunState | null;                           // the run since the town portal (#52, 1.4)
+  runCard: (RunState & { banked: boolean; t: number }) | null;   // the run end card
   visit: VisitState;
   apt: Apartment;
   headset: boolean;
@@ -183,6 +187,9 @@ export interface Night {
   reveal: { name: string; t: number } | null;
 }
 
+/** A run (#52, 1.4): from the town portal until the town portal (banked) or a wipe (lost). */
+export interface RunState { startFloor: number; deepest: number; gold: number; items: number; souls: number }
+
 export interface Results {
   ending: 'sleep' | 'dawn' | 'unplugged';
   endClock: number; stars: number; depth: number; prevRecord: number;
@@ -210,6 +217,9 @@ export interface GameState {
   floorCans: CanPose[];          // missed throws: they stay on the floor for good (#61)
   pendingListings: { name: string; zl: number }[];
   pity: number; uid: number;
+  checkpoints: number[];         // floors a run can start at: 1 and each 5n+1 whose boss you beat (#52, 1.4)
+  startFloor: number;            // the floor the town's picker is on
+  drops: number; legendaryFound: boolean;   // the first legendary of a save comes within LEGENDARY_FIRST_BY drops
   night: Night | null;
   townWin?: 'merchant' | 'appraiser' | 'salvage' | 'auction' | `build:${'training' | 'inn' | 'library' | 'treasury'}` | null;   // a service window, or a plot's build window (#50)
   screen: Screen; paused: boolean; debug: boolean; timeScale: number;
@@ -229,7 +239,7 @@ export function initialState(): GameState {
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
     sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0, floorCans: [],
-    pendingListings: [], pity: 0, uid: 1,
+    pendingListings: [], pity: 0, uid: 1, checkpoints: [1], startFloor: 1, drops: 0, legendaryFound: false,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1, realLifeOff: false,
     results: null, morning: null,
   };

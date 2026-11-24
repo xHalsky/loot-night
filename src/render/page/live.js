@@ -146,8 +146,8 @@ function liveBattleArea(ctx, vm, t) {
   if (vm.goblin) liveHit(vm.goblin.x - 16, CHAR_Y - 40, 32, 44, 'goblin', '', 'Catch the loot goblin!');
   // the corner, the portal, the buffs
   cornerOverlay(vm.corner, t);
-  portalButton({ inBattle: !vm.portalOk });
-  if (vm.portalOk) liveHit(4, 28, 54, 19, 'toTown', '', 'Back to the city, 15 min');
+  portalButton({ inBattle: !vm.portalOk, label: vm.bank });
+  if (vm.portalOk) liveHit(4, 28, 54, 19, 'toTown', '', vm.bank === '15 min' ? 'Back to the city, 15 min' : `Back to the city, 15 min: banks this run (${vm.bank.slice(5)})`);
   buffs(vm.buffs, t);
   vm.buffs.forEach((b, k) => liveHit(W - 4 - 13 - k * 16, 3, 13, 13, '', '', b.tip));
   // the curio card in the band

@@ -470,16 +470,16 @@ export function tooltipHtml(): string {
   if (parts[0] === 'town') {   // a building in the city (#50): what it is, what it does, the cost
     const id = parts[1] as TownSpotId, spot = TOWN_SPOTS.find(s => s.id === id)!;
     let line = '', cost = '';
-    if (id === 'portal') { line = `Enter the dungeon at floor ${n.checkpoint}.`; cost = '15 min'; }
+    if (id === 'portal') { line = `Start a run at floor ${S.g.startFloor}.`; cost = '15 min'; }
     else if (id in SVC_INFO) line = SVC_INFO[id as keyof typeof SVC_INFO].hint;
     else {
       const d = CITY.find(f => f.id === id)!, L = S.g.furniture[d.id] ?? 0;
       line = L ? `Level ${L}: ${d.effect[L - 1]}` : `Empty plot, materials ready. Built: ${d.effect[0]}`;
-      cost = L >= 3 ? 'Fully built' : `${L ? 'Upgrade' : 'Build'}: ${d.gold[L]} g · ${d.mats[L]} scraps`;
+      cost = L >= 3 ? 'Fully built' : `${L ? 'Upgrade' : 'Build'}: ${d.gold[L]} g · ${d.mats[L]} Souls`;
     }
     return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 250)}px;top:${Math.min(hover.y + 12, 720 - 90)}px"><div class="tt-name">${spot.name}</div><div>${line}</div>${cost ? `<div class="tt-sub">${cost}</div>` : ''}</div>`;
   }
-  if (parts[0] === 'autosalvage') return `<div class="tooltip" style="left:${Math.min(hover.x - 120, 1280 - 250)}px;top:${hover.y + 14}px"><div class="tt-name">Auto-salvage</div><div>Common and uncommon drops turn straight into scraps.</div></div>`;
+  if (parts[0] === 'autosalvage') return `<div class="tooltip" style="left:${Math.min(hover.x - 120, 1280 - 250)}px;top:${hover.y + 14}px"><div class="tt-name">Auto-salvage</div><div>Common and uncommon drops turn straight into Souls.</div></div>`;
   if (parts[0] === 'pre') return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 270)}px;bottom:${Math.max(8, 720 - hover.y + 14)}px">${preTip(parts[1] as PreId)}</div>`;   // low on screen: open upwards
   else if (parts[0] === 'skill' || parts[0] === 'hero') {
     const h = S.g.heroes[Number(parts[1])];
@@ -623,13 +623,13 @@ export function uiPanelHtml(): string {
     const corner = e.kind === 'item' ? `<span class="val pow">${e.item.identified ? itemPower(e.item) : '?'}</span>` : `<span class="val">${entryValue(e)}</span>`;
     // an upgrade for someone (#49): a green arrow on the item, so the bag says what to equip at a glance
     const up = e.kind === 'item' && e.item.identified && g.heroes.some(h => heroPower(h, { [e.item.slot]: e.item }) > heroPower(h)) ? '<i class="up-ico" aria-label="An upgrade">\u25b2</i>' : '';
-    return `<div class="bslot${sel}${swap}${fresh}" style="${entryStyle(e)}${fresh ? `;--new:${T.BAG_NEW_SEC}s` : ''}" data-item="bag:${e.id}">${entryIcon(e, 24)}${lock}${up}${corner}${fresh ? '<b class="new">NEW</b>' : ''}</div>`;
+    return `<div class="bslot${sel}${swap}${fresh}${e.run ? ' run' : ''}" title="${e.run ? 'Unbanked: the town portal banks it, a wipe loses it' : ''}" style="${entryStyle(e)}${fresh ? `;--new:${T.BAG_NEW_SEC}s` : ''}" data-item="bag:${e.id}">${entryIcon(e, 24)}${lock}${up}${corner}${fresh ? '<b class="new">NEW</b>' : ''}</div>`;
   }).join('');
   const full = g.bag.length >= g.bagSize;
   const bag = head(`BAG <b class="${full ? 'full' : ''}">${g.bag.length}/${g.bagSize}</b>`,
     `<button class="as-tog ${g.autoSalvage ? 'on' : ''}" data-act="autoSalvage" data-tip="autosalvage">Auto-salvage ${g.autoSalvage ? 'on' : 'off'}</button>`)
     + `<div class="sp-bag" data-drop="bag">${cells}</div>`;
-  const foot = `<div class="sp-foot"><span class="gold">${g.gold} g · ${g.mats} scraps</span><span>record ${Math.max(g.record, n.deepest)}</span></div>`;
+  const foot = `<div class="sp-foot"><span class="gold">${g.gold} g · ${g.mats} Souls</span><span>record ${Math.max(g.record, n.deepest)}</span></div>`;
   if (town) {
     const rows = CITY.map(f => {
       const L = g.furniture[f.id] ?? 0;
@@ -640,7 +640,9 @@ export function uiPanelHtml(): string {
       return `<div class="sp-city"><div><b>${f.name}</b><span class="pips">${pips}</span><small>${L ? f.effect[L - 1] : `Next: ${f.effect[0]}`}</small></div>${act}</div>`;
     }).join('');
     // the services are the buildings themselves now (click one in the city, #50); the way down stays here too
-    const gate = `<div class="sp-svcs"><button class="sp-gate" data-act="portal">Enter the dungeon · floor ${n.checkpoint}</button></div>`;
+    // the way down (#52, 1.4): floor 1 and every checkpoint you unlocked
+    const cps = [...S.g.checkpoints].sort((x, y) => x - y), f = cps.includes(S.g.startFloor) ? S.g.startFloor : 1;
+    const gate = `<div class="sp-svcs sp-pick"><button class="sp-arrow" data-act="pickFloor" data-arg="-1" ${cps[0] === f ? 'disabled' : ''}>\u25c0</button><button class="sp-gate" data-act="portal">Enter the dungeon · floor ${f}</button><button class="sp-arrow" data-act="pickFloor" data-arg="1" ${cps[cps.length - 1] === f ? 'disabled' : ''}>\u25b6</button></div>`;
     return `<div class="sp-top">${head('RAVENHOLD · BUILD')}<div class="sp-cityrows">${rows}</div>${gate}${itemPopHtml()}</div>` + bag + foot;
   }
   // --- party: three cards (level, power, "!" when one falls behind); drop gear on a card to equip it ---

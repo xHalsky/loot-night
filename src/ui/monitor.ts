@@ -2,14 +2,12 @@ import { T } from '../config/tuning';
 import { S, N, type Vfx } from '../core/state';
 import { HERO_SPRITES, type Px } from '../data/heroes';
 import { ENEMY_BY_ID } from '../data/enemies';
-import { HERO_X, ENEMY_X, UNIT_Y } from '../systems/battle';
 import { maxHp } from '../systems/stats';
 import { MAP_INFO } from '../data/items';
 import { NPCS, TRADE_CHAT } from '../data/content';
 import { PIECES } from '../systems/excel';
 import { drawTownMap } from './townMap';
 import { sfx } from './audio';
-import { drawDungeonScene } from './dungeon';
 import { GAME_W, GAME_H, BATTLE_W, BAND_H, SCENE_H } from './layout';
 
 /** The canvas is the whole game screen (#49); the side panel is DOM over its right part. */
@@ -35,7 +33,8 @@ export function bar(c: CanvasRenderingContext2D, x: number, y: number, w: number
 }
 
 export const GOBLIN: Px[] = [[3, 0, 6, 4, '#4caf50'], [4, 1, 1, 1, '#ffeb3b'], [7, 1, 1, 1, '#ffeb3b'], [2, 4, 8, 6, '#795548'], [9, 3, 3, 5, '#f2b84b'], [3, 10, 2, 3, '#4caf50'], [7, 10, 2, 3, '#4caf50']];
-export const goblinPos = () => { const n = N(); if (!n.goblin) return null; return { x: 600 - (1 - n.goblin.t / T.GOBLIN_SEC) * 640, y: 262 }; };
+/** The loot goblin runs across the battle area (grid px, core/arena.ts). */
+export const goblinPos = () => { const n = N(); if (!n.goblin) return null; return { x: 320 - (1 - n.goblin.t / T.GOBLIN_SEC) * 330, y: 200 }; };
 
 export function drawMonitor(c: CanvasRenderingContext2D, live = false) {
   const n = S.g.night;
@@ -56,18 +55,9 @@ export function drawMonitor(c: CanvasRenderingContext2D, live = false) {
   drawDungeon(c);
 }
 
+/** Until the renderer is ready (its fonts load in a moment), the battle area stays dark (V2 draws the dungeon). */
 function drawDungeon(c: CanvasRenderingContext2D) {
-  // the band above the scene (#49): the cave's ceiling going up into the dark; curio windows open over it
-  const g = c.createLinearGradient(0, 0, 0, BAND_H + 24);
-  g.addColorStop(0, '#040306'); g.addColorStop(1, '#0c0810');
-  c.fillStyle = g; c.fillRect(0, 0, BATTLE_W, BAND_H + 24);
-  for (let i = 0; i < 9; i++) {   // a few roots and stalactites hanging out of the dark
-    const x = 30 + ((i * 83) % (BATTLE_W - 40)), h = 18 + ((i * 37) % 46);
-    c.fillStyle = '#100b14'; c.beginPath(); c.moveTo(x - 10, BAND_H + 24 - h - 30); c.lineTo(x + 10, BAND_H + 24 - h - 30); c.lineTo(x + 1, BAND_H + 24); c.fill();
-  }
-  c.save(); c.translate(0, BAND_H); c.beginPath(); c.rect(0, 0, BATTLE_W, SCENE_H); c.clip();
-  drawDungeonScene(c);
-  c.restore();
+  c.fillStyle = '#0a0814'; c.fillRect(0, 0, BATTLE_W, GAME_H);
   sidePanelBack(c);
 }
 /** Under the DOM side panel: its colour, so a frozen frame (the alt-tab switch) still shows a panel there. */

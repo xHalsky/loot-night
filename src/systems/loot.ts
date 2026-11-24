@@ -1,5 +1,5 @@
 import { T } from '../config/tuning';
-import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind, type Slot } from '../core/state';
+import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind, type Slot, type Enemy } from '../core/state';
 import { pick, weighted, chance, rand } from '../core/rng';
 import { ADJECTIVES, NOUNS, SLOT_STATS, STAT_BASE, RARITY_MULT, POSITIVE_AFFIXES, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
 import { toastAs } from '../core/fx';
@@ -9,6 +9,7 @@ import { crossBonus, isWitching } from './affixes';
 import { sfx } from '../ui/audio';
 import { coach } from './coach';
 import { noteDrop } from './pacing';
+import { ENEMY_SLOTS } from '../core/arena';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
 /** A stat's base roll at this item level. Attack, HP and armor compound (ITEM_POWER_GROWTH a level, #52 1.2) to keep pace
@@ -36,6 +37,10 @@ export function rollRarity(floor: number, minIdx = 0): Rarity {
   for (let i = 0; i < minIdx; i++) w[i] = 0;
   let idx = weighted(w);
   if (S.g.pity >= T.PITY_EPIC && idx < 3) idx = 3;
+  // the first legendary of a save comes within LEGENDARY_FIRST_BY drops (#52, 1.3)
+  S.g.drops++;
+  if (!S.g.legendaryFound && S.g.drops >= T.LEGENDARY_FIRST_BY) idx = 4;
+  if (idx === 4) S.g.legendaryFound = true;
   if (idx >= 3) S.g.pity = 0; else S.g.pity++;
   return RARITIES[idx];
 }
@@ -132,24 +137,36 @@ export function removeEntry(id: string): BagEntry | undefined {
   return e;
 }
 
-/** Drops from a finished battle go to the queue; the queue feeds the bag or the swap popup. */
+/** One kill (#52, 1.3): an item with DROP_CHANCE, an elite always (a rare), a boss BOSS_DROPS; it falls where the
+ *  enemy died. */
+export function dropFromKill(e: Enemy) {
+  const n = N();
+  const x = ENEMY_SLOTS[e.slot]?.x ?? 200;
+  if (e.boss) rollBattleDrops(n.floor, { count: T.BOSS_DROPS, minRare: true, at: [x - 20, x, x + 20] });
+  else if (e.elite) rollBattleDrops(n.floor, { count: 1, minRare: true, at: [x] });
+  else if (chance(T.DROP_CHANCE)) rollBattleDrops(n.floor, { count: 1, at: [x] });
+}
+/** Once a fight is won: a map or a feather now and then. */
+export function rollBattleExtras() {
+  const n = N(), out: BagEntry[] = [];
+  if (chance(T.MAP_DROP_CHANCE)) out.push(mapEntry(pick(Object.keys(MAP_INFO) as MapKind[])));
+  if (chance(T.FEATHER_DROP_CHANCE)) out.push(featherEntry());
+  out.forEach(en => n.floorLoot.push({ entry: en, x: ENEMY_SLOTS[0].x + (Math.random() - 0.5) * 20, t: 0 }));
+}
+
+/** Drops go onto the floor where the enemies stood (grid px); the looter picks them up during the walk. */
 export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: boolean; count?: number; minRare?: boolean; at?: number[] }) {
   const n = N();
-  const count = opts.count ?? (opts.boss ? T.BOSS_DROPS : (chance(T.BATTLE_DROP_CHANCE) ? 1 : 0) + (opts.elite ? 1 : 0));
+  const count = opts.count ?? (opts.boss ? T.BOSS_DROPS : 1);
   const out: BagEntry[] = [];
   for (let i = 0; i < count; i++) {
     const guaranteed = (opts.boss || opts.elite || opts.minRare) && i === 0;
     out.push(itemEntry(genItem(floor, guaranteed ? 2 : 0)));
   }
-  if (!opts.count) {
-    if (chance(T.MAP_DROP_CHANCE)) out.push(mapEntry(pick(Object.keys(MAP_INFO) as MapKind[])));
-    if (chance(T.FEATHER_DROP_CHANCE)) out.push(featherEntry());
-  }
-  // drops fall where the enemies stood; the front hero picks them up while walking
   // each drop lands where an enemy fell (spread a little when several share a body)
-  const at = opts.at?.length ? opts.at : [340, 420, 500];
+  const at = opts.at?.length ? opts.at : [186, 226, 266];
   out.forEach(e => noteDrop(e.kind === 'item' ? e.item.rarity : null));
-  out.forEach((e, i) => n.floorLoot.push({ entry: e, x: at[i % at.length] + (Math.floor(i / at.length) * 22) + (Math.random() - 0.5) * 14, t: 0 }));
+  out.forEach((e, i) => n.floorLoot.push({ entry: e, x: at[i % at.length] + (Math.floor(i / at.length) * 11) + (Math.random() - 0.5) * 7, t: 0 }));
 }
 
 /** The courier's parcel (#23): one rare-or-better item at your current depth, straight to the bag queue. */
@@ -161,23 +178,25 @@ export function deliverPackage(): BagEntry {
 }
 
 /** Everything still lying on the floor goes straight to the bag queue (leaving the floor). */
-export function sweepFloorLoot() { const n = N(); n.dropQueue.push(...n.floorLoot.map(l => l.entry)); n.floorLoot = []; }
+export function sweepFloorLoot() { const n = N(); n.floorLoot.forEach(l => markRun(l.entry)); n.dropQueue.push(...n.floorLoot.map(l => l.entry)); n.floorLoot = []; }
+/** Picked up during a run: unbanked until the town portal (#52, 1.4). */
+function markRun(e: BagEntry) { if (!N().run) return; e.run = true; if (e.kind === 'item') e.item.run = true; }
 
 /** Walking moves floor loot toward the party; the front hero collects what he steps on. */
 export function moveFloorLoot(dx: number, frontX: number) {
   const n = N();
-  for (const l of n.floorLoot) { l.x -= dx; l.t += 1 / 60; }
+  for (const l of n.floorLoot) { l.x -= dx; l.t += 1 / 60; }   // grid px (core/arena.ts)
   const got = n.floorLoot.filter(l => l.x <= frontX);
   if (!got.length) return;
   n.floorLoot = n.floorLoot.filter(l => l.x > frontX);
   const waiting = n.lootFly.filter(f => f.t < f.delay).length;
   got.forEach((l, i) => {
-    n.dropQueue.push(l.entry); sfx.click();
+    markRun(l.entry); n.dropQueue.push(l.entry); sfx.click();
     // its name flies up from where it lay (#49): a batch is staggered and spread sideways; legendaries stay longer
     const leg = l.entry.kind === 'item' && l.entry.item.rarity === 'legendary';
     const k = waiting + i;
     n.lootFly.push({ x: l.x, text: entryName(l.entry), color: entryColor(l.entry), t: 0, max: leg ? T.LOOT_FLY_LEGENDARY_SEC : T.LOOT_FLY_SEC,
-      delay: k * T.LOOT_FLY_STAGGER_SEC, dx: k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.min(3, Math.ceil(k / 2)) * 14 });
+      delay: k * T.LOOT_FLY_STAGGER_SEC, dx: k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.min(3, Math.ceil(k / 2)) * 7 });
   });
 }
 
@@ -197,7 +216,7 @@ export function updateDrops(dt: number) {
   if (n.monitorOff > 0) { toast(`Monitor off. Missed: ${entryName(e)}`, '#ff8a80'); return; }
   if (S.g.autoSalvage && e.kind === 'item' && RARITIES.indexOf(e.item.rarity) < 2) {
     const y = T.SALVAGE_YIELD[RARITIES.indexOf(e.item.rarity)];
-    S.g.mats += y; toast(`Auto-salvaged ${entryName(e)}: +${y} scraps`, '#9a8a6a'); sfx.key();
+    S.g.mats += y; toast(`Auto-salvaged ${entryName(e)}: +${y} Souls`, '#9a8a6a'); sfx.key();
     return;
   }
   announce(e);

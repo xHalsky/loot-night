@@ -9,11 +9,16 @@ the friends' phone calls use their real names.
 Stats: HP, attack, armor, speed, crit, luck; level and XP; six gear slots (weapon, helm, armor, boots,
 ring, trinket). Old saves are renamed on load.
 
-**Floors.** Endless. A floor is a walk, then `BATTLES_PER_FLOOR` (3) battles. Every
-`CHECKPOINT_EVERY` (5th) floor ends in a boss and sets the checkpoint. Enemies scale per floor
-(`ENEMY_HP_PER_FLOOR` +60%, `ENEMY_ATK_PER_FLOOR` +45% of their floor-1 numbers per floor), faster than levels
-(`HERO_LEVEL_SCALE`, +4% HP and attack per level) and as fast as the gear that drops there, so the party has to gear
-up as it goes: without new gear the first boss (floor 5) is a wall ([loot.md](loot.md), #49). Monday's dungeon is the Shadow Crypt
+**Floors** (#52, 1.3). Endless. A floor is walk, encounter, walk, encounter, walk, encounter, then the floor end
+(`BATTLES_PER_FLOOR`, 3). Every `CHECKPOINT_EVERY` (5th) floor is a boss floor: two encounters, then the boss.
+**An encounter is a pack:** `PACK_MIN` + floor / 2 enemies (5 on floor 1, at most `PACK_MAX` 12), six on screen
+(`src/core/arena.ts`): fodder in two close lanes (front x 186, 226, 266; back x 205, 245, darker), a boss or a caster
+(the Shaman) behind them on the party's lane. The rest wait off screen and step into a free rank as the front ones
+die (`STEP_IN_SEC`, 0.6 s, sliding in). A pack member has `PACK_HP_MULT` (1.4) of a lone enemy's HP and
+`PACK_ATK_MULT` (0.5) of its attack (*start*; the good bot's fights take 10 to 11 s against the 8 to 12 s target).
+Enemies compound per floor (1.2); levels add `HERO_LEVEL_SCALE` (+4%) and the gear has to keep up
+([loot.md](loot.md), #49). **Who they hit:** Taunt takes everything; otherwise melee hits rank 1 (70%) or rank 2,
+the Shaman hits the back ranks, bats hit anyone (ranks are the heroes' order until marching order, #52 1.6). Monday's dungeon is the Shadow Crypt
 (`src/data/enemies.ts`). When a boss dies, the enemies still standing run. Enemy ids are older than their
 names (`collector` = Orc, `auditor` = Shaman, `shelter` = Guardian, `junk` = Imps, `bailiff` = Ogre, `shark` =
 Warlock, `landlord` = Black Knight; boss moves `slam`, `loan`, `evict`); saves and tests key on the ids.
@@ -151,12 +156,22 @@ and shows what it does. `python3 test/dmap.py` shoots it at a few depths. Maps (
 
 With six possible paths, each node shows only its name; the description appears on hover.
 
-**Downed and wipe.** At 0 HP a hero is downed and skips turns. Downed heroes return at 30% when the
-floor ends, or via a Phoenix Feather from the bag (50%). All three down = wipe, an MMO corpse run:
-back to the checkpoint, −60 in-game minutes, −10% gold, half the bag (random, locked items excepted)
-plus any floor loot left on the corpse at that floor. Reaching that floor returns it.
+**Runs** (#52, 1.4; `src/systems/run.ts`). A run starts at the Dungeon Portal in the city, at floor 1 or any
+checkpoint you unlocked (the side panel's ◀ floor N ▶ by Enter the dungeon). Beating the boss of floor 5n unlocks
+starting at 5n+1, for good (`S.g.checkpoints`), and gives `SOULS_PER_BOSS` (20) Souls. The run goes floor after
+floor until the town portal (the run is banked) or a wipe (it is lost). Items and gold picked up in a run are
+**unbanked**: a dashed mark on their bag cell, and the town portal plate says what it banks ("bank 7 · 420 g").
+Floor bounty and the other RPG gold go to the run first. Each floor cleared gives `SOULS_PER_FLOOR_BASE` + floor
+Souls; Souls go straight to the pool and are never lost. Logging off (Sleep, dawn) banks the run. A run end card
+shows for `RUN_CARD_SEC` over the city: the deepest floor, what was banked or lost, the Souls.
 
-**Loot goblin.** `GOBLIN_CHANCE` after a battle; runs for 6 s; click it for 3 drops, one rare or better.
+**Downed and wipe.** At 0 HP a hero is downed and stops attacking. Downed heroes return at 30% when the floor ends,
+or via a Phoenix Feather from the bag (50%), or Miracle. All down = **PARTY WIPE**: the run's unbanked items (worn
+ones and locked ones too) and gold are lost, its Souls stay, and the party wakes in the city at full HP after the
+portal's 15 minutes. He still slams the desk (Noise, the dog comes to see).
+
+**Loot goblin.** `GOBLIN_CHANCE` after a fight; runs across the battle area for 6 s; click it for 3 drops, one
+rare or better.
 
 **The Shadow Crypt, in the redesign's look** (V2, #67; grid doc §3 to §5). The battle area is drawn by the
 redesign's renderer (`src/render/page/live.js` from the view model in `src/render/rpgView.ts`) on the 334 × 232
@@ -179,11 +194,12 @@ mid-switch, a minigame window open, or cables out because you ignored the dog), 
 ultimates: the party fights on with its auto attacks (bought autocasts will fire in #53). Her desk visit and the
 monitor she switched off are forced on you, so they don't count. Party chat complains in the Feed ("Magoo: afk
 again? pulling"), and the Loot Night taskbar button flashes orange like a Windows app wanting attention when party
-HP is under `AUTOPILOT_FLASH_HP` or a hero is down. Measured by `test/autopilot.ts` (40 s on Excel, 30 runs): the
-bosses on floors 5 and 10 wipe 29/30 and 18/30; normal floors 3 and 8 wipe 0/30 and end at 74% and 66% party HP.
+HP is under `AUTOPILOT_FLASH_HP` or a hero is down. Measured by `test/autopilot.ts` with packs (0.53; 40 s on Excel,
+30 runs): the boss on floor 10 wipes 30/30, floor 15 18/19 (watching, it is still 12/19: the Black Knight is the
+wall); normal floors 3 and 8 wipe 0/30 and end at 71% and 64% party HP.
 
-**City portal.** A button at the top left of the battle area, under the corner overlay (between battles): back to
-the city, 15 min. In the city, the Dungeon Portal returns to the checkpoint, 15 min.
+**Town portal.** The plate at the top left of the battle area, under the corner overlay (between fights): back to
+the city, 15 min, banking the run.
 
 **Floor bounty** (0.40): clearing a floor pays `FLOOR_GOLD_BASE` + `FLOOR_GOLD_PER` × floor gold (floor 1: 8,
 floor 10: 35; about 180 a normal night), shown in the feed. Steady income besides selling drops
@@ -206,6 +222,14 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   night. Rejected: longer cooldowns (the party would feel slow on the screen you are risking it all for) and
   more Noise per skill (the bed phase would end in a wake-up every time).
 
+- **Packs, runs and banking** (0.53, #52 1.3 and 1.4). Encounters are packs of six on screen with the rest waiting,
+  so a fight reads as a mob; drops come per kill where the enemy fell, and the walk picks them up (the loot pause is
+  gone). The corpse run is gone: a wipe now costs the run's unbanked loot, which makes the town portal a choice
+  (bank now, or push for the next floor). Logging off banks the run: losing a night's loot for going to bed would
+  punish the very thing the night asks of you (open for Paweł). The unbanked count sits on the town portal plate,
+  not as a fourth corner line: on the grid there is no room under Flow above the plate, and the portal is what
+  banks it. Rank targeting (melee on ranks 1 and 2) came early with the packs: six attackers hitting at random wiped
+  the back row.
 - **Real-time combat, three slots, ultimates on charge** (0.51, #52 1.2). The ATB turns were already timers; now
   each unit attacks on `BASE_ATTACK_SEC` × 10 / speed, about 2.8x the old pace, and turn counts are seconds. The
   third skill (Rally, Storm, Revive) is gone: the skill bar has no room for four wells (decisions 2026-11-20), and

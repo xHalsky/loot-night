@@ -48,7 +48,7 @@ function power(x, y, v, idx, align) {
 }
 function portalButton(st) {
   const on = !st.inBattle;
-  button(4, 28, 54, 19, [['Town portal', 'tiny', P.moon], [on ? '15 min' : 'after battle', 'tiny', on ? P.d6 : P.u4]], on ? { mat: M_MAGIC } : { off: true });
+  button(4, 28, 54, 19, [['Town portal', 'tiny', P.moon], [on ? (st.label || '15 min') : 'after battle', 'tiny', on ? P.d6 : P.u4]], on ? { mat: M_MAGIC } : { off: true });   // st.label: what it banks (the game, #52 1.4)
 }
 function buffs(list, t) {
   smokeU(W, 0, 30 + list.length * 16, 34, 0.6);
