@@ -2,11 +2,11 @@ import { ensureParty } from './ranks';
 import { bankRun, loseRun, unbanked } from './run';
 import { resetPacing } from './pacing';
 import { T } from '../config/tuning';
-import { carryGoodwill } from './goodwill';
-import { S, N, type Night, type Results } from '../core/state';
+import { carryGoodwill, addGoodwill } from './goodwill';
+import { S, N, type Night, type Results, type Item, type BagEntry } from '../core/state';
 import { rand } from '../core/rng';
 import { maxHp } from './stats';
-import { entryValue, removeEntry, sweepFloorLoot } from './loot';
+import { entryValue, removeEntry, sweepFloorLoot, genItem, itemEntry } from './loot';
 import { initVisits } from './visits';
 import { newExcel } from './excel';
 import { startTired } from './tired';
@@ -21,7 +21,7 @@ import { cityOutlook } from './town';
 export function newNight(): Night {
   return {
     clock: T.NIGHT_START, threat: 0, location: 'town', phase: 'walk', phaseT: 0,
-    floor: 1, battleIdx: 0, floorMap: 'plain', checkpoint: Math.max(1, ...S.g.checkpoints), deepest: 0,
+    floor: 1, battleIdx: 0, floorMap: 'plain', checkpoint: Math.max(1, ...S.g.checkpoints), deepest: 0, deepTarget: Math.max(T.STAR_DEEP_MIN, S.g.record + T.STAR_DEEP_OFFSET),
     enemies: [], mood: T.MOOD_START, noise: 0, catches: 0, bossQuiet: 0, bossCallback: 0, flow: T.FLOW_MIN,
     monitor: 'rpg', action: 'none', dropQueue: [], floorLoot: [], fresh: [], lootFly: [], dropPopup: null, reserve: [], run: null, runCard: null, paths: null, safest: 0, mapAway: 0, feature: null, cond: null,
     visit: { stage: 'idle', t: 0, nextAt: 0, fake: false, checked: false, result: '', kind: 'peek' },
@@ -46,6 +46,8 @@ export function startNight() {
   S.g.heroes.forEach(h => { h.moving = undefined; h.from = undefined; });
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.queued = null; h.cd = [0, 0, 0, 0]; h.ult = 0; h.atb = Math.random() * 50; });
   initVisits();
+  // last morning's rewards (#54, 3.1): Trust's Goodwill on top of what carried over; a chest that found the bag full
+  if (S.g.carry) { addGoodwill(S.g.carry.goodwill, 'Trust: she never caught you last night'); S.g.night.dropQueue.push(...S.g.carry.drops); S.g.carry = undefined; }
   S.g.night.tired = startTired();
   S.g.monsters = Math.max(S.g.monsters ?? 0, T.MONSTER_PER_NIGHT);
   setHeadset(false); stopAmbience();
@@ -98,20 +100,21 @@ export function endNight(ending: Results['ending']) {
   else if (endClock > T.BEDTIME) S.g.sleepDebt = Math.min(T.SLEEP_DEBT_MAX, S.g.sleepDebt + Math.ceil((endClock - T.BEDTIME) / T.SLEEP_DEBT_STEP_MIN));
   else S.g.sleepDebt = Math.max(0, S.g.sleepDebt - Math.floor((T.BEDTIME - endClock) / T.SLEEP_DEBT_STEP_MIN));
 
+  // Three goals, each a star (#54, 3.1): Deep (any run reached tonight's floor), Unseen (never caught; a forgiven
+  // catch or an excuse she bought doesn't count), Sweet (her Mood ends under red). Unplugged: none.
   const survived = ending !== 'unplugged';
-  const twoStar = survived && n.mood < T.MOOD_RED;
-  const threeStar = !n.everCaught;
-  const stars = (survived ? 1 : 0) + (twoStar ? 1 : 0) + (threeStar && survived ? 1 : 0);
+  const depth = n.deepest, target = n.deepTarget;
+  const goals = { deep: survived && depth >= target, unseen: survived && !n.everCaught, sweet: survived && n.mood < T.MOOD_RED, target };
+  const stars = +goals.deep + +goals.unseen + +goals.sweet;
 
   const prevRecord = S.g.record;
-  const depth = n.deepest;
   const near: string[] = [];
   if (run && (run.items || run.gold)) near.push(bank ? `Run banked on the way to bed: ${run.items} items, ${run.gold} gold.`
     : `${ending === 'dawn' ? 'Dawn' : 'The plug'} ended the run on floor ${run.deepest}: ${run.items} items and ${run.gold} gold lost.`);
-  if (depth < prevRecord) near.push(`${prevRecord - depth} floor${prevRecord - depth > 1 ? 's' : ''} short of your record (${prevRecord}).`);
+  if (survived && !goals.deep) near.push(`Deep: ${target - depth} floor${target - depth > 1 ? 's' : ''} short of tonight's target (floor ${target}).`);
   if (depth > prevRecord && prevRecord > 0) near.push(`New depth record: floor ${depth}!`);
-  if (survived && !twoStar) near.push(`2nd star missed by ${Math.ceil(n.mood - T.MOOD_RED + 1)} Mood.`);
-  if (n.everCaught) near.push(`3rd star needs a night with no catches (caught ${n.catches}x).`);
+  if (survived && !goals.sweet) near.push(`Sweet: missed by ${Math.ceil(n.mood - T.MOOD_RED + 1)} Mood.`);
+  if (survived && n.everCaught) near.push(`Unseen: caught ${n.catches}x tonight.`);
   const city = cityOutlook();   // counts what your bag sells and salvages for, like you would in the city
   if (city.next) {
     const what = `${city.next.name} ${city.next.upgrade ? 'upgrade' : ''}`.trim();
@@ -124,7 +127,7 @@ export function endNight(ending: Results['ending']) {
   S.g.record = Math.max(S.g.record, depth);
   S.g.bestStars = Math.max(S.g.bestStars, stars);
   S.g.nightsPlayed++;
-  S.g.results = { ending, endClock, stars, depth, prevRecord, debtBefore, debtAfter: S.g.sleepDebt, mood: Math.round(n.mood), caught: n.everCaught, unidentified, nearMisses: near };
+  S.g.results = { ending, endClock, stars, depth, prevRecord, debtBefore, debtAfter: S.g.sleepDebt, mood: Math.round(n.mood), caught: n.everCaught, unidentified, nearMisses: near, goals };
   S.g.screen = 'results';
   sfx.level();
   save();
@@ -135,7 +138,20 @@ export function toMorning() {
   const listings = S.g.pendingListings.length;
   S.g.zl += paid;
   S.g.pendingListings = [];
-  S.g.morning = { paid, listings };
+  // A reward per star (#54, 3.1). Loot only comes from the game, so only Deep pays in loot: a chest with one item
+  // from the normal drop table at tonight's deepest floor. Unseen: Trust, Goodwill for the next night. Sweet:
+  // Breakfast, sleep debt down.
+  const goals = S.g.results?.goals, depth = S.g.results?.depth ?? 1;
+  let chest: Item | null = null, chestWaits = false;
+  const carry = { goodwill: 0, drops: [] as BagEntry[] };
+  if (goals?.deep) {
+    chest = genItem(Math.max(1, depth));
+    if (S.g.bag.length < S.g.bagSize) S.g.bag.push(itemEntry(chest)); else { carry.drops.push(itemEntry(chest)); chestWaits = true; }   // a full bag: it waits as tonight's first drop
+  }
+  if (goals?.unseen) carry.goodwill = T.STAR_UNSEEN_GOODWILL;
+  if (goals?.sweet) S.g.sleepDebt = Math.max(0, S.g.sleepDebt - T.STAR_SWEET_DEBT);
+  if (carry.goodwill || carry.drops.length) S.g.carry = carry;
+  S.g.morning = { paid, listings, chest, chestWaits, trust: !!goals?.unseen, breakfast: !!goals?.sweet };
   S.g.screen = 'morning';
   save();
 }

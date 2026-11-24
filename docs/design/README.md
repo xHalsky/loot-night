@@ -2,7 +2,7 @@
 
 A guy plays a loot-obsessed MMO at his desk while real life (his girlfriend, his mom, his boss, the dog,
 his own tiredness) keeps pulling him away. A short, funny pixel-art game. It started as a birthday gift; since 2026-11-19 the goal is a proper Steam
-game, with no birthday ending: a week of nights, each graded 0 to 3 stars, then endless Custom Nights.
+game, with no birthday ending: a week of nights, each graded 0 to 3 stars; after Sunday the week starts again (no Custom Nights, 2026-11-20).
 
 **This bible describes the game as it is now.** Each file covers one system. It has three parts:
 - **Now**: what the build does.

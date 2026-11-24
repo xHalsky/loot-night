@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.63.0 (2026-11-24)
+
+- **Stars that reward greed** (#54 3.1, redesign step 3 begins). Three goals, a star each, no ladder: **Deep** (any
+  run tonight reaches tonight's floor: your record, at least 3), **Unseen** (never caught; a forgiven catch doesn't
+  count), **Sweet** (her Mood ends under red). Unplugged gets none. The old ladder (survive, then Mood, then not
+  caught) paid nothing for going deep.
+- **The Tonight note** is three handwritten lines with a live mark each: "floor N" (! until reached, then ✓ for
+  good), "don't get caught", "keep her happy"; "deeper = better loot" is gone.
+- **Results** name the three stars, lit or not; the near miss says how many floors short of tonight's target.
+- **A reward per star in the morning:** Deep a chest (one item at tonight's deepest floor; a full bag keeps it as
+  the next night's first drop), Unseen Trust (Goodwill +20 next night), Sweet Breakfast (sleep debt -1).
+- `test/stars.ts` (every goal and reward, the full bag), `test/stars.py` (the note, results, morning).
+- Sims: good bot 3 stars (floor 7 against a target of 3), sleeps, caught 0; idle bot unplugged, 0 stars.
+
 ## 0.62.3 (2026-11-24)
 
 - **The old RPG drawing is gone** (steps 1 and 2 are closed: #52, #53, #67). The renderer has drawn the dungeon,

@@ -639,7 +639,8 @@ export function screenHtml(): string {
   }
   if (g.screen === 'results' && g.results) {
     const r = g.results;
-    const stars = [0, 1, 2].map(i => `<span class="star ${i < r.stars ? 'on' : ''}">★</span>`).join('');
+    const STAR: [keyof typeof r.goals, string, string][] = [['deep', 'Deep', `floor ${r.goals.target}`], ['unseen', 'Unseen', 'never caught'], ['sweet', 'Sweet', 'she ended happy']];
+    const stars = STAR.map(([k, name, why]) => `<span class="star-n ${r.goals[k] ? 'on' : ''}"><span class="star">★</span><b>${name}</b><small>${why}</small></span>`).join('');
     const endTxt = r.ending === 'sleep' ? `Logged off at ${fmtClock(r.endClock)}` : r.ending === 'dawn' ? 'Dawn. The sun is up and so are you.' : 'Unplugged. She pulled the plug. Half the bag is gone.';
     return `<div class="screen"><div class="card">
       <div class="kicker">MONDAY · RESULTS</div>
@@ -651,7 +652,7 @@ export function screenHtml(): string {
         <div><span class="dim">Mood at the end</span><b>${r.mood}</b></div>
         <div><span class="dim">Sleep debt</span><b>${r.debtBefore} → ${r.debtAfter}</b></div>
       </div>
-      <div class="stars-key dim">★ survive · ★★ end in green or yellow Mood · ★★★ never caught</div>
+      <div class="stars-key dim">Each star pays in the morning: Deep a chest, Unseen her trust, Sweet breakfast.</div>
       ${r.nearMisses.length ? `<div class="near"><div class="kicker">SO CLOSE</div>${r.nearMisses.map(m => `<div>${esc(m)}</div>`).join('')}</div>` : ''}
       ${r.unidentified ? `<div class="near"><div class="kicker" style="color:#b98cff">WAITING AT THE APPRAISER</div><div>${r.unidentified} unidentified item${r.unidentified > 1 ? 's' : ''} in your bag: ${'<span class="sil">???</span>'.repeat(Math.min(6, r.unidentified))}</div></div>` : ''}
       <div class="row">${btn('morning', 'Next morning →', '', 'wide gold')}</div>
@@ -666,6 +667,10 @@ export function screenHtml(): string {
         <div class="m-info">
           <div class="kicker">MORNING SUMMARY</div>
           <h3>${m.listings ? `Auction house sold ${m.listings} item${m.listings > 1 ? 's' : ''}: +${m.paid} zł` : 'Nothing sold overnight.'}</h3>
+          ${m.chest || m.trust || m.breakfast ? `<div class="m-rewards">
+            ${m.chest ? `<div><b>★ Deep: a chest.</b> <span style="color:${RARITY_COLOR[m.chest.rarity]}">${esc(m.chest.identified ? m.chest.name : '??? (' + m.chest.rarity + ')')}</span>${m.chestWaits ? ' <span class="dim">(bag full: it waits for tonight)</span>' : ''}</div>` : ''}
+            ${m.trust ? `<div><b>★ Unseen: Trust.</b> Tonight starts with Goodwill +${T.STAR_UNSEEN_GOODWILL}.</div>` : ''}
+            ${m.breakfast ? `<div><b>★ Sweet: Breakfast.</b> She made breakfast: sleep debt -${T.STAR_SWEET_DEBT}.</div>` : ''}</div>` : `<div class="m-rewards dim">No stars, no rewards. Tonight's note has three.</div>`}
           <div class="grid2">
             <div><span class="dim">Wallet</span><b>${g.zl} zł</b></div>
             <div><span class="dim">Sleep debt</span><b>${debt}</b></div>
@@ -747,12 +752,12 @@ export function tonightHtml(): string {
   if (!n) return '';
   const zone = moodZone(n.mood);
   const mark = (s: 'ok' | 'risk' | 'lost') => `<b class="${s}">${s === 'ok' ? '✓' : s === 'risk' ? '!' : '✗'}</b>`;
-  return `<div class="sticky" title="Your stars, counted when you log off.">
+  // three goals, a star each (#54, 3.1): no ladder; ! is at risk, a tick is met (floor N stays ticked once reached)
+  return `<div class="sticky" title="Tonight's three stars, counted when you log off. Each pays a reward in the morning.">
     <div class="st-h">Tonight <small>⏻ ${n.clock >= T.EARLIEST_SLEEP ? 'sleep any time' : '23:00+'}</small></div>
-    <div>★ plug stays in ${mark(zone === 'red' ? 'risk' : 'ok')}</div>
-    <div>★★ she's happy ${mark(zone === 'red' ? 'risk' : 'ok')}</div>
-    <div>★★★ not caught ${mark(n.everCaught ? 'lost' : 'ok')}</div>
-    <div class="st-f">deeper = better loot</div></div>`;
+    <div>floor ${n.deepTarget} ${mark(n.deepest >= n.deepTarget ? 'ok' : 'risk')}</div>
+    <div>don't get caught ${mark(n.everCaught ? 'lost' : 'ok')}</div>
+    <div>keep her happy ${mark(zone === 'red' ? 'risk' : 'ok')}</div></div>`;
 }
 
 /** Coach mark (#42): a callout next to the thing, while the game crawls. Positioned by main.ts. */

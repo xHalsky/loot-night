@@ -248,6 +248,10 @@ export const T = {
   GREEN_MOOD_LUCK: 0.10,
 
   // --- Real life meters ---
+  // Stars that reward greed (#54, 3.1): Deep (tonight's floor), Unseen (never caught), Sweet (Mood under red).
+  STAR_DEEP_MIN: 3, STAR_DEEP_OFFSET: 0,   // tonight's floor = max(min, record + offset), fixed at the start of the night
+  STAR_UNSEEN_GOODWILL: 20,               // Unseen's reward, Trust: the next night starts with this much more Goodwill
+  STAR_SWEET_DEBT: 1,                     // Sweet's reward, Breakfast: sleep debt down this much
   MOOD_START: 15,
   MOOD_DRIFT_EVERY_SEC: 30,
   MOOD_GREEN: 40, MOOD_RED: 75, MOOD_MAX: 100,

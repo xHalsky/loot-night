@@ -37,6 +37,7 @@ A browser game heading for a Steam release (it started as a birthday gift): a lo
     npx tsx test/runend.ts           # a night's end mid-run: Sleep banks, dawn and unplugged lose it, the warnings
     npx tsx test/loot.ts             # loot rules: affix lines, legendaries and sets (every rule)
     npx tsx test/tree.ts             # skill trees: costs, pairs, the ultimate's 6, respec, autocast, rules and stats
+    npx tsx test/stars.ts            # stars: Deep, Unseen, Sweet, and the morning reward for each
     npx tsx test/toss.ts             # Goblin Fuel throw: hits and misses, missed cans stay and pile up
     python3 test/balance.py 16 good  # balance report: visits, variety, catches, Noise, income vs the cheapest building
     python3 test/campaign.py 8 4     # NIGHTS=4 bot campaigns: city builds per night (sim.ts NIGHTS=n)

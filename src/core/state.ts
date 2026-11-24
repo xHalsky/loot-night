@@ -138,7 +138,7 @@ export interface Night {
   clock: number; threat: number;
   location: 'town' | 'dungeon';
   phase: DungeonPhase; phaseT: number;
-  floor: number; battleIdx: number; floorMap: MapKind | 'plain'; checkpoint: number; deepest: number;
+  floor: number; battleIdx: number; floorMap: MapKind | 'plain'; checkpoint: number; deepest: number; deepTarget: number;   // deepTarget: tonight's floor for the Deep star (#54)
   enemies: Enemy[];
   mood: number; noise: number; catches: number; flow: number;
   bossQuiet: number; bossCallback: number;   // threat time until the boss stays quiet; when he pings again after a flip (0 = none)
@@ -214,6 +214,7 @@ export interface Results {
   endClock: number; stars: number; depth: number; prevRecord: number;
   debtBefore: number; debtAfter: number; mood: number; caught: boolean;
   unidentified: number; nearMisses: string[];
+  goals: { deep: boolean; unseen: boolean; sweet: boolean; target: number };   // the three stars (#54, 3.1)
 }
 
 export type Screen = 'title' | 'night' | 'results' | 'morning';
@@ -246,7 +247,8 @@ export interface GameState {
   screen: Screen; paused: boolean; debug: boolean; timeScale: number;
   realLifeOff: boolean;   // debug (#52, 1.1): nobody is home; the RPG runs alone (not saved)
   results: Results | null;
-  morning: { paid: number; listings: number } | null;
+  morning: { paid: number; listings: number; chest: Item | null; chestWaits: boolean; trust: boolean; breakfast: boolean } | null;   // a reward per star (#54)
+  carry?: { goodwill: number; drops: BagEntry[] };   // the morning's rewards for the next night: Trust's Goodwill, a chest that found the bag full
 }
 
 export function newHero(id: HeroId, name: string, role: string, hp: number): Hero {

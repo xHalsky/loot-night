@@ -27,20 +27,28 @@ view, and her threats keep full speed either way.
 Pending drops go into the bag before the ending is applied. While a run is going, the feed warns 15 game minutes
 before dawn and when Mood reaches red ([dungeon.md](dungeon.md), runs).
 
-**Stars** (the real-life score):
-1. Survived (not unplugged).
-2. Ended with Mood below red (`MOOD_RED`).
-3. Never caught all night.
+**Stars: three goals, a star each, no ladder** (#54, 3.1; `endNight`). Unplugged gets none.
+- **Deep:** any run tonight reached tonight's floor, `max(STAR_DEEP_MIN, record + STAR_DEEP_OFFSET)` (3 and 0),
+  fixed when the night starts (`n.deepTarget`). The greed star: it asks you to push the dungeon.
+- **Unseen:** never caught tonight. A forgiven catch (Goodwill) or an excuse she bought doesn't count.
+- **Sweet:** her Mood ends below `MOOD_RED`.
 
-The RPG keeps its own record: the deepest floor ever reached.
+The RPG keeps its own record: the deepest floor ever reached, which raises the next night's Deep target.
 
-**Results screen.** Stars, depth vs. record, sleep debt before and after, and near misses: floors short
-of the record, Mood short of the 2nd star, catches, and the cheapest city building with the gold and
-scraps still missing.
+**Results screen.** The three stars by name (Deep with tonight's floor), lit or not; depth vs. record, sleep
+debt before and after, and near misses: "Deep: N floors short of tonight's target", Sweet's Mood short,
+Unseen's catches, and the cheapest city building with the gold and Souls still missing.
 
 **Morning screen.** Two columns: art on the left (she fell asleep in your shirt; from the foot of the bed,
 bare soles out from under the blanket, breathing), summary and the next-night button on the right.
-Auction listings pay out here in zł.
+Auction listings pay out here in zł. **One reward per star** (`toMorning`): loot only comes from the game, so only
+the RPG star pays in loot.
+- **Deep: a chest:** one item from the normal drop table at tonight's deepest floor, into the bag; a full bag keeps
+  it as the next night's first drop (the bag-full window takes it from there).
+- **Unseen: Trust:** the next night starts with Goodwill +`STAR_UNSEEN_GOODWILL` (20), on top of what carries over
+  (closer to the Raid pass at 40 and Forgiveness at 60).
+- **Sweet: Breakfast:** she makes breakfast, sleep debt -`STAR_SWEET_DEBT` (1), so the next night starts less tired.
+`S.g.carry` holds Trust and a waiting chest for the next night (saved).
 
 **Tiredness.** The live form of sleep debt, a 0 to 100 meter on the YOU card (desk, bottom right).
 - Start: `TIRED_BASE` + `TIRED_PER_DEBT` × sleep debt (10 + 3 per point).
@@ -66,9 +74,9 @@ happening.
   something else), 4 Headset (the Zone, but you are deaf to her). The pause menu reopens it.
 - **Tonight, a sticky note** (`tonightHtml`, #42): stuck on the monitor's bottom edge over the middle of the taskbar
   (#49), always visible in the
-  game and in Excel. The three stars of the night with a live mark each: "★ plug stays in", "★★ she's happy",
-  "★★★ not caught" (✓ on track, ! her Mood is red, ✗ lost for tonight), when Sleep opens (⏻ 23:00+) and
-  "deeper = better loot". Hover: what each star means. Before this the stars first appeared on the results
+  game and in Excel. Three handwritten lines, the night's goals, with a live mark each and no star ladder: "floor N"
+  (! until a run reaches it, then ✓ for good), "don't get caught" (✓, ✗ once caught), "keep her happy" (✓ green or
+  yellow, ! red); and when Sleep opens (⏻ 23:00+). Hover: each is a star that pays in the morning. Before this the stars first appeared on the results
   screen, so a new player knew the rules but not what a good night was.
 - **Coach marks for the core loop** (`COACH` in `src/data/tips.ts`, `src/systems/coach.ts`, #42): the first
   footsteps, her first time in the doorway, the first phone, the first loot and the first boss wind-up get a
@@ -104,6 +112,11 @@ happening.
   visit (it would teach the script, not the listening); the old title screen's eight bullets (nobody reads
   them before playing); tips that repeat every night (noise after the first night).
 
+- **Stars that reward greed** (0.63, #54; Paweł's brief from testing v0.48): the old ladder (survive, then Mood, then
+  not caught) paid nothing for going deep, so the safe night and the greedy night scored the same. Now the RPG has
+  its own star (Deep) and every star pays something the next night needs. Rejected: Deep counting only the run you
+  end on (a wipe after a deep run would erase it); loot for Unseen or Sweet (loot only comes from the game, money
+  rule 2026-11-19); a star for surviving (dawn and Sleep both survive; unplugged already gets none).
 - **Earliest sleep 23:00.** Logging off at 20:00 used to earn 3 stars for free.
 - **Tiredness replaced the sleep-debt effects table** (yawn at 4 debt, shorter timers at 8, and so on).
   A live meter makes even a little debt matter and gives the Goblin Fuel a job.
