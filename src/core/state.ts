@@ -94,7 +94,7 @@ export interface Interrupt {
 }
 
 export interface PhoneGame {
-  kind: 'phone'; app: InterruptKind; speaker?: boolean;   // speaker: answered on speaker, hands free, Noise while it lasts (#54, 3.2)
+  kind: 'phone'; app: InterruptKind; speaker?: boolean; log?: ['l' | 'r', string][];   // log: the boys' exchange for their chat   // speaker: answered on speaker, hands free, Noise while it lasts (#54, 3.2)
   stage: 'ringing' | 'locked' | 'call' | 'chat' | 'talk';   // talk: courier / friends dialogue
   t: number; max: number;            // time left in the current stage (0 = untimed)
   unlock: number; holding: boolean; drag: number;
@@ -132,6 +132,8 @@ export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
 /** A timed party buff or debuff (curios, the friends' raid buff). floor: lasts until the next floor instead of t. */
+/** A line in a phone chat: hers or theirs (l), yours (r), a grey note (sys); when it was sent. */
+export interface ChatLine { s: 'l' | 'r' | 'sys'; text: string; night: number; clock: number }
 export interface PartyBuff { name: string; dmg: number; speed: number; t: number; max: number; icon: string; floor?: boolean; crit?: number; fights?: number; cd?: number; night?: boolean; untilBoss?: boolean }   // fights: lasts this many battles instead of t; night: until dawn; untilBoss: until a boss fight ends; cd: cooldowns down
 
 export interface Night {
@@ -182,6 +184,7 @@ export interface Night {
   game: MiniGame | null;
   excel: ExcelState;
   pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
+  phApp?: 'home' | 'messages' | 'babe' | 'boys'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
@@ -249,7 +252,8 @@ export interface GameState {
   realLifeOff: boolean;   // debug (#52, 1.1): nobody is home; the RPG runs alone (not saved)
   results: Results | null;
   morning: { paid: number; listings: number; chest: Item | null; chestWaits: boolean; trust: boolean; breakfast: boolean } | null;   // a reward per star (#54)
-  carry?: { goodwill: number; drops: BagEntry[] };   // the morning's rewards for the next night: Trust's Goodwill, a chest that found the bag full
+  carry?: { goodwill: number; drops: BagEntry[] };
+  herThread?: ChatLine[]; boysThread?: ChatLine[]; herSeen?: number;   // the phone's chats (V8, #73): hers kept for good, The Boys' last exchange   // the morning's rewards for the next night: Trust's Goodwill, a chest that found the bag full
 }
 
 export function newHero(id: HeroId, name: string, role: string, hp: number): Hero {

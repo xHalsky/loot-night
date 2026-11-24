@@ -25,7 +25,8 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    the look: `design/redesign/`, Issues V1 to V13, #66 to #78, filed 2026-11-24). Steps 1 and 2 (#52, #53) and V1, V2
    (#66, #67) are done (0.50 to 0.62). The real-life areas V3 to V11 (#68 to #76) go in with the steps that bring
    their systems back; V12 (#77) and V13 (#78) go with #59 and #56.
-   3. #54 Real life back on: done in 0.63 and 0.64 (gameplay); its look is V8 (#73, the phone) and V3 (#68, the desk), next.
+   3. #54 Real life back on: done in 0.63 and 0.64 (gameplay); the phone in hand in the new look 0.65 (V8, #73); next
+      the desk and monitor (V3, #68), which brings the desk phone through the desk's camera.
    4. #55 Q4, the Excel clicker, and the Shop app.
    5. #56 The week (FNAF's nights).
    6. #57 The smart home and the phone battery.

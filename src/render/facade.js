@@ -32,6 +32,8 @@ export const PK = {
   ready: () => !!PK_READY && TC !== null,
   battleArea: pkBattleArea,
   panel: pkPanel,
+  /** The phone in your hand (V8, #73): a 126 x 252 canvas and its hit regions (its pixels). */
+  phone: (vm, t) => livePhone(vm, t),
   init: pkInit,
   /** The whole 640 x 360 frame as the mockup draws it (V1's check against still 00-default). */
   drawFrame: (scene, tScreen, t, moment, her, o) => drawFrame(scene, tScreen, t, moment, her, o || {}),

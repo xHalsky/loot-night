@@ -3,7 +3,7 @@ import { VERSION } from '../config/version';
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
-import { isCall, S, N, type BagEntry, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
+import { isCall, S, N, type BagEntry, type Item, type Hero, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, ULT_SLOT } from '../data/heroes';
 import { autocastBought, autocastOn } from '../systems/tree';
 import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
@@ -20,7 +20,6 @@ import { preBlocked, nextMult } from '../systems/preemptive';
 import { phoneAction } from '../systems/interrupts';
 import { planSvg } from './plan';
 import { RARITY_COLOR, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
-import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
 import { isAway } from '../systems/autopilot';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
@@ -262,66 +261,6 @@ const MORNING_CAPTION: Record<MorningScene, string> = {
   unplugged: 'An empty bed. A note on your pillow: "Hope the loot was worth it."',
 };
 
-// ---------------- Mini-game windows (phone and Monster) ----------------
-function statusBar(): string {
-  const n = N();
-  return `<div class="ph-status"><span>${fmtClock(n.clock)}</span><i class="ph-di"></i><span>\u25CF\u25CF\u25CF 5G \u25AE 41%</span></div>`;
-}
-/** The phone in your hand (iOS look). Every stage can be left: "Put down" on the lock / call screens,
- *  the back chevron in chats, or the home bar at the bottom. Leaving counts as ignoring it. */
-function phoneHtml(g: PhoneGame): string {
-  let body = '';
-  const quit = (label: string) => `<button class="ios-quit" data-act="closeGame">${label}</button>`;
-  if (g.stage === 'ringing') {
-    body = `<div class="ios-incoming"><div class="ios-cname big">${CALLER[g.app][0]}</div><div class="ios-csub">${CALLER[g.app][1]}</div></div>
-      <div class="ios-row2"><div class="ios-mini"><span>\u23F0</span>Remind Me</div><div class="ios-mini"><span>\u2709</span>Message</div></div>
-      <div class="ph-slide"><div id="dragEl" class="ph-knob" data-drag="answer" data-axis="x" data-dir="1" data-dist="${T.SLIDE_DIST}">&#9742;</div><span>slide to answer</span></div>
-      <div class="ph-pick"><button class="ios-endbtn" data-act="closeGame"><span>&#9742;</span></button><button class="ios-spk" data-act="speaker" title="Hands free: keep playing. Loud while it lasts."><span>&#128266;</span></button></div>
-      <div class="ph-pick-lab"><span>Decline</span><span>Speaker</span></div>`;
-  } else if (g.stage === 'locked') {
-    const [app, who, col] = APP[g.app];
-    body = `<div class="ph-lock-date">${['Monday', 'Tuesday'][0]}</div><div class="ph-lock-time">${fmtClock(N().clock)}</div>
-      <div class="ph-bans">${g.msgs.slice(-2).reverse().map(m => `<div class="ios-ban big"><i style="background:${col}"></i><div><b>${who}</b><small>${app} · now</small><span>${esc(m)}</span></div></div>`).join('')}
-</div>${g.msgs.length > 2 ? `<div class="ios-more">+${g.msgs.length - 2} more from ${who}</div>` : ''}
-      <div class="ph-face" data-hold="unlock"><div class="ph-face-ring"><div id="holdFill"></div></div><span class="faceid">\u{1F642}</span></div>
-      <div class="ph-hint">Face ID: hold to unlock</div>
-      ${quit('Put down')}`;
-  } else if (g.stage === 'talk') {
-    const spk = g.speaker ? (N().headset ? ' \u00B7 speaker, in the headset' : ' \u00B7 ON SPEAKER') : '';
-    const st = (g.app === 'friends' ? `misses ${g.misses}/${T.FRIENDS_MAX_MISSES}` : 'one wrong word: he leaves') + spk;
-    body = `<div class="ios-incall"><b>${CALLER[g.app][0]}</b><span>${st}</span></div>
-      <div class="ph-bubble in">${esc(g.line)}</div>
-      <div class="timebar"><div id="phBar" style="width:${Math.max(0, g.t / g.max) * 100}%"></div></div>
-      <div class="ph-hint">${g.app === 'courier' ? 'Get it left with a neighbour.' : 'Say no, nicely. Quickly.'}</div>
-      <div class="ph-chips ios-replies talk">${(g.opts ?? []).map((o, i) => btn('talk', esc(o), String(i), 'chip')).join('')}</div>
-      <div class="feedback">${esc(g.feedback)}</div>`;   // leave with the X or the home bar (hanging up = failing)
-  } else if (g.stage === 'call') {
-    const reading = g.read > 0;
-    const mark = ['...', '?', '!'][g.need];
-    body = `<div class="ios-incall"><b>Mom</b><span>beat ${g.beat + 1}/${T.MOM_BEATS} \u00B7 misses ${g.misses}/${T.MOM_MAX_MISSES}${g.speaker ? (N().headset ? ' \u00B7 speaker, in the headset' : ' \u00B7 ON SPEAKER') : ''}</span></div>
-      <div class="ph-bubble in mom-line">${esc(g.line)}<span class="mark m${g.need}">${mark}</span></div>
-      <div class="track ${reading ? 'reading' : ''}"><div class="zone" style="left:${g.zone * 100}%;width:${T.MOM_ZONE * 100}%"></div><div id="momMarker" class="marker"></div></div>
-      <div class="ph-chips mom-replies">${MOM_REPLIES.map((r, i) => btn('mom', `<small>${['...', '?', '!'][i]}</small> ${r}`, String(i), `chip c${i}`)).join('')}</div>
-      <div class="feedback">${esc(g.feedback)}</div>
-      <button class="ios-endbtn small" data-act="closeGame"><span>&#9742;</span></button>`;
-  } else {
-    const [, who, col] = APP[g.app];
-    const history = g.msgs.map(m => `<div class="ph-bubble in">${esc(m)}</div>`).join('');
-    let reply = '', ask = '';
-    if (g.app === 'boss') {
-      const r = g.rows[Math.min(g.row, g.rows.length - 1)];
-      ask = `<div class="ph-bubble in">row ${g.row + 1}/${g.rows.length}: <b>${r.a} + ${r.b}</b> = ?</div>`;
-      reply = r.options.map(o => btn('boss', String(o), String(o), 'chip')).join('');
-    } else reply = btn('textReply', 'Five more minutes, love \u2665', '', 'chip');
-    body = `<div class="ios-nav"><button class="ios-back" data-act="closeGame">\u2039</button><div class="ios-who"><i style="background:${col}">${who[0]}</i><b>${who}</b></div><span id="phTime">${Math.ceil(g.t)} s</span></div>
-      <div class="ios-thread">${history}${ask}</div>
-      <div class="timebar"><div id="phBar"></div></div>
-      <div class="feedback">${esc(g.feedback)}</div>
-      <div class="ph-chips ios-replies">${reply}</div>`;
-  }
-  const timer = g.stage === 'ringing' || g.stage === 'locked' ? `<div class="ph-ring">${Math.ceil(g.t)} s</div>` : '';
-  return `<div class="phone-win">${statusBar()}<div class="ph-screen ${g.stage}">${body}</div>${timer}<button class="ph-home" data-act="closeGame" title="Swipe home: put the phone down"></button></div>`;
-}
 
 
 const M_STEPS: [MonsterGame['stage'], string, string][] = [
@@ -344,48 +283,16 @@ function monsterHtml(g: MonsterGame): string {
   </div>`;
 }
 
-/** The idle phone, picked up (#63): Messages. Its chats are the phone's own actions (Text her, Raid night?). */
-function messagesHtml(): string {
-  const rows = PRE_ACTIONS.filter(a => a.where === 'phone').map(a => {
-    const why = preBlocked(a.id);
-    const [who, col] = a.id === 'text' ? ['Babe \u2665', '#34c759'] : ['The Boys (3)', '#5856d6'];
-    return `<button class="ios-chatrow ${why ? 'off' : ''}" data-act="pre" data-arg="${a.id}" data-tip="pre:${a.id}"><i style="background:${col}">${who[0]}</i>
-      <span><b>${who}</b><em>${a.name}</em><small>${why || preText(a.cost)}</small>${preUseNote(a.id)}</span><u>\u203A</u></button>`;
-  }).join('');
-  return `<div class="ios-nav"><button class="ios-back" data-act="preMenu">\u2039</button><div class="ios-who"><b class="big">Messages</b></div><span></span></div>
-    <div class="ios-chatlist">${rows}</div>`;
-}
-/** Sending: the message types itself into the chat, then shows Delivered (#63). Hands are busy meanwhile. */
-const PHONE_SEND: Record<string, [string, string, string]> = { text: ['Babe \u2665', '#34c759', 'what are you up to? \u2665'], raid: ['The Boys (3)', '#5856d6', 'raid night? need a carry'] };
-function phoneSendHtml(): string {
-  const p = N().pre!;
-  const [who, col, msg] = PHONE_SEND[p.id] ?? PHONE_SEND.text;
-  const k = 1 - p.t / p.max, typed = Math.min(1, k * 1.3);
-  const bubble = typed < 1 ? `<div class="ph-bubble out">${esc(msg.slice(0, Math.max(1, Math.ceil(msg.length * typed))))}<i class="caret"></i></div>`
-    : `<div class="ph-bubble out">${esc(msg)}</div><div class="ios-delivered">Delivered</div>`;
-  return `<div class="ios-nav"><button class="ios-back" data-act="preCancel">\u2039</button><div class="ios-who"><i style="background:${col}">${who[0]}</i><b>${who}</b></div><span id="phTime">${Math.ceil(p.t)} s</span></div>
-    <div class="ios-thread">${bubble}</div>
-    <div class="timebar"><div style="width:${Math.round(k * 100)}%"></div></div>
-    <div class="ph-hint">Hands busy: typing.</div>`;
-}
-const phoneShell = (inner: string, close: string) => `<div class="phone-win">${statusBar()}<div class="ph-screen chat">${inner}</div><button class="ph-home" data-act="${close}" title="Swipe home: put the phone down"></button></div>
-  <button class="mg-close" data-act="${close}" title="Put the phone down" style="left:415px;top:22px">\u2715</button>`;
 
 export function windowHtml(): string {
   const n = S.g.night;
   if (!n) return '';
-  if (!n.game) {   // the phone in your hand without a call: sending a message, or Messages
-    if (phoneAction()) return phoneShell(phoneSendHtml(), 'preCancel');
-    if (n.preMenu === 'phone') return phoneShell(messagesHtml(), 'preMenu');
-    return '';
-  }
+  if (!n.game) return '';   // the phone in your hand is the renderer's (V8, #73: render/phoneView.ts, main.ts drawPhone)
   // grey circle with a red X just outside the top-right corner: always a way out
   // windows sit over the battle area (#49), each with the close button just outside its top-right corner
   if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:532px;top:66px">\u2715</button>';
-  const close = n.game.kind === 'phone'
-    ? '<button class="mg-close" data-act="closeGame" title="Put the phone down" style="left:415px;top:22px">\u2715</button>'
-    : '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:622px;top:0px">\u2715</button>';
-  return (n.game.kind === 'phone' ? phoneHtml(n.game) : monsterHtml(n.game)) + close;
+  if (n.game.kind === 'phone') return '';
+  return monsterHtml(n.game) + '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:622px;top:0px">\u2715</button>';
 }
 
 /** Cuddle window: follow her slow breathing (the dot). Static frame; the dot and warmth move in updateWindowDynamics. */
@@ -411,22 +318,7 @@ export function updateWindowDynamics() {
     const tt = document.getElementById('cdTime'); if (tt) tt.textContent = g.jerk > 0 ? 'too fast!' : `${Math.ceil(g.t)} s`;
     return;
   }
-  const d = document.getElementById('dragEl');
-  if (d && g.kind === 'phone') {
-    const dist = Number(d.dataset.dist || 0), dir = Number(d.dataset.dir || 1);
-    if (d.dataset.drag === 'door') (d.parentElement as HTMLElement).style.transform = `perspective(500px) rotateY(${g.drag * 75}deg)`;
-    else d.style.transform = d.dataset.axis === 'x' ? `translateX(${g.drag * dist * dir}px)` : `translateY(${g.drag * dist * dir}px)`;
-  }
-  const f = document.getElementById('holdFill');
-  if (f && g.kind === 'phone') f.style.height = `${g.unlock * 100}%`;
-  if (g.kind === 'phone') {
-    const m = document.getElementById('momMarker');
-    if (m) m.style.left = `${Math.min(100, g.sweep * 100)}%`;
-    const b = document.getElementById('phBar');
-    if (b && g.max > 0) b.style.width = `${(g.t / g.max) * 100}%`;
-    const t = document.getElementById('phTime');
-    if (t) t.textContent = `${Math.ceil(g.t)} s`;
-  }
+  // the phone in your hand is the renderer's now (V8): nothing to move here
 }
 
 // ---------------- UI panel ----------------

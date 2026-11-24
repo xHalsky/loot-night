@@ -7,6 +7,7 @@ const toast = toastAs('HER');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { addMood } from './meters';
 import { screenGlance } from './visits';
+import { herSay, boysLog } from './messages';
 
 // Pre-emptive actions (docs/design/preemptive.md, #19). Used BEFORE a visit to shape it: push her next visit
 // (apartment calm), set the next visit's type, or lower Mood. Where she is decides whether it works, and that
@@ -61,7 +62,7 @@ export function startPre(id: PreId) {
 export function updatePre(dt: number) {
   const n = N();
   if (n.herReply) {
-    if (n.herReply.wait > 0) { n.herReply.wait -= dt; if (n.herReply.wait <= 0) sfx.ping(); }
+    if (n.herReply.wait > 0) { n.herReply.wait -= dt; if (n.herReply.wait <= 0) { sfx.ping(); herSay('l', n.herReply.msg); } }   // into her chat
     else if ((n.herReply.t -= dt) <= 0) n.herReply = null;
   }
   const p = n.pre;
@@ -84,7 +85,7 @@ function land(id: PreId) {
     return;
   }
   if (id === 'text') {
-    finishPre();
+    finishPre(); herSay('r', 'what are you up to? ♥');
     if (p.outcome === 'asleep') { a.wake = clamp(a.wake + T.PRE_TEXT_WAKE, 0, T.WAKE_UP); toast('Your text buzzes on her nightstand. She stirs.', '#ff8a80'); return; }
     if (p.outcome === 'moving') { a.forceKind = 'chat'; a.forceDoor = true; a.t = Math.min(a.t, T.PRE_TEXT_SOON); reply('moving'); return; }
     if (p.outcome === 'shower') { a.forceKind = 'chat'; a.forceDoor = true; reply('shower'); return; }
@@ -106,7 +107,7 @@ function land(id: PreId) {
     return;
   }
   if (id === 'raid') {   // paid with Goodwill: the strongest calm, and noise does not end it
-    finishPre();
+    finishPre(); boysLog([['r', 'raid night? need a carry'], ['l', 'Danny: SAY LESS']]);
     if (S.g.goodwill < T.GOODWILL_RAID || a.asleep) { toast('"Not tonight."', '#ffb07a'); return; }
     S.g.goodwill -= T.GOODWILL_RAID;
     a.calm = Math.max(a.calm, T.RAID_CALM_SEC); a.calmHard = true;

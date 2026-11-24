@@ -54,12 +54,25 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   around it (a soft cool glow). Whatever runs out meanwhile counts as ignored (Mom calls your girlfriend).
 - **On the desk it is big** (#49): the 90 × 186 phone drawn 1.38x at the desk's left edge, running off the bottom.
   The incoming-call screen has Decline and Speaker under the slider; a tap anywhere else picks up.
-- **In your hand.** The phone leaves the desk and opens as a 186 × 398 window over the battle area with iOS
-  screens: incoming call (slide to answer, Decline, Speaker), lock screen with Face ID (hold `FACE_UNLOCK_SEC`),
-  in-call screen ("ON SPEAKER" on speaker), iMessage thread with quick-reply buttons. Every screen can be left (put
-  down, Decline, red end button, back chevron, home bar, the close X); leaving counts as ignoring. Layout rules
-  (#45): the lock screen shows the two newest banners and a "+N more" line; every reply is one full-width button per
-  row that grows with its text. (The phone's new look is V8, #73.)
+- **In your hand** (V8, #73; grid doc 7f): the renderer draws the phone (`render/page/phone.js`, the live screens at
+  its end; the view in `render/phoneView.ts`), 124 × 252 on the grid at 2x over the heroes' side of the battle area,
+  its bottom running off the frame; it rises from below in 0.32 s. One night-mode OS in the desk's Graphite: gold is
+  what you can tap (every reply, every timer), moss accept, crimson decline and misses, her pink is her. Screens:
+  the incoming call (the caller's wallpaper and avatar, the ring's seconds in a gold chip, **Speaker**, slide to answer
+  with the mouse, Decline); the lock screen (the two newest banners, "+N more", Face ID: hold the ring); the boss's
+  Work chat (his texts, one row of sums, three gold totals); her text in her chat (her thread, the one reply); Mom's
+  call (her line, the beat bar, mhm / really?! / wow, misses, End); the courier and the boys (their line, the time,
+  the goal, three replies, a wine "She can hear it" strip on speaker). Every screen can be left (Decline, Put down,
+  End, the back chevron, the home bar, the grey/red close box outside the top-right corner); leaving counts as
+  ignoring. A bubble that would be cut is left out (#45).
+- **The idle phone, picked up** (tap it on the desk): the home screen (the night, the big clock, the apps: Messages
+  with her unread count; the Shop and Home join with steps 4 and 6). **Messages** lists Babe and The Boys (3).
+  **Her chat is kept for good** (`S.g.herThread`, `systems/messages.ts`): her texts, your answers, Text her and her
+  replies, across the nights, with a grey separator per sitting (the day, "Today 23:12", the time after a gap); the
+  wheel scrolls it a bubble at a time, a chip goes back to the newest; Text her at the bottom (dim, with a lock and
+  why, when it can't). **The Boys' chat** shows the last call's exchange (their lines, your replies, how it ended)
+  until the next, with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
+  message into the chat (hands busy), then Delivered.
 
 Sluggish (Tired 70+) shortens every call timer to `SLUGGISH_TIMER_MULT`. F1 has a button for each call (it skips the
 one-demand rule). `npx tsx test/phone.ts` checks the script, the spacing, each event, speaker and Do Not Disturb.
@@ -166,6 +179,11 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 
 ## Decisions
 
+- **The phone in the renderer** (0.65, V8 #73). The DOM iPhone was the prototype's placeholder; the redesign's
+  phone is the game's pixel OS, so the phone matches the battle area and the desk. Left out for now: the incoming
+  call's Message button (no rule behind it; Speaker sits alone), the battery widget and the Shop and Home apps (they
+  come with steps 4 and 6), her photos in the chat (fan-service step 5, #59), the desk phone through the desk's
+  camera (with V3, #68). Rejected: keeping the DOM phone under the new look (two phone looks in one game).
 - **The phone retune: fewer events, each worth taking** (0.64, #54 3.2; Paweł's brief from testing v0.48). A
   random timer every 20 to 35 s made the phone noise: Mood taxes you could only avoid by stopping play. Now a night
   script places 4 to 6 events, each pays something you want (a heal and revive, zł, a cooldown mouse, a raid buff)
@@ -173,7 +191,8 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   Disturb, and real life asks for one thing at a time. Ignoring the boss costs nothing: he is an offer, not a
   threat. Rejected: keeping the random timer with lower odds (still noise); Mood for ignoring the boss (a tax);
   the courier's loot parcel (money rule: loot only from the game); letting the one-demand rule hold her visits back
-  too (she is the game's threat and isn't scripted; the rule shapes the phone and the dog around her).
+  too (she is the game's threat and isn't scripted; the rule shapes the phone and the dog around her; Paweł
+  confirmed, 2026-11-24).
 - **The Goblin Fuel break is hands-on physics** (0.49, #61). The fridge is out (he has no fridge at the desk; the
   cans live in the drawer). Drinking is a pour you control, not a timing bar: the three hold-and-release gulps
   were too simple. Lips on the rim count as in: without it the stream fell past his mouth and even perfect play

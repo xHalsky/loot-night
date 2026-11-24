@@ -21,7 +21,7 @@ import type { PreId } from './data/preemptive';
 import { buildCity, openService, servicePick, serviceRun } from './systems/town';
 import { monUiLiveHtml } from './ui/town';
 import { altTab, excelInput } from './systems/excel';
-import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, answerSpeaker, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
+import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, answerSpeaker, phoneAction, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, cancelMonster } from './systems/monster';
 import { drawMonsterScene, monsterTilt } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
@@ -34,6 +34,9 @@ import { toggleAutocast, buyNode, respec } from './systems/tree';
 import type { NodeId } from './data/trees';
 import type { HeroId } from './core/state';
 import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown } from './render/liveRpg';
+import { PK } from 'virtual:pagekit';
+import { phoneShown, phoneView } from './render/phoneView';
+import { herRead, phoneScroll } from './systems/messages';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -77,6 +80,7 @@ stage.innerHTML = `
       <div id="feedCard"></div>
       <canvas id="deskFx" width="${DESK_W}" height="720"></canvas>
       <div id="preUi"></div>
+      <canvas id="phHand" width="126" height="252"></canvas><button id="phClose" class="mg-close" data-act="closeGame" title="Put the phone down">✕</button>
     </div>
   </div>
   <canvas id="lapFx" width="1280" height="720"></canvas>
@@ -178,6 +182,9 @@ const actions: Record<string, (arg: string) => void> = {
   talk: a => talkPick(Number(a)),
   boss: a => bossPick(Number(a)),
   closeGame: () => closeGame(false),
+  // the phone in your hand (V8, #73): its apps and her chat
+  phApp: a => { const n = N(); n.phApp = a as 'home'; n.phScroll = 0; if (a === 'babe') herRead(); sfx.click(); },
+  phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
   // Debug (F1)
   dbgSpeed: a => { S.g.timeScale = Number(a); },
   dbgLife: () => { S.g.realLifeOff = !S.g.realLifeOff; },   // #52, 1.1: nobody is home
@@ -268,7 +275,7 @@ document.addEventListener('pointerup', ev => {
   if (!drag) return;
   const { id, p, t0 } = drag; drag = null;
   const ms = performance.now() - t0;
-  if (id === 'answer') answerSlide(p);
+  if (id === 'answer') answerSlide(p);   // the phone's slide to answer (V8: dragged on its canvas)
   void ms;
   setDrag(0);
 });
@@ -534,6 +541,37 @@ function placeCoach() {
   Object.assign(box.style, { left: `${bx}px`, top: `${by}px`, visibility: 'visible' });
 }
 
+// ---------- The phone in your hand (V8, #73; grid doc 7f): the renderer's phone over the battle area and the desk ----------
+const phCanvas = el('phHand') as HTMLCanvasElement, phCtx = phCanvas.getContext('2d')!;
+let phHits: { x: number; y: number; w: number; h: number; act: string; arg: string }[] = [], phLast = 0, phWas = false;
+const PH_RISE_MS = 320;
+function drawPhone() {
+  const n = S.g.night, on = !!n && phoneShown() && PK.ready() && !S.g.paused;
+  if (on !== phWas) { phWas = on; phCanvas.style.display = on ? 'block' : 'none'; el('phClose').style.display = on ? 'grid' : 'none'; if (!on) phHits = []; }
+  if (!on) return;
+  const now = performance.now(), k = Math.min(1, (now - (n!.phUp ?? 0)) / PH_RISE_MS), dy = Math.round((1 - (1 - (1 - k) ** 3)) * 540);
+  phCanvas.style.transform = dy ? `translateY(${dy}px)` : '';
+  el('phClose').dataset.act = n!.game?.kind === 'phone' ? 'closeGame' : phoneAction() ? 'preCancel' : 'preMenu';
+  if (now - phLast < 33) return;   // 30 fps is plenty for a phone
+  phLast = now;
+  const r = PK.phone(phoneView(), now / 1000);
+  phCtx.clearRect(0, 0, phCanvas.width, phCanvas.height); phCtx.drawImage(r.canvas, 0, 0);
+  phHits = r.hits;
+}
+const phXY = (ev: PointerEvent | WheelEvent) => { const r = phCanvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * phCanvas.width, ((ev.clientY - r.top) / r.height) * phCanvas.height] as const; };
+const phHitAt = (x: number, y: number) => { for (let i = phHits.length - 1; i >= 0; i--) { const h = phHits[i]; if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) return h; } return null; };
+phCanvas.addEventListener('pointerdown', ev => {
+  if (!S.g.night || S.g.paused || ev.button !== 0) return;
+  ev.preventDefault();
+  const h = phHitAt(...phXY(ev));
+  if (!h) return;
+  if (h.act === 'slide') { drag = { id: 'answer', axis: 'x', dir: 1, dist: 148, x0: ev.clientX, y0: ev.clientY, t0: performance.now(), p: 0 }; return; }   // slide to answer: drag the knob
+  if (h.act === 'faceHold') { setHold(true); return; }   // Face ID: hold
+  actions[h.act]?.(h.arg);
+});
+phCanvas.addEventListener('pointermove', ev => { phCanvas.style.cursor = phHitAt(...phXY(ev)) ? 'pointer' : 'default'; });
+phCanvas.addEventListener('wheel', ev => { if (N()?.phApp === 'babe' && !N().game) { ev.preventDefault(); phoneScroll(ev.deltaY < 0 ? 1 : -1); } }, { passive: false });   // her chat, a bubble at a time
+
 // ---------- Render ----------
 function render() {
   const g = S.g;
@@ -541,6 +579,7 @@ function render() {
   drawDoor(doorCtx);
   drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
   drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
+  drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
   document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {

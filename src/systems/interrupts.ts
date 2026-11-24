@@ -13,6 +13,7 @@ import { PRE_BY_ID, type PreId } from '../data/preemptive';
 import { addBuff } from './curios';
 import { coach } from './coach';
 import { realLifeFree } from './reallife';
+import { herSay, boysLog, herRead } from './messages';
 
 export const BOSS_MSGS = ['you there?', 'quick question', 'need the Q4 totals for the deck', 'asap pls', 'hello??'];
 export const HER_MSGS = ['are you coming to bed?', 'babe', 'its really late', 'hello??'];
@@ -69,7 +70,7 @@ export function updateInterrupts(dt: number) {
   for (const i of n.interrupts) i.t -= dt;
   const expired = n.interrupts.filter(i => i.t <= 0);
   n.interrupts = n.interrupts.filter(i => i.t > 0);
-  expired.forEach(i => fail(i.kind, 'ignored'));   // face-down too: Do Not Disturb, and a missed event is ignored
+  expired.forEach(i => { if (i.kind === 'text') i.msgs.forEach(m => herSay('l', m)); fail(i.kind, 'ignored'); });   // her texts stay in her chat   // face-down too: Do Not Disturb, and a missed event is ignored
   // the phone keeps vibrating: calls every 1.4 s, messages every 3 s (same rhythm as the shake on the desk)
   for (const i of n.interrupts) {
     const e = i.max - i.t;
@@ -106,10 +107,13 @@ function nextMomBeat(g: PhoneGame, advance: boolean) {
 export function openPhone() {
   const n = N();
   if (n.game || n.phoneDown > 0) return;
-  if (!n.interrupts.length) { n.preMenu = n.preMenu === 'phone' ? null : 'phone'; sfx.click(); return; }   // idle phone: its pre-emptive actions
+  if (!n.interrupts.length) {   // the idle phone: up into your hand at the home screen (V8: Messages, later the Shop and Home)
+    n.preMenu = n.preMenu === 'phone' ? null : 'phone'; n.phApp = 'home'; n.phScroll = 0; n.phUp = performance.now(); sfx.click(); return;
+  }
   const it = n.interrupts.shift();
   if (!it) return;
   n.action = 'miniGame';   // picked up: hands busy (speaker gives them back)
+  n.phUp = performance.now();
   sfx.click();
   const g: PhoneGame = {
     kind: 'phone', app: it.kind, stage: isCall(it.kind) ? 'ringing' : 'locked',
@@ -144,7 +148,7 @@ export function answerSlide(progress: number) {
   if (progress < 0.9) { g.drag = 0; return; }
   sfx.good();
   if (g.app === 'courier' || g.app === 'friends') { startTalk(g); return; }
-  g.stage = 'call'; g.t = 0; g.drag = 0; g.feedback = 'Reply when the marker is inside the box.';
+  g.stage = 'call'; g.t = 0; g.drag = 0; g.feedback = '';   // the phone says it: tap the reply in the zone
   nextMomBeat(g, false);
 }
 
@@ -159,6 +163,7 @@ function startTalk(g: PhoneGame) {
 function talkStep(g: PhoneGame) {
   const st = talkSteps(g)[g.beat];
   g.line = st.line;
+  if (g.app === 'friends') (g.log ??= []).push(['l', st.line.replace(/"/g, '')]);   // for The Boys' chat
   g.opts = [st.right, ...st.wrong].sort(() => Math.random() - 0.5);
   g.need = g.opts.indexOf(st.right) as 0 | 1 | 2;
 }
@@ -167,6 +172,7 @@ export function talkPick(i: number) {
   const n = N();
   const g = n.game;
   if (!g || g.kind !== 'phone' || g.stage !== 'talk') return;
+  if (g.app === 'friends' && g.opts?.[i]) (g.log ??= []).push(['r', g.opts[i]]);
   if (i === g.need) {
     sfx.good(); g.beat++;
     if (g.beat >= talkSteps(g).length) { closeGame(true); return; }
@@ -222,6 +228,9 @@ export function closeGame(success: boolean) {
   const g = n.game;
   if (!g || g.kind !== 'phone') return;
   n.game = null; n.action = 'none';
+  // the chats keep what was said (V8): her texts and your answer; the boys' exchange and how it ended
+  if (g.app === 'text') { g.msgs.forEach(m => herSay('l', m)); if (success) herSay('r', 'Five more minutes, love ♥'); herRead(); }
+  if (g.app === 'friends' && g.log?.length) boysLog([...g.log, ['l', success ? 'Danny: ok np, buffing you from here' : "Mike: fine, raid's on without you"]]);
   if (success) succeed(g.app); else fail(g.app, g.stage === 'ringing' ? 'declined' : 'failed');
 }
 

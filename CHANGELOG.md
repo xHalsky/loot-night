@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.65.0 (2026-11-24)
+
+- **The phone in your hand is the redesign's phone** (V8, #73; grid doc 7f). The renderer draws it (124 × 252 on the
+  grid at 2x) over the heroes' side of the battle area, rising from the bottom, in the game's own night-mode OS: gold
+  is what you can tap, moss accept, crimson decline, her pink is her. Every phone moment moved: the incoming call
+  (Speaker, slide to answer with the mouse, Decline), the lock screen (Face ID: hold the ring), the boss's sums, her
+  text, Mom's beat, the courier and the boys (a wine "She can hear it" strip on speaker).
+- **The idle phone opens the home screen,** with Messages (her unread count). **Her chat is kept for good** across the
+  nights: her texts, your answers, Text her and her replies, a grey separator per sitting; the wheel scrolls it a
+  bubble at a time. **The Boys' chat** keeps the last call's exchange, with Raid night? at the bottom (dim with why
+  while it can't).
+- The DOM iPhone in your hand is gone (and 115 CSS rules only it used; a selector check over the game's screens
+  found none in use). The desk phone stays DOM until the desk's redesign (V3, #68).
+- Left for later: the Shop and Home apps and the battery widget (steps 4 and 6), her photos (#59), the call's
+  Message button (no rule behind it).
+- `test/phone.py` drives every screen with real clicks on the canvas (slide to answer, Face ID, the boss's total,
+  the apps) and writes a contact sheet. UI only: sims as 0.64.
+
 ## 0.64.0 (2026-11-24)
 
 - **The phone: fewer events, each worth taking** (#54 3.2, the rest of step 3). A night script replaces the random

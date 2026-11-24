@@ -222,7 +222,7 @@ PHONE_SCREENS.her = (t, o) => {
 function callHead(who, status, t, o = {}) {
   const C = CALLERS[who];
   flatBg(40);
-  statusBar();
+  statusBar({ time: o.time });
   avatar(C.av, 17, 27, 9); tx(C.name, 31, 20, P.moon); tx(status, 31, 29, P.g5);
   tx('0:' + String(4 + Math.floor(t % 50)).padStart(2, '0'), PH.sw - 8, 20, P.s5, { align: 'r' });
 }
@@ -935,9 +935,173 @@ function photoWindow(ctx, key, t, o = {}) {
   }
 }
 
-return { PH, HAND, DT, PHONE_SCREENS, drawPhoneHand, drawPhoneOver, deskScreen, CALLERS, avatarAt, glyphAt, fitT, photoWindow, selfie, SELFIE_W, SELFIE_H, vPaint, arcCut };
+// ---------------------------------------------------------------- the live phone (V8, #73): the game's screens
+// The page's screens above are fixed demos; these read a view model from the game (src/render/phoneView.ts) and
+// leave hit regions (in the phone canvas's pixels) for the game's clicks. Same kit, same rules (#45: no bubble cut).
+let PH_HITS = [];
+const hit = (x, y, w, h, act, arg = '') => PH_HITS.push({ x: PHX(x), y: PHY(y), w, h, act, arg: String(arg) });
+const tapRing = (x, y, w, h, t) => { const on = Math.floor(t * 6) & 1; for (let k = 0; k < w; k++) if (((k >> 1) + on) & 1) { px(x + k, y, P.gold); px(x + k, y + h - 1, P.gold); } for (let k = 0; k < h; k++) if (((k >> 1) + on) & 1) { px(x, y + k, P.gold); px(x + w - 1, y + k, P.gold); } };
+const backHit = (act, arg = '') => hit(0, 16, 18, 16, act, arg);
+const homeHit = (act, arg = '') => hit(30, PH.sh - 12, 52, 12, act, arg);
+function loudStrip(y) { rrI(8, y + 1, PH.sw - 16, 13, 5, P.wine); gl(PG.spk, 30, y + 4, P.moon); tx('She can hear it', 62, y + 4, P.moon, { align: 'c' }); return 16; }
+// a reply you can tap, or a dim one with a lock and why not
+function action(a, y, t) {
+  if (!a) return;
+  if (a.ok) { const h = pill(a.label, y); hit(8, y, PH.sw - 16, h - 2, a.act, a.arg); if (a.sub) tx(a.sub, 56, y + h + 1, P.s4, { align: 'c' }); return; }
+  pill(a.label, y, { fill: P.s2, ink: P.s5, shadow: P.s1 }); gl(PG.lock, 20, y + 4, P.s5);
+  tx(fitT(a.why || '', PH.sw - 12), 56, y + 20, P.s4, { align: 'c' });
+}
+const LIVE = {
+  // an incoming call: the caller's wallpaper, Speaker (hands free, she hears it), slide to answer, Decline
+  ring(t, v) {
+    const C = CALLERS[v.who] || CALLERS.mom;
+    wall(C.mat, C.v[0], C.v[1], { glow: (i, j) => 0.12 * Math.max(0, 1 - Math.hypot(i - 56, j - 64) / 60) });
+    statusBar({ time: v.time });
+    rrI(PH.sw - 30, 15, 22, 9, 4, P.gold); tx(Math.ceil(v.left) + ' s', PH.sw - 19, 17, P.void, { align: 'c' });
+    const pr = 22 + ((t * 1.2) % 1) * 6; for (let a = 0; a < 64; a++) { const an = (a / 64) * 6.283; if (a % 2) px(Math.round(56 + Math.cos(an) * pr), Math.round(62 + Math.sin(an) * pr), P.s4); }
+    avatar(C.av, 56, 62, 20);
+    tx(C.name, 56, 92, P.moon, { align: 'c', f: 'tinyL' });
+    tx(C.sub, 56, 111, P.s5, { align: 'c' });
+    disc(56, 140, 10, P.s3); disc(56, 139, 10, P.s2); gl(PG.spk, 54, 135, P.moon); tx('Speaker', 56, 153, P.s5, { align: 'c' });
+    tx('hands free, loud', 56, 161, P.s4, { align: 'c' });
+    hit(42, 127, 28, 42, 'speaker');
+    rrI(8, 172, PH.sw - 16, 22, 11, P.s1);
+    const kx = 19 + Math.round((v.drag || 0) * (PH.sw - 38)) + (v.drag ? 0 : Math.max(0, Math.sin(t * 2.4) * 3)); disc(kx, 183, 9, P.g5); gl(PG.phone, kx - 2, 181, P.moon);
+    const sw = (t * 40) % 110, msg = 'slide to answer', mx = 62 - measure(msg, 'tiny') / 2;
+    tx(msg, 62, 180, P.s4, { align: 'c' });
+    const g = glyphs(msg, 'tiny'); for (let k = 0; k < g.pts.length; k += 2) { const gx = g.pts[k] + Math.round(mx); if (Math.abs(gx - sw) < 6) px(gx, g.pts[k + 1] + 180, P.moon); }
+    hit(8, 172, PH.sw - 16, 22, 'slide');
+    disc(56, 214, 11, P.crimson); gl(PG.hang, 54, 213, P.moon); tx('Decline', 56, 227, P.s5, { align: 'c' });
+    hit(42, 202, 28, 32, 'closeGame');
+  },
+  // texts wait on the lock screen (silently): the two newest banners, Face ID to read them, Put down
+  lock(t, v) {
+    lockWall(); statusBar({ time: v.time });
+    tx(v.date, 56, 22, P.d6, { align: 'c' });
+    bigTime(v.time, 56, 32, P.moon);
+    let y = 62; v.banners.slice(-2).reverse().forEach((b) => { y += banner(b, y) + 3; });
+    if (v.banners.length > 2) { tx('+' + (v.banners.length - 2) + ' more from ' + v.banners[0].who, 56, y, P.d6, { align: 'c' }); }
+    const hold = v.hold, cx = 56, cy = 196;
+    for (let a = 0; a < 96; a++) { const an = (a / 96) * 6.283 - 1.571, on = a / 96 < hold; px(Math.round(cx + Math.cos(an) * 15), Math.round(cy + Math.sin(an) * 15), on ? P.g5 : a % 3 ? P.s4 : -1); if (on) px(Math.round(cx + Math.cos(an) * 14), Math.round(cy + Math.sin(an) * 14), P.g5); }
+    faceGlyph(cx, cy, hold >= 1 ? P.g5 : P.moon);
+    tx(hold > 0 && hold < 1 ? 'keep holding' : 'Face ID: hold to unlock', 56, 214, P.s5, { align: 'c' });
+    hit(36, 176, 40, 40, 'faceHold');
+    rrI(36, 224, 40, 9, 4, P.s2); tx('Put down', 56, 226, P.moon, { align: 'c' }); hit(34, 222, 44, 13, 'closeGame');
+  },
+  // the boss's chat: his texts, one row of sums, three gold totals
+  boss(t, v) {
+    const y0 = chatHead('Boss', 'boss', v.left, v.total, 'Work · deck due 9:00', v.time); backHit('closeGame');
+    thread(v.msgs.map((m) => ['l', m]), y0, 144);
+    rrI(8, 148, PH.sw - 16, 24, 5, P.s1); tx('sum ' + (v.row + 1) + ' of ' + v.rows, 14, 152, P.s5); tx(v.a + ' + ' + v.b + ' = ?', 56, 161, P.moon, { align: 'c', f: 'tinyL' });
+    v.options.forEach((a, k) => { const x = 8 + k * 33; rrI(x, 181, 30, 15, 5, P.wine); rrI(x, 180, 30, 15, 5, P.gold); tx(String(a), x + 15, 184, P.void, { align: 'c' }); hit(x, 180, 30, 16, 'boss', a); });
+    tx(v.feedback || 'tap the total', 56, 204, v.feedback ? P.crimson : P.s5, { align: 'c' });
+    homeBar(); homeHit('closeGame');
+  },
+  // her text opens her chat straight away: the thread kept for good, her new ones, the one reply
+  her(t, v) {
+    const y0 = chatHead('Babe', 'babe', v.left, v.total, 'Messages', v.time); backHit('closeGame');
+    herThread(v.items, y0 + 2, 192, v.items.length - 1, t);
+    const h = pill('Five more minutes, love ♥', 196); hit(8, 196, PH.sw - 16, h - 2, 'textReply');
+    homeBar(); homeHit('closeGame');
+  },
+  // Mom talks: her line, the beat (tap the reply while the marker is in the zone), the misses, End
+  mom(t, v) {
+    callHead('mom', 'on call · line ' + (v.beat + 1) + ' of ' + v.beats + (v.speaker ? ' · speaker' : ''), t, { time: v.time });
+    const bh = bubble(v.line, 'l', 48, { maxW: 96 });
+    const bx = 8, bw = PH.sw - 16, y = Math.max(76, 48 + bh + 8), mx = bx + Math.round(v.sweep * (bw - 1)), zw = Math.round(bw * v.zoneW), zx = bx + Math.round(v.zone * bw);
+    rrI(bx, y, bw, 9, 4, P.s1); rrI(zx, y + 1, zw, 7, 3, P.g3); rrI(zx, y + 1, zw, 1, 0, P.g5);
+    if (!v.reading) rrI(mx, y - 2, 2, 13, 0, P.moon);
+    tx(v.reading ? 'she is talking...' : 'tap the reply in the zone', 56, y + 13, P.s5, { align: 'c' });
+    let py = y + 28;
+    ['mhm', 'really?!', 'wow'].forEach((r, k) => { const h = pill(r, py, { glyph: ['…', '?', '!'][k] }); hit(8, py, PH.sw - 16, h - 2, 'mom', k); py += h; });
+    if (v.feedback) tx(fitT(v.feedback, PH.sw - 10), 56, py + 1, v.bad ? P.crimson : P.g5, { align: 'c' });
+    if (v.loud) loudStrip(py + 9);
+    missRow(v.misses, v.max); endCall(); hit(44, 208, 24, 24, 'closeGame');
+  },
+  // the courier and the boys: their line, the time, the goal, three replies, End (the boys count misses)
+  talk(t, v) {
+    callHead(v.who, v.speaker ? 'on speaker' : 'on call', t, { time: v.time });
+    const bh = bubble(v.line, 'l', 48, { maxW: 100 });
+    const y = 48 + bh + 8;
+    timerBar(y, v.left, v.total);
+    tx(v.goal, 56, y + 9, P.u6, { align: 'c' }); if (v.goal2) tx(v.goal2, 56, y + 17, P.s4, { align: 'c' });
+    let py = y + (v.goal2 ? 30 : 22);
+    v.opts.forEach((o, k) => { const h = pill(o, py); hit(8, py, PH.sw - 16, h - 2, 'talk', k); py += h; });
+    if (v.feedback) { tx(fitT(v.feedback, PH.sw - 10), 56, py + 1, P.crimson, { align: 'c' }); py += 10; }
+    if (v.loud) loudStrip(py);
+    if (v.max) missRow(v.misses, v.max);
+    endCall(); hit(44, 208, 24, 24, 'closeGame');
+  },
+  // the idle phone, picked up: the clock, the apps (Messages now; the Shop and Home come with their steps)
+  home(t, v) {
+    lockWall();
+    for (let j = 0; j < PH.sh; j++) for (let i = 0; i < PH.sw; i++) if ((i + j) % 2 === 0 && j < 196) px(i, j, P.void);
+    statusBar({ time: v.time });
+    tx(v.date, 56, 22, P.d6, { align: 'c' }); bigTime(v.time, 56, 32, P.moon);
+    appIcon('messages', 8, 72, P.g4, P.moon, 'Messages', { hi: P.g5 }); hit(6, 70, 32, 44, 'phApp', 'messages');
+    if (v.unread) { disc(35, 73, 4.5, P.d6); tx(String(v.unread), 35, 71, P.void, { align: 'c' }); }
+    tx('Put the phone down:', 56, 206, P.s4, { align: 'c' }); tx('the home bar', 56, 214, P.s4, { align: 'c' });
+    homeBar(P.s5); homeHit('preMenu');
+  },
+  // Messages: her chat and The Boys'
+  messages(t, v) {
+    flatBg(40); statusBar({ time: v.time }); gl(PG.back, 6, 22, P.moon); backHit('phApp', 'home');
+    tx('Messages', 14, 22, P.moon, { f: 'tinyL' });
+    v.rows.forEach((r, k) => {
+      const y = 46 + k * 34;
+      avatar(r.av, 18, y + 13, 10);
+      if (r.her) tx('Babe ♥', 33, y + 4, P.d6); else tx(r.who, 33, y + 4, P.moon);
+      tx(r.time, PH.sw - 7, y + 4, r.unread ? P.d6 : P.s4, { align: 'r' });
+      tx(fitT(r.last, PH.sw - 52), 33, y + 14, r.unread ? P.moon : P.s5);
+      if (r.unread) { disc(PH.sw - 12, y + 18, 4.5, P.d6); tx(String(r.unread), PH.sw - 12, y + 16, P.void, { align: 'c' }); }
+      rrI(33, y + 29, PH.sw - 33, 1, 0, P.s1);
+      hit(2, y - 3, PH.sw - 4, 33, 'phApp', r.id);
+    });
+    tx('Tap a chat to open it.', 56, 120, P.s4, { align: 'c' });
+    homeBar(); homeHit('preMenu');
+  },
+  // her chat, kept for good: scroll a bubble at a time (wheel), back to the newest, Text her
+  babe(t, v) {
+    const y0 = chatHead('Babe', 'babe', null, null, 'Messages', v.time); backHit('phApp', 'messages');
+    const end = Math.max(0, v.items.length - 1 - v.scroll);
+    if (v.items.length) herThread(v.items, y0 + 2, 198, end, t); else tx('No messages yet.', 56, 120, P.s4, { align: 'c' });
+    if (end < v.items.length - 1) { rrI(PH.sw - 24, 186, 15, 10, 5, P.s2); gl(['x...x', '.x.x.', '..x..'], PH.sw - 19, 189, P.moon); hit(PH.sw - 26, 184, 19, 14, 'phScroll', 'end'); }
+    action(v.action, 203, t);
+    homeBar(); homeHit('preMenu');
+  },
+  // The Boys' chat: the last call's exchange; Raid night? at the bottom
+  boys(t, v) {
+    const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', v.time); backHit('phApp', 'messages');
+    if (v.items.length) herThread(v.items, y0 + 2, 198, v.items.length - 1, t); else tx('No messages yet.', 56, 120, P.s4, { align: 'c' });
+    action(v.action, 203, t);
+    homeBar(); homeHit('preMenu');
+  },
+  // sending: the message types itself (hands busy), then Delivered and the phone goes down
+  texting(t, v) {
+    const y0 = chatHead(v.who === 'boys' ? 'The Boys (3)' : 'Babe', v.who === 'boys' ? 'boys' : 'babe', null, null, 'Messages', v.time); backHit('preCancel');
+    const n = Math.min(v.msg.length, Math.floor(v.k * 1.3 * v.msg.length)), sent = v.k * 1.3 >= 1;
+    const items = sent ? [...v.items, ['r', v.msg]] : v.items;
+    if (items.length) herThread(items, y0 + 2, sent ? 136 : 144, items.length - 1, t);
+    if (sent) tx('Delivered', PH.sw - 8, 138, P.s5, { align: 'r' });
+    rrI(6, 150, PH.sw - 12, 14, 6, P.s2); rrI(7, 151, PH.sw - 14, 12, 5, P.s1);
+    if (!sent) { const w = tx(v.msg.slice(Math.max(0, n - 18), n).replace(' ♥', ''), 11, 154, P.moon); if (Math.floor(t * 3) % 2) rrI(12 + (w || 0), 153, 1, 7, 0, P.gold); }
+    else tx('Message', 11, 154, P.s4);
+    const key = sent ? null : v.msg[n] && v.msg[n] !== ' ' ? v.msg[n] : null;
+    KB_ROWS.forEach((row, r) => { const kw = 9, x0 = 4 + r * 5; [...row].forEach((c, i) => { const x = x0 + i * 10, y = 170 + r * 14, on = c === key; rrI(x, y + 1, kw, 11, 2, P.void); rrI(x, y, kw, 11, 2, on ? P.s5 : P.s3); tx(c, x + 5, y + 3, on ? P.void : P.moon, { align: 'c' }); }); });
+    rrI(24, 212, 64, 11, 3, v.msg[n] === ' ' && !sent ? P.s5 : P.s3); tx('space', 56, 215, P.s1, { align: 'c' });
+    tx(sent ? 'sent. back to the game' : 'typing: hands busy', 56, 229, sent ? P.g5 : P.s4, { align: 'c' });
+  },
+};
+PHONE_SCREENS.live = (t, o) => (LIVE[o.v.screen] || LIVE.home)(t, o.v);
+/** The phone in your hand from the game's view model: its canvas (126 x 252) and the hit regions in its pixels. */
+function livePhone(v, t) {
+  PH_HITS = [];
+  const c = drawPhoneHand('live', t, { v });
+  return { canvas: c, hits: PH_HITS };
+}
+return { PH, HAND, DT, PHONE_SCREENS, drawPhoneHand, drawPhoneOver, deskScreen, CALLERS, avatarAt, glyphAt, fitT, photoWindow, selfie, SELFIE_W, SELFIE_H, vPaint, arcCut, livePhone };
 })();
-const { PH, PHONE_SCREENS, drawPhoneHand, drawPhoneOver } = PHONEOS;
+const { PH, PHONE_SCREENS, drawPhoneHand, drawPhoneOver, livePhone } = PHONEOS;
 // where the phone in your hand sits on the right screen (its body's top-left): over the heroes' side of the battle
 // area, its bottom running off the frame
 const PHONE_AT = [12, 112];
