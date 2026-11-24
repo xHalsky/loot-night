@@ -7,6 +7,7 @@ export const T = {
   BEDTIME: 25 * 60,
   EARLIEST_SLEEP: 23 * 60,          // can't log off before 23:00 (closes the 'sleep at 20:00 for 3 stars' exploit)
   DAWN: 30 * 60,
+  RUN_WARN_DAWN_MIN: 15,            // a run still going this close to dawn gets a warning: dawn loses it (#52, 1.4)
   SEC_PER_GAME_HOUR: 96,          // dungeon: 1 in-game hour per 96 s real time (bedtime ~8 min, dawn ~16 min)
   MENU_CLOCK_SPEED: 0.25,         // the night clock while you choose the next floor on the map (item windows do not slow anything, #49)
   COST_IDENTIFY_MIN: 10,

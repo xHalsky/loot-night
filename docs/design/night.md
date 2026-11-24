@@ -18,13 +18,14 @@ view, and her threats keep full speed either way.
 
 **How a night ends.**
 
-| Ending | Trigger | Bag | Sleep debt |
-|---|---|---|---|
-| Sleep | Power button "Sleep" on the taskbar; allowed from `EARLIEST_SLEEP` (23:00), not mid-battle | Kept | +1 per 15 min past bedtime (01:00), −1 per 15 min before it |
-| Dawn | Night clock reaches 06:00 | Kept | Set to the maximum (`SLEEP_DEBT_MAX`, 20) |
-| Unplugged | Mood reaches 100 | Cheaper half lost | Same rule as Sleep |
+| Ending | Trigger | A run still going | Bag | Sleep debt |
+|---|---|---|---|---|
+| Sleep | Power button "Sleep" on the taskbar; allowed from `EARLIEST_SLEEP` (23:00), not mid-battle | Banked, floor loot included | Kept | +1 per 15 min past bedtime (01:00), −1 per 15 min before it |
+| Dawn | Night clock reaches 06:00 | Lost like a wipe (Souls kept) | Kept | Set to the maximum (`SLEEP_DEBT_MAX`, 20) |
+| Unplugged | Mood reaches 100 | Lost like a wipe (Souls kept) | Then the cheaper half of the rest is lost | Same rule as Sleep |
 
-Floor loot and pending drops go into the bag before the ending is applied.
+Pending drops go into the bag before the ending is applied. While a run is going, the feed warns 15 game minutes
+before dawn and when Mood reaches red ([dungeon.md](dungeon.md), runs).
 
 **Stars** (the real-life score):
 1. Survived (not unplugged).

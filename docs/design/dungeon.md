@@ -242,8 +242,13 @@ starting at 5n+1, for good (`S.g.checkpoints`), and gives `SOULS_PER_BOSS` (20) 
 floor until the town portal (the run is banked) or a wipe (it is lost). Items and gold picked up in a run are
 **unbanked**: a dashed mark on their bag cell, and the town portal plate says what it banks ("bank 7 · 420 g").
 Floor bounty and the other RPG gold go to the run first. Each floor cleared gives `SOULS_PER_FLOOR_BASE` + floor
-Souls; Souls go straight to the pool and are never lost. Logging off (Sleep, dawn) banks the run. A run end card
+Souls; Souls go straight to the pool and are never lost. **When the night ends mid-run,** your choice banks and a
+forced end loses: Sleep (and "Coming, babe" when it lands, which ends the night like Sleep) banks the run, what lies
+on the floor included; dawn, unplugged and any other forced end (Monday's 01:00 in the week, #56) lose it like a
+wipe, Souls kept, floor loot gone. The feed warns once of each while a run is going: `RUN_WARN_DAWN_MIN` (15) game
+minutes before dawn, and when her Mood reaches red. The results say what the run banked or lost. A run end card
 shows for `RUN_CARD_SEC` over the city: the deepest floor, what was banked or lost, the Souls.
+`npx tsx test/runend.ts` checks the three endings and the warnings.
 
 **Downed and wipe.** At 0 HP a hero is downed and stops attacking. Downed heroes return at 30% when the floor ends,
 or via a Phoenix Feather from the bag (50%), or Miracle. All down = **PARTY WIPE**: the run's unbanked items (worn
@@ -287,6 +292,13 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 
 ## Decisions
 
+- **A night's end and the run** (0.57, #52 1.4; Paweł, 2026-11-24): going further in the RPG always carries a risk;
+  short runs give less, long risky ones more. So your choice banks (Sleep) and a forced end loses the unbanked run
+  (dawn, unplugged, a night's scheduled end), with a warning before each. Unplugged keeps its old cost on top (the
+  cheaper half of what is left in the bag, handoff 3.1). Rejected: everything banks (0.53 to 0.56: Sleep was a free
+  portal, so the last run of the night carried no risk, just when real life is most dangerous); only the portal banks
+  (every night would end "portal, then Sleep", a chore rather than a choice); the run waits for the next night (it
+  clashes with each night opening in town and one dungeon a night, #3).
 - **Marching order** (0.56, #52 1.6; Paweł approved the mockups on 2026-11-20). A hero's rank is his place in the
   party list, so the picture, the skill bar and the rules read one order. Rejected: a rank field per hero (two
   orders to keep in step). **EXECUTE names a rank, not a hero:** whoever stands there when it lands takes it, so a
@@ -321,8 +333,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 - **Packs, runs and banking** (0.53, #52 1.3 and 1.4). Encounters are packs of six on screen with the rest waiting,
   so a fight reads as a mob; drops come per kill where the enemy fell, and the walk picks them up (the loot pause is
   gone). The corpse run is gone: a wipe now costs the run's unbanked loot, which makes the town portal a choice
-  (bank now, or push for the next floor). Logging off banks the run: losing a night's loot for going to bed would
-  punish the very thing the night asks of you (open for Paweł). The unbanked count sits on the town portal plate,
+  (bank now, or push for the next floor). The unbanked count sits on the town portal plate,
   not as a fourth corner line: on the grid there is no room under Flow above the plate, and the portal is what
   banks it. Rank targeting (melee on ranks 1 and 2) came early with the packs: six attackers hitting at random wiped
   the back row.
@@ -400,7 +411,8 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 - **Noise per cast went from 4 to 3.5** with the third skill (0.23): a bot casting everything on cooldown
   drew 5.9 visits and 3.6 wakes a night at 4, against 4.5 and 2.0 before the kit; at 3.5 it is 3.8 and 1.3
   with the same average Noise (26). The design wants few visits and real dread, not more of them.
-- **No permadeath.** Progress is never wiped (pillar 4); a wipe costs time, gold and half the bag.
+- **No permadeath.** Progress is never wiped (pillar 4); a wipe costs the run's unbanked loot and the walk back
+  to town, never what was banked.
 - Rejected: a 12-slot bag inside the battle UI and drag-to-equip mid-fight as the main loop. Equipping
   happens in the side panel, with the fight in view and at full speed (#49).
 

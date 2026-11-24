@@ -1,12 +1,12 @@
 import { ensureParty } from './ranks';
-import { bankRun } from './run';
+import { bankRun, loseRun, unbanked } from './run';
 import { resetPacing } from './pacing';
 import { T } from '../config/tuning';
 import { carryGoodwill } from './goodwill';
 import { S, N, type Night, type Results } from '../core/state';
 import { rand } from '../core/rng';
 import { maxHp } from './stats';
-import { entryValue, removeEntry } from './loot';
+import { entryValue, removeEntry, sweepFloorLoot } from './loot';
 import { initVisits } from './visits';
 import { newExcel } from './excel';
 import { startTired } from './tired';
@@ -59,8 +59,17 @@ export function startNight() {
 /** Checks the three ways a night ends (docs/design/night.md). */
 export function checkNightEnd() {
   const n = N();
+  warnRun();
   if (n.mood >= T.MOOD_MAX) endNight('unplugged');
   else if (n.clock >= T.DAWN) endNight('dawn');
+}
+
+/** A forced end (dawn, unplugged) loses the run, so the feed warns once of each while a run is going. */
+function warnRun() {
+  const n = N(), w = (n.runWarned ??= {});
+  if (!n.run) return;
+  if (!w.dawn && n.clock >= T.DAWN - T.RUN_WARN_DAWN_MIN) { w.dawn = true; toast(`Dawn in ${T.RUN_WARN_DAWN_MIN} minutes. Take the portal, or the run is lost.`, '#ff8a80'); }
+  if (!w.plug && n.mood >= T.MOOD_RED) { w.plug = true; toast("She's close to pulling the plug. This run isn't banked.", '#ff8a80'); }
 }
 
 export function canSleep() { const n = N(); return n.clock >= T.EARLIEST_SLEEP && (n.location === 'town' || n.phase !== 'battle'); }
@@ -69,12 +78,17 @@ export function endNight(ending: Results['ending']) {
   stopAmbience();
   const n = N();
   if (ending === 'sleep' && !canSleep()) { toast(n.clock < T.EARLIEST_SLEEP ? 'Too early to sleep. Play until at least 23:00.' : 'Finish the battle first.', '#a999bd'); return; }
+  // A run still going: Sleep (your choice) banks it; a forced end (dawn, unplugged) loses it like a wipe, Souls
+  // kept (#52, 1.4; decided 2026-11-24: going deeper always carries a risk). What lies on the floor goes with it.
+  const bank = ending === 'sleep';
+  if (n.run) { if (bank) sweepFloorLoot(); else n.floorLoot = []; }
   // Pending drops land in the bag where possible.
   n.dropQueue.push(...n.floorLoot.map(l => l.entry)); n.floorLoot = [];
   n.dropQueue.forEach(e => { if (S.g.bag.length < S.g.bagSize) S.g.bag.push(e); });
   if (n.dropPopup && S.g.bag.length < S.g.bagSize) S.g.bag.push(n.dropPopup.entry);
-  if (n.run) bankRun();   // logging off ends the run safely (#52, 1.4; docs/design/dungeon.md)
-  if (ending === 'unplugged') {
+  const run = n.run ? { ...unbanked(), deepest: n.run.deepest } : null;
+  if (n.run) { if (bank) bankRun(); else loseRun(); }
+  if (ending === 'unplugged') {   // on top of the run: the cheaper half of the bag (handoff 3.1, unchanged)
     const sorted = [...S.g.bag].sort((a, b) => entryValue(b) - entryValue(a));
     sorted.slice(Math.ceil(sorted.length / 2)).forEach(e => removeEntry(e.id));
   }
@@ -92,6 +106,8 @@ export function endNight(ending: Results['ending']) {
   const prevRecord = S.g.record;
   const depth = n.deepest;
   const near: string[] = [];
+  if (run && (run.items || run.gold)) near.push(bank ? `Run banked on the way to bed: ${run.items} items, ${run.gold} gold.`
+    : `${ending === 'dawn' ? 'Dawn' : 'The plug'} ended the run on floor ${run.deepest}: ${run.items} items and ${run.gold} gold lost.`);
   if (depth < prevRecord) near.push(`${prevRecord - depth} floor${prevRecord - depth > 1 ? 's' : ''} short of your record (${prevRecord}).`);
   if (depth > prevRecord && prevRecord > 0) near.push(`New depth record: floor ${depth}!`);
   if (survived && !twoStar) near.push(`2nd star missed by ${Math.ceil(n.mood - T.MOOD_RED + 1)} Mood.`);

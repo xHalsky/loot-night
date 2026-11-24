@@ -3,6 +3,16 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.57.0 (2026-11-24)
+
+- **A night's end and the run** (#52, 1.4; Paweł's call: going further always carries a risk). Sleep banks a run
+  still going, as before. Dawn and unplugged now lose it like a wipe (its unbanked items, its gold, what lies on the
+  floor; Souls stay); unplugged still costs the cheaper half of what is left in the bag on top. The feed warns once
+  15 game minutes before dawn and once when her Mood reaches red, while a run is going. The results say what the
+  run banked or lost. Until now every ending banked, so Sleep was a free portal and the night's last run had no risk.
+- New `test/runend.ts`. Sims: the good bot sleeps at 01:00 and banks as before (no change); the idle bot is unplugged
+  and now loses its run (bag 0 at the end; before, half of a banked bag).
+
 ## 0.56.0 (2026-11-24)
 
 - **Marching order** (#52, 1.6; grid doc §5d). The party fights in one line, rank 1 at the front; the skill bar's

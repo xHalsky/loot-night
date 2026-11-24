@@ -147,6 +147,7 @@ export interface Night {
   paths: PathCard[] | null; safest: number; mapAway: number;   // the route choice at a floor's end (#52, 1.5)
   feature: FeatureId | null; cond: ConditionId | null; featureMet?: boolean;   // this floor's feature and condition; the feature's curio has stood
   runCard: (RunState & { banked: boolean; t: number }) | null;   // the run end card
+  runWarned?: { dawn?: boolean; plug?: boolean };                  // the warnings before a forced end loses the run
   visit: VisitState;
   apt: Apartment;
   headset: boolean;
