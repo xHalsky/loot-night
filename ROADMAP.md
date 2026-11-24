@@ -33,7 +33,9 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    5. #56 The week (FNAF's nights).
    6. #57 The smart home and the phone battery.
    7. #58 Before the playtest.
-2. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
+2. **Paweł's 15-minute RPG session** (real life off, F1), moved here from before step 3 (2026-11-24): the RPG
+   alone needs number tuning first. Then the real-life-on night.
+3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
    night, tools in `test/balance.py` and `test/campaign.py`). Next: playtests with `docs/playtest.md`, then tune
    from what they show. Repeat until three testers in a row pass.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).

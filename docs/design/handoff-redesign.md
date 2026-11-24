@@ -30,7 +30,8 @@ the config object and tune them with the debug overlay.
 
 ## Step 1. The RPG on its own
 
-Build and test this with real life switched off. It has to hold 15 minutes alone before step 3.
+Build and test this with real life switched off. It has to hold 15 minutes alone; Paweł plays that session after
+the redesign is in, once the numbers are tuned (decided 2026-11-24), so it no longer gates step 3.
 
 ### 1.1 Debug: real life off
 - Add a debug toggle (F1 panel) "Real life off": no visits, phone, dog, Tiredness, Noise, Mood or night clock

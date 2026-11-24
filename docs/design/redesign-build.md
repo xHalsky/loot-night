@@ -18,6 +18,9 @@ gameplay steps). This file says how the build gets there and where it stands. It
   old town drawing until V2 reaches the town.
 - **#52 1.5b, 0.54.0:** run blessings from curios (dungeon.md).
 
+- **The 15-minute gate** (handoff step 1: the RPG alone must hold 15 minutes before step 3) moved to after the
+  redesign (Paweł, 2026-11-24): it needs number tuning first. Step 3 starts without it.
+
 ## Approach
 
 - **Each RPG system is reworked and drawn in the new look in the same step**, so the old RPG UI (`ui/monitor.ts`,
