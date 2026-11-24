@@ -3,6 +3,29 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.56.0 (2026-11-24)
+
+- **Marching order** (#52, 1.6; grid doc §5d). The party fights in one line, rank 1 at the front; the skill bar's
+  groups follow it, keys stay with the hero. Home ranks (Knight 1-2, Garrote 1-3, Mage 3-4, Healer 2-4): outside them a
+  hero deals and heals x0.7 (a crimson "x0.7" tab on his portrait). Auras on the bar's pilasters: the Knight's shield
+  wall (the hero behind takes 25% less), Garrote's keen eye (+10 crit to the one in front), Magoo's haste (10% shorter
+  cooldowns to the one in front), Healero's blessing (1% HP a second to both neighbours). Night 1 now starts Knight,
+  Healer, Mage.
+  - Swap: drag a portrait or a hero onto another; both walk past each other for 1 s without acting. Free in town.
+  - From floor 6, 35% of encounters bring a Ghoul (Hook · rank 4: the last hero is dragged to the front on a chain)
+    or a Brute (Shove · rank 1: the front hero is knocked back). Away, the line stays broken.
+  - Enemies pick ranks: melee the front (70%) or the next, the Shaman ranks 3 and 4; Taunt finds the Knight
+    wherever he stands. EXECUTE now names a rank ("Execute · rank 4"): swap someone sturdier in.
+  - Hover a hero for his card: his rank, what is wrong, what his aura gives and to whom.
+- **Garrote** (#52, 1.7) joins on night 2, second in line, at the party's lowest level, with a feed line; he is the
+  looter now. Stab (auto), Backstab (Z: 3x, x2 on Staggered), Smoke Bomb (X: enemies miss half their attacks for
+  4 s), Heist (C, ultimate: every kill drops an item for 8 s). Z X C glow ember on the desk keyboard.
+- F1: Garrote, Hook and Shove buttons. New `test/ranks.ts` (25 checks) and `test/ranks.py` (screenshots).
+- Sims (good): night 1 depth 6 to 10, encounters 9 to 11 s, 0 wipes in 3 (0.55: depth 5 to 7); with `NIGHTS=2` the
+  second night (four heroes) reaches depth 9 to 11 with about 105 items. The bot puts the line back after a break.
+  Idle: depth 2, 2 wipes, caught 1. Autopilot test: floor 10 boss 1/30 wipes careful (0/30 before), away still 30/30;
+  normal floor 8 away 0/30 (2/30 before: the healer's blessing and the Knight's wall).
+
 ## 0.55.0 (2026-11-24)
 
 - **The route choice** (#52, 1.5; grid doc §5b). When a floor ends, the renderer draws the floor map: the run so far

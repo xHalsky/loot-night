@@ -39,6 +39,6 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 3 | #52 1.3 and 1.4: floors with packs of six in two lanes, pickup during the walk; runs, checkpoints, wipes, unbanked loot, Souls | 0.53.0 |
 | 4 | V2: the side panel (party, gear, stats, bag, footer): moved to step 8, with #53's tabs (Town, Inventory, Skill Tree), so the panel is redrawn once | later |
 | 5 | #52 1.5 and 1.5b with the floor map (§5b): path cards, features, conditions, the away hourglass; run blessings (§5c) | 0.54.0 (blessings), 0.55.0 (route choice) |
-| 6 | #52 1.6 and 1.7: marching order, auras, swaps, the Hook (§5d); Garrote | next |
-| 7 | #52 1.8 and 1.9: loot rules, sets, legendaries; tuning to the pacing targets | |
+| 6 | #52 1.6 and 1.7: marching order, auras, swaps, the Hook (§5d); Garrote | 0.56.0 |
+| 7 | #52 1.8 and 1.9: loot rules, sets, legendaries; tuning to the pacing targets | next |
 | 8 | V2: town (Ravenhold, §6) with #53 | |

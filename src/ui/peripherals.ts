@@ -16,11 +16,12 @@ export function keyboardSvg(): string {
     const scale = (W - 16 - gap * (row.length - 1)) / (total * u);
     row.forEach(([label, w]) => {
       const kw = w * u * scale, y = 7 + r * (u - 1.2);
-      const isHot = hot.has(label);
+      const isHot = hot.has(label), ember = r === 3 && (label === 'Z' || label === 'X' || label === 'C');   // Garrote's keys light up once he joins (#52, 1.7)
       keys += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
         <rect width="${kw.toFixed(1)}" height="${u - 3}" rx="2.5" fill="${isHot ? '#3a2f52' : '#24212c'}"/>
         <rect x="1.6" y="1" width="${(kw - 3.2).toFixed(1)}" height="${u - 7}" rx="2" fill="${isHot ? '#4a3d6a' : '#33303d'}"/>
         ${label ? `<text x="${(kw / 2).toFixed(1)}" y="${u - 9}" text-anchor="middle" font-size="${label.length > 2 ? 5 : 6.5}" fill="${isHot ? '#d9c7ff' : '#9a95a8'}" font-family="Inter, sans-serif">${label}</text>` : ''}
+        ${ember ? `<g class="kb-ember"><rect width="${kw.toFixed(1)}" height="${u - 3}" rx="2.5" fill="#4a2a18"/><rect x="1.6" y="1" width="${(kw - 3.2).toFixed(1)}" height="${u - 7}" rx="2" fill="#6a3a20"/><text x="${(kw / 2).toFixed(1)}" y="${u - 9}" text-anchor="middle" font-size="6.5" fill="#ffc9a0" font-family="Inter, sans-serif">${label}</text></g>` : ''}
       </g>`;
       x += kw + gap;
     });

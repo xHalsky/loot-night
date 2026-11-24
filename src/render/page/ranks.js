@@ -34,7 +34,7 @@ function rankMarks(x, y0, id, n, st, t) {
   if (st.outpos && st.outpos.includes(id)) {
     const tx = x + 3, ty = y0 + 21;
     rectI(tx, ty, 16, 7, P.crimson); rectI(tx, ty + 6, 16, 1, P.wine);
-    text('x0.7', tx + 8, ty + 1, 'tiny', P.moon, { align: 'c' });
+    text(st.outLabel || 'x0.7', tx + 8, ty + 1, 'tiny', P.moon, { align: 'c' });
   }
   if (st.stopped && st.stopped.includes(id)) {
     for (let j = y0 + 6; j < y0 + 24; j++) for (let i = x + 28; i < x + 75; i++) if ((i + j) & 1) putI(i, j, P.void);

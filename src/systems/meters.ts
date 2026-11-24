@@ -1,3 +1,4 @@
+import { updateRanks } from './ranks';
 import { T } from '../config/tuning';
 import { S, N } from '../core/state';
 import { clamp } from '../core/rng';
@@ -52,6 +53,8 @@ export function updateMeters(dt: number) {
   n.goodBoy = Math.max(0, n.goodBoy - dt);
   n.goodDog = Math.max(0, n.goodDog - dt);
   n.ward = Math.max(0, n.ward - dt);
+  n.smoke = Math.max(0, n.smoke - dt); n.heist = Math.max(0, n.heist - dt);
+  updateRanks(dt);   // heroes walking to a new rank (#52, 1.6)
   n.guilt = Math.max(0, n.guilt - dt);
   n.monitorOff = Math.max(0, n.monitorOff - dt);
 

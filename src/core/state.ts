@@ -23,7 +23,7 @@ export type BagEntry = (
   | { kind: 'map'; id: string; map: MapKind }
   | { kind: 'feather'; id: string }) & { run?: boolean };   // run: picked up this run, not banked yet (#52, 1.4)
 
-export type HeroId = 'knight' | 'mage' | 'healer';
+export type HeroId = 'knight' | 'rogue' | 'mage' | 'healer';
 export interface Hero {
   id: HeroId; name: string; role: string; level: number; xp: number;
   hp: number; downed: boolean; atb: number;   // atb: progress to the next auto attack, 0..100 (real time, #52)
@@ -32,6 +32,8 @@ export interface Hero {
   ult: number;           // the ultimate's charge, 0..1 (fills during fights, #52)
   queued: number | null; // ability slot queued for next turn
   lunge?: number;        // attack animation timer
+  moving?: number;       // seconds left changing rank (a swap, a Hook, a Shove): he doesn't act (#52, 1.6)
+  from?: number;         // the rank he is moving from (0-based), for the walk between ranks
 }
 
 export interface Enemy {
@@ -49,7 +51,7 @@ export interface Enemy {
 export type MarkId = 'stagger' | 'chill' | 'judged' | 'taunted';
 export interface FloatFx { x: number; y: number; text: string; color: string; t: number }
 export interface Toast { text: string; color: string; t: number }
-export type VfxKind = 'slash' | 'claw' | 'bolt' | 'fire' | 'frost' | 'heal' | 'taunt' | 'bash' | 'smite' | 'ward';
+export type VfxKind = 'slash' | 'claw' | 'bolt' | 'fire' | 'frost' | 'heal' | 'taunt' | 'bash' | 'smite' | 'ward' | 'chain' | 'smoke';
 export interface Vfx { kind: VfxKind; x: number; y: number; x2: number; y2: number; t: number; dur: number; seed: number }
 
 export type VisitStage = 'idle' | 'far' | 'hall' | 'handle' | 'in' | 'passing';
@@ -174,6 +176,7 @@ export interface Night {
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
+  smoke: number; heist: number;   // seconds left of Garrote's Smoke Bomb and Heist (#52, 1.7)
   taunt: number; ward: number; lastStand: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
@@ -222,7 +225,8 @@ export interface GameState {
   pity: number; uid: number;
   checkpoints: number[];         // floors a run can start at: 1 and each 5n+1 whose boss you beat (#52, 1.4)
   startFloor: number;            // the floor the town's picker is on
-  drops: number; legendaryFound: boolean;   // the first legendary of a save comes within LEGENDARY_FIRST_BY drops
+  drops: number; legendaryFound: boolean;
+  orderSet?: boolean;   // the marching order has been set once (#52, 1.6): from then on it is the player's   // the first legendary of a save comes within LEGENDARY_FIRST_BY drops
   night: Night | null;
   townWin?: 'merchant' | 'appraiser' | 'salvage' | 'auction' | `build:${'training' | 'inn' | 'library' | 'treasury'}` | null;   // a service window, or a plot's build window (#50)
   screen: Screen; paused: boolean; debug: boolean; timeScale: number;
@@ -237,7 +241,7 @@ export function newHero(id: HeroId, name: string, role: string, hp: number): Her
 
 export function initialState(): GameState {
   return {
-    heroes: [newHero('knight', HERO_NAME.knight, 'Knight', 130), newHero('mage', HERO_NAME.mage, 'Mage', 75), newHero('healer', HERO_NAME.healer, 'Healer', 90)],
+    heroes: [newHero('knight', HERO_NAME.knight, 'Knight', 130), newHero('healer', HERO_NAME.healer, 'Healer', 90), newHero('mage', HERO_NAME.mage, 'Mage', 75)],   // night 1's marching order (#52, 1.6)
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },

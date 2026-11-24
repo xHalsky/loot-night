@@ -5,7 +5,8 @@ import { S, N, type Enemy, type Hero, type HeroId } from '../core/state';
 import { ENEMY_BY_ID, bossFor } from '../data/enemies';
 import { MAP_INFO, RARITY_COLOR } from '../data/items';
 import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
-import { ULT_SLOT, ABILITIES } from '../data/heroes';
+import { ULT_SLOT, ABILITIES, HOME_RANKS, AURAS, HERO_NAME } from '../data/heroes';
+import { outOfRank } from '../systems/ranks';
 import { maxHp } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
@@ -20,16 +21,16 @@ export function liveActive(): boolean {
   return !!n && S.g.screen === 'night' && n.location === 'dungeon';
 }
 
-const PAGE_ID: Record<HeroId, string> = { knight: 'knight', mage: 'mage', healer: 'priest' };
+const PAGE_ID: Record<HeroId, string> = { knight: 'knight', rogue: 'rogue', mage: 'mage', healer: 'priest' };
 const PH: Record<string, number> = { knight: 2.6, rogue: 3.4, mage: 1.3, priest: 0 };
-const KEYS: Record<HeroId, string[]> = { knight: ['1', '2', '3'], mage: ['Q', 'W', 'E'], healer: ['A', 'S', 'D'] };
+const KEYS: Record<HeroId, string[]> = { knight: ['1', '2', '3'], rogue: ['Z', 'X', 'C'], mage: ['Q', 'W', 'E'], healer: ['A', 'S', 'D'] };
 const PAGE_SLOT: Record<string, number> = { knight: 0, rogue: 1, mage: 2, priest: 3 };   // hud.js HEROES order
 // where everyone stands: core/arena.ts (grid doc §4b, §4c); the systems place numbers and drops there too
 const RIG: Record<string, { rig: string; o?: Record<string, unknown> }> = {
-  skeleton: { rig: 'skel' }, collector: { rig: 'zomb', o: { sword: true } }, auditor: { rig: 'necro' },
+  skeleton: { rig: 'skel' }, collector: { rig: 'zomb', o: { sword: true } }, auditor: { rig: 'necro' }, ghoul: { rig: 'zomb' },
   shelter: { rig: 'skel', o: { helm: true, shield: true } },
 };
-const MOVE_LABEL: Record<string, string> = { slam: 'Smash', loan: 'Summon', evict: 'Execute' };
+const MOVE_LABEL: Record<string, string> = { slam: 'Smash', loan: 'Summon', evict: 'Execute', hook: 'Hook', shove: 'Shove' };
 const MARK_TAG: Record<string, [string, string]> = { stagger: ['STAGGERED', 'bone'], chill: ['CHILLED', 'stone'], judged: ['JUDGED', 'pale'], taunted: ['TAUNTED', 'dusk'] };
 const RARITY_IDX: Record<string, string> = { common: 'moon', uncommon: 'moss', rare: 'stone', epic: 'arcane', legendary: 'gold' };
 const colorIdx = (c: string) => /f2b84b|ffd/.test(c) ? 'gold' : /ff8a80|ff5a5a|e0524a/.test(c) ? 'crimson' : /6fcf7f|9fe08a/.test(c) ? 'heal' : /8fd8ff|8fb3ff|6aa8ff/.test(c) ? 'stone' : 'moon';
@@ -52,14 +53,24 @@ function pathsView(hov: number, hovT: number) {
     portalOk, portalLabel: portalOk ? '15 min' : 'oath', texts: { feat: FEATURE_TEXT, cond: CONDITION_TEXT } };
 }
 
-export function buildBattleView(nowMs: number, hov = -1, hovT = 0) {
+/** The pointer's business with the party (marching order, #52 1.6): a hero being dragged, the one under the pointer. */
+export interface PartyPointer { drag: { from: number; x: number; y: number; over: number } | null; hover: number }
+/** Where a hero stands now: his rank's x, or on the way there after a swap, a Hook or a Shove. */
+export function heroX(i: number): number {
+  const h = S.g.heroes[i];
+  if (!h?.moving || h.from == null) return RANK_X[i];
+  const k = 1 - h.moving / T.SWAP_SEC, e = k * k * (3 - 2 * k);
+  return Math.round(RANK_X[h.from] + (RANK_X[i] - RANK_X[h.from]) * e);
+}
+
+export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPointer = { drag: null, hover: -1 }) {
   const g = S.g, n = N();
   if (n.phase === 'mapChoice' && n.paths) return { paths: pathsView(hov, hovT) };
-  // the party, front first (the knight leads; marching order comes with #52 1.6)
+  // the party in marching order, front first (#52, 1.6): rank 1 is S.g.heroes[0]
   const order = g.heroes.map((h, i) => ({ h, i }));
   const party = order.map(({ h }, rank) => {
     const id = PAGE_ID[h.id];
-    return { id, x: RANK_X[rank], ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 ? 3 : 0 };
+    return { id, x: heroX(rank), ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 && !h.moving ? 3 : 0 };
   });
   // the enemies: six ranks, fodder in two lanes, the boss or the lieutenant behind them; a newcomer slides in
   const enemies = n.enemies.map((e: Enemy) => {
@@ -82,7 +93,7 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0) {
   });
   // floating numbers and effects: the systems place them on the grid (core/arena.ts)
   const floaters = n.fx.map(f => ({ text: f.text, x: f.x, y: f.y, idx: colorIdx(f.color), big: f.text.endsWith('!') }));
-  const vfx = n.vfx.map(v => ({ kind: v.kind, x: v.x, y: v.kind === 'ward' ? 196 : v.y, x2: v.x2, y2: v.y2, k: v.t / v.dur }));
+  const vfx = n.vfx.map(v => ({ kind: v.kind, x: v.kind === 'chain' ? heroX(0) + 6 : v.x, y: v.kind === 'ward' ? 196 : v.y, x2: v.x2, y2: v.y2, k: v.t / v.dur }));   // the Hook's chain follows the hooked hero
   const loot = n.floorLoot.map(l => ({ x: l.x, y: FLOOR_Y, r: l.entry.kind === 'item' ? l.entry.item.rarity : 'map' }));
   const flies = n.lootFly.filter(f => f.t >= f.delay).map(f => { const k = (f.t - f.delay) / f.max; return { text: f.text, x: f.x + f.dx, y: 186 - k * 48, idx: rarityIdxOf(f.color) }; });
   // the corner
@@ -96,13 +107,40 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0) {
     flow: n.flow.toFixed(1), flowBar: (n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN), flowGlow: nowMs < flowGlowUntil,
   };
     const u = unbanked();
-  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', bank: u.items || u.gold ? `bank ${u.items} · ${u.gold} g` : '15 min', buffs: buffList(), curio: curioView(), goblin: goblinView(), bar: barView(order.map(o => o.h)) };
+  const bar = barView(order.map(o => o.h));
+  // a drag: the portrait lifts under the pointer, rings under both heroes, the target's portrait gets the gold frame
+  const drag = pp.drag ? { id: PAGE_ID[g.heroes[pp.drag.from]?.id ?? 'knight'], x: pp.drag.x, y: pp.drag.y, rings: [heroX(pp.drag.from), ...(pp.drag.over >= 0 && pp.drag.over !== pp.drag.from ? [heroX(pp.drag.over)] : [])] } : null;
+  if (pp.drag && pp.drag.over >= 0 && pp.drag.over !== pp.drag.from) (bar as { dropOn: number }).dropOn = pp.drag.over;
+  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', bank: u.items || u.gold ? `bank ${u.items} · ${u.gold} g` : '15 min', buffs: buffList(), curio: curioView(), goblin: goblinView(), bar,
+    drag, heroCard: !pp.drag && pp.hover >= 0 ? heroCard(pp.hover) : null };
 }
+
+/** The card over a hovered hero (grid doc §5d): his rank, what is wrong, what his aura gives and to whom. */
+function heroCard(i: number) {
+  const h = S.g.heroes[i];
+  if (!h) return null;
+  const name = HERO_NAME[h.id].split(' ')[0].replace('Knightenstein', 'Knighten'), [a, b] = HOME_RANKS[h.id];
+  const lines: [string, string][] = [['h', `${name} · rank ${i + 1}`]];
+  if (outOfRank(h)) lines.push(['-', `Out of position: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_RANK_MULT * 100)}%. His ranks are ${a} to ${b}.`]);
+  const A = AURAS[h.id], to: string[] = [];
+  const front = S.g.heroes[i - 1], back = S.g.heroes[i + 1];
+  if (A.front && front) to.push(`${short(front.id)}, in front of him,`);
+  if (A.back && back) to.push(`${short(back.id)}, behind him,`);
+  if (h.downed) lines.push(['-', 'Down: his aura is gone.']);
+  else if (to.length) lines.push(['+', `${to.join(' and ')} ${to.length > 1 ? A.gives.replace(/^\w+/, w => PLURAL[w] ?? w) : A.gives}.`]);
+  else lines.push(['n', `Nobody stands where his aura reaches.`]);
+  lines.push(['n', outOfRank(h) ? 'Drag him back. Away, the line stays broken.' : 'Drag him onto another hero to swap.']);
+  return { x: heroX(i), lines };
+}
+const short = (id: HeroId) => HERO_NAME[id].split(' ')[0].replace('Knightenstein', 'Knighten');
+const PLURAL: Record<string, string> = { takes: 'take', gets: 'get', regenerates: 'regenerate' };
 
 function windLabel(e: Enemy): string {
   const m = moveOf(e) ?? '';
   const base = MOVE_LABEL[m] ?? 'Wind-up';
-  if (m === 'evict' && e.evict != null) return `${base} · ${S.g.heroes[e.evict]?.name.split(' ')[0] ?? ''}`;
+  if (m === 'evict' && e.evict != null) return `${base} · rank ${e.evict + 1}`;   // EXECUTE names a rank (#52, 1.6)
+  if (m === 'hook') return `${base} · rank ${S.g.heroes.length}`;
+  if (m === 'shove') return `${base} · rank 1`;
   return base;
 }
 function rarityIdxOf(color: string): string {
@@ -177,7 +215,8 @@ function barView(heroes: Hero[]) {
       else if (!combo && !h.downed) { const c = comboLabel(h.id, si); if (c) combo = { key, label: c }; }
     });
   });
-  return { order: heroes.map(h => PAGE_ID[h.id]), heroIdx: heroes.map((_, i) => i), selected: n.heroTab, hp, cooldown, ult, answer, combo, queued: null, autocast: {}, blocked: abilitiesLocked() && n.location === 'dungeon' ? abilitiesLocked() : null };
+  return { order: heroes.map(h => PAGE_ID[h.id]), heroIdx: heroes.map((_, i) => i), selected: n.heroTab, hp, cooldown, ult, answer, combo, queued: null, autocast: {}, blocked: abilitiesLocked() && n.location === 'dungeon' ? abilitiesLocked() : null,
+    outpos: heroes.filter(outOfRank).map(h => PAGE_ID[h.id]), stopped: heroes.filter(h => h.moving).map(h => PAGE_ID[h.id]), outLabel: `x${T.OUT_OF_RANK_MULT}`, dropOn: -1 };
 }
 /** A mark on the field that this skill cashes in (docs/design/dungeon.md, ability marks): the well glows gold. */
 function comboLabel(id: HeroId, si: number): string {

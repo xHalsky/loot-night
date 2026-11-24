@@ -1144,3 +1144,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #ui .sp-pick .sp-gate { flex: 1; }
 #ui .sp-arrow { font: inherit; background: #2a2440; color: #e8e4f0; border: 1px solid #6a5a8a; padding: 0 8px; cursor: pointer; }
 #ui .sp-arrow:disabled { opacity: .35; cursor: default; }
+
+/* Garrote's Z X C on the desk keyboard, ember, once he is in the party (#52, 1.7) */
+.keyboard .kb-ember { display: none; }
+.keyboard.rogue .kb-ember { display: inline; }

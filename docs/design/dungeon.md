@@ -2,10 +2,12 @@
 
 ## Now
 
-**Party.** Three heroes, persistent across nights (data: `src/data/heroes.ts`, `HERO_NAME`): Knightenstein
-(Knight, tank, in front, carries the torch: you), Magoo (Mage) and Healero (Healer, at the back), the
-characters of your friends Danny and Mike. Party and guild chat use the character names, as an MMO would;
-the friends' phone calls use their real names.
+**Party.** Three heroes on night 1, four from night 2, persistent across nights (data: `src/data/heroes.ts`,
+`HERO_NAME`): Knightenstein (Knight, tank, in front, carries the torch: you), Magoo (Mage) and Healero (Healer), the
+characters of your friends Danny and Mike, and from night `ROGUE_JOINS_NIGHT` (2) **Garrote** (Rogue, #52 1.7), who
+joins second in line at the party's lowest level with a feed line. From then on he is the looter (the Knight's role
+line drops "picks up loot"). Party and guild chat use the character names, as an MMO would; the friends' phone calls
+use their real names. Garrote's colour is ember (`#c16229`); Z, X and C light up ember on the desk keyboard.
 Stats: HP, attack, armor, speed, crit, luck; level and XP; six gear slots (weapon, helm, armor, boots,
 ring, trinket). Old saves are renamed on load.
 
@@ -17,8 +19,9 @@ ring, trinket). Old saves are renamed on load.
 die (`STEP_IN_SEC`, 0.6 s, sliding in). A pack member has `PACK_HP_MULT` (1.4) of a lone enemy's HP and
 `PACK_ATK_MULT` (0.5) of its attack (*start*; the good bot's fights take 10 to 11 s against the 8 to 12 s target).
 Enemies compound per floor (1.2); levels add `HERO_LEVEL_SCALE` (+4%) and the gear has to keep up
-([loot.md](loot.md), #49). **Who they hit:** Taunt takes everything; otherwise melee hits rank 1 (70%) or rank 2,
-the Shaman hits the back ranks, bats hit anyone (ranks are the heroes' order until marching order, #52 1.6). Monday's dungeon is the Shadow Crypt
+([loot.md](loot.md), #49). **Who they hit:** Taunt takes everything (everything hits the Knight, wherever he
+stands); otherwise melee hits the front living hero (70%) or the next, the Shaman hits ranks 3 and 4, bats hit anyone
+(ranks: the marching order below). Monday's dungeon is the Shadow Crypt
 (`src/data/enemies.ts`). When a boss dies, the enemies still standing run. Enemy ids are older than their
 names (`collector` = Orc, `auditor` = Shaman, `shelter` = Guardian, `junk` = Imps, `bailiff` = Ogre, `shark` =
 Warlock, `landlord` = Black Knight; boss moves `slam`, `loan`, `evict`); saves and tests key on the ids.
@@ -32,8 +35,11 @@ different answer, joining from floors 2, 3 and 4. The first time you meet one, a
 | Guardian | floor 3 | Shielded: takes `SHIELD_TAKEN` (25%) damage until a Bash breaks the shield | Bash (it goes for a shield before the front enemy), then burst |
 | Imps | floor 4 | A swarm of 5 imps; each single hit takes one imp at most, and every imp bites when it attacks | Fire and Cataclysm hit every imp; Taunt soaks the bites |
 
+| Ghoul | floor `LINE_BREAK_FROM` (6) | Hook (marching order below) | Drag the hooked hero back, or kill it during the 1 s wind-up |
+| Brute | floor 6 | Shove (marching order below) | Drag the front hero back |
+
 Skill targeting: Bash goes for a winding-up boss, then a shield, then the front enemy; Frost goes for a
-healer, then the front enemy.
+healer, then the front enemy; Backstab hits the front enemy.
 
 **Bosses** rotate per checkpoint floor: floor 5 the Ogre, 10 the Warlock, 15 the Black Knight, then around
 again with floor scaling. Each has its own telegraphed move: a cast bar at the top centre and the skills
@@ -43,7 +49,7 @@ that answer it pulsing red. The floor map names the boss in the margin note of t
 |---|---|---|
 | The Ogre (1700 / 28) | SMASH, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
 | The Warlock (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s SUMMON: a friend (Shaman or Imps) joins; a friend still standing is EMPOWERed instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next summon: Fire, Cataclysm, Frost on the Shaman |
-| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the most hurt hero (a red EXECUTE tag over them): `EVICT_PCT` (90%) of their max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, Last Stand or Miracle after; Bash the shield off again |
+| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the rank of the most hurt hero ("Execute · rank 4"): whoever stands in that rank when it lands loses `EVICT_PCT` (90%) of max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, swap a sturdier hero into that rank, Last Stand or Miracle after; Bash the shield off again |
 
 **Boss big attack: SMASH** (the Ogre). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
 a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
@@ -61,7 +67,7 @@ nobody answers.
 **Battle, in real time** (#52, 1.2). Side view, heroes left, up to 3 enemies right. Every unit attacks on its own
 timer: attack interval = `BASE_ATTACK_SEC` (1.2) × 10 / speed, so speed 10 attacks every 1.2 s. Stuns are seconds
 (Bash: `BASH_STUN_SEC`, 1.5 s). Auto attacks are not skills: Knight slashes the front enemy, Mage bolts the weakest,
-Healer heals an ally under `HEALER_AUTO_HEAL_BELOW` (60%) HP or smites. At max Flow the party attacks `FLOW_SPEED`
+Healer heals an ally under `HEALER_AUTO_HEAL_BELOW` (60%) HP or smites, Garrote stabs the front enemy. At max Flow the party attacks `FLOW_SPEED`
 (25%) faster, linear from Flow x1. Numbers compound (#52): enemy HP x`ENEMY_HP_GROWTH` (1.15) and attack
 x`ENEMY_ATK_GROWTH` (1.12) per floor, item attack, HP and armor x`ITEM_POWER_GROWTH` (1.12) per item level (speed,
 crit and luck stay linear); big numbers show as 1.2K, 34.5K, 1.2M. Floating
@@ -76,8 +82,44 @@ that fills over `ULT_CHARGE_SEC` (20) seconds of combat, only during fights; cas
 | Hero | Skill 1 | Skill 2 (level 3) | Ultimate |
 |---|---|---|---|
 | Knight (1, 2, 3) | Taunt: enemies hit the knight for 5 s, marks them Taunted | Bash: 2x to the front enemy, 1.5 s stun, Stagger; interrupts SMASH | Last Stand: for `LAST_STAND_SEC` (6 s) no hero can drop below 1 HP |
+| Rogue (Z, X, C) | Backstab: 3x to the front enemy, x`MARK_STAGGER_BACKSTAB` (2) on Staggered (spends it); cd 8 | Smoke Bomb: enemies miss `SMOKE_MISS` (50%) of their attacks for `SMOKE_SEC` (4 s); big moves still land; cd 14 | Heist: for `HEIST_SEC` (8 s) every kill drops an item |
 | Mage (Q, W, E) | Fire: 1x to every enemy | Frost: 2.6x to the front enemy, Chill | Cataclysm: `CATACLYSM_POWER` (8x) to every enemy, double on Staggered or Chilled |
 | Healer (A, S, D) | Mend: heals the party | Ward: 40% less damage for 6 s | Miracle: revives every downed hero and fully heals the party |
+
+Garrote's auto attack (Stab) hits the front enemy. His stats (*start*): HP 85, attack 12, armor 3, speed 13,
+crit 12, luck 5. Pickpocket is not in the kit: Heist covers its ground (decisions 2026-11-20).
+
+**Marching order** (#52, 1.6; grid doc §5d; rules `src/systems/ranks.ts`). The party walks and fights in one line,
+rank 1 at the front (right in the picture, left in the skill bar); a hero's rank is his place in the party. Defaults:
+night 1 Knight, Healer, Mage; from night 2 Knight, Garrote, Mage, Healer. An old save gets the default once
+(`orderSet`); after that the order is the player's and carries over from night to night.
+- **Home ranks** (`HOME_RANKS`, data per hero so tree nodes can change them): Knight 1 to 2, Garrote 1 to 3, Mage 3 to
+  4, Healer 2 to 4. Outside them a hero deals and heals `OUT_OF_RANK_MULT` (x0.7); a crimson "x0.7" tab sits on his
+  portrait, and "out of position" floats over him when he lands there.
+- **Auras** (a neighbour's buff; a downed hero gives none). Shown as glyphs on the skill bar's pilasters in the
+  giver's class colour, and on the hero's card.
+
+| Giver | Goes to | Gives |
+|---|---|---|
+| Knight (shield wall) | the hero behind him | takes `AURA_KNIGHT_TAKEN` (25%) less damage |
+| Garrote (keen eye) | the hero in front of him | +`AURA_ROGUE_CRIT` (10) crit |
+| Magoo (haste) | the hero in front of him | `AURA_MAGE_CD` (10%) shorter cooldowns |
+| Healero (blessing) | the heroes in front and behind | regenerate `AURA_PRIEST_REGEN` (1%) max HP a second in the dungeon |
+
+- **Swap:** press on a hero's portrait or his sprite and drag onto another. The portrait lifts under the pointer,
+  the target's portrait gets a marching gold frame, both heroes a gold ring on the floor. On the drop they walk past
+  each other for `SWAP_SEC` (1 s) without acting (no attacks, no skills; their wells dither with "swap"). In town
+  the order changes for free. A click without a drag selects the hero.
+- **Enemies that break the line** (from floor `LINE_BREAK_FROM`, 6; `LINE_BREAK_CHANCE` 35% of encounters, never
+  with a boss): a Ghoul or a Brute joins the pack. Its move comes on its 2nd action and then every 4th, after a
+  `LINE_BREAK_WINDUP_SEC` (1 s) cast that names the rank: **Hook · rank 4** (a chain drags the last hero to the
+  front, the others step back one) and **Shove · rank 1** (the front hero is knocked back, swapping with rank 2).
+  Everyone who moved walks for `SWAP_SEC`. Away, the line stays broken: fixing it is a reason to look.
+- **Hovering a hero** opens his card over his head: "Healero · rank 1", a crimson line for what is wrong ("Out of
+  position: heals at 70%. His ranks are 2 to 4."), a moss line for what his aura gives and to whom, and a note
+  ("Drag him back. Away, the line stays broken."). The side panel's hero tooltip says the same.
+- `npx tsx test/ranks.ts` checks the defaults, Garrote joining, home ranks, the auras, swaps, Hook and Shove,
+  EXECUTE by rank, Smoke Bomb, Heist, Backstab and when the breakers come; `python3 test/ranks.py` shoots it.
 
 **Curios in the corridor** (#30, the RPG's third verb; content `src/data/curios.ts`, rules
 `src/systems/curios.ts`, numbers `CURIO_*`). On a battle floor, `CURIO_PER_FLOOR` (1 or 2) of the walks stop
@@ -244,6 +286,19 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 ([city.md](city.md)).
 
 ## Decisions
+
+- **Marching order** (0.56, #52 1.6; Paweł approved the mockups on 2026-11-20). A hero's rank is his place in the
+  party list, so the picture, the skill bar and the rules read one order. Rejected: a rank field per hero (two
+  orders to keep in step). **EXECUTE names a rank, not a hero:** whoever stands there when it lands takes it, so a
+  swap is an answer, as in Darkest Dungeon (following the hero would make the swap pointless). **A swap costs 1 s
+  without acting** for both heroes (and everyone a Hook or Shove moves), so fixing the line is a choice in a fight,
+  not a free click. The breakers act on a schedule (2nd action, then every 4th) after a 1 s cast that names the rank,
+  so you can see it coming; rejected: a random chance per action (unreadable). Night 1 now starts Knight, Healer,
+  Mage: the Mage's home ranks are 3 to 4. Healero's blessing works in the whole dungeon, walks included (between
+  fights is where regeneration matters, and it eases the Blood pact for his neighbours).
+- **Garrote** (0.56, #52 1.7) joins at the party's lowest level: at level 1 he would be dead weight on night 2's
+  deeper floors. Two skills and Heist (Pickpocket was dropped with the other second unlocks, decisions 2026-11-20).
+  Stand-ins until Paweł's art: the Ghoul on the zombie rig, the Brute is the old Ogre sprite at fodder size.
 
 - **The RPG plays it straight** (0.43, #44): plain fantasy names (WoW and D&D tropes) for the party, enemies,
   bosses, skills, items, curios, the town (Ravenhold) and the dungeon (Shadow Crypt), so the real-life half

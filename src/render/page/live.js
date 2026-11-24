@@ -55,6 +55,15 @@ function lootOnFloor(F, it, t, lights) {
 function liveVfx(v, t, lights) {
   const { kind, x, y, x2, y2 } = v, k = clamp(v.k), f = 1 - k;
   const arc = (r, a0, a1, val, mat) => { for (let a = a0; a <= a1; a += 0.12) put(Math.round(x + Math.cos(a) * r), Math.round(y + Math.sin(a) * r * 0.8), val, mat, 1); };
+  if (kind === 'chain') { if (k < 0.95) chain(x2, 178, x, 178); return; }   // the Hook: the chain stays on the hooked hero while he is dragged
+  if (kind === 'smoke') {   // Smoke Bomb: a grey cloud over the enemy lanes, thinning at the end
+    const fade = clamp((1 - k) * 4);
+    for (let j = 150; j < 206; j++) for (let i = 176; i < 316; i++) {
+      const d = 0.5 + 0.5 * Math.sin(i * 0.11 + j * 0.07 + v.k * 9) * Math.sin(j * 0.13 - i * 0.05);
+      if (d * fade * 0.55 > BAYER8[((j & 7) << 3) | (i & 7)]) put(i, j, 0.42 + 0.1 * d, M_DUSK, 1);
+    }
+    return;
+  }
   if (kind === 'slash' || kind === 'bash' || kind === 'smite' || kind === 'claw') {
     const mat = kind === 'claw' ? M_DANGER : kind === 'smite' ? M_LOOT : kind === 'bash' ? M_UMBER : M_STONE;
     if (kind === 'claw') for (let n = -1; n <= 1; n++) line(x - 5 + n * 3, y - 6, x + 3 + n * 3, y + 6 - 12 * k * 0, 0.9 * f + 0.1, mat, 1);
@@ -156,15 +165,21 @@ function liveBattleArea(ctx, vm, t) {
     vm.curio.card.choices.forEach((c, k) => { if (c.act) liveHit(84 + 7 + k * 89, 4 + 26, 85, 20, c.act, c.arg, c.tip); });
     liveHit(84 + 188 - 10, 0, 12, 10, 'curioLeave', '', 'Walk past');
   }
-  // the skill bar: groups in marching order, keys with the hero
+  // the party: press on a hero (or his portrait) and drag onto another to swap (grid doc §5d)
+  vm.party.forEach((m, i) => liveHit(m.x - 12, 150, 24, 48, 'hero', i, ''));
+  if (vm.drag) for (const rx of vm.drag.rings) floorRing(rx, t);
+  // the skill bar: groups in marching order, keys with the hero; auras on the pilasters, x0.7 when out of position
   const bar = vm.bar;
-  skillBar({ ...bar, order: bar.order.map((id) => LIVE_HERO[id]), auras: false }, t);
+  skillBar({ ...bar, order: bar.order.map((id) => LIVE_HERO[id]) }, t);
   const gx = [6, 88, 170, 252];
   bar.order.forEach((id, n) => {
     const x = gx[n];
     liveHit(x, BAR_Y + 3, 22, 24, 'heroTab', bar.heroIdx[n], '');
     for (let k = 0; k < 3; k++) liveHit(x + 28 + k * 16, BAR_Y + 6, 15, 18, 'ability', `${bar.heroIdx[n]},${k + 1}`, `skill:${bar.heroIdx[n]}:${k + 1}`);
   });
+  // the hovered hero's card over his head; the portrait lifted under the pointer while dragging
+  if (vm.heroCard) tipCard(clamp(Math.round(vm.heroCard.x - 75), 2, W - 152), 34, 150, vm.heroCard.lines.map(([k, s]) => [k, s, null]));
+  if (vm.drag) ghostPortrait(vm.drag.id, Math.round(vm.drag.x - 11), Math.round(vm.drag.y - 12));
   composeInto(ctx, F, r, 0);
   return LIVE_HITS;
 }

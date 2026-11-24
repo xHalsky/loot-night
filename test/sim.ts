@@ -1,4 +1,15 @@
 import { queueAbility } from '../src/systems/battle';
+import { swapHeroes, outOfRank } from '../src/systems/ranks';
+import { DEFAULT_ORDER } from '../src/data/heroes';
+// the good bot puts the line back after a Hook or a Shove (#52, 1.6)
+let lineFixes = 0;
+function fixLine() {
+  const want = DEFAULT_ORDER[S.g.heroes.length >= 4 ? 1 : 0];
+  if (!S.g.heroes.some(outOfRank) || S.g.heroes.some(h => h.moving)) return;
+  const i = S.g.heroes.findIndex((h, k) => h.id !== want[k]);
+  if (i < 0) return;
+  swapHeroes(i, S.g.heroes.findIndex(h => h.id === want[i])); lineFixes++;
+}
 // Headless night simulation with a simple bot player. Run: npx tsx test/sim.ts
 (globalThis as any).localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 (globalThis as any).performance ??= { now: () => Date.now() };
@@ -157,6 +168,7 @@ while (S.g.screen === 'night' && t < 2000) {
       const ch = process.env.CURIO === 'loud' ? CURIO_BY_ID[n.curio.id].reckless : CURIO_BY_ID[n.curio.id].choices.map(c => c.id).find(c => !curioBlocked(c));
       if (ch) { curioPicks[ch] = (curioPicks[ch] ?? 0) + 1; chooseCurio(ch); }
     }
+    if (mode === 'good' && n.action === 'none' && n.monitor === 'rpg' && !n.switching) fixLine();
     S.g.heroes.forEach((h, i) => { [1, 2, 3].forEach(s => { if (n.action === 'none' && n.monitor === 'rpg' && h.cd[s] <= 0 && h.level >= T.ABILITY_UNLOCK[s] && (s !== 3 || h.ult >= 1) && n.phase === 'battle' && !h.downed && n.enemies.some(e => e.hp > 0)) queueAbility(i, s); }); });
     epicFound = n.unidentifiedFound;
     if (n.clock >= sleepAt && n.phase !== 'battle') { endNight('sleep'); break; }
@@ -178,7 +190,7 @@ while (S.g.screen === 'night' && t < 2000) {
 }
 const r = S.g.results!; const N0tired = lastTired;
 const gear = S.g.heroes.map(h => { const st = heroStats(h), b = heroBaseStats(h); return { atk: (st.atk - b.atk) / st.atk, hp: (st.hp - b.hp) / st.hp, slots: Object.values(h.gear).filter(Boolean).length, ilvl: Object.values(h.gear).reduce((a, it: any) => a + (it?.ilvl ?? 0), 0) }; });
-const gearStats = { equips, skipped, swapped, gearAtk: +(gear.reduce((a, x) => a + x.atk, 0) / 3).toFixed(2), gearHp: +(gear.reduce((a, x) => a + x.hp, 0) / 3).toFixed(2),
+const gearStats = { equips, skipped, swapped, gearAtk: +(gear.reduce((a, x) => a + x.atk, 0) / gear.length).toFixed(2), gearHp: +(gear.reduce((a, x) => a + x.hp, 0) / gear.length).toFixed(2),
   slots: gear.reduce((a, x) => a + x.slots, 0), gearIlvl: +(gear.reduce((a, x) => a + x.ilvl, 0) / Math.max(1, gear.reduce((a, x) => a + x.slots, 0))).toFixed(1), wipeAt };
-console.log(JSON.stringify({ mode, night, ...gearStats, built, bagValue, city: { ...S.g.furniture }, goldAfterCity, nextCost: next ? [next.gold, next.mats] : null, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, mats: S.g.mats, sell: S.g.bag.map(e => e.kind === 'item' ? Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)) : 15), bagRar: S.g.bag.map(e => e.kind === 'item' ? ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity) : -1), salvage: S.g.bag.reduce((a, e) => a + (e.kind === 'item' ? T.SALVAGE_YIELD[['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity)] : 0), 0), bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses, runs, banked, pace: { ...PACE, combat: Math.round(PACE.combat), encounter: +(PACE.encounterSum / Math.max(1, PACE.encounters)).toFixed(1), floor: +(PACE.floorSum / Math.max(1, PACE.floors)).toFixed(1) } }));
+console.log(JSON.stringify({ mode, night, ...gearStats, built, bagValue, city: { ...S.g.furniture }, goldAfterCity, nextCost: next ? [next.gold, next.mats] : null, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, mats: S.g.mats, sell: S.g.bag.map(e => e.kind === 'item' ? Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)) : 15), bagRar: S.g.bag.map(e => e.kind === 'item' ? ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity) : -1), salvage: S.g.bag.reduce((a, e) => a + (e.kind === 'item' ? T.SALVAGE_YIELD[['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity)] : 0), 0), bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), party: S.g.heroes.map(h => h.id).join(','), lineFixes, lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses, runs, banked, pace: { ...PACE, combat: Math.round(PACE.combat), encounter: +(PACE.encounterSum / Math.max(1, PACE.encounters)).toFixed(1), floor: +(PACE.floorSum / Math.max(1, PACE.floors)).toFixed(1) } }));
 }

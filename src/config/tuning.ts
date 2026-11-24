@@ -113,6 +113,22 @@ export const T = {
   // Ability marks (docs/design/dungeon.md): a skill marks an enemy, another skill cashes the mark in.
   MARK_SEC: 6,                    // how long a mark stays on an enemy (Taunted lasts as long as the taunt)
   MARK_STAGGER_FIRE: 2,           // Fire on a Staggered enemy (Bash marks it)
+  MARK_STAGGER_BACKSTAB: 2,       // Backstab on a Staggered enemy
+  // Garrote, the fourth hero (#52, 1.7): joins on night 2
+  ROGUE_JOINS_NIGHT: 2,           // the night he joins (nightsPlayed + 1); the week (#56) may move it
+  SMOKE_SEC: 4, SMOKE_MISS: 0.5,  // Smoke Bomb: enemies miss this share of their attacks
+  HEIST_SEC: 8,                   // Heist (ultimate): every kill drops an item for this long
+  // Marching order (#52, 1.6; docs/design/dungeon.md): rank 1 is the front
+  OUT_OF_RANK_MULT: 0.7,          // damage and healing of a hero outside his home ranks
+  SWAP_SEC: 1,                    // a swap: both heroes stop acting while they pass each other (Hook and Shove too)
+  AURA_KNIGHT_TAKEN: 0.25,        // Knight: the hero directly behind takes this much less damage
+  AURA_ROGUE_CRIT: 10,            // Garrote: the hero directly in front gets this much crit
+  AURA_MAGE_CD: 0.1,              // Magoo: the hero directly in front gets this much shorter cooldowns
+  AURA_PRIEST_REGEN: 0.01,        // Healero: the heroes in front and behind regenerate this share of max HP a second (in the dungeon)
+  LINE_BREAK_FROM: 6,             // from this floor an encounter may bring a Ghoul (Hook) or a Brute (Shove)
+  LINE_BREAK_CHANCE: 0.35,        // per encounter, not on boss fights
+  LINE_BREAK_FIRST: 2, LINE_BREAK_EVERY: 4,   // its first move on its 2nd action, then every 4th
+  LINE_BREAK_WINDUP_SEC: 1,
   MARK_CHILL_BASH: 2.5,           // Bash on a Chilled enemy shatters it (Frost marks it)
   MARK_JUDGED_HEAL: 0.3,          // every skill hit (not auto attacks) on a Judged enemy heals the most hurt hero for this share (Smite marks it)
   MARK_TAUNT_REFLECT: 0.5,        // with Ward up, a Taunted enemy takes back this share of the damage it deals

@@ -6,25 +6,47 @@ import type { HeroId, Stat } from '../core/state';
 export interface AbilityDef { name: string; short: string; cd: number; desc: string; tip?: string; power?: number; flat?: number; dur?: number; hits?: number; use?: string; ult?: boolean }   // ult: the ultimate (charged, never on cooldown)   // tip: the tooltip, one line (#43); desc: the full rule
 /** The party's in-game names (#44). Knightenstein is you; Magoo and Healero are your friends' characters
  *  (Danny and Mike on the phone). Party and guild chat use these names, as an MMO would. */
-export const HERO_NAME: Record<HeroId, string> = { knight: 'Knightenstein', mage: 'Magoo', healer: 'Healero' };
+export const HERO_NAME: Record<HeroId, string> = { knight: 'Knightenstein', rogue: 'Garrote', mage: 'Magoo', healer: 'Healero' };
 export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
   knight: { role: 'Tank. Stands in front, carries the torch, picks up loot.', auto: 'Slashes the front enemy.' },
+  rogue: { role: 'Damage. Crits, smokes, and picks up the loot.', auto: 'Stabs the front enemy.' },
   mage: { role: 'Damage. Fragile, hits hard.', auto: 'Bolts the weakest enemy (finishes kills).' },
   healer: { role: 'Support. Keeps everyone alive.', auto: 'Heals an ally under 60% HP, otherwise smites the front enemy and Judges it (your skill hits on it heal).' },
 };
 
+/** Home ranks (#52, 1.6): outside them a hero deals and heals OUT_OF_RANK_MULT. Rank 1 is the front. Data per hero, so
+ *  tree nodes can change them later ("Fire at full power from rank 2"). */
+export const HOME_RANKS: Record<HeroId, [number, number]> = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], healer: [2, 4] };
+/** The marching order a party starts in: night 1 has three heroes; Garrote joins second in line. */
+export const DEFAULT_ORDER: HeroId[][] = [['knight', 'healer', 'mage'], ['knight', 'rogue', 'mage', 'healer']];
+/** Auras (#52, 1.6): what each hero gives his neighbour (back: the one behind him; front: the one in front). */
+export const AURAS: Record<HeroId, { back?: boolean; front?: boolean; name: string; gives: string }> = {
+  knight: { back: true, name: 'Shield wall', gives: `takes ${Math.round(T.AURA_KNIGHT_TAKEN * 100)}% less damage` },
+  rogue: { front: true, name: 'Keen eye', gives: `gets +${T.AURA_ROGUE_CRIT}% crit` },
+  mage: { front: true, name: 'Haste', gives: `gets ${Math.round(T.AURA_MAGE_CD * 100)}% shorter cooldowns` },
+  healer: { front: true, back: true, name: 'Blessing', gives: `regenerates ${Math.round(T.AURA_PRIEST_REGEN * 100)}% HP per second` },
+};
+
+/** A hero's role line; from night 2 Garrote picks up the loot instead of the Knight (#52, 1.7). */
+export function heroRole(id: HeroId, rogueIn = true) {
+  const r = HERO_ROLE[id];
+  return id === 'knight' && rogueIn ? { ...r, role: 'Tank. Stands in front and carries the torch.' } : r;
+}
+
 export const HERO_BASE: Record<HeroId, Record<Stat, number>> = {
   knight: { hp: 130, atk: 9, armor: 6, speed: 9, crit: 5, luck: 0 },
+  rogue: { hp: 85, atk: 12, armor: 3, speed: 13, crit: 12, luck: 5 },
   mage: { hp: 75, atk: 15, armor: 2, speed: 11, crit: 8, luck: 0 },
   healer: { hp: 90, atk: 7, armor: 3, speed: 10, crit: 5, luck: 0 },
 };
 
-export const HERO_COLORS: Record<HeroId, string> = { knight: '#3d6fb4', mage: '#5b3aa8', healer: '#3a8f6a' };
+export const HERO_COLORS: Record<HeroId, string> = { knight: '#3d6fb4', rogue: '#c16229', mage: '#5b3aa8', healer: '#3a8f6a' };   // Garrote: ember (grid doc §4b)
 
 // Hotkeys per hero, one per ability slot (slot 0 = auto attack). Three slots (#52, decisions 2026-11-20): two skills
 // and the ultimate on the third key; 4, R and F stay dark.
 export const HOTKEYS: Record<HeroId, string[]> = {
   knight: ['', '1', '2', '3'],   // slot 0 is the auto attack: always on, no key
+  rogue: ['', 'z', 'x', 'c'],
   mage: ['', 'q', 'w', 'e'],
   healer: ['', 'a', 's', 'd'],
 };
@@ -37,6 +59,12 @@ export const ABILITIES: Record<HeroId, AbilityDef[]> = {
     { name: 'Taunt', short: 'TAUNT', cd: 10, dur: 5, tip: 'All enemies hit the knight for {dur} s and get [taunted]Taunted[/].', desc: 'All enemies attack the knight for {dur} s and are [taunted]Taunted[/]. SMASH and EXECUTE hit only him.', use: 'The mage or healer is low, or a boss winds up SMASH or EXECUTE. Then Ward: Taunted hits bounce back.' },
     { name: 'Bash', short: 'BASH', cd: 8, power: 2, tip: 'Hits the front enemy for {dmg}, stuns and [stagger]Staggers[/] it. Interrupts SMASH.', desc: 'Hits the front enemy (a winding-up boss or a shield first) for {dmg}, breaks its shield, stuns it for a turn and [stagger]Staggers[/] it. A [chill]Chilled[/] enemy shatters for x{shatter}. Interrupts SMASH (then the boss braces: the next one can\'t be interrupted).', use: 'A boss winds up SMASH, a shield is up, or right after Frost.' },
     { name: 'Last Stand', short: 'LAST STAND', cd: 0, dur: T.LAST_STAND_SEC, ult: true, tip: 'Ultimate: for {dur} s no hero can drop below 1 HP.', desc: 'Ultimate. For {dur} s no hero can drop below 1 HP. Charges during fights.', use: 'A SMASH or an EXECUTE you can\'t answer, or the party is about to fall.' },
+  ],
+  rogue: [
+    { name: 'Stab', short: 'STAB', cd: 0, desc: 'Auto attack on the front enemy.' },
+    { name: 'Backstab', short: 'BACKSTAB', cd: 8, power: 3, tip: 'Hits the front enemy for {dmg}. [stagger]Staggered[/] ones take x{backstab}.', desc: 'Hits the front enemy for {dmg}. A [stagger]Staggered[/] enemy takes x{backstab}.', use: 'Right after Bash.' },
+    { name: 'Smoke Bomb', short: 'SMOKE BOMB', cd: 14, dur: T.SMOKE_SEC, tip: 'Enemies miss half their attacks for {dur} s.', desc: 'For {dur} s enemies miss half their attacks. Big moves still land.', use: 'A big pack, or before you look away.' },
+    { name: 'Heist', short: 'HEIST', cd: 0, dur: T.HEIST_SEC, ult: true, tip: 'Ultimate: for {dur} s every kill drops an item.', desc: 'Ultimate. For {dur} s every kill drops an item. Charges during fights.', use: 'A big pack about to die.' },
   ],
   mage: [
     { name: 'Bolt', short: 'BOLT', cd: 0, desc: 'Auto attack on the weakest enemy.' },
@@ -55,6 +83,7 @@ export const ABILITIES: Record<HeroId, AbilityDef[]> = {
 // Pixel sprites as [x, y, w, h, color] rects on a 12x16 grid.
 export type Px = [number, number, number, number, string];
 export const HERO_SPRITES: Record<HeroId, Px[]> = {
+  rogue: [[3,0,6,4,'#2a1e2e'],[4,2,4,2,'#14101a'],[4,3,1,1,'#f2b84b'],[7,3,1,1,'#f2b84b'],[3,4,6,8,'#3a2a3e'],[3,4,6,1,'#7a2a3a'],[3,8,6,1,'#c9a46a'],[9,6,3,1,'#c9ced6'],[0,7,3,1,'#c9ced6'],[2,4,1,8,'#2a1e2e'],[4,12,2,4,'#1c1f2e'],[7,12,2,4,'#1c1f2e']],
   knight: [[5,0,2,1,'#d9534f'],[3,1,6,3,'#9aa8c4'],[5,2,4,1,'#2b2f3e'],[3,4,6,5,'#3d6fb4'],[3,7,6,1,'#d9a441'],[9,4,3,6,'#d9a441'],[10,5,1,4,'#8a5a1c'],[0,1,1,7,'#cfd6e4'],[0,7,3,1,'#8a5a1c'],[4,9,2,5,'#2d3a5c'],[7,9,2,5,'#2d3a5c'],[4,14,3,2,'#1c1f2e'],[7,14,3,2,'#1c1f2e']],
   mage: [[4,0,3,1,'#7a4bd1'],[3,1,5,1,'#7a4bd1'],[2,2,8,1,'#7a4bd1'],[4,3,4,2,'#e8b98a'],[3,5,6,9,'#5b3aa8'],[2,7,1,4,'#5b3aa8'],[3,13,6,1,'#f2b84b'],[10,2,1,13,'#8a5a1c'],[9,1,3,2,'#6fe0ff'],[4,14,4,2,'#2b2f3e']],
   healer: [[3,0,6,3,'#e9e2cf'],[5,2,3,2,'#e8b98a'],[3,4,6,9,'#3a8f6a'],[5,6,2,4,'#f2e9d8'],[4,7,4,1,'#f2e9d8'],[2,6,1,3,'#3a8f6a'],[9,6,2,3,'#d9a441'],[4,13,4,2,'#2b2f3e']],

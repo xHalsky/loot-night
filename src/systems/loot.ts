@@ -145,6 +145,7 @@ export function dropFromKill(e: Enemy) {
   const x = ENEMY_SLOTS[e.slot]?.x ?? 200;
   if (e.boss) rollBattleDrops(n.floor, { count: T.BOSS_DROPS, minRare: true, at: [x - 20, x, x + 20] });
   else if (e.elite) rollBattleDrops(n.floor, { count: 1, minRare: true, at: [x] });
+  else if (n.heist > 0) rollBattleDrops(n.floor, { count: 1, at: [x] });   // Garrote's Heist: every kill drops
   else if (chance(T.DROP_CHANCE * blessPow('supply', T.BLESS_SUPPLY_DROPS) * condDrops())) rollBattleDrops(n.floor, { count: 1, at: [x] });
 }
 /** The floor's condition on drops (#52, 1.5): Silent Halls fewer, Flooded more. */

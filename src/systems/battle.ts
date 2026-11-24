@@ -17,13 +17,14 @@ import { curioDmgMult, curioSpeedMult, partyCrit } from './curios';
 import { coach } from './coach';
 import { RANK_X, ENEMY_SLOTS, MID_SLOT, HEAD_Y } from '../core/arena';
 import { dropFromKill } from './loot';
+import { rankMult, auraTaken, auraCrit, auraCd, heroById, hookLine, shoveLine } from './ranks';
 
 let enemyUid = 1;
 // A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once.
 let loudOnce = false, critHeard = false;
 
 // Visual effects on the battle area, in grid px (core/arena.ts; docs/design/dungeon.md: every action must be visible).
-// Party ranks follow the heroes' order for now (marching order comes with #52 1.6).
+// Party ranks are the heroes' order (marching order, #52 1.6: rank 1 is S.g.heroes[0]).
 export const heroCenter = (i: number) => ({ x: RANK_X[Math.max(0, i)], y: HEAD_Y + 20 });
 export function enemyCenter(e: Enemy) { const sl = ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0]; return { x: sl.x, y: e.boss ? HEAD_Y + 6 : HEAD_Y + 22 }; }
 /** Where numbers float up from: over the HP bar. */
@@ -59,9 +60,11 @@ export const bodies = (e: Enemy) => e.per ? Math.max(0, Math.ceil(e.hp / e.per -
  *  in two lanes), the rest waiting off screen. An Elite Pack is stronger and its lieutenant always drops a rare. */
 export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
   const n = N();
-  const pool = ENEMIES.filter(d => (d.from ?? 1) <= floor);
+  const pool = ENEMIES.filter(d => (d.from ?? 1) <= floor && !d.breaker);
   const size = Math.round(Math.min(T.PACK_MAX, T.PACK_MIN + Math.floor(floor / 2)) * (n.cond === 'swarm' ? 1 + T.COND_SWARM_PACK : 1));
   const defs: EnemyDef[] = boss ? [bossFor(floor, T.CHECKPOINT_EVERY)] : [];
+  // from LINE_BREAK_FROM an encounter may bring a Ghoul (Hook) or a Brute (Shove) in the front lane (#52, 1.6)
+  if (!boss && floor >= T.LINE_BREAK_FROM && S.g.heroes.length > 1 && chance(T.LINE_BREAK_CHANCE)) defs.push(ENEMY_BY_ID[pick(['ghoul', 'brute'])]);
   while (defs.length < size) defs.push(pick(pool));
   n.enemies = []; n.reserve = [];
   for (const d of defs) {
@@ -126,6 +129,7 @@ export function queueAbility(heroIdx: number, slot: number) {
   if (!h || slot === 0 || h.downed) return;
   if (abilitiesLocked()) { sfx.bad(); return; }
   if (!abilityUnlocked(h, slot) || h.cd[slot] > 0 || (slot === ULT_SLOT && !ultReady(h))) { sfx.bad(); return; }
+  if (h.moving) { toast(`${h.name} is changing places.`, '#a999bd'); sfx.bad(); return; }   // a swap: 1 s without acting (#52, 1.6)
   const n = N();
   if (n.phase !== 'battle' || !n.enemies.some(e => e.hp > 0)) { toast('No enemies in reach.', '#a999bd'); sfx.bad(); return; }
   // Cast right now: no waiting for the hero's turn, no global cooldown.
@@ -138,9 +142,10 @@ function castAbility(h: Hero, slot: number) {
   const me = heroCenter(S.g.heroes.indexOf(h));
   const st = heroStats(h);
   const mult = heroDamageMult(h);
+  st.crit += auraCrit(h);   // Garrote's keen eye (marching order)
   h.queued = null;
   if (slot === ULT_SLOT) return castUlt(h, st, mult, me);
-  h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1);
+  h.cd[slot] = ABILITIES[h.id][slot].cd * auraCd(h) * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1);
   if (n.cond !== 'silent') n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);   // Silent Halls: skills make no Noise
   sfx.ability();
   const A = ABILITIES[h.id][slot];
@@ -163,6 +168,12 @@ function castAbility(h: Hero, slot: number) {
     }
     return;
   }
+  if (h.id === 'rogue' && slot === 1) {   // Backstab: the front enemy; x2 on Staggered (Bash first)
+    const e = frontEnemy();
+    if (e) { const m = cashIn(e, 'stagger', `BACKSTAB x${T.MARK_STAGGER_BACKSTAB}`) ? T.MARK_STAGGER_BACKSTAB : 1; hitEnemy(e, st.atk * A.power! * mult * m, st.crit, 'slash', me); }
+    return;
+  }
+  if (h.id === 'rogue' && slot === 2) { n.smoke = A.dur!; vfx('smoke', enemyCenter(frontEnemy() ?? n.enemies[0]), undefined, A.dur!); toast(`${h.name}: SMOKE BOMB`, '#a999bd'); return; }
   if (h.id === 'mage' && slot === 1) {
     n.enemies.filter(e => e.hp > 0).forEach(e => {
       const m = cashIn(e, 'stagger', `STAGGER x${T.MARK_STAGGER_FIRE}`) ? T.MARK_STAGGER_FIRE : 1;
@@ -171,7 +182,7 @@ function castAbility(h: Hero, slot: number) {
     return;
   }
   if (h.id === 'mage' && slot === 2) { const e = frostTarget(); if (e) { hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); if (e.hp > 0) mark(e, 'chill'); } return; }
-  if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, st.atk * A.power! + A.flat!)); return; }
+  if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, (st.atk * A.power! + A.flat!) * rankMult(h))); return; }
   if (h.id === 'healer' && slot === 2) { n.ward = A.dur!; vfx('ward', heroCenter(1), undefined, 0.8); toast(`${h.name}: WARD`, '#6fcf7f'); return; }
 }
 
@@ -182,6 +193,11 @@ function castUlt(h: Hero, st: ReturnType<typeof heroStats>, mult: number, me: { 
   if (h.id === 'knight') {
     n.lastStand = T.LAST_STAND_SEC; vfx('taunt', me, undefined, 0.9); sfx.level();
     toast(`${h.name}: LAST STAND! Nobody falls for ${T.LAST_STAND_SEC} s.`, '#f2b84b');
+    return;
+  }
+  if (h.id === 'rogue') {
+    n.heist = T.HEIST_SEC; sfx.level();
+    toast(`${h.name}: HEIST! Every kill drops an item for ${T.HEIST_SEC} s.`, '#f2b84b');
     return;
   }
   if (h.id === 'mage') {
@@ -219,7 +235,7 @@ const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / max
 
 function heroDamageMult(h?: Hero): number {
   const n = N();
-  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * curioDmgMult() * blessPow('shrine', T.BLESS_SHRINE_DMG)
+  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * curioDmgMult() * blessPow('shrine', T.BLESS_SHRINE_DMG) * (h ? rankMult(h) : 1)
     * (h?.id === 'mage' && n.sulk > 0 ? 1 - T.CURIO_SULK_DMG : 1);   // Magoo read the guild bank log
 }
 
@@ -276,11 +292,12 @@ function heroAct(h: Hero, skill = false) {
   const me = heroCenter(S.g.heroes.indexOf(h));
   if (!loudOnce) n.noise = Math.min(100, n.noise + T.NOISE_ACTION);
   const st = heroStats(h);
+  st.crit += auraCrit(h);
   const mult = heroDamageMult(h);
   // Auto attack (slot 0).
   if (h.id === 'healer') {
     const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * T.HEALER_AUTO_HEAL_BELOW).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
-    if (hurt) { sfx.heal(); healHero(hurt, st.atk * 1.6 + 8); return; }
+    if (hurt) { sfx.heal(); healHero(hurt, (st.atk * 1.6 + 8) * rankMult(h)); return; }
   }
   const target = h.id === 'mage' ? weakestEnemy() : frontEnemy();
   if (!target) return;
@@ -291,7 +308,7 @@ function heroAct(h: Hero, skill = false) {
 function enemyAct(e: Enemy) {
   const n = N();
   if (e.stunned > 0) return;   // stunned (seconds, ticked in updateBattle)
-  if (e.boss && bossMove(e)) return;
+  if (moveOf(e) && bossMove(e)) return;   // a boss's big move, or a Ghoul's Hook, a Brute's Shove
   const role = roleOf(e);
   if (role === 'healer') {   // the Shaman heals the most hurt friend
     const hurt = n.enemies.filter(x => x.hp > 0 && x.hp < x.maxHp * T.AUDITOR_HEAL_BELOW).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
@@ -307,24 +324,26 @@ function enemyAct(e: Enemy) {
   for (let k = 0; k < hits; k++) attackHero(e, e.atk);
 }
 
-/** One enemy hit on a hero. Taunt overrides everything; melee hits rank 1 (70%) or 2; casters hit the back ranks;
- *  fliers hit anyone (#52, 1.6; ranks follow the heroes' order until marching order comes in). */
+/** One enemy hit on a hero. Taunt overrides everything (everything hits the Knight); melee hits the front rank (70%)
+ *  or the next; casters hit ranks 3 and 4; fliers hit anyone (#52, 1.6: ranks are the marching order). */
 function attackHero(e: Enemy, atk: number) {
   const n = N();
   const alive = aliveHeroes();
   if (!alive.length) return;
   let target: Hero;
-  const role = roleOf(e);
-  if (n.taunt > 0 && !S.g.heroes[0].downed) target = S.g.heroes[0];
-  else if (role === 'healer') target = pick(alive.filter(h => S.g.heroes.indexOf(h) >= 2).length ? alive.filter(h => S.g.heroes.indexOf(h) >= 2) : alive);
+  const role = roleOf(e), knight = heroById('knight');
+  if (n.taunt > 0 && knight && !knight.downed) target = knight;
+  else if (role === 'healer') { const back = alive.filter(h => S.g.heroes.indexOf(h) >= 2); target = pick(back.length ? back : alive); }
   else if (e.defId === 'bat') target = pick(alive);
   else target = alive[chance(0.7) || alive.length < 2 ? 0 : 1];
+  if (n.smoke > 0 && chance(T.SMOKE_MISS)) { floatText(heroCenter(S.g.heroes.indexOf(target)).x + rand(-6, 6), heroNumY, 'miss', '#a999bd'); return; }   // Smoke Bomb
   const st = heroStats(target);
   let raw = atk;
   if (n.cond === 'dark') raw *= 1 + T.COND_DARK_ATK;   // Pitch Dark
   const over = e.aliveSec - T.FURY_AFTER_SEC;
   if (over > 0) raw *= 1 + T.FURY_PER_SEC * over;
   if (n.ward > 0) raw *= ABILITIES.healer[2].power!;
+  raw *= auraTaken(target);   // the Knight's shield wall covers the hero behind him
   const dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - st.armor * 0.5));
   const i = S.g.heroes.indexOf(target);
   vfx('claw', heroCenter(i), undefined, 0.35);
@@ -355,11 +374,15 @@ function bossMove(e: Enemy): boolean {
     toast(friend ? `${e.name} empowers the ${friend.name}! Kill it first!` : `${e.name} summons help. Fire it!`, '#ff8a80'); sfx.windup();
     return true;
   }
-  if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {
+  if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {   // EXECUTE names a rank: whoever stands there takes it
     const v = mostHurt();
     if (!v) return false;
     e.evict = S.g.heroes.indexOf(v); e.wind = e.windMax = T.EVICT_WINDUP_SEC;
-    toast(`${e.name} marks ${v.name} for EXECUTE! Taunt or Ward!`, '#ff8a80'); sfx.windup();
+    toast(`${e.name}: EXECUTE on rank ${e.evict + 1} (${v.name})! Taunt, Ward, or swap him out.`, '#ff8a80'); sfx.windup();
+    return true;
+  }
+  if ((move === 'hook' || move === 'shove') && S.g.heroes.length > 1 && (e.acts === T.LINE_BREAK_FIRST || (e.acts > T.LINE_BREAK_FIRST && (e.acts - T.LINE_BREAK_FIRST) % T.LINE_BREAK_EVERY === 0))) {
+    e.wind = e.windMax = T.LINE_BREAK_WINDUP_SEC; sfx.windup();
     return true;
   }
   return false;
@@ -371,6 +394,8 @@ function landMove(e: Enemy) {
   if (move === 'slam') return bossSlam(e);
   if (move === 'loan') return loanFriend(e);
   if (move === 'evict') return eviction(e);
+  if (move === 'hook') { e.lunge = 0.3; sfx.handle(); hookLine(); vfx('chain', { x: RANK_X[0], y: 178 }, { x: enemyCenter(e).x - 8, y: 178 }, T.SWAP_SEC); return; }
+  if (move === 'shove') { e.lunge = 0.3; sfx.slam(); return shoveLine(); }
 }
 
 /** The Warlock's summon takes the free slot next to him (move id 'loan'). */
@@ -397,7 +422,7 @@ function loanFriend(e: Enemy) {
 /** EXECUTE lands on one hero; the Black Knight's shield comes back (move id 'evict'). */
 function eviction(e: Enemy) {
   const n = N();
-  const knight = S.g.heroes[0];
+  const knight = heroById('knight')!;
   let v = S.g.heroes[e.evict ?? 0];
   if (!v || v.downed) v = mostHurt();
   e.evict = undefined; e.lunge = 0.3;
@@ -445,7 +470,7 @@ function bossSlam(e: Enemy) {
   e.lunge = 0.3;
   sfx.slam(); n.noise = Math.min(100, n.noise + T.NOISE_CRIT);
   const ward = n.ward > 0 ? T.BOSS_SLAM_WARD_MULT : 1;
-  const knight = S.g.heroes[0];
+  const knight = heroById('knight')!;
   const targets = n.taunt > 0 && !knight.downed ? [knight] : aliveHeroes();
   const pct = targets.length === 1 && targets[0] === knight && n.taunt > 0 ? T.BOSS_SLAM_TAUNT_PCT : T.BOSS_SLAM_PCT;
   for (const h of targets) {
@@ -472,6 +497,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   for (const h of S.g.heroes) {
     if (h.downed) continue;
     h.ult = Math.min(1, h.ult + dt / T.ULT_CHARGE_SEC * blessPow('moonwell', T.BLESS_MOON_ULT) * (n.cond === 'haunted' ? 1 + T.COND_HAUNTED_ULT : 1));   // the ultimate charges only during fights
+    if (h.moving) continue;   // changing places: no attacks for SWAP_SEC (#52, 1.6)
     h.atb += atbRate(heroStats(h).speed) * dt * speedMult() * curioSpeedMult() * flowK;
     if (h.atb >= 100) { h.atb -= 100; heroAct(h); }
   }

@@ -11,6 +11,7 @@ import { chance, pick } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
+import { auraRegen } from './ranks';
 import { planCurios, curioDue, startCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
 import { FEATURES, CONDITIONS, type PathCard, type FeatureId, type ConditionId } from '../data/routes';
 import { triggerDog } from './pets';
@@ -121,6 +122,7 @@ export function updateDungeon(realDt: number) {
   // the Blood pact (#52, 1.5b): heroes bleed outside fights, never below 1 HP
   const pact = blessCount('altar');
   if (pact && n.phase !== 'battle') S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, h.hp - maxHp(h) * T.BLESS_ALTAR_DRAIN * pact * realDt); });
+  auraRegen(realDt, maxHp);   // Healero's blessing on his neighbours (#52, 1.6)
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt;
   if (n.phase === 'walk' && curioDue()) { startCurio(); return; }

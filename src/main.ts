@@ -30,7 +30,9 @@ import { setPeeking } from './systems/peek';
 import { drawDeskFx, drawLapFx, lapUiHtml, setDeskScale } from './ui/deskFx';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
 import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
-import { drawLiveRpg, liveHitAt, liveShown, livePointer } from './render/liveRpg';
+import { maxHp } from './systems/stats';
+import { swapHeroes, ensureParty, hookLine, shoveLine } from './systems/ranks';
+import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging } from './render/liveRpg';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -133,6 +135,7 @@ const actions: Record<string, (arg: string) => void> = {
   dropSel: () => dropSelected(),
   useSel: () => useSelected(),
   heroTab: a => setHeroTab(Number(a)),
+  swap: a => { const [i, j] = a.split(',').map(Number); swapHeroes(i, j); },   // marching order (#52, 1.6)
   skipDrop: () => skipDrop(),
   nextFloor: () => choosePath(N().safest),   // the old map's button
   path: a => choosePath(Number(a)),          // a path card on the floor map (#52, 1.5)
@@ -184,6 +187,9 @@ const actions: Record<string, (arg: string) => void> = {
   dbgMood: () => addMood(20),
   dbgClock: () => { N().clock += 60; },
   dbgFloor: () => debugEndFloor(),
+  dbgRogue: () => { if (!S.g.heroes.some(h => h.id === 'rogue')) { S.g.nightsPlayed = Math.max(1, S.g.nightsPlayed); ensureParty(); S.g.heroes.forEach(h => { h.hp = maxHp(h); }); } },   // #52, 1.7
+  dbgHook: () => hookLine(),
+  dbgShove: () => shoveLine(),
   lapAns: a => lapAnswer(Number(a)),
   dbgDog: () => triggerDog(),
   dbgUnplug: () => triggerUnplug(),
@@ -311,12 +317,19 @@ el('rpgArea').addEventListener('pointerdown', ev => {
   const [x, y] = rpgXY(ev), h = liveHitAt(x, y);
   if (!h || !h.act) return;
   ev.preventDefault(); ev.stopPropagation(); hover.key = '';
+  if (liveDragStart(x, y)) { (el('rpgArea') as HTMLElement).setPointerCapture(ev.pointerId); return; }   // a portrait or a hero: maybe a swap
   actions[h.act]?.(h.arg);
+});
+el('rpgArea').addEventListener('pointerup', () => {
+  const d = liveDragEnd();
+  if (!d) return;
+  if (!d.moved) actions.heroTab(String(d.from));                       // a click selects the hero
+  else if (d.to >= 0 && d.to !== d.from) actions.swap(`${d.from},${d.to}`);
 });
 el('rpgArea').addEventListener('pointermove', ev => {
   const [x, y] = rpgXY(ev), h = liveHitAt(x, y), p = toStage(ev);
   livePointer([x, y]);
-  (el('rpgArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
+  (el('rpgArea') as HTMLElement).style.cursor = liveDragging() ? 'grabbing' : h?.act === 'hero' || h?.act === 'heroTab' ? 'grab' : h?.act ? 'pointer' : 'default';
   hover.key = h?.tip ? (h.tip.startsWith('skill:') ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
 });
 el('rpgArea').addEventListener('pointerleave', () => { hover.key = ''; livePointer(null); });
@@ -484,7 +497,8 @@ function render() {
   const g = S.g;
   const n = g.night;
   drawDoor(doorCtx);
-  drawLiveRpg(el('rpgArea') as HTMLCanvasElement);   // V2 (#67): the battle area in the new look
+  drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
+  document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {
     setHtml('doorInfo', doorInfoHtml());

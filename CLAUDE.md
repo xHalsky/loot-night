@@ -33,6 +33,7 @@ A browser game heading for a Steam release (it started as a birthday gift): a lo
     npx tsx test/noise.ts            # Noise by distance and masking
     npx tsx test/pour.ts             # Goblin Fuel drink: careless vs careful pours against the 60%/85% marks
     npx tsx test/routes.ts           # route choice: every feature and condition, the away pick (never a map)
+    npx tsx test/ranks.ts            # marching order and Garrote: auras, swaps, Hook and Shove, EXECUTE by rank
     npx tsx test/toss.ts             # Goblin Fuel throw: hits and misses, missed cans stay and pile up
     python3 test/balance.py 16 good  # balance report: visits, variety, catches, Noise, income vs the cheapest building
     python3 test/campaign.py 8 4     # NIGHTS=4 bot campaigns: city builds per night (sim.ts NIGHTS=n)

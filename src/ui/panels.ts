@@ -4,7 +4,8 @@ import { VERSION } from '../config/version';
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
 import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
-import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
+import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME } from '../data/heroes';
+import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
 import { pacingLine } from '../systems/pacing';
 import { liveMs } from '../render/liveRpg';
 import { markText } from '../data/marks';
@@ -486,14 +487,16 @@ export function tooltipHtml(): string {
     if (!h) return '';
     const st = heroStats(h);
     if (parts[0] === 'hero') {
-      const r = HERO_ROLE[h.id];
-      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · ${cap(h.id)}</div><div>${r.role}</div>`;
+      const r = heroRole(h.id, S.g.heroes.some(x => x.id === 'rogue')), [a0, b0] = HOME_RANKS[h.id], out = outOfRank(h);
+      const gives = aurasOn(h).map(g => `${HERO_NAME[g].split(' ')[0]}'s ${AURAS[g].name.toLowerCase()}: ${AURAS[g].gives}.`).join(' ');
+      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · rank ${rankOf(h)}</div><div>${r.role}</div>
+        <div class="tt-sub" ${out ? 'style="color:#ff8a80"' : ''}>${out ? `Out of position: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_RANK_MULT * 100)}%. ` : ''}Home ranks ${a0} to ${b0}. Drag to swap.</div>${gives ? `<div class="tt-sub" style="color:#9fe08a">${gives}</div>` : ''}`;
     } else {
       const si = Number(parts[2]); const a = ABILITIES[h.id][si];
       const unlocked = abilityUnlocked(h, si);
       const desc = markText((a.tip ?? a.desc).replace('{dmg}', `<b>${Math.round(st.atk * (a.power ?? 1))}</b> damage`).replace('{heal}', `<b>${Math.round(st.atk * (a.power ?? 0) + (a.flat ?? 0))}</b> HP`)
         .replace(/\{pct\}/g, String(Math.round((a.power ?? 0) * 100))).replace('{dur}', String(a.dur ?? 0)).replace('{hits}', String(a.hits ?? 1))
-        .replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{shatter}', String(T.MARK_CHILL_BASH)).replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))));
+        .replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{backstab}', String(T.MARK_STAGGER_BACKSTAB)).replace('{shatter}', String(T.MARK_CHILL_BASH)).replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))));
       body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
         <div>${desc}</div>
         ${!unlocked ? `<div class="tt-hint" style="color:#f2c46b">Unlocks at level ${T.ABILITY_UNLOCK[si]}.</div>` : a.ult ? `<div class="tt-hint" style="color:#f2c46b">Charge ${Math.floor(h.ult * 100)}%: fills during fights in ${T.ULT_CHARGE_SEC} s.</div>` : ''}`;
@@ -817,7 +820,7 @@ export function debugHtml(): string {
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
     <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgCall', 'Courier', 'courier', 'sm')}${btn('dbgCall', 'Boys', 'friends', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
-    <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
+    <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgRogue', 'Garrote', '', 'sm')}${btn('dbgHook', 'Hook', '', 'sm')}${btn('dbgShove', 'Shove', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
     <div class="dim">Redesign frame (V1): the mockup's renderer in the build</div>
     <div class="row">${(['dungeon', 'battle', 'map', 'town', 'excel'] as const).map(k => btn('dbgFrame', k === 'excel' ? 'Q4' : k[0].toUpperCase() + k.slice(1), k, 'sm')).join('')}${btn('dbgFrame', 'Off', '', 'sm')}</div>
     <div class="dim">Sounds (${soundStatus().loaded}/${soundStatus().files} loaded${soundStatus().failed ? `, ${soundStatus().failed} failed` : ''}; loops toggle)</div>
