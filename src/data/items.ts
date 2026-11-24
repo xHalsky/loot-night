@@ -7,7 +7,6 @@ export const RARITY_BG: Record<Rarity, string> = {
   common: '#3a3342', uncommon: '#1f3a2c', rare: '#1f2f4a', epic: '#34244f', legendary: '#4a2f17',
 };
 export const RARITY_MULT: Record<Rarity, number> = { common: 1, uncommon: 1.3, rare: 1.7, epic: 2.2, legendary: 3 };
-export const POSITIVE_AFFIXES: Record<Rarity, number> = { common: 1, uncommon: 2, rare: 2, epic: 3, legendary: 4 };
 export const HAS_DOWNSIDE: Record<Rarity, boolean> = { common: false, uncommon: false, rare: true, epic: true, legendary: true };
 
 export const SLOT_STATS: Record<Slot, Stat[]> = {

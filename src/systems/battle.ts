@@ -18,6 +18,7 @@ import { coach } from './coach';
 import { RANK_X, ENEMY_SLOTS, MID_SLOT, HEAD_Y } from '../core/arena';
 import { dropFromKill } from './loot';
 import { rankMult, auraTaken, auraCrit, auraCd, heroById, hookLine, shoveLine } from './ranks';
+import { legendOn, setOn } from './gear';
 
 let enemyUid = 1;
 // A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once.
@@ -141,8 +142,9 @@ function castAbility(h: Hero, slot: number) {
   const n = N();
   const me = heroCenter(S.g.heroes.indexOf(h));
   const st = heroStats(h);
-  const mult = heroDamageMult(h);
-  st.crit += auraCrit(h);   // Garrote's keen eye (marching order)
+  const mult = heroDamageMult(h) * (h.id === 'mage' && setOn('mage', 'embervow', 2) ? 1 + T.SET_EMBERVOW_SKILL : 1);   // Embervow: skill damage
+  st.crit += auraCrit(h) + (h.nextCrit ? 1000 : 0);   // Garrote's keen eye (marching order); Nightglass's next crit
+  h.nextCrit = false;
   h.queued = null;
   if (slot === ULT_SLOT) return castUlt(h, st, mult, me);
   h.cd[slot] = ABILITIES[h.id][slot].cd * auraCd(h) * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1);
@@ -151,6 +153,7 @@ function castAbility(h: Hero, slot: number) {
   const A = ABILITIES[h.id][slot];
   if (h.id === 'knight' && slot === 1) {
     n.taunt = A.dur!; vfx('taunt', me, undefined, 0.7); toast(`${h.name}: TAUNT`, '#6aa8ff');
+    if (setOn('knight', 'ironwake', 3)) healHero(h, maxHp(h) * T.SET_IRONWAKE_HEAL);   // Ironwake, three pieces
     n.enemies.filter(e => e.hp > 0).forEach(e => mark(e, 'taunted', A.dur!));
     return;
   }
@@ -158,6 +161,7 @@ function castAbility(h: Hero, slot: number) {
     const e = bashTarget();
     if (e) {
       if (e.shield) { e.shield = false; const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 10, 'SHIELD BROKEN!', '#8fd8ff'); sfx.crit(); }
+      if (e.marks?.stagger! > 0 && legendOn('lantern') && h.cd[1] > 0) { h.cd[1] = 0; floatText(me.x, heroNumY - 8, 'TAUNT READY', '#f2b84b'); }   // Last Lantern
       const shatter = cashIn(e, 'chill', `SHATTER x${T.MARK_CHILL_BASH}`) ? T.MARK_CHILL_BASH : 1;
       hitEnemy(e, st.atk * A.power! * mult * shatter, st.crit, 'bash');
       if (e.hp > 0) mark(e, 'stagger');
@@ -170,19 +174,41 @@ function castAbility(h: Hero, slot: number) {
   }
   if (h.id === 'rogue' && slot === 1) {   // Backstab: the front enemy; x2 on Staggered (Bash first)
     const e = frontEnemy();
-    if (e) { const m = cashIn(e, 'stagger', `BACKSTAB x${T.MARK_STAGGER_BACKSTAB}`) ? T.MARK_STAGGER_BACKSTAB : 1; hitEnemy(e, st.atk * A.power! * mult * m, st.crit, 'slash', me); }
+    if (e) {
+      const sure = legendOn('widow') && e.marks?.chill! > 0;   // Widow's Kiss: always a crit on Chilled
+      const m = cashIn(e, 'stagger', `BACKSTAB x${T.MARK_STAGGER_BACKSTAB}`) ? T.MARK_STAGGER_BACKSTAB : 1;
+      hitEnemy(e, st.atk * A.power! * mult * m, sure ? 1000 : st.crit, 'slash', me);
+    }
     return;
   }
-  if (h.id === 'rogue' && slot === 2) { n.smoke = A.dur!; vfx('smoke', enemyCenter(frontEnemy() ?? n.enemies[0]), undefined, A.dur!); toast(`${h.name}: SMOKE BOMB`, '#a999bd'); return; }
+  if (h.id === 'rogue' && slot === 2) {
+    n.smoke = A.dur!; vfx('smoke', enemyCenter(frontEnemy() ?? n.enemies[0]), undefined, A.dur!); toast(`${h.name}: SMOKE BOMB`, '#a999bd');
+    if (setOn('rogue', 'nightglass', 3)) aliveHeroes().forEach(x => { x.nextCrit = true; });   // Nightglass: everyone's next hit crits
+    return;
+  }
   if (h.id === 'mage' && slot === 1) {
-    n.enemies.filter(e => e.hp > 0).forEach(e => {
+    const hit = n.enemies.filter(e => e.hp > 0);
+    hit.forEach(e => {
       const m = cashIn(e, 'stagger', `STAGGER x${T.MARK_STAGGER_FIRE}`) ? T.MARK_STAGGER_FIRE : 1;
       hitEnemy(e, st.atk * A.power! * mult * m, st.crit, 'fire', me);
     });
+    if (setOn('mage', 'embervow', 3) && hit.filter(e => e.hp <= 0).length >= T.SET_EMBERVOW_KILLS) { h.cd[1] = 0; floatText(me.x, heroNumY - 8, 'FIRE READY', '#f2b84b'); }   // Embervow
     return;
   }
-  if (h.id === 'mage' && slot === 2) { const e = frostTarget(); if (e) { hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); if (e.hp > 0) mark(e, 'chill'); } return; }
-  if (h.id === 'healer' && slot === 1) { sfx.heal(); aliveHeroes().forEach(x => healHero(x, (st.atk * A.power! + A.flat!) * rankMult(h))); return; }
+  if (h.id === 'mage' && slot === 2) {
+    const e = frostTarget();
+    if (e) {
+      hitEnemy(e, st.atk * A.power! * mult, st.crit, 'frost', me); if (e.hp > 0) mark(e, 'chill');
+      const second = legendOn('frostbinder') ? n.enemies.find(x => x !== e && x.hp > 0 && !(x.marks?.chill! > 0)) : undefined;   // Frostbinder
+      if (second) { mark(second, 'chill'); vfx('frost', enemyCenter(second), me, 0.35); }
+    }
+    return;
+  }
+  if (h.id === 'healer' && slot === 1) {
+    sfx.heal(); aliveHeroes().forEach(x => healHero(x, (st.atk * A.power! + A.flat!) * rankMult(h) * dawnward()));
+    if (legendOn('ashchoir')) clearDebuffs();   // Ash Choir
+    return;
+  }
   if (h.id === 'healer' && slot === 2) { n.ward = A.dur!; vfx('ward', heroCenter(1), undefined, 0.8); toast(`${h.name}: WARD`, '#6fcf7f'); return; }
 }
 
@@ -213,9 +239,18 @@ function castUlt(h: Hero, st: ReturnType<typeof heroStats>, mult: number, me: { 
   if (h.id === 'healer') {
     sfx.heal(); toast(`${h.name}: MIRACLE!`, '#f2b84b');
     S.g.heroes.forEach(x => { if (x.downed) reviveHero(x, 1); x.hp = maxHp(x); vfx('heal', heroCenter(S.g.heroes.indexOf(x)), undefined, 1); });
+    if (legendOn('vigil')) { n.ward = Math.max(n.ward, T.LEGEND_VIGIL_WARD_SEC); vfx('ward', heroCenter(1), undefined, 0.8); }   // Vigil Censer
   }
 }
 
+/** Dawnward (two pieces): Healero heals more. */
+const dawnward = () => (setOn('healer', 'dawnward', 2) ? 1 + T.SET_DAWNWARD_HEAL : 1);
+/** Ash Choir: the party's debuffs go (curses from curios, the sugar crash). */
+function clearDebuffs() {
+  const n = N(), had = n.partyBuffs.some(b => b.dmg < 0) || n.crash > 0;
+  n.partyBuffs = n.partyBuffs.filter(b => b.dmg >= 0); n.crash = 0;
+  if (had) toast('Ash Choir: the party is cleansed.', '#6fcf7f');
+}
 /** Puts a mark on an enemy (docs/design/dungeon.md). Shows its name once over the enemy. */
 function mark(e: Enemy, id: MarkId, sec = T.MARK_SEC) {
   e.marks ??= {};
@@ -292,16 +327,21 @@ function heroAct(h: Hero, skill = false) {
   const me = heroCenter(S.g.heroes.indexOf(h));
   if (!loudOnce) n.noise = Math.min(100, n.noise + T.NOISE_ACTION);
   const st = heroStats(h);
-  st.crit += auraCrit(h);
+  st.crit += auraCrit(h) + (h.nextCrit ? 1000 : 0);
+  h.nextCrit = false;
   const mult = heroDamageMult(h);
   // Auto attack (slot 0).
   if (h.id === 'healer') {
     const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * T.HEALER_AUTO_HEAL_BELOW).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
-    if (hurt) { sfx.heal(); healHero(hurt, (st.atk * 1.6 + 8) * rankMult(h)); return; }
+    if (hurt) { sfx.heal(); healHero(hurt, (st.atk * 1.6 + 8) * rankMult(h) * dawnward()); return; }
   }
   const target = h.id === 'mage' ? weakestEnemy() : frontEnemy();
   if (!target) return;
   hitEnemy(target, st.atk * mult, st.crit, h.id === 'mage' ? 'bolt' : h.id === 'healer' ? 'smite' : 'slash', me, skill);
+  if (h.id === 'mage' && target.hp <= 0 && legendOn('stormcoil')) {   // Stormcoil: a killing Bolt jumps on
+    const next = weakestEnemy();
+    if (next) hitEnemy(next, st.atk * mult, st.crit, 'bolt', enemyCenter(target), skill);
+  }
   if (h.id === 'healer' && target.hp > 0) mark(target, 'judged');
 }
 
@@ -350,6 +390,9 @@ function attackHero(e: Enemy, atk: number) {
   floatText(heroCenter(i).x + rand(-6, 6), heroNumY, `-${fmtNum(dmg)}`, '#ff8a80');
   hurtHero(target, dmg);
   reflect(e, dmg);
+  if (target === knight && n.taunt > 0 && e.marks?.taunted! > 0 && legendOn('tithe')) {   // The Tithe
+    const g = T.LEGEND_TITHE_GOLD * n.floor; gainGold(g); floatText(enemyCenter(e).x, enemyNumY(e) + 8, `+${g}g`, '#f2b84b');
+  }
 }
 /** Damage on a hero. Last Stand keeps everyone at 1 HP or more. */
 function hurtHero(h: Hero, dmg: number) {
@@ -488,6 +531,7 @@ function bossSlam(e: Enemy) {
 export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   const n = N();
   for (const h of S.g.heroes) h.cd = h.cd.map(c => Math.max(0, c - dt));
+  if (n.ward > 0 && setOn('healer', 'dawnward', 3)) for (const h of aliveHeroes()) h.hp = Math.min(maxHp(h), h.hp + maxHp(h) * T.SET_DAWNWARD_REGEN * dt);   // Dawnward, three pieces
   for (const e of n.enemies) {
     e.flash = Math.max(0, e.flash - dt);
     if (e.marks) for (const k of Object.keys(e.marks) as MarkId[]) { e.marks[k]! -= dt; if (e.marks[k]! <= 0) delete e.marks[k]; }

@@ -6,6 +6,8 @@ import { soundCues, soundStatus } from './audio';
 import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME } from '../data/heroes';
 import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
+import { LEGEND_BY_ID, SET_BY_ID } from '../data/legendaries';
+import { legendOn, setPieces } from '../systems/gear';
 import { pacingLine } from '../systems/pacing';
 import { liveMs } from '../render/liveRpg';
 import { markText } from '../data/marks';
@@ -449,7 +451,21 @@ export function entryIcon(e: BagEntry, size: number): string {
 export const hover = { key: '', x: 0, y: 0 };
 
 function statLines(it: Item): string {
-  return it.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('') + specialLine(it);
+  return it.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('') + specialLine(it) + ruleLines(it);
+}
+/** A legendary's rule and a set's bonuses (#52, 1.8): they work only on their own hero; a set counts his pieces. */
+function ruleLines(it: Item): string {
+  if (!it.identified) return '';
+  if (it.legend) {
+    const L = LEGEND_BY_ID[it.legend], on = legendOn(it.legend);
+    return `<div class="tt-special" style="color:${RARITY_COLOR.legendary};${on ? '' : 'opacity:.75'}"><b>${HERO_NAME[L.hero].split(' ')[0]}'s:</b> ${L.rule}${on ? '' : ` <span class="dim">(only on ${HERO_NAME[L.hero].split(' ')[0]})</span>`}</div>`;
+  }
+  if (it.set) {
+    const St = SET_BY_ID[it.set], h = S.g.heroes.find(x => x.id === St.hero), k = h ? setPieces(h, it.set) : 0;
+    const row = (need: number, txt: string) => `<div style="color:${k >= need ? '#6fcf7f' : '#8e8a99'}">${need} pieces: ${txt}.</div>`;
+    return `<div class="tt-special" style="color:${RARITY_COLOR.epic}"><b>${St.name} set</b> · ${HERO_NAME[St.hero].split(' ')[0]} wears ${k}/3</div>${row(2, St.two)}${row(3, St.three)}`;
+  }
+  return '';
 }
 /** A special affix: real life in pink (changes a rule), cross-system in teal (a stat while something is true). */
 function specialLine(it: Item): string {
@@ -580,8 +596,8 @@ function detailHtml(e: BagEntry): string {
       return `<button class="pop-eq-btn" data-act="equip" data-arg="${i}"><b>${h.name}</b><em class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? `\u25b2 +${d}` : d < 0 ? `\u25bc ${d}` : '='}</em></button>`;
     }).join('')}</div>` : '<div class="dim">Unidentified: the Appraiser in town reveals it.</div>';
     body = `<div class="d-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
-      <div class="pop-sub">${cap(it.rarity)} ${it.slot} · item level ${it.ilvl}${it.identified ? ` · \u25c6 ${itemPower(it)}` : ''}</div>
-      ${it.identified ? `<div class="pop-aff">${affixLines(it)}</div>${specialLine(it)}` : ''}${eq}
+      <div class="pop-sub">${cap(it.rarity)} ${it.slot}${it.identified && (it.legend || it.set) ? ` · ${HERO_NAME[(it.legend ? LEGEND_BY_ID[it.legend] : SET_BY_ID[it.set!]).hero].split(' ')[0]}` : ''} · item level ${it.ilvl}${it.identified ? ` · \u25c6 ${itemPower(it)}` : ''}</div>
+      ${it.identified ? `<div class="pop-aff">${affixLines(it)}</div>${specialLine(it)}${ruleLines(it)}` : ''}${eq}
       ${town ? '<div class="dim">Sell, identify, salvage or list it at the services above.</div>' : ''}`;
   } else if (e.kind === 'map') {
     body = `<div class="d-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div><div class="dim">Pick it when a floor ends.</div>`;

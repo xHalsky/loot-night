@@ -17,12 +17,44 @@ shifted up each floor by `RARITY_SHIFT_PER_FLOOR`. Luck from Flow (`FLOW_LUCK`),
 (`GREEN_MOOD_LUCK`) and full Zone (`ZONE_LUCK`) pushes it further. A pity counter guarantees an epic
 after `PITY_EPIC` drops without one.
 
-**Items** (`src/data/items.ts`). Slot, item level, rarity, 1 to 4 positive stats (rarity sets the count);
-from rare up, one downside, so the bigger number is not automatically better. Names are two plain fantasy
+**Items** (`src/data/items.ts`). Slot, item level, rarity, a main stat line (the slot's first stat), then **at most
+three affix lines, in plain words** (#52, 1.8; `AFFIX_LINES`): common 0, uncommon 1, rare 2, epic 3, legendary 3 plus
+its rule. From rare up one of them is a downside, so the bigger number is not automatically better; a special affix
+(real life or cross-system) takes the place of a bonus stat. So a rare is main + bonus + downside, an epic main + two
+(one may be a special) + downside. Names are two plain fantasy
 words, readable at a glance: a rarity adjective and a slot noun (Worn Dagger, Iron Helm, Runed Band, Shadow
 Robe, Dragon Sword). The adjective climbs with rarity: Worn/Old/Plain/Crude, Iron/Sturdy/Fine/Bronze,
 Steel/Silver/Runed/Elven, Arcane/Shadow/Dwarven/Blessed, Dragon/Ancient/Mythic/Titan.
 Epics and legendaries drop **unidentified** until the Appraiser reveals them.
+
+**Legendaries change a rule** (`src/data/legendaries.ts`, rules in `src/systems/battle.ts`). Every legendary is one
+of eight named items, the name is the whole name ("Frostbinder", or "Frostbinder of Stealth" with a special). Each
+belongs to one hero: its rule works only while he wears it, and it drops only while he is in the party (none of
+Garrote's on night 1). Its stats work on anyone.
+
+| Legendary | Slot | Hero | Rule |
+|---|---|---|---|
+| Frostbinder | weapon | Mage | Frost chills two enemies |
+| The Tithe | armor | Knight | Taunted enemies drop `LEGEND_TITHE_GOLD` (2) gold × floor each time they hit the Knight |
+| Last Lantern | trinket | Knight | Bash on a Staggered enemy resets Taunt's cooldown |
+| Ash Choir | weapon | Healer | Mend also clears the party's debuffs (curio curses, the sugar crash) |
+| Widow's Kiss | weapon | Garrote | Backstab always crits on Chilled enemies |
+| Stormcoil | trinket | Mage | A Bolt that kills jumps to another enemy |
+| Gilded Hand | trinket | Garrote | Heist drops roll one rarity higher |
+| Vigil Censer | trinket | Healer | Miracle also raises Ward for `LEGEND_VIGIL_WARD_SEC` (4 s) |
+
+**Sets**, one per hero, three pieces (weapon, armor, trinket): `SET_CHANCE` (30%) of epics are a piece of a set whose
+hero is in the party, named "Ironwake Plate", "Embervow Orb". Pieces count only on the set's own hero; the tooltip
+says how many he wears.
+
+| Set | Hero | 2 pieces | 3 pieces |
+|---|---|---|---|
+| Ironwake | Knight | +15% armor | Taunt also heals the Knight 10% of max HP |
+| Embervow | Mage | +10% skill damage | Fire's cooldown resets when it kills 3 or more |
+| Dawnward | Healer | +15% healing | Ward also heals 3% of max HP a second |
+| Nightglass | Garrote | +10% crit | Smoke Bomb makes every hero's next hit a crit |
+
+`npx tsx test/loot.ts` checks the affix lines, the pools, every rule and every set bonus.
 
 **Special affixes** (`src/data/affixes.ts`, `src/systems/affixes.ts`). At most one per item; it adds a one-word
 "of ..." suffix, and only special affixes add one, so a suffix always means a special effect. Rolled per rarity (`AFFIX_LIFE_CHANCE`,
@@ -94,11 +126,19 @@ Souls.
 
 ## Decisions
 
+- **Loot rules** (0.58, #52 1.8). At most three affix lines so an item reads at a glance; the downside and a special
+  count as lines, so a special is a trade (a stat line for a rule about her) rather than a free extra. A legendary is
+  always one of eight named rules for one hero, which makes the first one a moment and a build decision, not a bigger
+  number; it drops only for heroes in the party. Stormcoil and Vigil Censer were written for Storm and Revive, which
+  were cut (decisions 2026-11-20): they now work on Magoo's Bolt and Healero's Miracle. Rejected: random legendaries
+  with four stats (0.11 to 0.57: the best item in the game read like an epic); class-locked gear (any hero can wear
+  any item; only the rule and the set bonus are his).
+
 - **Plain two-word names** (0.43, #44): adjective + noun, and an "of ..." suffix only for a special affix.
   The joke names (Gilded Spoon of the Sweet Talker, Bailiff's Tab-Pull Band of Infinite Excuses) ran to 6
   words, took a read to parse and did not say what the item is. Now the noun says the slot, the adjective the
-  rarity tier, and a suffix flags a special effect. Old saves get new names on load. Rejected: unique names
-  for legendaries (more to read; maybe later for boss set pieces).
+  rarity tier, and a suffix flags a special effect. Old saves get new names on load. Legendaries and set pieces
+  have their own names since 0.58.
 - **Specials go both ways** (0.25): real-life affixes let loot change the stealth layer, cross-system affixes
   let the stealth layer change the loot. Each cross-system one pays for a choice the stealth layer already
   asks for (headset on, staying quiet, keeping her happy, petting the dog, sitting on Excel), so the player

@@ -3,6 +3,19 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.58.0 (2026-11-24)
+
+- **Loot rules** (#52, 1.8). An item is a main stat line plus at most three affix lines (common 0, uncommon 1, rare 2,
+  epic 3, legendary 3); the downside (rare up) and a special affix each count as one.
+- **Legendaries change a rule.** Every legendary is one of eight named items, each for one hero, dropping only while
+  he is in the party: Frostbinder, The Tithe, Last Lantern, Ash Choir, Widow's Kiss, Stormcoil, Gilded Hand, Vigil
+  Censer. Stormcoil and Vigil Censer were written for the cut Storm and Revive; they now work on Magoo's Bolt and
+  Healero's Miracle.
+- **Sets**, one per hero (Ironwake, Embervow, Dawnward, Nightglass): 30% of epics are a piece; two pieces on the set's
+  hero give a stat, three a rule. The tooltip shows the rule, whose it is, and how many pieces he wears.
+- New `test/loot.ts` (22 checks), `test/legend_tip.py`. Sims (good): depth 8 to 9, encounters 10 to 15 s, 78 to 88
+  items a night; no balance change intended (1.9 tunes).
+
 ## 0.57.0 (2026-11-24)
 
 - **A night's end and the run** (#52, 1.4; Paweł's call: going further always carries a risk). Sleep banks a run

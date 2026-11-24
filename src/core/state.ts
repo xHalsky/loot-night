@@ -1,3 +1,4 @@
+import type { LegendId, SetId } from '../data/legendaries';
 import { T } from '../config/tuning';
 import { HERO_NAME } from '../data/heroes';
 import type { PathCard, FeatureId, ConditionId } from '../data/routes';
@@ -17,6 +18,8 @@ export interface Item {
   special?: string; specialAmt?: number;   // a special affix id (src/data/affixes.ts) and its stat or gold amount
   witched?: boolean;             // the Witching Hour shifted it up a rarity
   run?: boolean;                 // picked up this run, not banked yet (#52, 1.4): lost on a wipe, even worn
+  legend?: LegendId;             // a legendary: its rule (src/data/legendaries.ts, #52 1.8)
+  set?: SetId;                   // a set piece
 }
 export type BagEntry = (
   | { kind: 'item'; id: string; item: Item }
@@ -34,6 +37,7 @@ export interface Hero {
   lunge?: number;        // attack animation timer
   moving?: number;       // seconds left changing rank (a swap, a Hook, a Shove): he doesn't act (#52, 1.6)
   from?: number;         // the rank he is moving from (0-based), for the walk between ranks
+  nextCrit?: boolean;    // Nightglass (3 pieces): Smoke Bomb makes his next hit a crit (#52, 1.8)
 }
 
 export interface Enemy {

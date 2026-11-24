@@ -1,7 +1,7 @@
 import { T } from '../config/tuning';
 import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind, type Slot, type Enemy } from '../core/state';
 import { pick, weighted, chance, rand } from '../core/rng';
-import { ADJECTIVES, NOUNS, SLOT_STATS, STAT_BASE, RARITY_MULT, POSITIVE_AFFIXES, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
+import { ADJECTIVES, NOUNS, SLOT_STATS, STAT_BASE, RARITY_MULT, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
 import { toastAs } from '../core/fx';
 const toast = toastAs('LOOT');   // feed tag (#49)
 import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, SPECIAL_BY_ID, type SpecialAffix } from '../data/affixes';
@@ -11,6 +11,8 @@ import { coach } from './coach';
 import { noteDrop } from './pacing';
 import { blessPow } from './run';
 import { ENEMY_SLOTS } from '../core/arena';
+import { LEGENDS, SETS, SET_SLOTS } from '../data/legendaries';
+import { legendOn } from './gear';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
 /** A stat's base roll at this item level. Attack, HP and armor compound (ITEM_POWER_GROWTH a level, #52 1.2) to keep pace
@@ -54,16 +56,25 @@ function rollSpecial(rarity: Rarity): SpecialAffix | null {
   return null;
 }
 
-export function genItem(ilvl: number, minRarity = 0): Item {
+/** A new item. up: shift the rolled rarity up (Gilded Hand). Loot rules (#52, 1.8): a main stat line, then at most
+ *  AFFIX_LINES by rarity (common 0 to epic and legendary 3); the downside (rare up) and a special affix each count as
+ *  one. Every legendary is a named one with a rule for a hero in the party; an epic may be a set piece. */
+export function genItem(ilvl: number, minRarity = 0, up = 0): Item {
   let rarity = rollRarity(ilvl, minRarity);
+  if (up) rarity = RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(rarity) + up)];
   if (S.g.night?.floorMap === 'cursed' && S.g.night.location === 'dungeon') rarity = RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(rarity) + 1)];
   let witched = false;
   if (isWitching() && rarity !== 'legendary' && chance(T.WITCHING_UPGRADE)) { rarity = RARITIES[RARITIES.indexOf(rarity) + 1]; witched = true; }   // the Witching Hour shifts it up
-  const slot = pick(SLOTS);
+  const inParty = (id: string) => S.g.heroes.some(h => h.id === id);
+  const legend = rarity === 'legendary' ? pick(LEGENDS.filter(l => inParty(l.hero))) : undefined;
+  const set = rarity === 'epic' && chance(T.SET_CHANCE) ? pick(SETS.filter(s => inParty(s.hero))) : undefined;
+  const slot = legend?.slot ?? (set ? pick(SET_SLOTS) : pick(SLOTS));
   const mult = RARITY_MULT[rarity];
   const pool = [...SLOT_STATS[slot]];
   const affixes: { stat: Stat; amount: number }[] = [];
-  const positives = POSITIVE_AFFIXES[rarity];
+  const sp = rollSpecial(rarity);
+  const lines = T.AFFIX_LINES[rarity] ?? 0, bonuses = Math.max(0, lines - (HAS_DOWNSIDE[rarity] ? 1 : 0) - (sp ? 1 : 0));
+  const positives = 1 + bonuses;   // the main line, then the bonus lines
   for (let i = 0; i < positives; i++) {
     const stat = i < pool.length ? pool[i] : pick(pool);
     const amt = round1(statBase(stat, ilvl) * mult * rand(0.8, 1.15) * (i === 0 ? 1 : 0.6));
@@ -76,15 +87,16 @@ export function genItem(ilvl: number, minRarity = 0): Item {
     affixes.push({ stat, amount: -round1(statBase(stat, ilvl) * 0.6 * rand(0.8, 1.2)) });
   }
   const ri = RARITIES.indexOf(rarity);
-  const sp = rollSpecial(rarity);
   let specialAmt: number | undefined;
   if (sp?.kind === 'cross') {
     if (sp.stat) specialAmt = Math.max(1, round1(statBase(sp.stat, ilvl) * mult * T.AFFIX_CROSS_PCT));
     else specialAmt = T.AFFIX_SPREADSHEET_GOLD;
   }
-  const name = itemName(slot, rarity, sp?.id);
-  const value = Math.round(6 * ilvl * mult * mult + positives * 3 + (sp ? 10 * mult : 0));
-  return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3, ...(sp ? { special: sp.id, specialAmt } : {}), ...(witched ? { witched } : {}) };
+  const suffix = sp ? ` ${SPECIAL_BY_ID[sp.id].suffix}` : '';
+  const name = legend ? legend.name + suffix : set ? `${set.name} ${set.nouns[slot as 'weapon']}${suffix}` : itemName(slot, rarity, sp?.id);
+  const value = Math.round(6 * ilvl * mult * mult + 3 * (affixes.length - 1 + (sp ? 1 : 0)) + (sp ? 10 * mult : 0) + (legend || set ? 10 * mult : 0));
+  return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3, ...(sp ? { special: sp.id, specialAmt } : {}), ...(witched ? { witched } : {}),
+    ...(legend ? { legend: legend.id } : {}), ...(set ? { set: set.id } : {}) };
 }
 
 /** Adjective + noun, plus "of X" only when the item has a special affix (#44): a suffix means a special effect. */
@@ -94,6 +106,7 @@ export function itemName(slot: Slot, rarity: Rarity, special?: string): string {
 }
 /** True if the name uses the current word lists (old saves carry names from before #44). */
 export function nameIsCurrent(it: Item): boolean {
+  if (it.legend || it.set) return true;   // named by their legend or set (#52, 1.8)
   const sp = it.special ? SPECIAL_BY_ID[it.special] : undefined;
   return ADJECTIVES[it.rarity].some(a => NOUNS[it.slot].some(n => it.name === `${a} ${n}${sp ? ` ${sp.suffix}` : ''}`));
 }
@@ -145,7 +158,7 @@ export function dropFromKill(e: Enemy) {
   const x = ENEMY_SLOTS[e.slot]?.x ?? 200;
   if (e.boss) rollBattleDrops(n.floor, { count: T.BOSS_DROPS, minRare: true, at: [x - 20, x, x + 20] });
   else if (e.elite) rollBattleDrops(n.floor, { count: 1, minRare: true, at: [x] });
-  else if (n.heist > 0) rollBattleDrops(n.floor, { count: 1, at: [x] });   // Garrote's Heist: every kill drops
+  else if (n.heist > 0) rollBattleDrops(n.floor, { count: 1, at: [x], up: legendOn('gilded') ? 1 : 0 });   // Garrote's Heist: every kill drops (Gilded Hand: a rarity up)
   else if (chance(T.DROP_CHANCE * blessPow('supply', T.BLESS_SUPPLY_DROPS) * condDrops())) rollBattleDrops(n.floor, { count: 1, at: [x] });
 }
 /** The floor's condition on drops (#52, 1.5): Silent Halls fewer, Flooded more. */
@@ -159,13 +172,13 @@ export function rollBattleExtras() {
 }
 
 /** Drops go onto the floor where the enemies stood (grid px); the looter picks them up during the walk. */
-export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: boolean; count?: number; minRare?: boolean; at?: number[] }) {
+export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: boolean; count?: number; minRare?: boolean; at?: number[]; up?: number }) {
   const n = N();
   const count = opts.count ?? (opts.boss ? T.BOSS_DROPS : 1);
   const out: BagEntry[] = [];
   for (let i = 0; i < count; i++) {
     const guaranteed = (opts.boss || opts.elite || opts.minRare) && i === 0;
-    out.push(itemEntry(genItem(floor, guaranteed ? 2 : 0)));
+    out.push(itemEntry(genItem(floor, guaranteed ? 2 : 0, opts.up ?? 0)));
   }
   // each drop lands where an enemy fell (spread a little when several share a body)
   const at = opts.at?.length ? opts.at : [186, 226, 266];

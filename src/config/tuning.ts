@@ -172,6 +172,15 @@ export const T = {
   AFFIX_CROSS_CHANCE: { rare: 0.3, epic: 0.45, legendary: 0.35 } as Record<string, number>,
   AFFIX_LIFE_CHANCE: { epic: 0.35, legendary: 0.65 } as Record<string, number>,
   AFFIX_QUICK: 0.3, AFFIX_TIRED: 0.2, AFFIX_OWL: 0.3, AFFIX_EXCUSE_MOOD: 10,
+  // Loot rules (#52, 1.8): affix lines beyond the main stat (a downside and a special affix each count as one)
+  AFFIX_LINES: { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 3 } as Record<string, number>,
+  SET_CHANCE: 0.3,                // an epic is a set piece (for a hero in the party)
+  LEGEND_TITHE_GOLD: 2,           // The Tithe: gold x floor per hit a Taunted enemy lands on the Knight
+  LEGEND_VIGIL_WARD_SEC: 4,       // Vigil Censer: Miracle raises Ward this long
+  SET_IRONWAKE_ARMOR: 0.15, SET_IRONWAKE_HEAL: 0.1,
+  SET_EMBERVOW_SKILL: 0.1, SET_EMBERVOW_KILLS: 3,
+  SET_DAWNWARD_HEAL: 0.15, SET_DAWNWARD_REGEN: 0.03,
+  SET_NIGHTGLASS_CRIT: 10,
   AFFIX_CROSS_PCT: 0.6,           // a cross-system stat bonus = this share of a main stat line at the item's level and rarity
   AFFIX_SPREADSHEET_GOLD: 3,      // per kill while Excel is up, per item
   AFFIX_QUIET_NOISE: 30, AFFIX_DOG_SEC: 60,
