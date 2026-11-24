@@ -28,6 +28,8 @@ import { openMonster, cancelMonster } from './systems/monster';
 import { drawMonsterScene, monsterTilt } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawDeskFx, drawLapFx, lapUiHtml, setDeskScale } from './ui/deskFx';
+import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
+import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -77,6 +79,7 @@ stage.innerHTML = `
   <div id="pause"></div>
   <div id="planUi"></div>
   <div id="coachUi"></div>
+  <canvas id="pkFrame" width="${GRID_W}" height="${GRID_H}"></canvas>
   <div id="debug"></div>
   <div id="tooltipLayer"></div>
   <div id="ghost"></div>
@@ -95,13 +98,16 @@ function setHtml(id: string, html: string) {
 }
 
 // ---------- Scale the 1280x720 stage to the window ----------
+// V1 (#66): the 640 x 360 grid at a whole number of device pixels per grid pixel, letterboxed. The DOM stage is laid
+// out at x2 (1280 x 720), so it scales by k / 2; the viewport sits on whole device pixels so nothing lands between them.
 let stageScale = 1;
 function fit() {
-  const s = stageScale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+  const dpr = window.devicePixelRatio || 1, k = gridScale(window.innerWidth, window.innerHeight, dpr);
+  const s = stageScale = k / dpr / STAGE_K;
   setDeskScale(s);
   stage.style.transform = `scale(${s})`;
-  const vp = el('viewport');
-  vp.style.width = `${1280 * s}px`; vp.style.height = `${720 * s}px`;
+  const vp = el('viewport'), w = GRID_W * k / dpr, h = GRID_H * k / dpr;
+  Object.assign(vp.style, { width: `${w}px`, height: `${h}px`, left: `${Math.round((window.innerWidth * dpr - GRID_W * k) / 2) / dpr}px`, top: `${Math.round((window.innerHeight * dpr - GRID_H * k) / 2) / dpr}px` });
 }
 window.addEventListener('resize', fit); fit();
 
@@ -176,6 +182,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgDog: () => triggerDog(),
   dbgUnplug: () => triggerUnplug(),
   dbgLap: () => startLap(),
+  dbgFrame: a => setPreview(!a || previewScene() === a ? null : a as PreviewScene),
   autoSalvage: () => { S.g.autoSalvage = !S.g.autoSalvage; sfx.click(); },
   lock: a => toggleLock(a),
   dbgDebt: () => { N().tired = Math.min(100, N().tired + 20); },
@@ -495,6 +502,7 @@ function render() {
   placeCoach();
   setHtml('pause', pauseHtml());
   setHtml('debug', debugHtml());
+  drawPreview(el('pkFrame') as HTMLCanvasElement);
   setHtml('scare', scareHtml());
   setHtml('tooltipLayer', inv?.moved ? '' : tooltipHtml());
 }

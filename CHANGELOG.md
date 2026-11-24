@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.50.0 (2026-11-24)
+
+- **The visual redesign is handed off.** Its package is in the repo at `design/redesign/` (the mockup page's code,
+  every baked image, the palettes, 168 stills, a snapshot of the specs). Issues V1 to V13 are filed (#66 to #78),
+  with the redesign's notes on #52 to #57.
+- **One 640 × 360 grid at whole-number scales** (V1, #66). The game now shows at ×2 (1280 × 720), ×3 (1920 × 1080),
+  ×4 or ×6, whichever fits the window, counted in device pixels, and letterboxes the rest. Before, it stretched to
+  any size, which smeared the pixel art at most window sizes.
+- **The redesign's renderer is in the build** (V1, #66): the mockup page's own drawing code (`src/render/`) with its
+  three palettes, Bayer dither, UI materials, actor pass and the four pixel fonts (Tiny5, Silkscreen Bold, Micro 5,
+  Jacquarda Bastarda 9; OFL, embedded). Nothing in the game uses it yet: F1, "Redesign frame", draws the mockup's
+  frame over the game (Dungeon, Battle, Map, Town, Q4), crisp at ×2 and ×3. Against still `00-default` it differs
+  only where the animations stand at another moment. Next: V2 and #52 wire the RPG screens to the game.
+- Cost: the build grows from 1.0 MB to 1.6 MB; the renderer draws the full frame in 50 to 70 ms and the RPG screen in
+  about 22 ms in headless Chrome (2 cores), so V2 has to cache before it draws every frame.
+- Tools: `test/pkcheck/` (the renderer alone against the still; top-level names declared twice),
+  `test/her_native.py` and `test/her_redesign.py` (her art at game pixels, from 2026-11-20). Sims unchanged.
+
 ## 0.49.8 (2026-11-19)
 
 - `test/her_screens.py`: every place she appears, for redrawing her (her at the door in every outfit, through the

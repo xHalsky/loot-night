@@ -12,10 +12,12 @@ A browser game heading for a Steam release (it started as a birthday gift): a lo
 | Game state types + new-game state | `src/core/state.ts` |
 | Rules (no drawing) | `src/systems/*.ts` |
 | Drawing + DOM | `src/ui/*.ts`, `src/style.css`, `src/ios.css` |
+| The redesign's renderer (the mockup page's code, 640 × 360 grid) | `src/render/` (game talks to it through `PK` in `facade.js`) |
 | Content tables (enemies, items, lines) | `src/data/*.ts` |
 | Sounds | files `src/assets/sfx/` (baked by `tools/sfx/make.py`; your own in `own/` win), mix `src/data/sounds.ts` |
 | Design bible (one file per system) | `docs/design/` (start at `README.md`) |
 | Old design mockups | `design/mockups/` |
+| The visual redesign's handoff (page code, art, palettes, stills, specs snapshot) | `design/redesign/` |
 | Tests | `test/` (see below) |
 
 ## Commands

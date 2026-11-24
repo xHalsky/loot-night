@@ -491,4 +491,4 @@ export function drawShowerPanel(c: CanvasRenderingContext2D, t: number, fog: num
 }
 
 // Test hook: test/her_screens.py draws her model sheets (every outfit, every face) with the game's own code.
-if (typeof window !== 'undefined') (window as unknown as { __lnHer: unknown }).__lnHer = { drawHer, OUTFIT_BY_ACTIVITY };
+if (typeof window !== 'undefined') (window as unknown as { __lnHer: unknown }).__lnHer = { drawHer, drawHerBack, drawHerFrosted, drawHerPeek, drawHerBed, drawShowerPanel, OUTFIT_BY_ACTIVITY };

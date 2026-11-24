@@ -21,8 +21,10 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 **Art track, in parallel from the start:** #26 style sheet + one test sprite of her.
 
-1. **The redesign handoff, steps 1 to 7, in this order** (spec: `docs/design/handoff-redesign.md`). Not started:
-   it waits for the visual redesign phase to finish.
+1. **The redesign handoff, steps 1 to 7, in this order, each with its visuals** (spec: `docs/design/handoff-redesign.md`;
+   the look: `design/redesign/`, Issues V1 to V13, #66 to #78, filed 2026-11-24). V2 (#67), the RPG screens in the new
+   look, goes in alongside step 1; everything else sits on V1 and V2. The real-life areas V3 to V11 (#68 to #76) come
+   in any order once V1 is in; V12 (#77) and V13 (#78) go with #59 and #56.
    1. #52 The RPG on its own (real life off): real-time combat, packs, runs, the floor map's route choice,
       run blessings, marching order, the Rogue, loot rules.
    2. #53 Skill trees, Souls and autocast.

@@ -2,8 +2,10 @@
 
 ## Now
 
-**One screen, monitor first** (#49), base 1280 × 720, scaled to the window. Sizes live in `src/ui/layout.ts`,
-all even so they land on a 640 × 360 pixel grid at 2x.
+**One screen, monitor first** (#49) on **one 640 × 360 pixel grid** (V1, #66; grid doc §1), shown at a whole number
+of device pixels per grid pixel (×2 720p and the Steam Deck, ×3 1080p, ×4 1440p, ×6 4K) and letterboxed in anything
+else (`src/render/grid.ts`). The DOM parts are still laid out at ×2 (1280 × 720, sizes in `src/ui/layout.ts`, all
+even) while they move onto the grid; the redesign's renderer (`src/render/`, tech.md) draws at grid size.
 
 | Zone | Where | Shows |
 |---|---|---|
@@ -183,6 +185,10 @@ the click panels and the design docs hold the detail. `python3 test/tooltips.py`
   area (0.45; it covered the boss's cast bar); pausing the fight (gearing is meant to be part of the juggle).
 - **Her desk visit covers the battle area only** (0.45): the side panel stays usable, as the right panel was.
 - **Sizes on an even grid** (0.45): every layout number is even, so a 640 × 360 pixel-art version can scale by 2.
+- **Whole-number scales only, letterboxed** (0.50, V1): a fractional scale smears the 1 px outlines and the dither.
+  The scale is counted in device pixels, so a laptop at 125% OS zoom still gets exact pixels. Rejected: a 960 × 540
+  grid for bigger text (no whole-number scale at 1440p or on the Steam Deck; decisions 2026-11-20); filling the
+  window at any scale (it was the old behaviour).
 
 - **Fixed slots under the webcam** (0.44, #46): the stats jumped up whenever the last-heard line or the
   "before" row hid (a catch, a visit), so your eye lost Patience exactly when it mattered. Every row now has a

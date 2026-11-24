@@ -1,7 +1,12 @@
+/* The redesign's pixel fonts (V1, #66; grid doc §1), Fontsource, OFL. Family names as the renderer uses them. */
+@font-face { font-family: silkb; src: url(./assets/fonts/silkscreen-700.woff2) format('woff2'); }
+@font-face { font-family: tiny5; src: url(./assets/fonts/tiny5-400.woff2) format('woff2'); }
+@font-face { font-family: m5; src: url(./assets/fonts/micro5-400.woff2) format('woff2'); }
+@font-face { font-family: jb9; src: url(./assets/fonts/jacquarda-bastarda-9-400.woff2) format('woff2'); }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: #050407; overflow: hidden; }
 body { display: flex; align-items: center; justify-content: center; font-family: 'Pixelify Sans', monospace; color: #f2e9d8; user-select: none; -webkit-user-select: none; }
-#viewport { position: relative; overflow: hidden; }
+#viewport { position: fixed; overflow: hidden; }
 #stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; display: flex; background: #0d0a12; overflow: hidden; }
 canvas { image-rendering: pixelated; display: block; }
 button { font-family: inherit; color: inherit; cursor: pointer; }
@@ -177,6 +182,7 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .near { border: 2px solid #3a2f47; background: #241b2e; padding: 10px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .sil { display: inline-block; margin: 0 3px; padding: 2px 6px; background: #34244f; border: 2px solid #b98cff; color: #b98cff; }
 #debug { position: absolute; left: 6px; bottom: 6px; z-index: 30; }
+#pkFrame { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 29; image-rendering: pixelated; display: none; }
 .debug { width: 268px; background: rgba(0,0,0,.9); border: 2px solid #6fe0ff; padding: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
 .debug .row .btn { flex: 1; }
 .debug .sfx-board { flex-wrap: wrap; max-height: 132px; overflow-y: auto; gap: 2px; }
