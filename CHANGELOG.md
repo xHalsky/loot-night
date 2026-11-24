@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.61.0 (2026-11-24)
+
+- **The side panel in the redesign's look** (V2 with #53; grid doc §5, §6b). The whole panel is drawn by the renderer:
+  in the dungeon the four party cards, the hero's gear and stats, the bag with its Treasury row and the footer; in town
+  the three tabs (Town: the build list, the floor picker, Enter the dungeon, the bag; Inventory; Skill Tree). Bag
+  cells show NEW, the lock, the upgrade ▲, the unbanked dashes and the picked frame. Drag to equip or unequip,
+  right-click, hover tooltips and L work as before; item windows and the bag-full popup are still DOM, over the canvas.
+  The loot coach mark points at the bag on the canvas.
+- `test/panel.py` shoots the tabs, the dungeon panel, a drag onto a gear slot and the item window; `test/tree.py` and
+  `test/legend_tip.py` use the canvas. No rule changes.
+
 ## 0.60.0 (2026-11-24)
 
 - **Skill trees** (#53; grid doc §6c; `src/data/trees.ts`, `src/systems/tree.ts`). Skills come only from the tree:

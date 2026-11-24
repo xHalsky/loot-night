@@ -1,2 +1,2 @@
 // Build version: bump on every round and add a matching entry to CHANGELOG.md (git tag vX.Y).
-export const VERSION = '0.60.0';
+export const VERSION = '0.61.0';

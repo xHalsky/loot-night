@@ -25,7 +25,7 @@ let PANEL_CANVAS = null;
 /** The side panel from the game's view model (V2, #53): a 140 x 232 canvas and its hit regions (panel px). */
 function pkPanel(vm, t) {
   if (!PANEL_CANVAS) { PANEL_CANVAS = document.createElement('canvas'); PANEL_CANVAS.width = SP_W; PANEL_CANVAS.height = GS_H; }
-  const hits = livePanel(PANEL_CANVAS.getContext('2d'), vm, t);
+  const hits = livePanelAll(PANEL_CANVAS.getContext('2d'), vm, t);
   return { canvas: PANEL_CANVAS, hits };
 }
 export const PK = {

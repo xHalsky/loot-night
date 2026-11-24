@@ -7,7 +7,7 @@ import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/
 import { DESK_W, BATTLE_W, BAND_H } from './ui/layout';
 import { townHit, townHover } from './ui/townMap';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
+import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS } from './data/heroes';
@@ -35,7 +35,7 @@ import { swapHeroes, ensureParty, hookLine, shoveLine } from './systems/ranks';
 import { toggleAutocast, buyNode, respec } from './systems/tree';
 import type { NodeId } from './data/trees';
 import type { HeroId } from './core/state';
-import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt } from './render/liveRpg';
+import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown } from './render/liveRpg';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -65,7 +65,7 @@ stage.innerHTML = `
       <div id="screen">
         <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
         <canvas id="rpgArea" width="334" height="232"></canvas><div id="rpgBar" aria-hidden="true"></div>
-        <canvas id="spArea" width="140" height="232"></canvas>
+        <canvas id="spArea" width="140" height="232"></canvas><div id="spBag" aria-hidden="true"></div>
         <div id="monUi"></div>
         <div id="ui"></div>
         <div id="winLayer"></div>
@@ -232,7 +232,7 @@ document.addEventListener('pointermove', ev => {
       ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
-  } else if ((ev.target as HTMLElement).id !== 'rpgArea') {   // the live battle area sets its own hover (V2)
+  } else if ((ev.target as HTMLElement).id !== 'rpgArea' && (ev.target as HTMLElement).id !== 'spArea') {   // the live battle area and the panel's canvas set their own hover (V2)
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
   }
@@ -248,8 +248,9 @@ document.addEventListener('pointerup', ev => {
     const [kind, a, b] = key.split(':');
     if (!moved) { if (kind === 'bag') clickBagSlot(a); }
     else {
-      const dropEl = (document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null)?.closest('[data-drop]') as HTMLElement | null;
-      const drop = dropEl?.dataset.drop ?? '';
+      const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+      const dropEl = under?.closest('[data-drop]') as HTMLElement | null;
+      const drop = under?.id === 'spArea' ? panelDrop(ev) : dropEl?.dataset.drop ?? '';
       const [dk, dv] = drop.split(':');
       if (kind === 'bag' && dk === 'slot') equipItemOn(a, N().heroTab, dv);
       else if (kind === 'bag' && dk === 'hero') equipItemOn(a, Number(dv));
@@ -336,13 +337,33 @@ el('spArea').addEventListener('pointerdown', ev => {
   const [x, y] = spXY(ev), h = panelHitAt(x, y);
   if (!h || !h.act) return;
   ev.preventDefault(); ev.stopPropagation(); hover.key = '';
+  // an item: pick it up (drag to equip or unequip, as the DOM bag did); a click without a drag selects it
+  if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
+  if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
   actions[h.act]?.(h.arg);
 });
 el('spArea').addEventListener('pointermove', ev => {
   const [x, y] = spXY(ev), h = panelHitAt(x, y), p = toStage(ev);
   (el('spArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
-  hover.key = h?.tip ? `text:${h.tip}` : ''; hover.x = p.x; hover.y = p.y;
+  if (inv?.moved) return;
+  hover.key = h?.tip ? (/^(bag|gear|hero|skill):|^autosalvage$/.test(h.tip) ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
 });
+el('spArea').addEventListener('contextmenu', ev => {
+  ev.preventDefault();
+  if (!S.g.night) return;
+  const [x, y] = spXY(ev as PointerEvent), h = panelHitAt(x, y);
+  if (h?.act === 'bagCell') equipItemOn(h.arg, N().heroTab);
+  else if (h?.act === 'gearCell') unequip(N().heroTab, h.arg);
+});
+/** Where an item dragged over the side panel's canvas lands: a gear slot, a party card, or the bag. */
+function panelDrop(ev: PointerEvent): string {
+  const [x, y] = spXY(ev), h = panelHitAt(x, y);
+  if (!h) return '';
+  if (h.act === 'gearCell') return `slot:${h.arg}`;
+  if (h.act === 'heroTab') return `hero:${h.arg}`;
+  if (h.act === 'bagCell' || h.act === 'bagArea') return 'bag';
+  return '';
+}
 el('spArea').addEventListener('pointerleave', () => { hover.key = ''; });
 // right-click a skill well: switch its autocast on or off (#53, 2.3)
 el('rpgArea').addEventListener('contextmenu', ev => {
@@ -541,7 +562,8 @@ function render() {
     setHtml('feedCard', feedHtml());
     setHtml('monUi', liveShown() ? '' : monUiHtml());
     setHtml('winLayer', windowHtml());
-    setHtml('ui', uiPanelHtml());
+    el('ui').classList.toggle('cv', livePanelShown());   // the panel is drawn by the renderer: the DOM keeps only its item windows
+    setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : uiPanelHtml());
     setHtml('toasts', toastsHtml());
     setHtml('taskbar', taskbarHtml());
     updateWindowDynamics();

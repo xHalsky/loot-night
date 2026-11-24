@@ -23,16 +23,22 @@ map and "boss floor") and "Flow x1.4" with a small bar sit in the battle's top-l
 on no plate. Each time Flow passes a step of `FLOW_GLOW_STEP` (0.5) the Flow text brightens, grows and glows gold
 for `FLOW_GLOW_SEC`. The town portal button sits under it. The city's corner reads "Ravenhold · town".
 
-**The side panel** (dungeon). Party: three cards (name, "Lv 5 ◆44", a thin XP line, a red "!" when a hero falls
-behind), no HP; click one to select it, drop an item on one to equip it. The selected hero: a header
-("KNIGHTENSTEIN · Knight ◆44"), a 3 × 2 gear grid (helm, armor, boots / weapon, ring, trinket; power in the
-corner) and the six stats with the gear's share. The bag: "BAG 7/18" and the auto-salvage toggle in its header,
-6 × 3 slots, then the Treasury row (6 slots; the building opens 2 per level, the rest show a lock). The footer:
-gold and scraps, and the deepest floor ever. No instruction text in any header. HP shows only on the battle
-sprites and the skill-bar portraits.
+**The side panel** (140 × 232 on the grid, drawn by the redesign's renderer since 0.61: `livePanelAll` in
+`src/render/page/live.js` from the view in `src/render/rpgView.ts`; grid doc §5, §6b). In the dungeon: four party cards
+(portrait in the class outline, short name, "Lv5", power, a thin XP line, a red "!" when a hero falls behind; no HP);
+click one to select it, drop an item on one to equip it. The selected hero: an engraved strip ("KNIGHTENSTEIN Knight
+◆44"), a 3 × 2 gear grid (weapon, helm, armor / boots, ring, trinket; power in the corner) and the six stats with the
+gear's share. The bag: "BAG 7/18" and the AUTO salvage switch in its header, 6 × 3 slots, then the Treasury row (the
+building opens 2 per level, the rest show a lock). A cell: the rarity light, the icon, its power, NEW, a lock, a
+green ▲ when it is an upgrade for someone, dashes when it is unbanked, a gold frame when picked. The footer: gold ·
+Souls, and the deepest floor ever. In town three tabs over it (Town: the build list, the way down and the bag;
+Inventory: as in the dungeon; Skill Tree: [trees.md](trees.md)). Drag from the bag onto a gear slot or a card to
+equip, from a slot onto the bag to unequip; right-click equips on the selected hero (or unequips); hover for the
+tooltip; L locks. HP shows only on the battle sprites and the skill-bar portraits.
 
 **Item windows** (details of a clicked item, the bag-full popup) open over the side panel's top block (the party and
-gear, or the city menu), so the bag below stays clickable and the battle stays in view. Details: name, rarity, slot,
+gear, or the city menu), so the bag below stays clickable and the battle stays in view. They are still DOM, over the
+panel's canvas, until the redesign draws them. Details: name, rarity, slot,
 item level and power, the affixes in two columns, and one Equip button per hero with the power change (▲ +4).
 They slow nothing: the fight and the clock keep going while you look (#49).
 

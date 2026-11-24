@@ -697,6 +697,8 @@ export function uiPanelHtml(): string {
     + head(`${gh.name.toUpperCase()} · ${gh.role}`, `<b class="sp-pow">\u25c6 ${powers[ht]}</b>`) + gear + itemPopHtml() + '</div>' + bag + foot;
 }
 
+/** The item window or the bag-full popup for the renderer's panel (V2): the DOM keeps only these. */
+export function uiPopHtml(): string { return itemPopHtml(); }
 /** The item window or the bag-full popup, if one is open (drawn over the side panel's top block). */
 function itemPopHtml(): string {
   const n = S.g.night;

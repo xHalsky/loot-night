@@ -13,8 +13,9 @@ async def main():
         await pg.evaluate(GO, 'newGame'); await pg.wait_for_timeout(200); await pg.evaluate(GO, 'howtoClose')
         await pg.evaluate("()=>{const g=window.__lootnight.S.g; g.realLifeOff=true; g.mats=260; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map')}")
         await pg.evaluate(GO, 'dbgRogue')
-        btn = await pg.query_selector("[data-act=townTab][data-arg=tree]")
-        await btn.click(); await pg.wait_for_timeout(500)
+        await pg.wait_for_timeout(400)
+        sp = await pg.evaluate("()=>{const r=document.getElementById('spArea').getBoundingClientRect(); return [r.left,r.top,r.width/140]}")
+        await pg.mouse.move(sp[0] + 117 * sp[2], sp[1] + 5 * sp[2]); await pg.mouse.down(); await pg.mouse.up(); await pg.wait_for_timeout(500)
         r = await pg.evaluate("()=>{const r=document.getElementById('rpgArea').getBoundingClientRect(); return [r.left,r.top,r.width/334]}")
         clip = {'x': r[0], 'y': r[1], 'width': 334 * r[2] + 280, 'height': 232 * r[2]}
         at = lambda gx, gy: (r[0] + gx * r[2], r[1] + gy * r[2])

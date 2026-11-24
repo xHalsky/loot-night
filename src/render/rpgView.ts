@@ -1,7 +1,7 @@
 // The battle area's view model (V2, #67): the game's state, read once a frame and handed to the renderer
 // (src/render/page/live.js). Rules never live here; this file only reads S.g / N() and lays things out on the grid.
 import { T } from '../config/tuning';
-import { S, N, type Enemy, type Hero, type HeroId } from '../core/state';
+import { S, N, type Enemy, type Hero, type HeroId, type Item, type BagEntry, type Stat } from '../core/state';
 import { ENEMY_BY_ID, bossFor } from '../data/enemies';
 import { MAP_INFO, RARITY_COLOR } from '../data/items';
 import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
@@ -9,7 +9,8 @@ import { ULT_SLOT, ABILITIES, HOME_RANKS, AURAS, HERO_NAME } from '../data/heroe
 import { outOfRank } from '../systems/ranks';
 import { boughtCount, autocastBought, autocastOn, nodeState, nodeCost } from '../systems/tree';
 import { NODES, TREES, BUYABLE, type NodeId } from '../data/trees';
-import { heroPower, xpNeeded } from '../systems/stats';
+import { heroPower, xpNeeded, heroStats, heroBaseStats, itemPower } from '../systems/stats';
+import { CITY } from '../data/city';
 import { maxHp } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
@@ -24,10 +25,10 @@ export function liveActive(): boolean {
   const n = S.g.night;
   return !!n && S.g.screen === 'night' && (n.location === 'dungeon' || n.townTab === 'tree');
 }
-/** The side panel drawn by the renderer: for now only the Skill Tree tab in town (#53); the rest is the DOM panel. */
+/** The side panel is drawn by the renderer (V2 with #53): the party in the dungeon, the three tabs in town. */
 export function panelActive(): boolean {
   const n = S.g.night;
-  return !!n && S.g.screen === 'night' && n.location === 'town' && n.townTab === 'tree';
+  return !!n && S.g.screen === 'night';
 }
 
 // ---- the skill tree (#53; grid doc §6c)
@@ -58,6 +59,58 @@ export function treeView(hov: string | null) {
   return { hero, bought: [...(S.g.trees?.[hero] ?? [])], souls: S.g.mats, hov, texts: { r1: pair('r1'), r2: pair('r2'), st } };
 }
 export function panelView(hov: string | null) {
+  const n = N(), town = n.location === 'town', tab = town ? (n.townTab ?? 'town') : 'party';
+  if (tab === 'tree') return { ...treePanelView(hov), tabs: true };
+  if (tab === 'town') return { ...townPanelView(), tabs: true };
+  return { ...partyPanelView(), tabs: town, tab };
+}
+// an item in a panel cell (hud.js itemCell): icon, rarity, power, lock, NEW, the unbanked dashes, the upgrade arrow
+const SLOT_ICON: Record<string, string> = { weapon: 'sword', helm: 'helm', armor: 'armor', boots: 'boots', ring: 'ring', trinket: 'amulet' };
+function itemIcon(it: Item): string {
+  if (!it.identified) return 'unknown';
+  if (it.slot === 'weapon' && /Dagger/.test(it.name)) return 'dagger';
+  if (it.slot === 'helm' && /Hood/.test(it.name)) return 'hood';
+  if (it.slot === 'trinket' && /Censer|Sigil|Orb/.test(it.name)) return it.name.includes('Orb') ? 'amulet' : 'amulet';
+  return SLOT_ICON[it.slot];
+}
+function cellOf(e: BagEntry | undefined): Record<string, unknown> {
+  if (!e) return { empty: true };
+  const n = N(), fresh = n.fresh.some(f => f.id === e.id), sel = n.selected === e.id;
+  if (e.kind === 'map') return { id: e.id, icon: 'map', r: 'rare', isNew: fresh, run: !!e.run, sel };
+  if (e.kind === 'feather') return { id: e.id, icon: 'feather', r: 'epic', isNew: fresh, sel };
+  const it = e.item, up = it.identified && S.g.heroes.some(h => heroPower(h, { [it.slot]: it }) > heroPower(h));
+  return { id: e.id, icon: itemIcon(it), r: it.rarity, pow: it.identified ? itemPower(it) : '?', lock: !!it.locked, isNew: fresh, run: !!e.run, up, sel };
+}
+function gearCell(it: Item | undefined) {
+  if (!it) return null;
+  return { id: it.id, icon: itemIcon(it), r: it.rarity, pow: it.identified ? itemPower(it) : '?', lock: !!it.locked, run: !!it.run };
+}
+function bagView() {
+  const g = S.g, cells: Record<string, unknown>[] = [];
+  for (let k = 0; k < T.BAG_SIZE + T.TREASURY_ROW; k++) cells.push(k >= g.bagSize ? { locked: true } : cellOf(g.bag[k]));
+  return { bag: cells, bagCount: g.bag.length, bagSize: g.bagSize, autoSalvage: g.autoSalvage };
+}
+const foot = () => ({ gold: S.g.gold, souls: S.g.mats, record: Math.max(S.g.record, N().deepest) });
+function partyCards() {
+  const powers = S.g.heroes.map(h => heroPower(h)), best = Math.max(...powers);
+  return S.g.heroes.map((h, i) => ({ hero: h.id, id: PAGE_ID[h.id], short: SHORT[h.id], lv: h.level, pow: powers[i], xp: h.xp / xpNeeded(h), down: h.downed, alert: best > 0 && powers[i] < best * T.POWER_BEHIND }));
+}
+function partyPanelView() {
+  const n = N(), h = S.g.heroes[n.heroTab] ?? S.g.heroes[0], st = heroStats(h), base = heroBaseStats(h);
+  const r1 = (v: number) => String(Math.round(v * 10) / 10), r0 = (v: number) => String(Math.round(v));
+  const row = (k: Stat, label: string, f: (v: number) => string) => { const d = st[k] - base[k]; return [label, f(st[k]), Math.abs(d) >= 0.05 ? `${d > 0 ? '+' : ''}${f(d)}` : ''] as const; };
+  const gear: Record<string, unknown> = {};
+  for (const sl of ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'] as const) gear[sl] = gearCell(h.gear[sl]);
+  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: cap(h.id === 'healer' ? 'priest' : h.id), pow: heroPower(h) }, gear,
+    stats: [row('hp', 'HP', r0), row('atk', 'ATK', r1), row('armor', 'ARM', r1), row('speed', 'SPD', r1), row('crit', 'CRIT', r1), row('luck', 'LUCK', r1)], ...bagView(), ...foot() };
+}
+function townPanelView() {
+  const g = S.g, cps = [...g.checkpoints].sort((a, b) => a - b), f = cps.includes(g.startFloor) ? g.startFloor : 1;
+  const builds = CITY.map(c => { const lv = g.furniture[c.id] ?? 0; return { id: c.id, name: c.name, lv, fx: lv >= 3 ? c.effect[2] : `Next: ${c.effect[lv]}`, gold: c.gold[lv], souls: c.mats[lv], ok: lv < 3 && g.gold >= c.gold[lv] && g.mats >= c.mats[lv], tip: lv < 3 ? `${c.name}: ${c.effect[lv]} (15 min)` : '', hot: false }; });   // the plot hovered on the town map lights its row (V2 town, next)
+  return { tab: 'town', builds, floor: f, canDown: cps[0] !== f, canUp: cps[cps.length - 1] !== f, ...bagView(), ...foot() };
+}
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+function treePanelView(hov: string | null) {
   const n = N(), g = S.g, hero = treeHero(), bought = [...(g.trees?.[hero] ?? [])] as NodeId[];
   const id = ((hov ?? n.treeSel ?? BUYABLE.find(x => nodeState(hero, x) === 'buy') ?? 's2') as NodeId);
   const info = nodeInfo(hero, id), state = id === 'root' || id === 's1' ? 'owned' : nodeState(hero, id), N0 = NODES[id];
@@ -67,7 +120,7 @@ export function panelView(hov: string | null) {
   if (state === 'locked' && N0.kind === 'ult') notes.push(['-', `Needs ${T.TREE_ULT_NEEDS} nodes in his tree: ${bought.length} of ${T.TREE_ULT_NEEDS}.`]);
   else if (state === 'locked' && N0.req) notes.push(['-', `Needs ${nodeInfo(hero, N0.req).name}.`]);
   if (N0.kind === 'auto') notes.push(['+', 'A loop mark on its well. Right-click the well to switch it off.']);
-  const party = g.heroes.map(h => ({ hero: h.id, id: PAGE_ID[h.id], short: SHORT[h.id], lv: h.level, pow: heroPower(h), xp: h.xp / xpNeeded(h), down: false }));
+  const party = partyCards();
   const tv = treeView(hov);
   return { tab: 'tree', hero, short: SHORT[hero], souls: g.mats, gold: g.gold, record: Math.max(g.record, n.deepest), party, bought, ultName: ABILITIES[hero][3].name,
     node: { id, ...info, state, cost: nodeCost(hero, id), isUlt: N0.kind === 'ult', notes }, texts: tv.texts };

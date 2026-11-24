@@ -17,10 +17,10 @@ async def main():
         await pg.evaluate("()=>{const g=window.__lootnight.S.g; g.realLifeOff=true; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map')}")
         await pg.evaluate(GO, 'portal'); await pg.wait_for_timeout(400)
         await pg.evaluate(ITEMS); await pg.wait_for_timeout(300)
-        for k, sel in [('legendary', "[data-item='bag:L1']"), ('set', "[data-item='bag:S1']")]:
-            c = await pg.evaluate("s=>{const e=document.querySelector(s); if(!e) return null; const r=e.getBoundingClientRect(); return [r.left+r.width/2,r.top+r.height/2]}", sel)
-            if not c: print('no cell', sel); continue
-            await pg.mouse.move(*c); await pg.wait_for_timeout(300)
+        sp = await pg.evaluate("()=>{const r=document.getElementById('spArea').getBoundingClientRect(); return [r.left,r.top,r.width/140]}")
+        for k, iid in [('legendary', 'L1'), ('set', 'S1')]:
+            i = await pg.evaluate("id=>window.__lootnight.S.g.bag.findIndex(e=>e.id===id)", iid)
+            await pg.mouse.move(sp[0] + (4 + 2 + (i % 6) * 22 + 10) * sp[2], sp[1] + (126 + (i // 6) * 22 + 10) * sp[2]); await pg.wait_for_timeout(300)
             await pg.screenshot(path=f'test/shots/legend_{k}.png', clip={'x': 640, 'y': 0, 'width': 640, 'height': 480})
         print('errors:', errs[:2] or 'none'); await b.close()
 asyncio.run(main())

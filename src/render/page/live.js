@@ -334,3 +334,116 @@ function livePanel(ctx, st, t) {
   composeInto(ctx, S, { lights: [], ambient: [0.1, 0.1, 0.2], tint: 0, vig: 0 }, 0);
   return LIVE_PANEL_HITS;
 }
+
+// ---- the whole side panel from the game (V2 with #53; grid doc §5, §6b): party, gear, stats, bag; in town the tabs
+// an item cell from the game: rarity, power, lock, NEW, plus the unbanked dashes, the upgrade arrow and the selection
+function liveCell(x, y, c, o = {}) {
+  if (c && c.locked) { itemCell(x, y, null, { locked: true }); return; }
+  itemCell(x, y, c && c.empty ? null : c, { isNew: c && c.isNew, ghost: o.ghost });
+  if (!c || c.empty) return;
+  if (c.run) for (let k = 0; k < 17; k++) if ((k >> 1) & 1) { putI(x + 2 + k, y + 2, P.u5); putI(x + 2 + k, y + 18, P.u5); putI(x + 2, y + 2 + k, P.u5); putI(x + 18, y + 2 + k, P.u5); }
+  if (c.up) sprite(x + 2, y + 2, ['..g..', '.ggg.', 'ggggg'], { g: 'g6' });
+  if (c.sel) { frameI(x - 1, y - 1, 23, 23, P.pale); frameI(x, y, 21, 21, P.gold); }
+}
+function panelFrame() {
+  leatherU(0, 0, W, H, { v: 0.16, vig: 0.45 });
+  for (let j = 0; j < H; j++) { putU(0, j, 0.02); putU(1, j, 0.78 + 0.06 * (GR(1, j) - 0.5)); putU(2, j, 0.3); putU(3, j, 0.05); }
+}
+function liveBag(st, X0, PW, y0) {
+  headerBar(X0, y0, PW, 'BAG', '');
+  const full = st.bagCount >= st.bagSize, cnt = st.bagCount + '/' + st.bagSize;
+  text(cnt, X0 + 34, y0 + 3, 'tiny', full ? P.crimson : P.u6, { shadow: P.void });
+  const ax = X0 + PW - 34;
+  wellU(ax, y0 + 1, 31, 8, { v: 0.08 });
+  if (st.autoSalvage) for (let j = y0 + 2; j < y0 + 8; j++) for (let i = ax + 1; i < ax + 30; i++) putU(i, j, lerp(0.42, 0.2, (j - y0 - 2) / 5), M_MOSS);
+  sprite(ax + 2, y0 + 3, ['.qqq.', 'qssss', '.qq..', '.q.q.']);
+  text(st.autoSalvage ? 'AUTO' : 'off', ax + 9, y0 + 3, 'tiny', st.autoSalvage ? P.g6 : P.u4, { shadow: P.void });
+  panelHit(ax, y0, 31, 10, 'autoSalvage', '', 'autosalvage');
+  const by = y0 + 13, rows = Math.ceil(st.bag.length / 6);
+  panelHit(X0, by - 2, PW, rows * 22 + 2, 'bagArea', '', '');
+  st.bag.forEach((c, k) => {
+    const x = X0 + 2 + (k % 6) * 22, y = by + Math.floor(k / 6) * 22;
+    liveCell(x, y, c);
+    if (c && !c.locked && !c.empty) panelHit(x, y, 21, 21, 'bagCell', c.id, 'bag:' + c.id);
+  });
+}
+function livePartyPanel(st, t) {
+  const X0 = 4, PW = W - 4, top = st.tabs ? 12 : 0;
+  panelFrame();
+  if (!st.tabs) headerBar(X0, 0, PW, 'PARTY', '');
+  st.party.forEach((c, n) => {
+    const x = X0 + n * 34, y = 12;
+    livePartyCard(x, y, c, n === st.sel);
+    if (c.alert) {
+      for (let j = -2; j <= 7; j++) for (let i = -2; i <= 7; i++) { const dx = (i - 2.5) / 4.6, dy = (j - 2.5) / 4.6, d = dx * dx + dy * dy; if (d <= 1) putU(x + 33 - 6 + i, y - 2 + j, d > 0.66 ? 0 : clamp(1 - 0.4 * (dx + dy)), M_DANGER); }
+      rectI(x + 33 - 4, y, 1, 4, P.moon); putI(x + 33 - 4, y + 5, P.moon);
+    }
+    panelHit(x, y, 33, 40, 'heroTab', n, 'hero:' + n);
+  });
+  for (let j = 0; j < 10; j++) for (let i = X0; i < X0 + PW; i++) putU(i, 54 + j, j === 0 ? 0.56 : j === 9 ? 0 : lerp(0.3, 0.14, j / 8) + 0.05 * (GR(i, 54 + j) - 0.5));
+  const nw = text(st.hero.name.toUpperCase(), X0 + 4, 57, 'silkb', P.u6, { shadow: P.void });
+  text(st.hero.cls, X0 + 8 + nw, 57, 'tiny', P.u4, { shadow: P.void });
+  power(X0 + PW - 4, 57, st.hero.pow, P.moon, 'r');
+  ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'].forEach((slot, k) => {
+    const gx = X0 + 2 + (k % 3) * 22, gy = 67 + Math.floor(k / 3) * 22, c = st.gear[slot];
+    liveCell(gx, gy, c, { ghost: { weapon: 'sword', helm: 'helm', armor: 'armor', boots: 'boots', ring: 'ring', trinket: 'amulet' }[slot] });
+    panelHit(gx, gy, 21, 21, 'gearCell', slot, c ? 'gear:' + st.sel + ':' + slot : '');
+  });
+  const sx = X0 + 71;
+  wellU(sx - 2, 66, PW - 71, 44, { v: 0.1 });
+  st.stats.forEach(([k, v, d], i) => {
+    const y = 69 + i * 7;
+    text(k, sx + 1, y, 'tiny', P.u4);
+    text(String(v), sx + 42, y, 'tiny', P.moon, { align: 'r' });
+    if (d) text(d, sx + 44, y, 'tiny', d[0] === '+' ? P.g6 : P.crimson);
+  });
+  liveBag(st, X0, PW, 113);
+  for (let j = H - 11; j < H; j++) for (let i = X0; i < X0 + PW; i++) putU(i, j, j === H - 11 ? 0.02 : j === H - 10 ? 0.62 : lerp(0.34, 0.18, (j - H + 9) / 8) + 0.05 * (GR(i, j) - 0.5));
+  footerMoney(X0, PW, st);
+  void top;
+}
+function liveTownPanel(st, t) {
+  const X0 = 4, PW = W - 4;
+  panelFrame();
+  st.builds.forEach((b, k) => {
+    const y = 14 + k * 19, hot = b.hot;
+    if (hot) { for (let j = y; j < y + 18; j++) for (let i = X0; i < X0 + PW; i++) putU(i, j, 0.3 - 0.1 * ((j - y) / 18) + 0.03 * (GR(i, j) - 0.5)); rectI(X0, y, 1, 18, P.gold); }
+    for (let i = X0 + 2; i < X0 + PW - 2; i++) { putU(i, y + 18, 0.04); putU(i, y + 19, 0.32); }
+    const nw = text(b.name, X0 + 4, y + 3, 'tiny', hot ? P.moon : P.u6, { shadow: P.void });
+    for (let p = 0; p < 3; p++) sprite(X0 + 7 + nw + p * 6, y + 3, p < b.lv ? PIP_ON : PIP_OFF, { O: 'gold', Y: 'pale' });
+    text(b.fx, X0 + 4, y + 11, 'tiny', P.u5, { shadow: P.void });
+    const bw = 40, bx = X0 + PW - bw - 3, by = y + 2;
+    if (b.lv >= 3) { text('MAX LEVEL', bx + bw / 2, by + 5, 'tiny', P.u4, { align: 'c' }); return; }
+    shadowU(bx, by, bw, 15, { k: 0.5, r: 2, dx: 1, dy: 2 });
+    plateU(bx, by, bw, 15, b.ok ? { top: 0.5, bot: 0.26, hi: 0.82 } : { top: 0.26, bot: 0.16, hi: 0.4, lo: 0.08 });
+    text(b.lv ? 'Upgrade' : 'Build', bx + bw / 2, by + 2, 'tiny', b.ok ? P.moon : P.u4, { align: 'c', shadow: b.ok ? P.void : undefined });
+    const cs = `${b.gold}g ${b.souls}`, cw = measure(cs, 'tiny') + 7, cx0 = Math.round(bx + bw / 2 - cw / 2);
+    text(cs, cx0, by + 9, 'tiny', b.ok ? P.gold : P.u4, { shadow: b.ok ? P.void : undefined }); soulGlyph(cx0 + cw - 5, by + 8, !b.ok);
+    panelHit(bx, by, bw, 15, 'build', b.id, b.tip);
+  });
+  const fy = 92, F0 = st.floor;
+  wellU(X0 + 2, fy, PW - 4, 12, { v: 0.08 });
+  arrowBtn(X0 + 3, fy + 1, -1, st.canDown); arrowBtn(X0 + PW - 13, fy + 1, 1, st.canUp);
+  if (st.canDown) panelHit(X0 + 3, fy + 1, 9, 10, 'pickFloor', -1, '');
+  if (st.canUp) panelHit(X0 + PW - 13, fy + 1, 9, 10, 'pickFloor', 1, '');
+  text('floor ' + F0, X0 + PW / 2 - 4, fy + 4, 'tiny', P.moon, { align: 'r', shadow: P.void }); text(F0 === 1 ? 'the start' : 'checkpoint', X0 + PW / 2, fy + 4, 'tiny', P.u4);
+  const bx = X0 + 2, by = fy + 14, bw = PW - 4, bh = 15;
+  shadowU(bx, by, bw, bh, { k: 0.6, r: 3, dx: 1, dy: 2 });
+  plateU(bx, by, bw, bh, { mat: M_MAGIC, top: 0.4, bot: 0.3, hi: 0.86, hiMat: M_DUSK, lo: 0.2, grain: 0.03 });
+  text(`Enter the dungeon · floor ${F0}`, bx + bw / 2, by + 5, 'tiny', P.moon, { align: 'c', shadow: P.void });
+  panelHit(bx, by, bw, bh, 'portal', '', `Into the Shadow Crypt at floor ${F0} (15 min).`);
+  liveBag(st, X0, PW, 124);
+  footerMoney(X0, PW, st);
+}
+// the panel's dispatcher (replaces the Skill-Tree-only one above)
+function livePanelAll(ctx, st, t) {
+  LIVE_PANEL_HITS = [];
+  setRes(SP_W, GS_H);
+  const S = buf('lsp', SP_W, GS_H); clearFrame(S); bind(S); CLIP = null;
+  if (st.tab === 'tree') liveTreePanel(st, t);
+  else if (st.tab === 'town') liveTownPanel(st, t);
+  else livePartyPanel(st, t);
+  if (st.tabs) { tabStrip(st.tab); let x = 4; for (const [id, , w] of TABS) { panelHit(x, 0, w, 11, 'townTab', id, ''); x += w; } }
+  composeInto(ctx, S, { lights: [], ambient: [0.1, 0.1, 0.2], tint: 0, vig: 0 }, 0);
+  return LIVE_PANEL_HITS;
+}
