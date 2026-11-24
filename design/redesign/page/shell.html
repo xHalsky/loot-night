@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loot Night RPG Screens</title>
+<style>
+@font-face { font-family: silkb; src: url(data:font/woff2;base64,__SILKB__) format("woff2"); }
+@font-face { font-family: tiny5; src: url(data:font/woff2;base64,__TINY5__) format("woff2"); }
+@font-face { font-family: m5; src: url(data:font/woff2;base64,__M5__) format("woff2"); }
+@font-face { font-family: jb9; src: url(data:font/woff2;base64,__JB9__) format("woff2"); }
+@font-face { font-family: ps2p; src: url(data:font/woff2;base64,__PS2P__) format("woff2"); }
+@font-face { font-family: vt323; src: url(data:font/woff2;base64,__VT323__) format("woff2"); }
+@font-face { font-family: jersey10; src: url(data:font/woff2;base64,__J10__) format("woff2"); }
+@font-face { font-family: dotgothic; src: url(data:font/woff2;base64,__DG16__) format("woff2"); }
+:root {
+  /* a test bench: controls in a narrow side column (plain UI type, small), the game frame as big as fits beside it */
+  --void: #0a0814; --deep: #1a1522; --line: #3a2c36; --bronze: #6a4240; --bone: #c7b18c; --moon: #f2efdc; --teal: #6aa9c4; --gold: #f1a934;
+  --ui: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--void); color: var(--moon); font-family: var(--ui); }
+.app { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 100vh; }
+.panel { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 10px 10px 24px; border-right: 1px solid var(--line); background: #0e0b16; display: flex; flex-direction: column; gap: 8px; }
+.panel h1 { margin: 0 0 2px; font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+.panel h1 span { color: var(--bone); font-weight: 400; }
+.grp { border: 1px solid var(--line); border-radius: 6px; padding: 6px 7px 7px; display: flex; flex-direction: column; gap: 5px; background: var(--deep); }
+.grp > h2 { margin: 0; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); }
+.row { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 6px; align-items: start; }
+.row > .lab { font-size: 11px; color: var(--bone); padding-top: 3px; line-height: 1.2; }
+.seg { display: flex; gap: 3px; flex-wrap: wrap; }
+.lslit { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; font-size: 12px; }
+.lslit input { width: 140px; }
+button { font: 500 11px/1.2 var(--ui); color: var(--bone); background: #241d2c; border: 1px solid #4a3a44; border-radius: 4px; padding: 3px 6px; cursor: pointer; }
+button[aria-pressed="true"] { color: var(--void); background: var(--gold); border-color: var(--gold); }
+button:hover { color: var(--moon); border-color: var(--bone); }
+button[aria-pressed="true"]:hover { color: var(--void); }
+button:focus-visible { outline: 2px solid var(--moon); outline-offset: 1px; }
+.ms { font: 11px var(--ui); color: var(--bone); font-variant-numeric: tabular-nums; padding-top: 3px; }
+.stage { padding: 12px 16px 40px; display: flex; flex-direction: column; gap: 12px; align-items: center; min-width: 0; }
+figure, .note, .triad, .spec { width: var(--sw); max-width: 100%; }
+figure { margin: 0; position: relative; }
+.stage.scroll { align-items: flex-start; overflow-x: auto; }
+.stage.scroll figure { max-width: none; }
+canvas { display: block; width: 100%; image-rendering: pixelated; image-rendering: crisp-edges; background: var(--void); }
+.guides { position: absolute; inset: 0; pointer-events: none; display: none; }
+.guides.on { display: block; }
+.zone { position: absolute; border: 1px dashed rgba(241, 169, 52, .9); }
+.zone b { position: absolute; left: 2px; top: 2px; white-space: nowrap; font: 600 10px/1 var(--ui); color: var(--void); background: var(--gold); padding: 2px 4px; }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.card { background: var(--deep); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.card h2 { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--bone); }
+.card p, .card li { margin: 0; font-size: 13px; line-height: 1.5; color: var(--moon); }
+.card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.card code { font: 12px ui-monospace, monospace; color: var(--gold); }
+.triad { display: grid; gap: 6px; margin: 4px 0 0; }
+.triad .row { display: flex; align-items: center; gap: 10px; }
+.triad .lab { flex: 0 0 210px; font-size: 12px; color: var(--bone); }
+.triad .sw { display: flex; flex-wrap: wrap; gap: 2px; }
+.triad .sw i { width: 16px; height: 16px; display: block; position: relative; }
+.triad .sw i.core::after { content: ''; position: absolute; left: 5px; top: 5px; width: 4px; height: 4px; background: #0a0814; outline: 1px solid #f2efdc; }
+.triad .key { font-size: 11px; color: var(--bone); opacity: .8; }
+.note { margin: 0; font-size: 13px; color: var(--bone); line-height: 1.5; }
+@media (max-width: 900px) { .app { grid-template-columns: 1fr; } .panel { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="panel" aria-label="Test controls">
+  <h1>Loot Night <span>· the game frame</span></h1>
+  <section class="grp" aria-label="View">
+    <h2>View</h2>
+    <div class="row"><span class="lab">Frame</span><div class="seg">
+      <button id="v-full" aria-pressed="true">Full frame</button>
+      <button id="v-desk" aria-pressed="false">Desk + monitor</button>
+      <button id="v-game" aria-pressed="false">Game screen</button>
+    </div></div>
+    <div class="row"><span class="lab">Zoom</span><div class="seg">
+      <button id="z-fit" aria-pressed="true">Fit (crisp)</button>
+      <button id="z-fill" aria-pressed="false">Fill</button>
+      <button id="z-1" aria-pressed="false">×1</button>
+      <button id="z-2" aria-pressed="false">×2</button>
+      <button id="z-3" aria-pressed="false">×3</button>
+    </div></div>
+    <div class="row"><span class="lab">Tools</span><div class="seg">
+      <button id="grid" aria-pressed="false">Show grid</button>
+      <button id="play" aria-pressed="false">Pause</button>
+      <span class="ms" id="ms">– ms</span>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="The RPG on the monitor">
+    <h2>The RPG (monitor)</h2>
+    <div class="row"><span class="lab">Screen</span><div class="seg">
+      <button id="s-dungeon" aria-pressed="true">Dungeon</button>
+      <button id="s-battle" aria-pressed="false">Battle</button>
+      <button id="s-map" aria-pressed="false">Floor map</button>
+      <button id="s-town" aria-pressed="false">Town</button>
+      <button id="s-excel" aria-pressed="false">Excel</button>
+    </div></div>
+    <div class="row"><span class="lab">Battle</span><div class="seg">
+      <button id="bt-fight" aria-pressed="true">Fight</button>
+      <button id="bt-bless" aria-pressed="false">Run blessings</button>
+      <button id="bt-swap" aria-pressed="false">Swap (drag)</button>
+      <button id="bt-hook" aria-pressed="false">Hook breaks the line</button>
+    </div></div>
+    <div class="row"><span class="lab">Floor map</span><div class="seg">
+      <button id="mp-three" aria-pressed="true">3 paths</button>
+      <button id="mp-map" aria-pressed="false">2 paths + a map</button>
+      <button id="mp-boss" aria-pressed="false">Boss next</button>
+      <button id="mp-away" aria-pressed="false">Away 5 s</button>
+    </div></div>
+    <div class="row"><span class="lab">Q4 (Excel)</span><div class="seg">
+      <button id="q4-sum" aria-pressed="true">AutoSum</button>
+      <button id="q4-fill" aria-pressed="false">Fill flick</button>
+      <button id="q4-sort" aria-pressed="false">Sort</button>
+      <button id="q4-pivot" aria-pressed="false">Pivot spinner</button>
+      <button id="q4-promo" aria-pressed="false">Promotion</button>
+    </div></div>
+    <div class="row"><span class="lab">Town panel</span><div class="seg">
+      <button id="tt-town" aria-pressed="true">Town</button>
+      <button id="tt-salvage" aria-pressed="false">Salvage Forge</button>
+      <button id="tt-appraiser" aria-pressed="false">Appraiser</button>
+      <button id="tt-merchant" aria-pressed="false">Merchant</button>
+      <button id="tt-inventory" aria-pressed="false">Inventory</button>
+      <button id="tt-tree" aria-pressed="false">Skill Tree</button>
+    </div></div>
+    <div class="row"><span class="lab">Tree</span><div class="seg">
+      <button id="th-knight" aria-pressed="true">Knightenstein</button>
+      <button id="th-rogue" aria-pressed="false">Garrote</button>
+      <button id="th-mage" aria-pressed="false">Magoo</button>
+      <button id="th-priest" aria-pressed="false">Healero</button>
+    </div></div>
+    <div class="row"><span class="lab">Colours (battle)</span><div class="seg">
+      <button id="r-full" aria-pressed="true">Moonwell 32</button>
+      <button id="r-moonwell" aria-pressed="false">Blue (Moonwell 7)</button>
+      <button id="r-green" aria-pressed="false">Green phosphor</button>
+      <button id="r-white" aria-pressed="false">White, 1 bit</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Desk and room">
+    <h2>Desk and room</h2>
+    <div class="row" id="palrow"><span class="lab">Palette</span><div class="seg">
+      <button id="p-graphite" aria-pressed="true">Graphite (chosen)</button>
+      <button id="p-tungsten" aria-pressed="false">Tungsten</button>
+      <button id="p-neon" aria-pressed="false">Neon</button>
+      <button id="p-moonwell" aria-pressed="false">Moonwell 32</button>
+    </div></div>
+    <div class="row" id="moments"><span class="lab">Moment</span><div class="seg">
+      <button id="m-calm" aria-pressed="true">Calm</button>
+      <button id="m-ring" aria-pressed="false">Phone rings</button>
+      <button id="m-tired" aria-pressed="false">Tired</button>
+      <button id="m-headset" aria-pressed="false">Headset on</button>
+      <button id="m-witching" aria-pressed="false">After 01:00</button>
+      <button id="m-dog" aria-pressed="false">Dog on your lap</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Her">
+    <h2>Her</h2>
+    <div class="row" id="herrow"><span class="lab">Panel</span><div class="seg">
+      <button id="h-chat" aria-pressed="true">Chat</button>
+      <button id="h-kettle" aria-pressed="false">Kettle, peeking</button>
+      <button id="h-steps" aria-pressed="false">Footsteps</button>
+      <button id="h-shower" aria-pressed="false">Shower</button>
+    </div></div>
+    <div class="row" id="caughtrow"><span class="lab">Caught</span><div class="seg">
+      <button id="c-0" aria-pressed="true">No</button>
+      <button id="c-1" aria-pressed="false">1st</button>
+      <button id="c-2" aria-pressed="false">2nd</button>
+      <button id="c-3" aria-pressed="false">3rd and later</button>
+    </div></div>
+    <div id="herwinrow">
+      <div class="row"><span class="lab">Cuddle</span><div class="seg">
+        <button id="cu-off" aria-pressed="true">No</button>
+        <button id="cu-play" aria-pressed="false">Play it</button>
+        <button id="cu-start" aria-pressed="false">1 Start</button>
+        <button id="cu-mid" aria-pressed="false">2 On her breath</button>
+        <button id="cu-fast" aria-pressed="false">3 Too fast</button>
+        <button id="cu-far" aria-pressed="false">4 Drifting</button>
+        <button id="cu-warm" aria-pressed="false">5 Warm enough</button>
+      </div></div>
+      <div class="row" style="margin-top:5px"><span class="lab">Plan</span><div class="seg">
+        <button id="pl-off" aria-pressed="true">On the wall</button>
+        <button id="pl-open" aria-pressed="false">Open</button>
+      </div></div>
+      <div class="row" style="margin-top:5px"><span class="lab">Morning</span><div class="seg">
+        <button id="mo-off" aria-pressed="true">No</button>
+        <button id="mo-green" aria-pressed="false">Green</button>
+        <button id="mo-yellow" aria-pressed="false">Yellow</button>
+        <button id="mo-red" aria-pressed="false">Red</button>
+        <button id="mo-unplugged" aria-pressed="false">Unplugged</button>
+      </div></div>
+    </div>
+  </section>
+  <section class="grp" aria-label="Lean in">
+    <h2>Lean in</h2>
+    <div class="row"><span class="lab">She's</span><div class="seg">
+      <button id="ln-off" aria-pressed="true">Not leaning</button>
+      <button id="ln-yoga" aria-pressed="false">Doing yoga</button>
+      <button id="ln-couch" aria-pressed="false">On the couch</button>
+      <button id="ln-bath" aria-pressed="false">In the bath</button>
+      <button id="ln-kitchen" aria-pressed="false">In the kitchen</button>
+      <button id="ln-mask" aria-pressed="false">Sheet mask</button>
+    </div></div>
+    <div class="row"><span class="lab">Her timer</span><div class="seg">
+      <button id="lst-0" aria-pressed="true">Just started</button>
+      <button id="lst-1" aria-pressed="false">Halfway</button>
+      <button id="lst-2" aria-pressed="false">Last stretch</button>
+    </div></div>
+    <div class="row"><span class="lab">Her</span><div class="seg">
+      <button id="llk-busy" aria-pressed="true">Busy</button>
+      <button id="llk-tell" aria-pressed="false">The tell</button>
+      <button id="llk-sees" aria-pressed="false">Sees you</button>
+    </div></div>
+    <div class="row"><span class="lab">Hall mirror</span><div class="seg">
+      <button id="lmr-off" aria-pressed="true">Not bought</button>
+      <button id="lmr-clear" aria-pressed="false">Clear, her in it</button>
+      <button id="lmr-fog" aria-pressed="false">Fogged</button>
+    </div></div>
+    <div class="row"><span class="lab">Lean</span><div class="seg">
+      <button id="lu-0" aria-pressed="false">1</button>
+      <button id="lu-1" aria-pressed="false">2</button>
+      <button id="lu-2" aria-pressed="false">3</button>
+      <button id="lu-3" aria-pressed="false">Mirror</button>
+      <button id="lfocus" aria-pressed="false">Closer framing</button>
+      <label class="lslit">Slit <input type="range" id="lslit" min="24" max="160" step="1" value="96"> <span id="lslitv">96 px</span></label>
+    </div></div>
+    <div class="row"><span class="lab">Tuesday</span><div class="seg">
+      <button id="lc-off" aria-pressed="true">Taught</button>
+      <button id="lc-lean" aria-pressed="false">First chance: the door</button>
+      <button id="lc-leanview" aria-pressed="false">First lean</button>
+      <button id="lc-tell" aria-pressed="false">First tell</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Week one">
+    <h2>Week one</h2>
+    <div class="row"><span class="lab">20:00</span><div class="seg">
+      <button id="ph-h-vn-mon" aria-pressed="false">Monday: Danny's voice note</button>
+      <button id="ph-h-vn-tue" aria-pressed="false">Tuesday's</button>
+      <button id="mo-replay" aria-pressed="false">Unplugged: Tuesday, again</button>
+      <button id="ph-h-vn-replay" aria-pressed="false">Its voice note</button>
+    </div></div>
+    <div class="row"><span class="lab">Her</span><div class="seg">
+      <button id="wk-off" aria-pressed="true">Nothing</button>
+      <button id="wk-snack">Snack run: hide the cans</button>
+      <button id="wk-plate">Take the plate</button>
+    </div></div>
+    <div class="row"><span class="lab">Tease visit</span><div class="seg">
+      <button id="wk-tease">Babe?</button>
+      <button id="wk-look">Looking: Eyes busy</button>
+      <button id="wk-kiss">She's happy</button>
+      <button id="wk-baabe">Ignored: Baaabe.</button>
+      <button id="wk-pout">Ignored: she leaves</button>
+    </div></div>
+    <div class="row"><span class="lab">Requests</span><div class="seg">
+      <button id="wk-towel">Babe, towel!</button>
+      <button id="wk-wine">Babe, bring my wine?</button>
+      <button id="wk-fetch">Bringing it</button>
+    </div></div>
+    <div class="row"><span class="lab">Bed</span><div class="seg">
+      <button id="wk-asleep">Asleep: waking meter</button>
+      <button id="wk-bed">Come to bed</button>
+    </div></div>
+    <div class="row"><span class="lab">Lap sit</span><div class="seg">
+      <button id="wk-lap">On your lap</button>
+      <button id="wk-mouse">She has the mouse</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Small pieces">
+    <h2>Small pieces</h2>
+    <div class="row"><span class="lab">Windows</span><div class="seg">
+      <button id="sm-off" aria-pressed="true">None</button>
+      <button id="sm-inspect" aria-pressed="false">Goblin Fuel</button>
+      <button id="sm-howto" aria-pressed="false">How to hide</button>
+      <button id="sm-pause" aria-pressed="false">Pause</button>
+      <button id="sm-away" aria-pressed="false">Away (charging)</button>
+    </div></div>
+    <div class="row"><span class="lab">Coach marks</span><div class="seg">
+      <button id="sm-coach-steps" aria-pressed="false">Footsteps</button>
+      <button id="sm-coach-door" aria-pressed="false">At your door</button>
+      <button id="sm-coach-phone" aria-pressed="false">Phone</button>
+      <button id="sm-coach-loot" aria-pressed="false">Loot</button>
+      <button id="sm-coach-windup" aria-pressed="false">Big attack</button>
+      <button id="sm-coach-headset" aria-pressed="false">Headset</button>
+    </div></div>
+    <div class="row"><span class="lab">Tooltips</span><div class="seg">
+      <button id="sm-tip-desk" aria-pressed="false">Desk: Drink</button>
+      <button id="sm-tip-task" aria-pressed="false">Windows: Sleep</button>
+      <button id="sm-tip-her" aria-pressed="false">Hers: the plan</button>
+    </div></div>
+    <div class="row"><span class="lab">Microsleep</span><div class="seg">
+      <button id="sm-micro" aria-pressed="false">Play it</button>
+      <button id="sm-microhalf" aria-pressed="false">Closing</button>
+      <button id="sm-microshut" aria-pressed="false">Shut</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Interruptions">
+    <h2>Interruptions</h2>
+    <div class="row" id="ebrow"><span class="lab">Energy break</span><div class="seg">
+      <button id="e-0" aria-pressed="true">No</button>
+      <button id="e-1" aria-pressed="false">1 Drawer</button>
+      <button id="e-2" aria-pressed="false">2 Grab</button>
+      <button id="e-3" aria-pressed="false">3 Open</button>
+      <button id="e-4" aria-pressed="false">4 Drink</button>
+      <button id="e-5" aria-pressed="false">5 Toss</button>
+    </div></div>
+    <div class="row" id="dogrow"><span class="lab">Dog</span><div class="seg">
+      <button id="d-off" aria-pressed="true">No</button>
+      <button id="d-jump" aria-pressed="false">Jumps up</button>
+      <button id="d-wait" aria-pressed="false">Waits (pet him)</button>
+      <button id="d-pet" aria-pressed="false">Petting</button>
+      <button id="d-sweet" aria-pressed="false">Favourite spot</button>
+      <button id="d-fast" aria-pressed="false">Too fast</button>
+      <button id="d-done" aria-pressed="false">Good boy</button>
+      <button id="d-goodboy" aria-pressed="false">Lucky sock</button>
+      <button id="d-offended" aria-pressed="false">Ignored</button>
+      <button id="d-slam" aria-pressed="false">Slams the desk</button>
+      <button id="d-cables" aria-pressed="false">Cables</button>
+    </div></div>
+    <div class="row" id="phonerow"><span class="lab">Phone in hand</span><div class="seg">
+      <button id="ph-off" aria-pressed="true">Down</button>
+      <button id="ph-h-call-mom" aria-pressed="false">Call: Mom</button>
+      <button id="ph-h-call-courier" aria-pressed="false">Call: Courier</button>
+      <button id="ph-h-call-boys" aria-pressed="false">Call: The Boys</button>
+      <button id="ph-h-lock1" aria-pressed="false">Lock: 1</button>
+      <button id="ph-h-lock3" aria-pressed="false">Lock: 3</button>
+      <button id="ph-h-faceid" aria-pressed="false">Face ID</button>
+      <button id="ph-h-boss" aria-pressed="false">Boss</button>
+      <button id="ph-h-her" aria-pressed="false">Her text</button>
+      <button id="ph-h-mom" aria-pressed="false">Mom talks</button>
+      <button id="ph-h-courier" aria-pressed="false">Courier talks</button>
+      <button id="ph-h-boys" aria-pressed="false">The Boys talk</button>
+      <button id="ph-h-home" aria-pressed="false">Home screen</button>
+      <button id="ph-h-msglist" aria-pressed="false">Messages</button>
+      <button id="ph-h-chat" aria-pressed="false">Her chat</button>
+      <button id="ph-h-chatold" aria-pressed="false">Her chat: scrolled back</button>
+      <button id="ph-h-photonew" aria-pressed="false">Her chat: new photo</button>
+      <button id="ph-h-photo" aria-pressed="false">Photo opened</button>
+      <button id="ph-h-texting" aria-pressed="false">Texting her</button>
+      <button id="ph-h-boyschat" aria-pressed="false">The Boys' chat</button>
+      <button id="ph-h-shop" aria-pressed="false">Shop: for you</button>
+      <button id="ph-h-shopher" aria-pressed="false">Shop: for her</button>
+      <button id="ph-h-shophome" aria-pressed="false">Shop: home</button>
+      <button id="ph-h-homeapp" aria-pressed="false">Home app</button>
+      <button id="ph-h-homesheet" aria-pressed="false">Home: vacuum</button>
+      <button id="ph-h-hometv" aria-pressed="false">Home: TV cast</button>
+      <button id="ph-h-homeseal" aria-pressed="false">Home: door seal</button>
+      <button id="ph-h-hometea" aria-pressed="false">Home: busy</button>
+      <button id="ph-h-homelow" aria-pressed="false">Battery low</button>
+      <button id="ph-h-dead" aria-pressed="false">Battery dead</button>
+    </div></div>
+    <div class="row" id="phonedeskrow"><span class="lab">Phone on desk</span><div class="seg">
+      <button id="ph-d-idle" aria-pressed="false">Idle: pick it up</button>
+      <button id="ph-d-ring" aria-pressed="false">Call: Mom</button>
+      <button id="ph-d-ring-courier" aria-pressed="false">Call: Courier</button>
+      <button id="ph-d-ring-boys" aria-pressed="false">Call: The Boys</button>
+      <button id="ph-d-boss" aria-pressed="false">Text: Boss</button>
+      <button id="ph-d-babe" aria-pressed="false">Text: Babe</button>
+      <button id="ph-d-boys" aria-pressed="false">Text: The Boys</button>
+      <button id="ph-d-lock" aria-pressed="false">Three texts</button>
+      <button id="ph-d-reply" aria-pressed="false">Her reply</button>
+      <button id="ph-d-glow" aria-pressed="false">Face down: message</button>
+      <button id="ph-d-glowcall" aria-pressed="false">Face down: call</button>
+      <button id="ph-d-down" aria-pressed="false">Face down</button>
+      <button id="ph-d-lowbat" aria-pressed="false">Low battery</button>
+      <button id="ph-d-dead" aria-pressed="false">Dead</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Text test">
+    <h2>Text test</h2>
+    <div class="row"><span class="lab">Font</span><div class="seg">
+      <button id="tf-off" aria-pressed="true">Off</button>
+      <button id="tf-t5" aria-pressed="false">Tiny5 (now)</button>
+      <button id="tf-ps" aria-pressed="false">Press Start 2P</button>
+      <button id="tf-vt" aria-pressed="false">VT323</button>
+      <button id="tf-j10" aria-pressed="false">Jersey 10</button>
+      <button id="tf-dg" aria-pressed="false">DotGothic16</button>
+    </div></div>
+  </section>
+</aside>
+<main class="stage" id="stage">
+  <figure>
+    <canvas id="game" width="640" height="360" aria-label="The whole game frame, animated"></canvas>
+    <div class="guides" id="guides-desk"></div>
+    <div class="guides" id="guides">
+      <div class="zone" style="left:0;top:0;width:70.46%;height:27.59%"><b>band 334×64</b></div>
+      <div class="zone" style="left:0;top:27.59%;width:70.46%;height:61.21%"><b>battle picture 334×142</b></div>
+      <div class="zone" style="left:0;top:88.79%;width:70.46%;height:11.21%"><b>skill bar 334×26</b></div>
+      <div class="zone" style="left:70.46%;top:0;width:29.54%;height:100%"><b>side panel 140×232</b></div>
+    </div>
+    <div class="guides" id="guides-town">
+      <div class="zone" style="left:29.11%;top:0.00%;width:12.24%;height:26.29%"><b>Dungeon Portal 58×61</b></div>
+      <div class="zone" style="left:0.42%;top:0.00%;width:13.71%;height:29.74%"><b>Appraiser 65×69</b></div>
+      <div class="zone" style="left:16.67%;top:2.16%;width:10.55%;height:27.59%"><b>Library 50×64</b></div>
+      <div class="zone" style="left:43.04%;top:0.00%;width:12.66%;height:29.74%"><b>Auction House 60×69</b></div>
+      <div class="zone" style="left:58.23%;top:6.47%;width:11.81%;height:23.28%"><b>Treasury 56×54</b></div>
+      <div class="zone" style="left:41.98%;top:34.91%;width:13.71%;height:21.12%"><b>Merchant 65×49</b></div>
+      <div class="zone" style="left:16.67%;top:61.64%;width:16.24%;height:20.26%"><b>Training Grounds 77×47</b></div>
+      <div class="zone" style="left:37.55%;top:56.90%;width:18.14%;height:25.00%"><b>Salvage Forge 86×58</b></div>
+      <div class="zone" style="left:58.23%;top:57.76%;width:11.81%;height:24.14%"><b>Inn 56×56</b></div>
+      <div class="zone" style="left:70.46%;top:0;width:29.54%;height:100%"><b>build panel 140×232</b></div>
+    </div>
+  </figure>
+  <p class="note" id="note"></p>
+  <div class="triad" id="triad" aria-label="The three palettes side by side: her panel, the desk, the game"></div>
+  <section class="spec" aria-label="Grid and palette spec">
+    <div class="card"><h2>Her panel</h2><ul>
+      <li>The left panel is <code>148×360</code>: the webcam view to y <code>266</code>, her UI under it.</li>
+      <li>The webcam view is the prototype's, unchanged in design: its room, door, corridor, him and her. Each state is baked from the prototype's own screenshot (exactly 2× the grid): down 2× in linear light, then ordered-dithered to the curated palettes.</li>
+      <li>His room and him: the desk's Graphite (near-black wall and floor, the slate door, the chair, the silhouette, the glowing glasses). What shows through the door and the daydream: the PC-98 set plus the desk's darks, so the prototype's colours stay close. The light under the door is a gold bar.</li>
+      <li>Live on top: the headset icon lights cyan with the headset on; his glasses go grey-green under Excel.</li>
+      <li>UI: beige paper windows with plum and purple bevels, pink buttons, rose hearts, Tiny5.</li>
+    </ul></div>
+    <div class="card"><h2>The dog</h2><ul>
+      <li>He jumps up on your lap: chest up, paws on the desk, covering the keys he likes best (Q W E, A S D).</li>
+      <li>A shiba in the desk's palette (copper fur, cream cheeks, brows and chest), painted with fixed values so the desk's uneven light can't wash him out.</li>
+      <li>Stroke his head with the mouse (gently: too fast does not count). The bar fills in his copper; at full he hops off. Petted: eyes closed, ears flat, hearts.</li>
+    </ul></div>
+    <div class="card"><h2>Desk + monitor</h2><ul>
+      <li>The right screen is <code>492×360</code> at x <code>148</code>: bezel <code>484×260</code> at 4, 3 (5 px), game screen at 9, 8, taskbar <code>474×15</code> at 9, 241, desk from y <code>263</code>.</li>
+      <li>A dark room lit almost only by the monitor. Its light is sampled from the screen every few frames, so the desk goes blue in the crypt, warm in town, cream under Excel.</li>
+      <li>Real life stays out of the RPG's frames: the PC is Windows 98 (the taskbar: Start, the two task buttons with the Tab hint on the one behind, Sleep, the tray with the wallet and the clock), iOS on the phone, flat glass cards for YOU and the feed. Text is Tiny5 only; the note is Tiny5 sheared into a ballpoint slant.</li>
+      <li>One camera for the desk: eye level at the monitor's top edge, depth lines meeting at x 246, y 3. The keyboard is built from 3D caps (sculpted tops, front skirts, the sides that face the centre) on a case with a typing angle; the phone lies flat and turned, its call screen placed on the glass with unscaled glyphs.</li>
+      <li>Class colours tie the screen to the keyboard: each portrait has a 1 px outline in its hero's colour, and his keys glow in it (1 2 3 knight steel, Z X C Garrote ember, Q W E mage violet, A S D priest gold). Ember is Moonwell's copper; on the desk it is a UI-only slot, so it never enters the dither. Tab Excel green, H Zone cyan, M moss.</li>
+      <li>The Goblin Fuel button glows gold (the next action) from the yawn mark. The Zone aura lights the bezel rim cyan and spills on the desk.</li>
+    </ul></div>
+    <div class="card"><h2>Grid</h2><ul>
+      <li>Internal resolution <code>640×360</code>: ×2 = 1280×720 base, ×3 = 1080p, ×4 = 1440p, ×6 = 4K.</li>
+      <li>Game screen <code>474×232</code> (465 snaps to 464 CSS).</li>
+      <li>Battle area <code>334</code> wide: band <code>64</code>, picture <code>142</code>, skill bar <code>26</code>.</li>
+      <li>Side panel <code>140×232</code>.</li>
+      <li>Smallest text: Tiny5 at 8 px, caps 5 px = 10 CSS px.</li>
+    </ul></div>
+    <div class="card"><h2>Colour meanings</h2><ul>
+      <li>Gold: money, prices, the next action, combo.</li>
+      <li>Crimson: danger, enemy HP, debuffs, wind-ups and the skill that answers them.</li>
+      <li>Moss: party HP, buffs, healing.</li>
+      <li>Arcane violet: magic, the town portal.</li>
+      <li>Rarity: bone, moss, stone blue, arcane, copper.</li>
+      <li>Flow: yellow (its own UI-only colour), flashing moon white when it steps up.</li>
+    </ul></div>
+    <div class="card"><h2>Frames</h2><ul>
+      <li>UI surfaces run through the world's ramps and Bayer dither: bronze, leather and parchment have gradients and grain, and cast soft shadows on whatever is beneath.</li>
+      <li>Bronze plates are lit from the top left. Slots are recessed wells with an inner shadow and a lit lower lip, and rare items glow up from the slot floor.</li>
+      <li>Text, icons, rarity lines and state frames stay palette-exact. Dark text only sits on solid fills.</li>
+      <li>Portraits are lit like the scene: warm key from the upper right, cold rim from the left, candle glow behind.</li>
+      <li>Skill slots are 15×18 with a 13×13 icon on a class tile (knight iron, Garrote plum cloak, mage violet runes, priest gilded rays). Three per hero: two skills and the ultimate, whose slot is gilded (gold frame, corner studs, a crest with a gem over the rail, its key on a gold tab; it glows when ready, turns copper with a lock while locked). Party cards are 33 px wide, four across.</li>
+    </ul></div>
+  </section>
+</main>
+</div>
+<script>
+__ENGINE__
+</script>
+<script>
+const $ = (id) => document.getElementById(id);
+const cv = $('game'), cx = cv.getContext('2d');
+let eb = 0, ebT = 0, scene = 'dungeon', view = 'full', moment = 'calm', her = 'chat', playing = !matchMedia('(prefers-reduced-motion: reduce)').matches, last = performance.now(), msAvg = 0, msT = 0, deskT = 0;
+const clock = { dungeon: 8.2, battle: 2.6, map: 0.5, town: 0.5, excel: 0 };
+const Q4NOTE_BASE = 'Tab: Q4, the Excel clicker (handoff step 4, #55), in a maximised Windows 98 Excel window: the navy-to-sky title bar with Q4_report_FINAL_v3.xls, the menu, the toolbar (Macros held down), the formula bar, the sheet and the Macros pane. Rows 1 and 2: your job title and an Excel data bar to the next promotion (lifetime zł), what Q4 pays a second, and the Hustle bar (x3 right after you switch in, down to x1 over 15 s). The four toys stand in their columns: the big Sum button (AutoSum), the fill handle in the corner of C4 (Fill flick), Sort A-Z, and the PivotTable on its turntable (Analyst and up). Every action pops its złoty in moss. The Macros pane lists what runs on its own, in the RPG too: name, level, what a level does, and Buy, gold when you can afford it. The game screen is hidden; Loot Night flashes navy on the taskbar when it needs you.';
+const Q4NOTES = {
+  sum: Q4NOTE_BASE + ' AutoSum: click the big Sum (or Space): the column rolls for 0.4 s, the total ticks, +1.3 zł (0.4 x the title x Hustle); 1 in 10 a crimson BALANCED stamp lands with a shake and pays x5.',
+  fill: Q4NOTE_BASE + ' Fill flick: grab the fill handle (the thin cross), drag down, let go: the cells fill one by one with a tick and +0.6 zł each, then the column resets.',
+  sort: Q4NOTE_BASE + ' Sort: the column flips like a split-flap board for 0.6 s, then everything (toys and macros) pays x2 for 5 s: a gold x2 tag counts down by the pay. The button greys out for its 10 s cooldown.',
+  pivot: Q4NOTE_BASE + ' Pivot spinner: grab the PivotTable by its corner and fling it; it spins on with momentum and slows down; every full turn pays +3.8 zł.',
+  promo: Q4NOTE_BASE + ' A promotion: the bar fills, then a Windows dialog, Congrats on your promotion!, the new title, x1.25 on all of Q4 and what it unlocked (the new macros flash in the pane), OK; confetti in the meaning colours for 1.5 s.',
+};
+const NOTES = {
+  dungeon: 'Dungeon, between fights. The party walks the ossuary, stops at the potion cart, and the curio card opens in the band above the battle: its bargain (Shake it, Noise +15, 50/50) and Leave it. After the shake its run blessing (+30% healing) flashes into the buffs row with a dashed frame. Corner overlay and Town portal on the left, buffs on the right, skill bar along the bottom, side panel with party, gear, stats and bag.',
+  battle: 'Battle, floor 4. Four heroes in marching order, evenly spaced: Healero, Magoo, Garrote and the knight in front. Garrote, athletic, shown chest to the camera like the others, sneaks: knees bent, back bent forward and rounded, the head hanging forward and low in front of his shoulders, a close-fitting hood at normal head size with a small peak at the back, only two glowing eyes in its shadowed opening, a thin wine scarf at the neck, long arms hanging low and nearly straight, the front fist low and a little forward, the back fist at his side (in battle the front dagger forward-gripped at the enemy, the back one reverse-gripped pointing straight back; walking both reverse-gripped, blades back). He walks like a stalking cat: a slow, low prowl, knees bending through each step, the guard held steady. The mob is bunched in two close lanes, three skeletons and two zombies, the back lane darker; the necromancer stands behind them on the party\'s lane and winds up SUMMON, and Judgement (D) pulses red because it answers it. The taunted zombie in the back lane spits over the front rank at the knight\'s shield. Cleave glows gold with x2 for the STAGGERED mark. A loot beam drops a Grave Ring: the name flies up, its bag slot glows NEW.',
+  excel: Q4NOTE_BASE,
+  map: 'Between floors. A torn, folded vellum map lies on the table under candlelight: gilded floor roundels joined by inked stair-roads, a red-ink ring and arrow on the current floor, compass rose and wax seal. Hovering a path card draws the red route and the next roundel. The side panel shows Garrote\'s inventory: dagger, hood, and the garrote wire as his trinket.',
+  town: 'Ravenhold at night, from above, drawn the 16-bit way: uneven masonry, hip roofs with shingle courses, cross-gable wings, moon shadows and dark ground rims, and almost no ordered dither. Each building shows its trade: the round eye tower of the Appraiser, the gothic Library, the columned Auction House under red tiles, the Merchant\'s clapboard shop with its striped awning and stalls, the open hearth of the rubble-stone Salvage Forge, the palisaded sand yard of the Training Grounds, the thatched, half-timbered Inn, and the Treasury still an empty plot with its vault door and strongboxes waiting. Adventurers crowd the portal court; the plaza gathers around the fountain. Hover cycles through the buildings: gold halo, brighter sign, tooltip, and the matching build row lights up in the panel.',
+};
+const TTNOTES = {
+  town: 'The town side panel has three tabs (handoff 2.1, #53): Town, Inventory and Skill Tree. Town: the build list, the way down and the bag. Costs are gold and Souls, which replace scraps everywhere (a pale wisp with a violet rim). The way down has a floor picker (floor 1 and each checkpoint: 6, 11...) over the violet Enter the dungeon plate. Clicking a building on the map opens it in this tab: there are no pop-up windows in town.',
+  salvage: 'The Salvage Forge, opened from the map; it stays lit while its page is open, and the back arrow returns to the build list. The bag shows what each item gives (+1 to +16 Souls by rarity). Picked items get a gold double frame and a tick; what can\'t be salvaged (locked, unknown, maps) is dimmed. A gold button does it: gold is the next action, drawn flat so its dark label never sits on a dither.',
+  appraiser: 'The Appraiser: only epics and legendaries drop unidentified (40 g and 100 g, the build\'s prices). The reveal shows in the panel: the cell flares, then a card with the item, its rarity and its affixes (up to 3). A real-life affix (of Stealth) is tagged "real life" and its effect sits on the next line.',
+  merchant: 'The Merchant: each item\'s price in gold on its cell (the build\'s item value), the picked ones framed, the sum on the gold button. The Auction House works the same way and pays złoty.',
+  inventory: 'Inventory: party, gear and bag as in the dungeon, under the tabs, with the Treasury row; Souls in the footer.',
+  tree: 'Skill Tree: pick a hero with the party cards; his tree opens over the town as a constellation (334 × 232). Two skills and the ultimate: the auto attack is the root, skill 1 (from the start) on the left with its rule pair and autocast, skill 2 (an unlock) on the right with its pair and autocast, three stats up the middle toward the ultimate, which needs any 6 nodes (the six gold pips under it). Shapes by kind: skills large with their icon, rules diamonds (a pair forks from its skill and is chained: buying one shuts the other), stats small stars, autocasts a loop. States: owned (the class colour and a glow), can buy (a blinking gold ring: the next action), too dear (bone), locked (dark, the icon dithered). The panel shows the hovered node: what it does, what it locks or needs, the tree so far, Buy with its Souls cost (stat 20, unlock and rule 40, autocast 60, ultimate 120, +15% per node already bought in that tree; Souls are one pool for all four), and Respec, free while testing. A bought autocast puts a loop mark on its skill-bar well (Battle: Taunt on, Fire switched off).',
+};
+const BTNOTES = {
+  fight: null,
+  bless: 'Run blessings (handoff 1.5b). Curios are the only source; each blessing lasts until the run ends (banked or wiped), stacks, and has a cost. In the buffs row a blessing is the curio\'s own icon in a moss well with a dashed frame (dashed = this run, the same mark as unbanked loot in the bag) and "run" where timed buffs show their seconds. Hovering one opens a card: name with a run tag, a moss bullet for what you got, a crimson bullet for what it cost, and a note that it lasts the run. The Dungeon screen shows one being made: the Potion cart now offers its bargain and "Leave it", and after the shake the chip flashes into the row.',
+  swap: 'Marching order (handoff 1.6). Rank 1 is the front: the right of the picture, the left of the skill bar. Drag a hero (the sprite or the skill-bar portrait) onto another to swap them: the portrait lifts and follows the pointer, the target gets a dashed gold frame, both heroes get a dashed gold ring on the floor. On the drop they pass each other and both stop acting for 1 s (their wells dither, "swap"). The skill bar\'s groups follow the ranks; the keys stay with the hero. Magoo lands in rank 2, outside his ranks (3 to 4): his portrait gets the crimson x0.7 tab. Between the groups, tiny glyphs in the giver\'s class colour show the auras: the knight\'s shield and the priest\'s cross pass back, Garrote\'s crit star, Magoo\'s clock and the cross pass forward.',
+  hook: 'Enemies that break the line (from floor 6). A Hook winds up for 1 s, naming its target rank, then throws its chain at rank 4 and pulls Healero to the front; the others shift back one. Healero is out of position in rank 1 (x0.7 on his portrait); the auras move with the order. Hovering a hero opens his card above him: his rank, what is wrong, what his aura gives and to whom. Away, the line stays broken.',
+};
+const MPNOTES = {
+  three: 'The floor map is the route choice (handoff 1.5, #52). After floor 7 it offers three paths to floor 8 (two on floors 1 to 5). Each card shows at most one feature, what stands on that floor (bronze well), and one condition, what changes on the whole floor (crimson well, its danger as 1 to 3 skulls). About half the cards are plain. Hovering a card inks its road in red, gilds its room and writes the full text in the margin: a moss bullet for what you get, a crimson one for what it costs. The other rooms stay pencilled with their icons sketched beside them. The hourglass marks the safest card.',
+  map: 'A map in the bag adds one more card: its road is dashed, its well wears the map\'s rarity, and the margin says what it pays and costs. The hourglass stays on a generated card: a map is never taken for you.',
+  boss: 'Before a boss floor there is one card, the boss floor (crimson header). It can carry a condition, here Haunted.',
+  away: 'While the map is off screen the hourglass runs: 5 s in all, it does not reset when you glance back. On screen the footer and the card show what is left. At 5 s the safest path is taken (no condition first, then the lowest danger, never a map) and its road inks itself. Away loses you the upside; it never walks you into danger.',
+};
+const HNOTES = {
+  chat: 'Her panel: the prototype\'s webcam view, dithered. She stands in the open doorway in the warm light; you sit in front of your chair, glasses glowing, sweating. The note grows into her question and your three answers.',
+  kettle: 'Her panel: you peek. The door is ajar; down the corridor she waits by the kitchen, her back to you. You have turned to look.',
+  steps: 'Her panel: footsteps. The door is ajar and she is coming down the corridor; you turn to the sound. The note turns amber, the buttons are off.',
+  shower: 'Her panel: she is in the shower. The door is shut; the daydream bubble shows the frosted cabin. You face the monitor, glasses glowing.',
+};
+const ENOTES = {
+  1: 'Energy break, 1 Drawer. The window opens over the right screen and the rest dims; abilities pause while your hands are busy. Every scene is ray-cast through one camera in centimetres, so desk, drawer, floor and cans share one perspective (Show grid draws each camera\'s vanishing points and a grid on its main plane). Here the camera looks down at 58 degrees from in front of the desk: the mouse mat with the mouse, the keyboard\'s corner, a receipt, two coins, crumbs, the charger cable, a mug, a crisp bag and the old ring stains where the cans always go; below the fold the pedestal\'s two drawers, the floor\'s planks, cables and a power strip. The cursor grabs the bar handle and pulls; the drawer slides out on its runners.',
+  2: 'Energy break, 2 Grab. Same camera, the drawer open: three Goblin Fuel cans lying side by side (ray-cast cylinders wrapped in the 36x87 sprite, lids in the desk\'s greys), a dead gamepad, AA batteries, a coiled USB cable, a receipt, a sticky-note pad. The front can comes up out of the drawer, turns upright on the way and lands on its spot, right of the mouse mat, on the old rings; the gold dashed ring (the next action) turns moss with a check.',
+  3: 'Energy break, 3 Open. The whole can on its spot, seen from the front left 15 degrees down through a long lens, the angle its 72x174 sprite was drawn at, so the lid and the base curve alike and sit on the desk\'s grid. Behind it the mug, the crisp bag, a desk speaker and a little painted knight; the monitor is out of frame to the left and lights the can from that side, as its drawing does. The cursor pulls the tab ring up, the mouth breaks open, acid fizz.',
+  4: 'Energy break, 4 Drink. Close on him from his left side, the camera level with his eyes (the horizon runs through his glasses). No desk: the monitor glows at the far left, showing the game squeezed into its perspective; the window\'s blinds behind him, a poster and a shelf. He is the one from her panel, side-on: dark silhouette, short dark hair, glasses lit white by the screen, red lips, the sweat drop; the screen rims his profile. Hold Space and the can tilts; he tips his head well back (up to 41 degrees), so his mouth turns up to the can. The liquid is one continuous body: its free surface stays level as the can turns and keeps the volume (the line is placed so the area under it is what is left), two standing-wave modes slosh with how fast the tilt changes, depth runs down the acid ramp in the dither, a 1 px meniscus, single-pixel fizz, a thin ribbon into his mouth. In you: half at 60, full at 85.',
+  5: 'Energy break, 5 Toss. The room from his chair, 12 degrees down: no desk. The window with moonlit blinds and the sill, a radiator, a low cabinet with a plant, a little castle and a stack of game boxes, a dragon-eye poster, the mesh bin with paper in it, and nothing behind it, so last nights\' misses lie flat on the floor round it: whole cans on their sides, where they fell. The can is held at the bin\'s depth, so it keeps its size as it flies across: grab it, pull back, let go; one throw.',
+};
+const MNOTES = {
+  calm: 'Calm, 20:40. The phone lies dark, reflecting the monitor. The Tonight note is taped to the bezel over the empty middle of the taskbar: "Tonight, 23:00+" and tonight\'s three stars as three handwritten lines (floor 8, don\'t get caught, keep her happy), each ticked, warned or crossed out. YOU card: Tired 10 with the yawn mark at 30, Zone 0 (headset off), the Drink button with the Goblin Fuel can\'s 6 × 13 icon, the cans left and a G keycap; G glows moss on the keyboard. The feed shows the last lines, newest on top, older ones fading.',
+  ring: 'Phone rings. The phone buzzes and jumps on the desk, its screen lights the wood: Mom, mobile, slide to answer, and Decline right under the slider so it stays in view. The countdown ring beside it runs down.',
+  tired: 'Tired 36, past the yawn mark. The mark turns gold and the Drink button lights up gold with a pulsing copper rim, the colour of the next action: time for a Goblin Fuel (G). With no cans left the can is struck out and G goes dark (After 01:00).',
+  headset: 'Headset on. The bezel\'s rim lights cyan and the glow spills on the desk, growing with Zone (19 of 30). The H key glows cyan all night.',
+  dog: 'The dog on your lap, the whole loop: he jumps up, whines and waits; stroke his head with the mouse and he waits for you, otherwise he gets a demo pat, licks your hand and drops away. The Dog row below shows each moment on its own.',
+  witching: 'After 01:00. The clock turns red and reads witching hour; Sleep is live; the note says sleep any time. No cans left: the button greys out and M goes dark.',
+};
+// Fit: the largest whole number of screen pixels per game pixel that fits beside the controls (crisp, even pixels);
+// Fill: as big as fits (pixels may come out uneven);
+// ×1 ×2 ×3: that many CSS pixels per game pixel (scrolls if it doesn't fit)
+let zoom = 'fit';
+function fit() {
+  const base = view === 'full' ? 640 : view === 'desk' ? 492 : 474, hb = view === 'game' ? 232 : 360, dpr = window.devicePixelRatio || 1;
+  const st = $('stage'), availW = st.clientWidth - 32, availH = window.innerWidth > 900 ? window.innerHeight - 24 : 1e9;
+  let s;
+  if (zoom === 'fit') { const k = Math.floor(Math.min(availW / base, availH / hb) * dpr); s = k >= 1 ? k / dpr : Math.min(availW / base, availH / hb); }
+  else if (zoom === 'fill') s = Math.min(availW / base, availH / hb);
+  else s = +zoom;
+  st.classList.toggle('scroll', base * s > availW + 1);
+  document.documentElement.style.setProperty('--sw', Math.floor(base * s) + 'px');
+}
+function setZoom(z) { zoom = z; for (const k of ['fit', 'fill', '1', '2', '3']) $('z-' + k).setAttribute('aria-pressed', k === z); fit(); }
+function syncGuides() { const on = $('grid').classList.contains('on'); EB_GUIDES = on && eb > 0; $('guides').classList.toggle('on', on && view === 'game' && scene !== 'town' && scene !== 'excel'); $('guides-town').classList.toggle('on', on && view === 'game' && scene === 'town'); $('guides-desk').classList.toggle('on', on && view === 'desk' && !eb); }
+const PNOTES = {
+  tungsten: 'A · Tungsten: the home is warm. Walnut, brass, beige and warm graphite; shadows sink to aubergine, highlights to cream. The only cold light is the screen; a faint warm light from the room behind you (her side) meets it on the desk, so the RPG reads as a cold window in a warm room.',
+  graphite: 'B · Graphite (chosen): reality is grey, like her black and grey panel. Neutral greys with no hue shift, greige wood, true Platinum grey. The only colour on the desk is the meaning colours, the class colours and the screen\'s light. The desk is seen through one camera (eye level at the monitor\'s top): the keyboard is a block of sculpted 3D caps on a tilted case, the phone lies flat and turned, its call screen laid out on the glass. Each hero\'s keys glow in his class colour, the same as his portrait\'s outline: 1 2 3 knight steel, Q W E mage violet, A S D priest gold.',
+  neon: 'C · Neon: a gamer\'s room at 2 a.m. Split tone: violet shadows, teal accents, peach highlights, a magenta LED strip behind the monitor. The most 2026 of the three, but its magenta sits close to her pink.',
+  moonwell: 'Backup: the desk in Moonwell 32, the same palette as the RPG.',
+};
+const DNOTES = {
+  jump: 'The dog, 1 Jumps up. A shiba rises over the desk\'s near edge in front of the keyboard, head, chest and front paws, as if he jumped on your lap: up fast with his ears flying, a little squash when his paws land. Drawn in code like the other characters (shapes, hard pixel edges, a 1 px outline), lit like the UI and the can (key light from the upper left), ordered dither. His colours are his own slots from the can\'s warm print colours (shiba orange, deep red and plum shadows, cream to moon white, three pinks), kept out of the desk\'s dither.',
+  wait: 'The dog, 2 Waits. He whines (a little Noise): big glossy puppy eyes, the eyebrow dots lift, his head tilts one way then the other, the tongue bleps, and one paw lifts and taps the desk, showing its pink beans. A glass card the first time: stroke his head, gently. Stroke him with the mouse here: his ears go back, his eyes close, hearts float up, and his tail wags faster and wider as he fills up (no bar: the tail is the meter). Too fast and he flinches. His favourite spot (an ear or the chin, a new one each time) counts three times.',
+  pet: 'The dog, 3 Petting. Your hand (the game\'s cursor) strokes his crown. He fills up over a few seconds: eyes close in happy arcs, ears flatten back, blush, an open smile with the tongue, hearts float up, and the tail goes from a slow sway to a fast wag.',
+  sweet: 'The dog, 4 Favourite spot. Here the chin: a scratch there counts three times. He leans his head back into your hand, eyes squeezed in bliss, tongue out, full blush, a sparkle on the spot, twice the hearts, and the tail at full speed. Fill him up mostly here and he is a Good Boy.',
+  fast: 'The dog, 5 Too fast. A hard swipe: he flinches (eyes squeezed, ears pinned flat, he ducks), a ! over him and the card says gently! The stroke takes a little back. Then he peeks at you, wary, ears coming back up.',
+  done: 'The dog, 6 Good boy. Full: he licks your hand (lick), gives a happy hop and flops down out of sight, at your feet.',
+  goodboy: 'The dog, 7 Lucky sock. Filled up mostly on his favourite spot: after the lick he dives down and comes back up with a sock in his mouth, drops it on the desk, GOOD BOY! (the Good Boy buff: loot goblins come more often for a while), and leaves the sock there.',
+  offended: 'The dog, 8 Ignored. Left alone for 12 seconds he gives up: he stops whining, side-eye, nose up and away, a pout, hmph, and sinks out of sight. After 1 to 3 of these (random) he slams the desk instead.',
+  slam: 'The dog, 9 Slams the desk. He jumps up hard and slams his paws on the desk, BONK: the whole desk jolts, the screen flickers and goes to NO SIGNAL (the monitor\'s own message box drifting on black; the room goes dark with the screen), and he drops away. The party fights on unseen; drops are lost until the cables are back.',
+  cables: 'The dog, 10 Cables (play it: drag the plugs). NO SIGNAL: a window like the energy break\'s opens over the right screen, the rest dims. Behind the monitor, seen through one camera in centimetres (16 degrees down, a long lens, 13 px per cm): the port strip on the monitor\'s back with 4 sockets from 9 shapes (HDMI, DisplayPort, figure-8 power, USB-A, USB-C, DVI, VGA, Ethernet, 3.5 mm audio) in a random order, each with its printed label; the 4 cables in random colours come up through the desk\'s grommet and their plugs lie on the desk, connectors toward you, so each plug and its socket can be compared face to face. Every connector is drawn 1.3 times its real size, sockets and plugs alike, so the shapes read. Drag a plug to the socket of the same shape: it turns and clicks in (moss), or bounces back (crimson, doesn\'t fit). The pills tick off the cables; all four back within 6 s keeps your Flow. The screen is off, so the moon through the window behind you is the light.',
+};
+const CNOTES = {
+  1: 'Caught, the 1st time tonight: the full-screen scare (0.8 s and a sting; the page holds it after). Her, head and shoulders, in your doorway with the hallway light behind her, drawn like a late PC-98 dating-sim portrait in her panel\'s 16 colours: flat tones with 50% checkers between them, crisp line art (black on hair and eyes, brown on skin), a warm rim from the hallway along her hair. Her look is the prototype\'s: long straight black hair, blunt bangs, round glasses, green eyes, the pink flower clip, the cream wide-neck tee. 1st: a stern glare, brows down, a flat mouth. A white flash, an interlaced punch-in, a shake that settles; a PC-98 text window: her name on a pink tab, WE NEED TO TALK. in crimson, what it costs you, a blinking arrow.',
+  2: 'Caught, the 2nd time: her glasses go blank white with a glint, her face falls into shadow with gloom lines, a tight straight mouth; the hallway a step darker. Guilt: the party deals 10% less for 30 s.',
+  3: 'Caught, the 3rd time and after: furious. Brows hard down, a tight squint with tiny pupils, a shout with clenched teeth, the anger mark by her clip, red hatching on her cheeks, the hallway lit red behind her; a bigger shake. She turns your monitor off for 8 s and Flow resets.',
+};
+function syncNote() { $('note').textContent = (wk !== 'off' && view === 'full') ? WKNOTES[wk] : (lcoach !== 'off' && view === 'full') ? LCNOTES[lcoach] : (lean !== 'off' && view === 'full') ? leanNote() : (small !== 'off' && view === 'full') ? SMNOTES[small] : (tt !== 'off' && view === 'full') ? 'Text test, ' + TL[tt].name + '. Her chat window (her panel, bottom left), the morning summary (right) and a text thread on the phone, laid out again for this font on the 640×360 grid; each window grows to fit its text, and the rest of the frame dims. Judge it at ×2 or ×3 (Zoom), or Fit on a big screen.' : (RPG_MONO !== 'full' && scene === 'battle' && !(morn !== 'off' && view === 'full')) ? RNOTES[RPG_MONO] : (morn !== 'off' && view === 'full') ? MONOTES[morn] : caught ? CNOTES[caught] : (plan && view === 'full') ? PLNOTE : (cud !== 'off' && view !== 'game') ? (cudEnd || CUNOTES[cud]) : (ph !== 'off' && view !== 'game') ? PHNOTES[ph] : (dog !== 'off' && view !== 'game') ? DNOTES[dog] : (eb && view !== 'game') ? ENOTES[eb] : (view === 'full' ? HNOTES[her] + ' ' : '') + (view !== 'game' ? PNOTES[DESK_VARIANT] + ' ' : '') + NOTES[scene] + (view !== 'game' ? ' ' + MNOTES[moment] : ''); }
+let dog = 'off', dogT = 0, caught = 0, caughtT = 0, ph = 'off', phT = 0;
+let small = 'off', smT = 0;
+// lean in (grid doc 7l): what she's doing, her timer's stage, her look, the hall mirror, the lean (0..1), the slit, focus
+let lcoach = 'off';
+let lean = 'off', lst = 0, llook = 'busy', lmir = 'off', lu = 0.64, lslit = 96, lfocus = false, leanT = 0, creakT = 9, lastNotch = 0;
+// where the lean starts for each: centred on her (the slope through the gap she lies on), found on the mouse's curve
+const LEAN_AIM = { yoga: 0.235, couch: 0.38, bath: 0.035, mask: 0.03, kitchen: -0.84 };
+const leanUFor = (s) => { const y = 88.4 - 3 * s; let a = 0, b = 1; for (let k = 0; k < 30; k++) { const m = (a + b) / 2; if (leanEye(m) > y) a = m; else b = m; } return (a + b) / 2; };
+const LEAN_HOME = new Proxy({}, { get: (_, k) => leanUFor(LEAN_AIM[k] ?? 0.035) });
+const LEAN_HEARD = { yoga: ['MUSIC', 'living room', 'now'], couch: ['TV', 'living room', 'now'], bath: ['MUSIC', 'bathroom', 'now'], kitchen: ['KETTLE', 'kitchen', 'now'], mask: ['TAP', 'bathroom', 'now'] };
+const LNOTES = {
+  yoga: ['Doing yoga, just started: standing poses (arms up), the video on the TV with its progress line near the start. She faces along her mat, so you see her side on.', 'Doing yoga, halfway: on the floor (sitting, reaching for her feet), the video\'s line about half along.', 'Doing yoga, the last stretch: lying flat on her back, the video\'s line nearly at the end. Lying flat reads because her mat runs across your line of sight.'],
+  couch: ['On the couch, just started: the back of her head over the couch\'s back, her snack bowl heaped on the armrest, a film on the TV.', 'On the couch, halfway: the bowl half empty, the film on.', 'On the couch, the last stretch: the bowl empty (crumbs), the credits rolling on the TV (when the TV cast works).'],
+  bath: ['In the bath, door ajar for her music, just started: foam heaped over the rim, her leg up over the tub\'s side, the wine glass full, the candles tall. Her head at the far end.', 'In the bath, halfway: the foam down to the rim, the wine half gone, the candles burned down.', 'In the bath, the last stretch: the foam gone (water, a few patches), the glass empty, the candles stubs: she\'s about to get out.'],
+  kitchen: ['In the kitchen, just started: leaning on the counter, the kettle\'s light on and a wisp of steam. The kitchen is 2 m from your door, so she fills the slit from behind (she is about 500 px tall at this distance; the slit shows her from the waist up).', 'In the kitchen, halfway: on tiptoe, reaching up to the high shelf for a mug (her tee rides up), the steam a plume.', 'In the kitchen, the last stretch: a mug in her hand, the steam billowing, the kettle\'s light off (the click).'],
+  mask: ['Getting ready for bed, just started: a sheet mask on, she smooths it down with both hands, sitting on the tub\'s edge (the bathroom door open).', 'Getting ready for bed, halfway: the mask on, scrolling her phone in her lap: she\'s a while yet.', 'Getting ready for bed, the last stretch: peeling the mask off from the chin.'],
+};
+function leanNote() {
+  const base = 'Lean in (fan-service steps 7 and 12). Hold the door open past 0.6 s and the right screen is his eye at the crack, 16 cm behind the gap at your door\'s latch, at seated height; her panel stays live and the webcam shows him turned in his chair, leaning to the crack. One camera (focal 650 px, the horizon low at y 240), nothing scaled. Move the mouse over the right screen to lean (the pointer hides): 1 the kitchen, 2 the bathroom straight down the hallway, 3 the living room, then the hall mirror; a small move pans the rooms a lot, the door stays put. The wheel (or the slider) opens the door a notch, 24 to 160 px; two notches within 0.3 s creak (Noise +8). Hold the right button: a closer framing, drawn again through a longer lens, still cropped by the slit. ';
+  if (lmir !== 'off') return base + (lmir === 'clear' ? 'The hall mirror (199 zł), clear: at the far end of the lean it shows round the corner into the bathroom: her at the basin, mask on, about 136 px tall in it. It works both ways: while she\'s in it, the red bar fills x2.' : 'The hall mirror fogged by her steam (the bathroom door open after her shower): only her shape shows, a darker blur in a pale wash. It clears 20 s later.');
+  const look = llook === 'tell' ? ' Her tell: she stops, and her head turns toward your door; the red bar\'s eye opens and blinks, the bar doesn\'t fill yet. Let go now and nothing happens.' : llook === 'sees' ? ' She sees you: looking straight at your door, a blush; the red bar fills (faster the wider the slit: x1 at 24 px to x2.5 at 160, x1.5 more while you look closer). Her note: "Enjoying the view?" Not a catch: with Goodwill 40+ she\'s flustered (+10 Goodwill), below it she teases (Mood +5).' : '';
+  return base + LNOTES[lean][lst] + look;
+}
+// ---------------------------------------------------------------- week one: the pieces each night needs (week one 2b)
+// Each is drawn from the nearest thing already designed: her moments in her panel's window (as the chat), the skill
+// bar's blocked state (as Hands busy), the away card (as charging), the morning's summary, The Boys' chat on the phone.
+let wk = 'off', wkT = 0;
+const WKS = {
+  snack: { her: { mood: 'happy', heard: ['PLATES', 'hallway', 'now'], note: ['FOOTSTEPS', 'Plates clinking... a snack run.'], warn: true }, pix: 'steps', desk: { hideCans: true, tired: 34, clock: '23:20' } },
+  plate: { her: { mood: 'happy', heard: ['PLATES', 'your door', 'now'], ask: { label: 'SNACK RUN', right: '4 s', line: 'Made you a plate. Eat something, babe.', bar: 0.7, pills: [['Take the plate', 'party +20% HP']] } }, pix: 'chat' },
+  tease: { her: { mood: 'happy', heard: ['"BABE?"', 'your door', 'now'], ask: { pink: true, label: 'HER', look: 0, line: 'babe? come here a sec...', bar: 0.9, barCol: C9.pink } }, pix: 'chat', scene: 'battle' },
+  look: { her: { mood: 'happy', heard: ['"BABE?"', 'your door', 'now'], ask: { pink: true, label: 'HER', look: 2, line: 'mm. like what you see?', bar: 0.55, barCol: C9.pink }, eye: [96, 62], stats: { goodwill: 46 } }, pix: 'chat', block: 'EYES BUSY', scene: 'battle' },
+  kiss: { her: { mood: 'flustered', heard: ['"BABE?"', 'your door', 'now'], ask: { label: 'HER', look: 3, line: 'She blows you a kiss. "Ok. Go play."' }, stats: { goodwill: 52 }, gwTag: '+12' }, pix: 'chat', scene: 'battle' },
+  baabe: { her: { mood: 'happy', heard: ['"BAAABE."', 'your door', 'now'], ask: { pink: true, fast: true, label: 'HER', right: '5 s', line: 'Baaabe.', bar: 0.8, barCol: C9.rose } }, pix: 'chat', scene: 'battle' },
+  pout: { her: { mood: 'annoyed', heard: ['STEPS', 'hallway', 'now'], note: ['HER', 'Fine. Enjoy your elves.'] }, pix: 'kettle', scene: 'battle' },
+  towel: { her: { mood: 'happy', heard: ['SHOWER', 'bathroom', 'now'], ask: { label: 'BABE, TOWEL!', right: '11 s', line: 'I forgot my towel. Bring me one?', bar: 0.72, pills: [['Bring her a towel', '10 s away']] } }, pix: 'shower' },
+  wine: { her: { mood: 'happy', heard: ['MUSIC', 'bathroom', 'now'], ask: { label: 'BABE, WINE?', right: '9 s', line: 'Bring my wine? It\'s on the counter.', bar: 0.6, pills: [['Bring it to her', '12 s away']] } }, pix: 'shower' },
+  fetch: { her: { mood: 'happy', heard: ['SHOWER', 'bathroom', 'now'], note: ['HER', 'You went to bring her a towel.'] }, pix: 'shower', away: { what: 'Bringing her a towel', total: 10 } },
+  asleep: { her: { mood: 'asleep', heard: ['ZZZ', 'bedroom', 'now'], ask: { top: 279, label: 'ASLEEP', labelCol: C9.purple, line: 'Keep the Noise down.', bar: 0.42, barCol: C9.lilac, marks: [0.6], barLabels: [[0.6, 'texts you'], [1, 'gets up']] }, stats: { noise: 34 } }, door: true, desk: { clock: '00:24' } },
+  bed: { her: { mood: 'sleepy', heard: ['"COME TO BED"', 'your door', 'now'], ask: { pink: true, label: 'HER', look: 1, line: 'come to bed... it\'s late', bar: 0.7, barCol: C9.pink, pills: [['Coming, babe', 'ends the night']] }, eye: [96, 62], stats: { goodwill: 58 }, gwTag: 'x2' }, pix: 'chat', block: 'EYES BUSY', scene: 'battle', desk: { clock: '01:06', witching: true } },
+  lap: { her: { mood: 'flustered', chat: { label: 'ON YOUR LAP 1/3 · KEEP PLAYING', q: 'Which one is you? The one with the shield?', a: ['Yep. I protect everyone.', 'The knight.', 'Shh, boss fight.'], hover: 0 } }, pix: 'chat', scene: 'battle', lap: { say: 'ooh, shiny' } },
+  mouse: { her: { mood: 'happy', chat: { label: 'ON YOUR LAP 2/3 · KEEP PLAYING', q: 'You stopped talking to me. My turn!', a: ['Give it back!', 'Okay, I\'m here.', 'The boss!'], hover: 1 } }, pix: 'chat', scene: 'battle', block: 'SHE HAS THE MOUSE', lap: { say: 'my turn!' } },
+};
+const WKNOTES = {
+  snack: 'A snack run\'s footsteps (Monday on; the cans from Thursday): her note says what the hallway says (plates clinking) in the footsteps\' amber; the YOU card\'s Drink button turns gold and reads Hide cans (click it or G), its rim pulsing fast. You can keep playing: she checks the desk, never the screen.',
+  plate: 'Then she\'s at your door with the plate: her window (the chat\'s window: a label, the seconds, her line, a bar) with one answer, Take the plate (party +20% HP). Answers to her are her pink pills, as everywhere in her panel. Ignored: Mood +3.',
+  tease: 'The tease visit (fan-service 1, the weekend): no footsteps alarm, "babe?" in the last-heard line, her window with a pink dotted line (where footsteps have amber), three hearts for the 3 s of looking she wants, her 8 s in a pink bar. Never a catch. The webcam is a stand-in (the chat bake): her poses in the doorway and him turning over his shoulder are Paweł\'s art.',
+  look: 'Looking at her: the pointer over the webcam view is an eye (the lean\'s eye, in her colours) and he turns to look. The hearts fill (2 of 3), Goodwill fills with them (+4 a second), and the skill bar is blocked like Hands busy, labelled EYES BUSY: manual skills and ultimates wait, bought autocasts still fire, Flow doesn\'t build.',
+  kiss: 'Three hearts: she\'s happy, blows you a kiss and leaves. Goodwill +12 shows on its bar (the pink tag), her mood pill says flustered; the skill bar is back.',
+  baabe: 'Ignored for her 8 s: she comes a step closer, a second pose, "Baaabe." The pink line blinks fast and her bar restarts at 6 s, rose.',
+  pout: 'Still ignored: she leaves pouting ("Fine. Enjoy your elves."), Mood +10 (the pill: a bit annoyed).',
+  towel: '"Babe, towel!" (fan-service 8, Saturday on): during half her showers. Her window with the seconds (15), her line, and one answer: Bring her a towel, 10 s away (the empty chair). Ignored: she comes to your door in the towel, a normal visit, Mood +10.',
+  wine: '"Babe, bring my wine?" (fan-service 13, Saturday on): the same window during half her baths; Bring it to her, 12 s away. Ignored: as the towel.',
+  fetch: 'Taking it: away from the PC, the empty chair, the same away card as charging the phone with the reason in it ("Bringing her a towel · 8 s"). Goodwill +15 when you\'re back (her still, at the bathroom door, is Paweł\'s).',
+  asleep: 'Friday on, from 00:00 (01:00 on the weekend): she\'s in bed. Her pill says asleep, the last-heard line ZZZ, and her window keeps the waking meter (the build\'s): lilac, a mark at 60 where she texts you ("are you coming to bed?"), full where she gets up and comes to your door. The webcam: your door shut.',
+  bed: '"Come to bed" (fan-service 2, Friday on, after 01:00): a tease visit, half asleep in your hoodie (Paweł\'s art). Looking pays Goodwill twice over (x2 on its bar); and the third answer, Coming, babe: it ends the night like Sleep and gives the green morning, whatever her Mood. You give up the Witching Hour for her.',
+  lap: 'The lap sit (fan-service 10, Goodwill 70+, the weekend): a chat visit becomes this. She sits on your lap facing the monitor: the back of her head and her right shoulder cover the battle\'s left third (backlit by the screen, the clip on her right), and you play around her; the side panel stays usable. Her three questions come in her chat window ("KEEP PLAYING" instead of "KEEP EXCEL UP"). She reacts to drops by her head ("ooh, shiny"). A code stand-in for Paweł\'s art.',
+  mouse: 'Ignored on your lap for 10 s: she takes your mouse ("my turn!"); the skill bar is blocked for 3 s, labelled SHE HAS THE MOUSE.',
+};
+function wkClear() { if (wk === 'off') return; wk = 'off'; for (const n of ['off', ...Object.keys(WKS)]) $('wk-' + n).setAttribute('aria-pressed', n === 'off'); BAR_BLOCK = null; }
+function setWeek(k) {
+  if (k !== 'off') { if (lean !== 'off') setLean('off'); if (lcoach !== 'off') setLeanCoach('off'); if (small !== 'off') setSmall('off'); if (ph !== 'off') setPhone('off'); if (morn !== 'off') setMorn('off'); if (view !== 'full') setView('full'); }
+  wk = k; wkT = 0; for (const n of ['off', ...Object.keys(WKS)]) $('wk-' + n).setAttribute('aria-pressed', n === k);
+  const W = WKS[k]; if (W && W.scene && scene !== W.scene) setScene(W.scene);
+  BAR_BLOCK = W && W.block || null; syncNote();
+}
+const LCNOTES = {
+  lean: 'Lean in, taught when it unlocks (Tuesday; week one, section 2). Its first chance is scripted: Tuesday opens with her yoga in the living room (stop 3), so within about 2 real minutes she is busy where the lean reaches. The coach mark rings the door in the webcam view (him turned toward it) and the game crawls until you hold the door open, or she finishes, or you close it. Before this, Magoo\'s 20:00 voicemail said it and How to hide showed the Lean in tile, framed gold (Small pieces: How to hide). Monday has no lean: holding the door is the glance.',
+  leanview: 'The first lean: a second coach mark, round the slit, says the controls (the mouse leans through 1 2 3, the wheel opens the door, the right button looks closer, letting go brings you back). The game crawls until you have moved through a stop or let go. This first lean is safe: her tell can\'t start in its first 6 s (LEAN_FIRST_SAFE_SEC, start).',
+  tell: 'The first tell: the first time her head turns toward your door while you lean, the third coach mark rings the eye and the red bar over the slit: let go now. The game crawls (her tell with it) until you let go, so the lesson is the timing, not a catch. After this, no more coach marks for the lean; the mirror gets a first-time tip in the feed when it is bought.',
+};
+function setLeanCoach(k) {
+  lcoach = k; for (const n of ['off', 'lean', 'leanview', 'tell']) $('lc-' + n).setAttribute('aria-pressed', n === k);
+  if (k === 'lean') { if (lean !== 'off') setLean('off'); if (view !== 'full') setView('full'); }
+  else if (k !== 'off') { setLean('yoga'); setLeanStage(0); setLeanLook(k === 'tell' ? 'tell' : 'busy'); lu = LEAN_HOME.yoga; syncLeanU(); }
+  syncNote();
+}
+function setLean(k) { if (k !== 'off') wkClear(); lean = k; leanT = 0; for (const n of ['off', 'yoga', 'couch', 'bath', 'kitchen', 'mask']) $('ln-' + n).setAttribute('aria-pressed', n === k); if (k !== 'off') { if (lmir === 'off') lu = LEAN_HOME[k]; if (view !== 'full') setView('full'); } else { setLeanMirror('off', true); } syncLeanU(); syncNote(); }
+function setLeanStage(k) { lst = k; for (let i = 0; i < 3; i++) $('lst-' + i).setAttribute('aria-pressed', i === k); syncNote(); }
+function setLeanLook(k) { llook = k; leanT = 0; for (const n of ['busy', 'tell', 'sees']) $('llk-' + n).setAttribute('aria-pressed', n === k); syncNote(); }
+function setLeanMirror(k, quiet) { lmir = k; for (const n of ['off', 'clear', 'fog']) $('lmr-' + n).setAttribute('aria-pressed', n === k); if (k !== 'off') { if (lean === 'off') setLean('mask'); lu = 0.84; } else if (lean !== 'off' && !quiet) lu = LEAN_HOME[lean]; syncLeanU(); if (!quiet) syncNote(); }
+function setLeanSlit(v) { lslit = Math.max(24, Math.min(160, Math.round(v))); $('lslit').value = lslit; $('lslitv').textContent = lslit + ' px'; }
+function syncLeanU() { const st = [0.1, 0.38, 0.64, 0.84]; st.forEach((v, i) => $('lu-' + i).setAttribute('aria-pressed', lean !== 'off' && Math.abs(lu - v) < 0.04)); }
+const SMNOTES = {
+  inspect: 'The Goblin Fuel inspect window (desk glass over the dimmed right screen). It opens once: the first time you have cans (the night the drink comes in, or your first pack from the Shop). The can at full size (72×174) on an acid glow, its name, a funny line, what it does (moss + and crimson - bullets: the boost, the sugar crash), how to pour it, the cans you have (3 of 8, the empty slots dark), where to get more (the Shop, 29 zł for four). Drink · G (gold) starts the energy break; Later or the close box shuts it. After that the Drink button\'s tooltip says the same in three lines.',
+  howto: 'How to hide (the first night, and from pause). The night waits behind it, dimmed. Desk glass, Tiny5; one tile for each thing that is on tonight (step 5\'s schedule), each with a small picture, a number, its name and what to do. What came in tonight is framed gold with a "new tonight" tag (here Tuesday: the headset and lean in, so five tiles, 82 wide, the card as tall as its longest text). Got it, gold.',
+  pause: 'Pause: the whole frame goes black, so pausing can\'t be used to peek; a small glass card: Paused, why it is black, Resume (gold, Esc) and How to hide.',
+  away: 'Away from the PC (charging the phone, 15 s; the tea break before the Home app). You are up and gone, and your chair shows it in both views. It is a gaming chair in the shape of Paweł\'s reference (no logos), black with grey piping: one tall back with an arched top, bolsters, a quilted lumbar, the armrests. On the desk it stands pushed back in front of the desk, its back to you and in its own shadow, the monitor catching its edges; the right screen dims (it is what she would see). In the webcam view (her panel, left) it stands empty (in every other state he sits in it, the bolsters round his shoulders). A glass card says why, the seconds left and that the party is on autopilot, with a moss bar; the close box brings you back early (no effect).',
+  'coach-steps': 'Coach mark: Footsteps! The core loop\'s first moments (#42) get a callout beside the thing itself while the game crawls until you do it. One look everywhere (they are the game talking): a marching gold ring round the target, a glass callout with a gold top edge and a copper rim, the title in gold, one line, "The game crawls until you do it.", a close box; a gold wedge points at the target. This one sits over the monitor.',
+  'coach-door': 'Coach mark: she is at your door. The ring goes round her note; the callout to its right.',
+  'coach-phone': 'Coach mark: your phone. The ring goes round the phone on the desk (its corners through the desk\'s camera); the callout to its right.',
+  'coach-loot': 'Coach mark: loot. The ring goes round the bag; the callout to its left, over the battle.',
+  'coach-windup': 'Coach mark: big attack incoming. The ring goes round the skill bar; the callout above it.',
+  'coach-headset': 'Coach mark: your headset. The ring goes round his head in the webcam view; the callout to its right.',
+  'tip-desk': 'A tooltip on the desk: desk glass next to the pointer, 2 to 6 lines (what it is, what it does, one cost). Here the Drink button: Goblin Fuel, Drink (G), the boost and the crash as + and - bullets, the cans left. The pointer on the desk and the PC is the Windows arrow.',
+  'tip-task': 'A tooltip on the PC: Windows 98\'s own, a pale yellow box with a black line and black Tiny5. Here Sleep on the taskbar.',
+  'tip-her': 'A tooltip on her panel: her PC-98 paper (beige, plum edge, the bevel). Here the plan\'s corner. The RPG keeps its own tooltip card (section 5c: leather and bronze).',
+  micro: 'The microsleep (from Tired 50): your eyelids drift shut over 1.6 s from top and bottom, an almond closing; the view greys toward them, and the light through them is warm (wine to plum) at their edge, with the lashes as a dark line. Shut: dark, one faint seam, "zzz..." in her pink and "click or press any key". Any click or key snaps them open (here it loops).',
+  microhalf: 'The microsleep, closing: the lids at 60%.',
+  microshut: 'The microsleep, shut: "zzz..." and "click or press any key".',
+};
+function setSmall(k) { if (k !== 'off') wkClear(); small = k; smT = 0; for (const n of ['off', ...Object.keys(SMNOTES)]) $('sm-' + n).setAttribute('aria-pressed', n === k); if (k !== 'off' && view !== 'full') setView('full'); syncNote(); }
+// the phone (phone.js): in your hand (h-...) it rises over the heroes' side of the battle area; on the desk (d-...)
+// it is the same OS seen lying down. Each state: what the desk phone shows, and the screen in your hand.
+const BANNERS3 = [{ app: 'msg', who: 'Babe', what: 'are you coming to bed?' }, { app: 'work', who: 'Boss', what: 'need the Q4 totals for the deck' }, { app: 'msg', who: 'Babe', what: 'hello??' }];
+const PHS = {
+  'h-call-mom': { scr: 'call', o: { who: 'mom' } }, 'h-call-courier': { scr: 'call', o: { who: 'courier' } }, 'h-call-boys': { scr: 'call', o: { who: 'boys' } },
+  'h-lock1': { scr: 'lock', o: { banners: [{ app: 'work', who: 'Boss', what: 'you there?' }] } }, 'h-lock3': { scr: 'lock', o: { banners: BANNERS3 } }, 'h-faceid': { scr: 'lock', o: { banners: BANNERS3, hold: 'anim' } },
+  'h-vn-mon': { scr: 'voicenote', o: { night: 'mon' } }, 'h-vn-tue': { scr: 'voicenote', o: { night: 'tue' } }, 'h-vn-replay': { scr: 'voicenote', o: { night: 'replay' } },
+  'h-boss': { scr: 'boss' }, 'h-her': { scr: 'her' }, 'h-mom': { scr: 'mom' }, 'h-courier': { scr: 'courier' }, 'h-boys': { scr: 'boys' }, 'h-msglist': { scr: 'msglist' }, 'h-boyschat': { scr: 'boyschat' }, 'h-chat': { scr: 'chat' }, 'h-chatold': { scr: 'chatold' }, 'h-photonew': { scr: 'photonew' }, 'h-photo': { scr: 'photo', photo: 'jersey' }, 'h-texting': { scr: 'texting' }, 'h-home': { scr: 'homemsg' }, 'h-shop': { scr: 'shop' }, 'h-shopher': { scr: 'shopher' }, 'h-shophome': { scr: 'shophome' }, 'h-homeapp': { scr: 'homeapp' }, 'h-homesheet': { scr: 'homesheet' }, 'h-hometv': { scr: 'hometv' }, 'h-homeseal': { scr: 'homeseal' }, 'h-hometea': { scr: 'hometea' }, 'h-homelow': { scr: 'homelow' }, 'h-dead': { scr: 'dead' },
+  'd-lowbat': { desk: { phone: 'lowbat', batt: 20 } }, 'd-dead': { desk: { phone: 'dead', batt: 0 } },
+  'd-ring': { desk: { phone: 'call', caller: 'mom' } }, 'd-ring-courier': { desk: { phone: 'call', caller: 'courier' } }, 'd-ring-boys': { desk: { phone: 'call', caller: 'boys' } },
+  'd-boss': { desk: { phone: 'lock', banners: [{ app: 'work', who: 'Boss', what: 'need the Q4 totals for the deck' }] } }, 'd-babe': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'Babe', what: 'are you coming to bed?' }] } }, 'd-boys': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'The Boys', what: 'raid at 11? Danny is in' }] } }, 'd-lock': { desk: { phone: 'lock', banners: BANNERS3 } }, 'd-reply': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'Babe', what: 'ok but 10 min' }] } },
+  'd-idle': { desk: { phone: 'lock', banners: [], hover: true } }, 'd-glow': { desk: { phone: 'downGlow', glowKind: 'msg' } }, 'd-glowcall': { desk: { phone: 'downGlow', glowKind: 'call' } }, 'd-down': { desk: { phone: 'down' } },
+};
+const PHNOTES = {
+  'd-idle': 'The phone on the desk, idle: point at it and it wakes to the lock screen (the time, no banners) with a gold "pick up" chip above it, like the ringing phone\'s without the seconds. Click it and it comes into your hand at the home screen: Messages, Shop, Home. Hands busy while it\'s up; nothing rings while it\'s in your hand.',
+  'h-call-mom': 'The phone, in your hand: Mom calling. One OS for the whole phone, a night mode drawn at the game\'s pixel size in the desk\'s Graphite and Tiny5. Meaning colours keep their jobs: gold is what you can do now (every reply, every timer), moss is accept, crimson is decline or wrong, her pink is her. Incoming call: the caller\'s colour as the wallpaper, a pulse round the avatar, the name, Speaker (hands free, but she hears it) and Message, slide to answer, Decline; the gold chip is the 8 s ring. It rises from the bottom over the heroes\' side of the battle area, its bottom running off the frame.',
+  'h-call-courier': 'The phone, in your hand: the courier calling. Same call screen, his own colour; until 22:00, 2 a night.',
+  'h-call-boys': 'The phone, in your hand: The Boys calling, a group call (Danny, Mike, Kuba). Picking up puts it on speaker: Noise every second while it is open.',
+  'h-lock1': 'The phone, in your hand: the lock screen with 1 banner. Date, a big clock in its own 2 px digits, the banner (app icon, sender, app, the message), Face ID (hold) and Put down. Work is grey, Messages is moss, her name is pink with a heart.',
+  'h-lock3': 'The phone, in your hand: the lock screen with 3 banners. Only the two newest show, then "+1 more from Babe", so the Face ID ring is always whole (#45).',
+  'h-faceid': 'The phone, in your hand: Face ID. Hold to unlock (1.2 s): the ring fills moss, keep holding, the face glyph turns moss when it opens.',
+  'h-boss': 'The phone, in your hand: the boss. A Work chat: back chevron, his avatar, "deck due 9:00", the gold 15 s bar. The thread comes up from the bottom; a bubble that would be cut by the header is left out instead (#45). Two easy sums: the card shows the sum, three gold totals; a wrong one flashes copper and costs 2 s (crimson line).',
+  'h-her': 'The phone, in your hand: her bedtime text. Her bubbles are a warmer mauve than everyone else\'s, yours are cream; the one reply, "Five more minutes, love" with a red heart, is a full-width gold button. The bar is the 8 s to answer.',
+  'h-mom': 'The phone, in your hand: talking to Mom. The call header (avatar, name, "on call · line 2 of 3", the clock). Her line ends in … ? or ! and that tells the reply: mhm, really?! or wow, each a full-width gold button with its mark. Tap it while the marker (2.4 s sweep) is in the moss zone (30%). Misses as pips above the red End: 4 and she gives up.',
+  'h-courier': 'The phone, in your hand: talking to the courier. His line, the gold 8 s bar, the goal in the feedback line (get it left with a neighbour; one wrong word and he leaves), three full-width replies that grow with their text.',
+  'h-boys': 'The phone, in your hand: The Boys on speaker. Danny\'s line, the 8 s bar, "say no, nicely", three replies (the polite one, the shouting one, the rude one), and a wine strip with the speaker glyph: she can hear it. Misses: 2 and Discord rings at full volume.',
+  'h-msglist': 'Messages, the app: your contacts, tap one to open the chat (the gold dashed ring is the tap). Each row: the avatar, the name (hers in her pink with the heart), the time, the last line, her unread count in her pink. A minigame opens its chat straight away (her text, The Boys\' text); the back chevron in a chat comes here.',
+  'h-vn-mon': '20:00, every night (week one 2b): the handoff\'s Magoo voicemail, as the phone redesign wants it: inside the phone. A voice message from Danny (Magoo is his character) in The Boys\' chat; the phone rises into your hand while the night waits. Its waveform fills gold as it plays (a timer, so gold), the seconds beside his name; the transcript comes in under it, a line as he says it, in his chat voice. Got it (gold, the next action) puts the phone down and starts the night (How to hide first on a night with new tiles). It stays in The Boys\' chat until the next minigame. Monday: the hide.',
+  'h-vn-tue': 'Tuesday\'s voice note: Garrote joins, and lean in (hold the door open longer), with the warning that she can see you too.',
+  'h-vn-replay': 'The replay\'s voice note (after unplugged): the day line reads "Tuesday, again"; Danny on what went wrong.',
+  'h-boyschat': 'The Boys\' chat: the last minigame\'s exchange, kept until the next one (their texts in grey with the name first, your answer in cream). At the bottom Raid night? starts a group call (the Raid buff); dim with a lock and why while it can\'t (Goodwill under 40).',
+  'h-chat': 'Her chat. Messages opens on the contacts; tap Babe (or her text arrives) and you are here. Her thread is kept for good across the nights (newest at the bottom, a grey line for each new day or gap), so you can scroll back through everything she sent. Her bubbles are mauve, yours cream. Her photos sit in the thread as a crop of the photo at its own pixel size, nothing scaled: tap one to open the whole photo beside the phone. At the bottom the one thing to do, Text her (gold), 3 s with your hands busy. Her photos are stand-ins in her panel\'s 16 colours until Paweł draws them.',
+  'h-chatold': 'Her chat, scrolled back (the wheel, or drag the thread). It moves a bubble at a time, so no bubble is ever cut (#45). Sunday: her under-the-duvet photo, and "Babe unsent a photo." where she took one back after 60 s unopened. A thin bar on the right edge shows where you are; the grey chip takes you back down to the newest. Text her stays at the bottom.',
+  'h-photonew': 'A new photo from her (fan-service step 5, one in three of her after-midnight texts). It waits 60 s to be opened: the gold bar under it and "open 52 s" are its timer (gold: the thing to do now). Not opened in time, it becomes "Babe unsent a photo." Face down or a dead battery misses it.',
+  'h-photo': 'The photo opened: tap it in the thread and the whole photo opens in a normal window beside the phone, over the dimmed right screen: the desk\'s glass, her name and the time on its bar, the close box. Esc or a click outside closes it too. The photo is drawn at the window\'s size (180×240) at the game\'s one pixel scale; the bubble shows a crop of the same picture. The first time you open a photo: Goodwill +5 (the moss chip). Opened photos stay in the chat for good; there is no Gallery.',
+  'h-home': 'The phone, in your hand: the home screen (handoff 4.6 and 6.1). Tapping the idle phone on the desk opens it. On top, the battery widget: what is left (moss, crimson from 20%) and Charge, a gold button: 15 s away from the PC (the empty chair), +40%. Then the apps: Messages (your contacts, her unread count in her pink), Shop and Home (the smart home, #57). More apps can join the row later; there is no Gallery. App icons are rounded tiles with a lit top edge. The gold dashed ring is the tap.',
+  'h-homelow': 'Battery low (step 6.1): 12%. The widget and the status bar turn crimson; Charge is the next thing to tap. Charging sends you away from the PC for 15 s (she sees whatever is on the monitor if she comes) and adds 40%.',
+  'h-dead': 'Battery dead (step 6.1): at 0% nothing works. No calls or texts arrive, the Home app is off, and if Mom calls she gets Babe instead (her scripted call counts as ignored). The only thing left is the gold Charge it: 15 s away, +40%.',
+  'h-homeapp': 'The Home app (step 6.2, #57): the flat as tiles from the build\'s plan, the devices you bought on it: the vacuum in the living room, the speaker pair in the kitchen and the bath, the TV cast on the TV, the door seal on your door. A gold ring is ready to use; a grey sweep with the time left is resting (the vacuum, 3 min). The battery is in the header. Bubble tea is an order, not a device: 25 zł and 6%, twice a night. The app never shows where she is.',
+  'h-homesheet': 'Tap a device and its sheet comes up over the dimmed plan: what it does (its condition, never whether it is met), where (the vacuum asks for a room), the battery before and after, and one gold button with the cost: Start · 20%. Cancel under it.',
+  'h-hometv': 'TV cast: it works while her show\'s credits roll (you hear them). It is always tappable, so the phone never tells you she is at the credits; used at the wrong time it does nothing and the use is gone. Twice a night; the third time she notices (Mood +10, she comes to your door).',
+  'h-homeseal': 'The door seal replaces the towel: the same effect and the same downside, 4% a toggle. On, it shows moss with "sealed" on your door.',
+  'h-hometea': 'Mid-night: the vacuum running in the living room (moss, its route), the door sealed, the speakers and the TV cast resting, bubble tea ordered with the doorbell\'s countdown. Battery 30%.',
+  'h-shophome': 'The Shop\'s Home tab: the smart-home devices (step 6.2), bought once: Robot vacuum 899, Speakers 199 (a pair, kitchen and bath), TV cast 149, Door seal 39. Bubble tea shows here too, as a pointer: you order it in the Home app.',
+  'h-shop': 'The Shop, For you (handoff 4.6): real-life things only, paid in złoty from Q4 and the Auction House. The wallet is at the top in moss. Each row: a tile, the name, what it does, and its price: a gold pill when you can buy it now, grey when it costs more than you have, soon for the new phone. Buying is instant (hands busy while the phone is up): the Dog chew turns into "tonight". Goblin Fuel comes in fours for the drawer, which holds 8. Prices are set against Q4 (grid doc 7i).',
+  'h-shopher': 'The Shop, For her (#59): her gifts. Flowers (one use, +20 Goodwill) shows "tonight", the fluffy socks "owned" (her steps go silent in them). The other gifts give +20 Goodwill the first time she wears them; their trade-offs are still open (Paweł\'s call).',
+  'h-texting': 'The phone, in your hand: texting her. The message types itself (hands busy for 3 s: the key lights as it goes, a gold caret), then it sits in a cream bubble with Delivered under it. Her reply comes 2 to 4 s later and lights the phone on the desk.',
+  'd-ring-courier': 'The phone on the desk: the courier calling. On the desk the text is too small to read, so who it is shows in colour: a call fills the screen in the caller\'s colour, here steel blue (Mom copper, The Boys violet). The layout is still the call screen (the green knob, the red Decline), so it reads as a call.',
+  'd-ring-boys': 'The phone on the desk: The Boys calling, the screen violet (Mom copper, the courier steel blue). Same call layout.',
+  'd-boss': 'The phone on the desk: a text from the boss. A message is a banner on the lock screen, and the banner is a solid block in the sender\'s colour: the boss white with a briefcase (her pink with a heart, The Boys violet with three heads). Readable in your hand, not here.',
+  'd-babe': 'The phone on the desk: a text from her. Her banner is a solid pink block with a white heart (the boss white, The Boys violet).',
+  'd-boys': 'The phone on the desk: a text from The Boys. Their banner is violet with three heads (the boss white, her pink).',
+  'd-lowbat': 'Low battery on the desk (step 6.1): at 20% and again at 10% the lock screen wakes with a crimson block (a battery and the %), and the desk takes a faint red light. The battery in its status bar turns crimson too. Like the other desk states, it reads by colour, not text.',
+  'd-dead': 'Dead (step 6.1): the screen stays black. When it dies, and whenever you tap it, it shows the empty battery with a blinking crimson sliver.',
+  'd-ring': 'The phone on the desk, ringing: Mom, the screen in her copper (the courier steel blue, The Boys violet), so who it is reads without the text. its corners rounded like the phone in your hand; the screen is a small texture of the same OS laid on the glass through the desk\'s camera, so everything on it, text included, is in perspective (too small to read for now). It jumps with the long buzz every 1.4 s and lights the desk in the caller\'s warmth. The gold chip above it is the next action and the 8 s ring: pick up (a tap anywhere), or Decline at once.',
+  'd-lock': 'The phone on the desk: banners. Messages wake it to the lock screen: the time, the two newest banners (hers pink with the heart, work grey), "+1 more". Each message is one short double buzz and a jump.',
+  'd-reply': 'The phone on the desk: her reply. After you text her, her answer lights the phone for 7 s: one banner, Babe and the heart in pink, the desk lit a little warm. The tell that she is still awake.',
+  'd-glow': 'The phone face down, a message: silent (#47). The back (frosted glass, the camera block) and nothing else, except its light: a soft cool glow leaks out round it onto the desk and flares on each new message. Here one every 3 s.',
+  'd-glowcall': 'The phone face down, a call: the glow pulses for as long as it rings, then stops.',
+  'd-down': 'The phone face down, nothing coming in: just its back.',
+};
+function setPhone(k) { if (k !== 'off') wkClear(); const was = ph; ph = k; if (!(was.startsWith('h-') && k.startsWith('h-'))) phT = 0; else phT = Math.max(phT, 0.3); for (const n of ['off', ...Object.keys(PHS)]) $('ph-' + n).setAttribute('aria-pressed', n === k); if (k !== 'off' && view === 'game') setView('full'); syncNote(); }
+// the cuddle break (cuddle.js) over the right screen, and the plan (blueprint.js) over her panel
+let cud = 'off', cudT = 0, cudLive = null, cudPtr = { x: null, y: null }, cudEnd = null, plan = false, planT = 0, morn = 'off', mornHov = false;
+// the morning (morning.js): the night's end as a PC-98 CG of her asleep, by how the night went, with the summary;
+// a sample night for each ending (the game fills these from the night's results)
+const MDEMO = {
+  green: MORNING_DEMO,
+  yellow: { ...MORNING_DEMO, sold: 1, paid: 40, zl: 120, gold: 60, debt: 1, q4: 0, stars: [{ name: 'Deep', got: true, reward: 'a chest: 1 item, floor 4' }, { name: 'Unseen', got: true, reward: 'Trust: Goodwill +20' }, { name: 'Sweet', got: false, reward: '' }] },
+  red: { ...MORNING_DEMO, zl: 55, gold: 140, debt: 2, q4: 0, stars: [{ name: 'Deep', got: true, reward: 'a chest: 1 item, floor 5' }, { name: 'Unseen', got: false, reward: '' }, { name: 'Sweet', got: false, reward: '' }] },
+  replay: { ...MORNING_DEMO, sold: 3, paid: 95, zl: 30, gold: 210, debt: 0, q4: 0, night: 'Tuesday', replay: true, stars: [{ name: 'Deep', got: false, reward: '' }, { name: 'Unseen', got: false, reward: '' }, { name: 'Sweet', got: false, reward: '' }] },
+  unplugged: { ...MORNING_DEMO, sold: 3, paid: 95, zl: 30, gold: 210, debt: 3, q4: 0, stars: [{ name: 'Deep', got: true, reward: 'a chest: 1 item, floor 6' }, { name: 'Unseen', got: false, reward: '' }, { name: 'Sweet', got: false, reward: '' }] },
+};
+const MONOTES = {
+  replay: 'Unplugged on Tuesday (week one): the unplugged morning, its summary saying what it cost (UNPLUGGED in crimson: no stars, the cheaper half of your bag gone; the three stars missed) and that tonight is Tuesday again with everything kept; her pink button reads "Tuesday, again". That night opens with Danny\'s voice note for a replay (Week one: Its voice note).',
+  green: 'The morning after a good night (green): face down in your shirt, hugging your pillow, deep under a thick warm duvet pulled up to her shoulders; both lower legs and feet out at the foot end, soles up. A PC-98 CG in her 16 colours: a 3D pass quantised to flat tones with 50% checkers, ink where a nearer shape meets a farther one, drawn soles laid over the 3D feet. The summary in her beige paper window, one reward per earned star. Start the next night (the pink button) or Esc closes it.',
+  yellow: 'Yellow: face down and turned away, deep under the duvet; she kicked one corner off, so one foot is out. Her phone lies lit on your pillow by her head (what its glow reaches takes the cool ramp). Start the next night (the pink button) or Esc closes it.',
+  red: 'Red: asleep on the couch facing its back, wrapped from shoulder to toes in the duvet she dragged out of bed; only her head shows on the cushion. The TV behind you is the only light, so the room takes cool ramps. Start the next night (the pink button) or Esc closes it.',
+  unplugged: 'Unplugged: the bed she left. The thick duvet smooth on your side, folded back on hers where she got out; her clip left on her pillow, a folded note with a heart on yours. Start the next night (the pink button) or Esc closes it.',
+};
+const CUS = {
+  start: { p: 0.04, warmth: 0.22, on: [3, 2], near: true }, mid: { p: 0.42, warmth: 0.5, on: [-4, 5], near: true },
+  fast: { p: 0.6, warmth: 0.31, on: [30, -12], near: false, jerk: 0.3 }, far: { p: 0.76, warmth: 0.46, on: [38, 26], near: false },
+  warm: { p: 0.93, warmth: 0.84, on: [2, -3], near: true },
+};
+const CUNOTES = {
+  play: 'The cuddle break, live: she said "Come cuddle for a bit?" and you went. Keep your hand on her breath (the heart with the ring) as it drifts once round the heart in 12 s, without rushing. Warmth builds near it, drains when you drift off, drops fast if you rush ("too fast!"). 60% at the end passes: Mood −20 and Loved for the next fight. The close box is pulling away (Mood +12). The party keeps the safe autopilot, Flow is frozen, the phone and the dog wait.',
+  start: 'The cuddle break, 1 Start. Her look, not the desk\'s: her panel\'s 16 PC-98 colours, a night-plum window with a lilac edge and her name on a pink tab (like the caught screen\'s window), Tiny5. The right screen dims behind it as for the energy break. The heart is a stitched line; inside it, warmth shows as a cold checker at first.',
+  mid: 'The cuddle break, 2 On her breath. Your hand (the cursor) is inside the ring: it goes solid pink and small hearts float up from her. The ring is how close you must stay (17 px) and it breathes with her, a breath every 4 s. Behind the dot the line fills in pink: how much of the breath is done. Past 30% warmth the heart turns purple.',
+  fast: 'The cuddle break, 3 Too fast. The mouse rushed: the ring and the warmth bar turn crimson, the heart trembles, "too fast!" over it, and warmth drops fast for 0.4 s.',
+  far: 'The cuddle break, 4 Drifting away. Your hand is off her breath: the ring goes back to a dotted lilac line and warmth drains.',
+  warm: 'The cuddle break, 5 Warm enough. Past 60% the heart fills pink and the little heart on the bar\'s mark lights up: hold it there to the end. The seconds left sit at the right of the bar.',
+};
+const PLNOTE = 'The plan, taken off the wall (click the blue corner in the webcam view; close with the ✕, Esc or a click outside). The build\'s content, our look: a blueprint in pixels, her 16 colours plus four blueprint blues of its own (paper, grid, pencil, the paper\'s edge), Tiny5 only. Walls 2 px in chalk with their doorways open, door swings and windows, furniture 1 px in pencil, a faint 8 px grid. The flat as Paweł approved it on 2026-11-20: the bathroom at the far end, facing your crack (its door slides into the wall), the bedroom off the hallway, the living room\'s corner opened by an arch, the hall mirror on the left wall (cyan). Who hears you follows the rooms (Paweł, 2026-11-23): the kitchen, the living room and the hallway next to you, the bedroom in the middle, the bathroom far, so the build\'s ROOM_DISTANCE swaps the bathroom and the bedroom. What the crack can show is the lighter fan: every direction through the gap at your door, cast against the walls (into the kitchen, down the hallway into the bathroom, through the arch into the living room); the dashed lines and 1 2 3 in her pink are the lean\'s stops. YOU in gold. It never marks where she is. Masking tape on the top corners, a curled corner, a shadow; everything behind it dims.';
+function setCud(k) { cud = k; cudT = 0; cudEnd = null; cudLive = k === 'play' ? { warmth: 0.3 } : null; for (const n of ['off', 'play', ...Object.keys(CUS)]) $('cu-' + n).setAttribute('aria-pressed', n === k); if (k !== 'off' && view === 'game') setView('full'); syncNote(); }
+const RNOTES = {
+  moonwell: 'The battle in the first redesign\'s blue (Moonwell, 7 colours): every pixel goes to one of five blues by brightness, and gold stays gold, kept for loot only. The game\'s own dither carries over. The desk\'s light, sampled from the screen, turns blue with it.',
+  green: 'The battle on an old green-phosphor monitor: five greens by brightness, nothing else (crimson HP, rarity colours and gold all become brightness). The desk\'s light turns green with it.',
+  white: 'The battle in one bit, black and white with an ordered dither, like World of Horror. Everything reads by shape and brightness alone.',
+};
+function setMono(k) { RPG_MONO = k; for (const n of ['full', ...Object.keys(RNOTES)]) $('r-' + n).setAttribute('aria-pressed', n === k); if (k !== 'full' && scene !== 'battle') setScene('battle'); syncNote(); }
+let tt = 'off';
+async function setTT(k) { tt = k; for (const n of ['off', ...Object.keys(TL)]) $('tf-' + n).setAttribute('aria-pressed', n === k); if (k !== 'off') { await TL_READY; TCACHE.clear(); if (view !== 'full') setView('full'); } syncNote(); }
+function setMorn(k) { if (k !== 'off') wkClear(); morn = k; mornHov = false; for (const n of ['off', ...Object.keys(MONOTES)]) $('mo-' + n).setAttribute('aria-pressed', n === k); if (k !== 'off' && view !== 'full') setView('full'); syncNote(); }
+function setPlan(on) { plan = on; planT = 0; $('pl-off').setAttribute('aria-pressed', !on); $('pl-open').setAttribute('aria-pressed', on); if (on && view !== 'full') setView('full'); syncNote(); }
+let RSC = null;
+function setCaught(k) { caught = k; caughtT = 0; for (let n = 0; n <= 3; n++) $('c-' + n).setAttribute('aria-pressed', n === k); if (k && view !== 'full') setView('full'); syncNote(); }
+function setDog(k) { dog = k; dogT = 0; DOG_IN.t0 = null; DOG_IN.done = null; DOG_IN.pet = 0; DOG_IN.sweetPet = 0; CABLE.live = k === 'cables' ? cableLive() : null; CABLE.done = null; for (const n of ['off', ...Object.keys(DNOTES)]) $('d-' + n).setAttribute('aria-pressed', n === k); syncNote(); }
+function setEb(k) { eb = k; ebT = 0; for (let n = 0; n <= 5; n++) $('e-' + n).setAttribute('aria-pressed', n === k); syncGuides(); syncNote(); }
+function renderTriad() {
+  const core = new Set(Object.values(CORE8)), rows = [['Her · PC-98 · 16 (denim in for violet)', PC98], ['Desk · ' + DESK_VARIANTS[DESK_VARIANT].name, deskSet(DESK_VARIANT).PAL], ['Game · Moonwell 32', PAL_BASE.PAL]];
+  $('triad').innerHTML = rows.map(([l, p]) => '<div class="row"><span class="lab">' + l + '</span><span class="sw">' + p.map((h) => '<i style="background:' + h + '"' + (core.has(h) ? ' class="core" title="' + h + ' (shared core)"' : ' title="' + h + '"') + '></i>').join('') + '</span></div>').join('') +
+    '<div class="key">Marked swatches are the shared core: the ink, the paper, and the six meaning colours (gold, crimson, violet, her pink, Zone cyan, moss). Every part keeps them; the rest is its own.</div>';
+}
+function setPal(v) { DESK_VARIANT = v; for (const k of ['tungsten', 'graphite', 'neon', 'moonwell']) $('p-' + k).setAttribute('aria-pressed', k === v); renderTriad(); syncNote(); }
+function setBattleState(k) { BATTLE_STATE = k; NOTES.battle = BTNOTES[k] || BTNOTES.base; for (const n of Object.keys(BTNOTES).filter((n) => n !== 'base')) $('bt-' + n).setAttribute('aria-pressed', n === k); setScene('battle'); }
+function setTownTab(k) { TOWN_TAB = k; NOTES.town = TTNOTES[k]; for (const n of Object.keys(TTNOTES)) $('tt-' + n).setAttribute('aria-pressed', n === k); setScene('town'); }
+function setTreeHero(k) { TREE_HERO = k; for (const n of ['knight', 'rogue', 'mage', 'priest']) $('th-' + n).setAttribute('aria-pressed', n === k); setTownTab('tree'); }
+function setQ4(k) { Q4_STATE = k; NOTES.excel = Q4NOTES[k]; for (const n of Object.keys(Q4NOTES)) $('q4-' + n).setAttribute('aria-pressed', n === k); setScene('excel'); }
+function setMapState(k) { MAP_STATE = k; NOTES.map = MPNOTES[k]; for (const n of Object.keys(MPNOTES)) $('mp-' + n).setAttribute('aria-pressed', n === k); setScene('map'); }
+function setScene(s) { scene = s; if ($('guides-town')) syncGuides(); for (const k of ['dungeon', 'battle', 'map', 'town', 'excel']) $('s-' + k).setAttribute('aria-pressed', k === s); syncNote(); }
+function setMoment(m) { moment = m; for (const k of Object.keys(MNOTES)) $('m-' + k).setAttribute('aria-pressed', k === m); syncNote(); }
+function setView(v) { view = v; cv.width = v === 'full' ? 640 : v === 'desk' ? 492 : 474; cv.height = v === 'game' ? 232 : 360; for (const k of ['full', 'desk', 'game']) $('v-' + k).setAttribute('aria-pressed', v === k); $('moments').style.display = v === 'game' ? 'none' : ''; $('ebrow').style.display = v === 'game' ? 'none' : ''; $('dogrow').style.display = v === 'game' ? 'none' : ''; $('phonerow').style.display = v === 'game' ? 'none' : ''; $('phonedeskrow').style.display = v === 'game' ? 'none' : ''; $('herrow').style.display = v === 'full' ? '' : 'none'; $('herwinrow').style.display = v === 'game' ? 'none' : ''; cv.setAttribute('aria-label', v === 'full' ? 'The whole game frame, animated' : v === 'desk' ? 'The right screen: desk and monitor, animated' : 'Game screen, animated'); fit(); syncGuides(); syncNote(); }
+function setHer(h) { her = h; for (const k of Object.keys(HNOTES)) $('h-' + k).setAttribute('aria-pressed', k === h); syncNote(); }
+function deskGuides() {
+  const g = $('guides-desk'), L = [['bezel', 'monitor bezel 484×260'], ['game', 'game screen 474×232'], ['task', 'taskbar 474×15'], ['desk', 'desk 492×97'], ['phone', 'phone (runs off)'], ['keys', 'keyboard (runs off)'], ['note', 'Tonight note'], ['you', 'YOU card 133×26'], ['feed', 'feed 133×61']];
+  for (const [k, lab] of L) { const [x, y, w, h] = RSZ[k], d = document.createElement('div'); d.className = 'zone'; Object.assign(d.style, { left: (x / 4.92) + '%', top: (y / 3.6) + '%', width: (w / 4.92) + '%', height: (h / 3.6) + '%' }); d.innerHTML = '<b>' + lab + '</b>'; g.appendChild(d); }
+}
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (playing) { smT += dt; clock[scene] += dt; deskT += dt; ebT += dt; dogT += dt; caughtT += dt; phT += dt; cudT += dt; planT += dt; }
+  if (CABLE.live && CABLE.live.tEnd && performance.now() / 1000 - CABLE.live.tEnd > 3) CABLE.live = cableLive();
+  const t0 = performance.now();
+  const eo = eb ? { eb, ebT } : {}; if (small === 'away') eo.away = true; if (dog !== 'off') { eo.dog = dog === 'wait' ? 'live' : dog; eo.dogT = dogT; }
+  const PS = PHS[ph]; if (PS) eo.phone = PS.desk || { phone: 'hand' };
+  if (lean !== 'off' && view === 'full') { eo.lean = lslit; HER_STATES.lean = { mood: llook === 'sees' ? 'flustered' : 'happy', heard: lmir === 'fog' ? ['SHOWER', 'bathroom', '20 s ago'] : LEAN_HEARD[lean], note: llook === 'sees' ? ['HER', 'Enjoying the view?'] : ['HER', 'She is busy with her own thing.'] }; }
+  const WK = wk !== 'off' && view === 'full' ? WKS[wk] : null;
+  if (WK) { HER_STATES.wk = WK.her; if (WK.pix) eo.pix = WK.pix; if (WK.door) eo.doorShut = true; if (WK.away) eo.away = true; if (WK.desk) eo.deskSt = WK.desk; if (playing) wkT += dt; }
+  if (lcoach === 'lean' && view === 'full') { eo.doorShut = true; HER_STATES.yoga = { mood: 'happy', heard: ['MUSIC', 'living room', 'now'], note: ['HER', 'She is busy with her own thing.'] }; }
+  const c = view === 'full' ? drawFrame(scene, clock[scene], deskT, moment, WK ? 'wk' : lcoach === 'lean' && view === 'full' ? 'yoga' : lean !== 'off' && view === 'full' ? 'lean' : small === 'away' && her === 'chat' ? 'kettle' : her, eo) : view === 'desk' ? drawDesk(scene, clock[scene], deskT, moment, eo) : scene === 'excel' ? drawQ4(clock.excel) : drawScreen(scene, clock[scene]);
+  cx.drawImage(c, 0, 0);
+  if (PS && PS.photo && view !== 'game' && phT > 0.35) smDim(cx, [view === 'full' ? 148 : 0, 0, 492, 360], 0.5);
+  if (PS && PS.scr && view !== 'game') drawPhoneOver(cx, (view === 'full' ? 148 : 0) + PHONE_AT[0], PHONE_AT[1], PS.scr, phT, { ...(PS.o || {}), rise: phT / 0.32 });
+  if (PS && PS.photo && view !== 'game' && phT > 0.35) PHONEOS.photoWindow(cx, PS.photo, phT - 0.35, { first: true, x: (view === 'full' ? 148 : 0) + 208 });
+  if (cud !== 'off' && view !== 'game') {   // the cuddle break: copy the right screen out, dim it, put the window on, copy back
+    const ox = view === 'full' ? 148 : 0;
+    if (!RSC) { RSC = document.createElement('canvas'); RSC.width = RS_W; RSC.height = RS_H; }
+    const rg = RSC.getContext('2d'); rg.drawImage(cv, -ox, 0);
+    let st;
+    if (cud === 'play') {
+      if (playing && !cudLive.done) cuddleStep(cudLive, dt, cudPtr.x, cudPtr.y);
+      if (cudLive.done && !cudEnd) { const ok = cudLive.warmth >= CUD_PASS; cudEnd = (ok ? 'Passed, warmth ' : 'Not warm enough, warmth ') + Math.round(cudLive.warmth * 100) + '%. Her note says: ' + (ok ? '"Okay, go play. Love you." Mood −20, Loved for the next fight.' : '"You are so restless." Mood +5.') + ' Again in 3 s.'; cudT = 0; syncNote(); }
+      if (cudEnd && cudT > 3) { cudLive = { warmth: 0.3 }; cudEnd = null; syncNote(); }
+      st = cudLive;
+    } else { const s0 = CUS[cud], [x, y] = cudDot(s0.p); st = { ...s0, mx: x + s0.on[0], my: y + s0.on[1] }; }
+    drawCuddle(rg, st, cud === 'play' ? deskT : cudT); cx.drawImage(RSC, ox, 0);
+  }
+  if (lean !== 'off' && view === 'full') {
+    if (playing) { leanT += dt; creakT += dt; }
+    cx.drawImage(drawLean({ act: lean, stage: lst, u: lu, slit: lslit, focus: lfocus, mirror: lmir, look: llook, t: leanT, grid: $('grid').classList.contains('on') }), 148, 0);
+    if (creakT < 0.9) { const L = smLayer(640, 360, () => { const w = measure('creak', 'tiny') + 8, x = 148 + 246 - (w >> 1), y = 26 - Math.round(creakT * 6); rectI(x, y, w, 10, P.s1); frameI(x, y, w, 10, P.s3); text('creak', x + 4, y + 2, 'tiny', P.moon); }); cx.drawImage(L, 0, 0); }
+  }
+  if (WK && WK.lap) lapOver(cx, deskT, WK.lap);
+  if (WK && WK.away) drawAway(cx, wkT, WK.away);
+  if (lcoach !== 'off' && view === 'full') drawCoach(cx, lcoach, deskT);
+  if (plan && view === 'full') drawPlan(cx, planT);
+  if (caught && view === 'full') cx.drawImage(drawCaught(caught, caughtT % 3.2), 0, 0);   // the scare (0.8 s), held on the page
+  if (morn !== 'off' && view === 'full') cx.drawImage(drawMorning(morn === 'replay' ? 'unplugged' : morn, deskT, MDEMO[morn], { hover: mornHov }), 0, 0);
+  if (tt !== 'off' && view === 'full') drawTextTest(cx, tt, deskT);
+  if (small !== 'off' && view === 'full') drawSmall(cx, small, smT);
+  const ms = performance.now() - t0; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms;
+  if (now - msT > 500) { $('ms').textContent = msAvg.toFixed(1) + ' ms'; msT = now; }
+  requestAnimationFrame(frame);
+}
+(async () => {
+  fit(); addEventListener('resize', fit);
+  await Promise.all([document.fonts.load('8px silkb'), document.fonts.load('8px tiny5'), document.fonts.load('11px m5'), document.fonts.load('13px jb9'), HER_READY, CAUGHT_READY, MORNING_READY]);
+  TC = document.createElement('canvas'); TC.width = 600; TC.height = 64; TX = TC.getContext('2d', { willReadFrequently: true });
+  setRes(334, 232); buildDungeon(); deskGuides(); setScene('dungeon'); setMoment('calm');
+  for (const k of ['dungeon', 'battle', 'map', 'town', 'excel']) $('s-' + k).onclick = () => setScene(k);
+  for (const k of Object.keys(MPNOTES)) $('mp-' + k).onclick = () => setMapState(k);
+  for (const k of ['off', ...Object.keys(SMNOTES)]) $('sm-' + k).onclick = () => setSmall(k);
+  for (const k of ['off', 'yoga', 'couch', 'bath', 'kitchen', 'mask']) $('ln-' + k).onclick = () => { if (lcoach !== 'off') setLeanCoach('off'); setLean(k); };
+  for (let i = 0; i < 3; i++) $('lst-' + i).onclick = () => setLeanStage(i);
+  for (const k of ['off', 'lean', 'leanview', 'tell']) $('lc-' + k).onclick = () => setLeanCoach(k);
+  for (const k of ['off', ...Object.keys(WKS)]) $('wk-' + k).onclick = () => setWeek(k);
+  for (const k of ['busy', 'tell', 'sees']) $('llk-' + k).onclick = () => { if (lcoach !== 'off') setLeanCoach('off'); setLeanLook(k); };
+  for (const k of ['off', 'clear', 'fog']) $('lmr-' + k).onclick = () => setLeanMirror(k);
+  [0.1, 0.38, 0.64, 0.84].forEach((v, i) => { $('lu-' + i).onclick = () => { if (lean === 'off') setLean(i === 0 ? 'kitchen' : i === 1 ? 'bath' : 'yoga'); lu = v; syncLeanU(); }; });
+  $('lfocus').onclick = () => { lfocus = !lfocus; $('lfocus').setAttribute('aria-pressed', lfocus); };
+  $('lslit').oninput = (e) => setLeanSlit(+e.target.value);
+  const onLean = (e) => { if (lean === 'off' || view !== 'full') return false; const [fx] = frameXY(e); return fx >= 148; };
+  cv.addEventListener('pointermove', (e) => { if (!onLean(e)) { if (lean !== 'off') cv.style.cursor = ''; return; } const [fx] = frameXY(e); lu = Math.max(0, Math.min(1, (fx - 148) / 492)); syncLeanU(); cv.style.cursor = 'none'; });
+  cv.addEventListener('wheel', (e) => { if (!onLean(e)) return; e.preventDefault(); const now = performance.now(); if (now - lastNotch < 300) { creakT = 0; HER_STATS.noise = Math.min(100, HER_STATS.noise + 8); } lastNotch = now; setLeanSlit(lslit + (e.deltaY < 0 ? 8 : -8)); }, { passive: false });
+  cv.addEventListener('pointerdown', (e) => { if (e.button === 2 && onLean(e)) { lfocus = true; $('lfocus').setAttribute('aria-pressed', true); } });
+  cv.addEventListener('pointerup', (e) => { if (e.button === 2 && lean !== 'off') { lfocus = false; $('lfocus').setAttribute('aria-pressed', false); } });
+  cv.addEventListener('contextmenu', (e) => { if (lean !== 'off') e.preventDefault(); });
+  for (const k of Object.keys(Q4NOTES)) $('q4-' + k).onclick = () => setQ4(k);
+  NOTES.excel = Q4NOTES.sum;
+  for (const k of Object.keys(TTNOTES)) $('tt-' + k).onclick = () => setTownTab(k);
+  for (const k of ['knight', 'rogue', 'mage', 'priest']) $('th-' + k).onclick = () => setTreeHero(k);
+  NOTES.town = TTNOTES.town;
+  BTNOTES.base = NOTES.battle + ' Between the skill bar\'s groups, tiny glyphs show the auras (marching order, handoff 1.6): the knight\'s shield and the priest\'s cross pass back, Garrote\'s crit star, Magoo\'s clock and the cross pass forward. A bought autocast shows as a loop mark in its well\'s corner: moss when on (Taunt), dim when switched off (Fire).';
+  NOTES.battle = BTNOTES.base;
+  for (const k of ['fight', 'bless', 'swap', 'hook']) $('bt-' + k).onclick = () => setBattleState(k);
+  NOTES.map = MPNOTES.three;
+  for (const k of Object.keys(MNOTES)) $('m-' + k).onclick = () => setMoment(k);
+  $('v-desk').onclick = () => setView('desk'); $('v-game').onclick = () => setView('game'); $('v-full').onclick = () => setView('full');
+  for (const k of Object.keys(HNOTES)) $('h-' + k).onclick = () => setHer(k);
+  for (let n = 0; n <= 5; n++) $('e-' + n).onclick = () => setEb(n);
+  for (const n of ['off', ...Object.keys(DNOTES)]) $('d-' + n).onclick = () => setDog(n);
+  for (let n = 0; n <= 3; n++) $('c-' + n).onclick = () => setCaught(n);
+  for (const n of ['off', ...Object.keys(PHS)]) $('ph-' + n).onclick = () => setPhone(n);
+  for (const n of ['off', 'play', ...Object.keys(CUS)]) $('cu-' + n).onclick = () => setCud(n);
+  $('pl-off').onclick = () => setPlan(false); $('pl-open').onclick = () => setPlan(true);
+  for (const n of ['off', ...Object.keys(MONOTES)]) $('mo-' + n).onclick = () => setMorn(n);
+  for (const n of ['full', ...Object.keys(RNOTES)]) $('r-' + n).onclick = () => setMono(n);
+  for (const n of ['off', ...Object.keys(TL)]) $('tf-' + n).onclick = () => setTT(n);
+  for (const z of ['fit', 'fill', '1', '2', '3']) $('z-' + z).onclick = () => setZoom(z);
+  setHer('chat'); setView('full');
+  // the cuddle: your hand in window coordinates; the close box pulls away. The plan: its corner on the wall opens it;
+  // the ✕, a click outside the sheet or Esc closes it.
+  const frameXY = (e) => { const r = cv.getBoundingClientRect(); return [((e.clientX - r.left) / r.width) * cv.width, ((e.clientY - r.top) / r.height) * cv.height]; };
+  const onPlanCorner = (x, y) => view === 'full' && !plan && x < 24 && y > 58 && y < 104;
+  const sheetRect = () => { const s0 = PLAN_CANVAS || { width: 204, height: 299 }; return [PLAN_AT.x, PLAN_AT.y - 4, s0.width - 8, s0.height - 10]; };
+  const onMornBtn = (x, y) => { const b = MORNING_BTN; return morn !== 'off' && view === 'full' && b && x >= b[0] && x < b[0] + b[2] && y >= b[1] && y < b[1] + b[3]; };
+  cv.addEventListener('pointermove', (e) => {
+    const [fx, fy] = frameXY(e), ox = view === 'full' ? 148 : 0, wx = fx - ox - CUD.x, wy = fy - CUD.y, inWin = cud === 'play' && view !== 'game' && wx >= 0 && wx < CUD.w && wy >= 0 && wy < CUD.h;
+    cudPtr = inWin ? { x: wx, y: wy } : { x: null, y: null };
+    if (cud === 'play' && view !== 'game') cv.style.cursor = inWin && !(wx > CUD.w - 18 && wy < 18) ? 'none' : wx > CUD.w - 18 && wx < CUD.w - 4 && wy > 4 && wy < 18 ? 'pointer' : '';
+    else if (morn !== 'off' && view === 'full') { mornHov = onMornBtn(fx, fy); cv.style.cursor = mornHov ? 'pointer' : ''; }
+    else if (onPlanCorner(fx, fy)) cv.style.cursor = 'pointer';
+    else if (plan) { const [sx, sy, sw] = sheetRect(); cv.style.cursor = fx > sx + sw - 18 && fx < sx + sw - 4 && fy > sy + 12 && fy < sy + 26 ? 'pointer' : ''; }
+  });
+  cv.addEventListener('pointerdown', (e) => {
+    const [fx, fy] = frameXY(e), ox = view === 'full' ? 148 : 0, wx = fx - ox - CUD.x, wy = fy - CUD.y;
+    if (cud !== 'off' && view !== 'game' && wx > CUD.w - 18 && wx < CUD.w - 4 && wy > 4 && wy < 18) { setCud('off'); $('note').textContent = 'You pulled away for the game: she sighs and leaves. Mood +12 (the refuse penalty).'; return; }
+    if (morn !== 'off' && view === 'full') { if (onMornBtn(fx, fy)) { setMorn('off'); $('note').textContent = 'Monday night starts: party, gear, gold and city carry over.'; } return; }
+    if (onPlanCorner(fx, fy)) { setPlan(true); return; }
+    if (plan) { const [sx, sy, sw, sh] = sheetRect(); const onX = fx > sx + sw - 18 && fx < sx + sw - 4 && fy > sy + 12 && fy < sy + 26; if (onX || fx < sx || fx > sx + sw || fy < sy || fy > sy + sh) setPlan(false); }
+  });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && morn !== 'off') setMorn('off'); else if (e.key === 'Escape' && plan) setPlan(false); });
+  // stroke the dog: mouse moves over his head, in right-screen coordinates
+  let mx = null, mt = 0;
+  cv.addEventListener('pointermove', (e) => {
+    const r = cv.getBoundingClientRect(), gx = ((e.clientX - r.left) / r.width) * cv.width - (view === 'full' ? 148 : 0), gy = ((e.clientY - r.top) / r.height) * cv.height, now = performance.now() / 1000;
+    let on = false;
+    if ((moment === 'dog' || dog === 'wait') && view !== 'game') { on = mx != null && dogStroke(gx, gy, gx - mx, now - mt, deskT); if (!on && DOG_IN.vis && Math.abs(gx - DOG_IN.hx) < 40 && gy > DOG_IN.hy - 52 && gy < DOG_IN.hy + 30) on = true; }
+    cv.style.cursor = on ? 'grab' : ''; mx = gx; mt = now;
+  });
+  cv.addEventListener('pointerleave', () => { mx = null; cv.style.cursor = ''; if (CABLE.live) CABLE.live.up(); });
+  const sceneXY = (e) => { const r = cv.getBoundingClientRect(), gx = ((e.clientX - r.left) / r.width) * cv.width - (view === 'full' ? 148 : 0), gy = ((e.clientY - r.top) / r.height) * cv.height; return [gx - EB_SC[0], gy - EB_SC[1]]; };
+  cv.addEventListener('pointerdown', (e) => { if (!CABLE.live || view === 'game') return; const [sx, sy] = sceneXY(e); if (CABLE.live.down(sx, sy)) { cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; } });
+  cv.addEventListener('pointermove', (e) => { if (!CABLE.live || view === 'game') return; const [sx, sy] = sceneXY(e); const on = CABLE.live.move(sx, sy); cv.style.cursor = CABLE.live.drag ? 'grabbing' : on ? 'grab' : ''; });
+  cv.addEventListener('pointerup', () => { if (!CABLE.live) return; CABLE.live.up(); cv.style.cursor = ''; });
+  for (const k of ['tungsten', 'graphite', 'neon', 'moonwell']) $('p-' + k).onclick = () => setPal(k);
+  setPal('graphite');
+  $('grid').onclick = () => { const on = !$('grid').classList.contains('on'); $('grid').classList.toggle('on', on); syncGuides(); $('grid').setAttribute('aria-pressed', on); $('grid').textContent = on ? 'Hide grid' : 'Show grid'; };
+  const pb = $('play'); const sync = () => { pb.textContent = playing ? 'Pause' : 'Play'; pb.setAttribute('aria-pressed', !playing); };
+  pb.onclick = () => { playing = !playing; sync(); }; sync();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

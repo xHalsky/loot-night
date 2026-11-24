@@ -1,0 +1,373 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#000">
+<canvas id="c"></canvas>
+<script id="fs" type="x-shader/x-fragment">#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2 R; uniform int SCENE; uniform vec3 CAM, TGT; uniform float FOV;
+// materials
+#define M_WALL 1.
+#define M_FLOOR 2.
+#define M_WOOD 3.
+#define M_SHEET 4.
+#define M_PILLOW 5.
+#define M_SKIN 6.
+#define M_SOLE 7.
+#define M_HAIR 8.
+#define M_TEE 9.
+#define M_PANTY 10.
+#define M_BLANKET 11.
+#define M_CLIP 12.
+#define M_NAIL 13.
+#define M_PAD 16.
+#define M_PHONE 14.
+#define M_GLOW 15.
+float smax(float a, float b, float k){ float h = max(k - abs(a - b), 0.) / k; return max(a, b) + h * h * k * .25; }
+float smin(float a, float b, float k){ float h = max(k - abs(a - b), 0.) / k; return min(a, b) - h * h * k * .25; }
+float sdEll(vec3 p, vec3 r){ float k0 = length(p / r), k1 = length(p / (r * r)); return k0 * (k0 - 1.) / k1; }
+float sdCap(vec3 p, vec3 a, vec3 b, float ra, float rb){   // a round cone from a (radius ra) to b (radius rb)
+  vec3 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
+  return length(pa - ba * h) - mix(ra, rb, h);
+}
+float sdBox(vec3 p, vec3 b, float r){ vec3 q = abs(p) - b; return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.) - r; }
+vec2 U(vec2 a, vec2 b){ return a.x < b.x ? a : b; }
+
+// ---------------------------------------------------------------- her, prone (cm): toes near z 0, head at z 170; her left is -x
+// a foot in its own frame: u heel to toes, v across (+ outer edge), w out of the sole. Plantar flexed: its top rests on
+// the sheet and the sole faces up and back, toward you.
+float foot(vec3 l){
+  float f = sdEll(l - vec3(2.4, 0., -2.2), vec3(2.8, 3.0, 2.6));                                    // the heel pad
+  f = smin(f, sdCap(l, vec3(3.5, 1.4, -2.3), vec3(14.5, 1.9, -2.0), 2.3, 2.6), 1.6);               // the outer sole
+  f = smin(f, sdCap(l, vec3(4.0, -1.2, -2.9), vec3(14.5, -1.6, -2.3), 1.5, 2.2), 1.4);             // the arch, set back (hollow)
+  f = smin(f, sdEll(l - vec3(15.6, 0.0, -2.0), vec3(2.4, 4.4, 2.3)), 1.4);                         // the ball
+  f = smin(f, sdEll(l - vec3(9.5, 0., -4.0), vec3(8.5, 3.6, 2.2)), 2.4);                           // the top of the foot, under
+  // toes: the big toe on the inside (v < 0); each a short segment with a round pad at its tip, kept apart
+  float t = 1e9;
+  for (int k = 0; k < 5; k++) {
+    float fk = float(k), v = -3.1 + fk * 1.66 + (k == 0 ? -0.15 : 0.), len = 3.6 - fk * 0.42 - (k == 0 ? 0. : 0.3), r = k == 0 ? 1.3 : 0.98 - fk * 0.08;
+    float u0 = 16.6 - fk * 0.6;
+    vec3 tip = vec3(u0 + len, v + (fk - 2.) * 0.18, -1.2);
+    t = min(t, min(sdCap(l, vec3(u0, v, -1.6), tip, r * 0.95, r * 0.9), length(l - tip - vec3(0., 0., 0.25)) - r * 1.02));
+  }
+  return smin(f, t, 0.45);
+}
+// one leg; s = -1 her left, +1 her right
+float leg(vec3 p, float s, out float soleW){
+  vec3 q = p; q.x *= s;                 // work on her right side, mirrored for the left
+  float d = 1e9;
+  // calf and shin: a slim ankle, the calf's bulge at z 34
+  d = sdCap(q, vec3(10.8, 5.6, 21.), vec3(10.2, 6.8, 52.), 2.9, 5.6);
+  d = smin(d, sdEll(q - vec3(10.4, 8.6, 35.), vec3(5.6, 4.6, 11.5)), 3.);
+  // knee, and a full thigh up to the hip
+  d = smin(d, sdCap(q, vec3(10.2, 6.8, 52.), vec3(8.6, 9.0, 86.), 5.4, 8.6), 3.);
+  // the foot: heel at the ankle, toes pointing back along the sheet, turned out a little
+  vec3 u = normalize(vec3(0.14, -0.56, -0.82)), w = normalize(vec3(0., 0.82, -0.56)); w = normalize(w - u * dot(w, u)); vec3 v = cross(w, u);
+  vec3 o = q - vec3(11.0, 12.6, 21.0);
+  float f = foot(vec3(dot(o, u), dot(o, v), dot(o, w)) * 1.55) / 1.55;   // kept a little smaller than the drawn sole over it
+  d = smin(d, f, 3.2);
+  vec3 lf = vec3(dot(o, u), dot(o, v), dot(o, w));
+  soleW = (f < d + 0.12 && lf.z > -2.2) ? 1. : 0.;
+  // the soft pads: the heel, the ball and the toe tips, a little pinker
+  if (soleW > 0.5 && (length((lf - vec3(2.6, 0., -0.4)) / vec3(2.6, 2.6, 9.)) < 1. || length((lf - vec3(15.4, -0.6, -0.5)) / vec3(1.9, 3.8, 9.)) < 1. || lf.x > 18.6)) soleW = 2.;
+  return d;
+}
+float body(vec3 p, out float part){
+  float sl, sr;
+  float l = leg(p, -1., sl), r = leg(p, 1., sr);
+  float d = min(l, r);
+  // hips and bottom: two round cheeks, the pelvis, the small of the back
+  float b = sdEll(p - vec3(-8., 14.6, 92.), vec3(9.6, 9.6, 11.4));
+  b = smin(b, sdEll(p - vec3(8., 14.6, 92.), vec3(9.6, 9.6, 11.4)), 1.2);
+  b = smin(b, sdEll(p - vec3(0., 10.2, 100.), vec3(17.5, 8.6, 11.5)), 4.);
+  d = smin(d, b, 1.6);
+  // waist, back, shoulders; the spine's hollow
+  float t = sdEll(p - vec3(0., 9.4, 112.), vec3(13., 7.4, 10.));
+  t = smin(t, sdEll(p - vec3(0., 11.4, 132.), vec3(17.5, 8.4, 16.)), 5.);
+  t = smin(t, sdEll(p - vec3(0., 12.2, 147.), vec3(20., 7.6, 8.)), 4.);
+  d = smin(d, t, 4.);
+  // arms: from the shoulders out and up under the pillow
+  float a = min(sdCap(p, vec3(-18., 11., 147.), vec3(-27., 9.5, 160.), 4.2, 3.6), sdCap(p, vec3(18., 11., 147.), vec3(27., 9.5, 160.), 4.2, 3.6));
+  a = min(a, min(sdCap(p, vec3(-27., 9.5, 160.), vec3(-14., 12., 171.), 3.4, 2.8), sdCap(p, vec3(27., 9.5, 160.), vec3(14., 12., 171.), 3.4, 2.8)));
+  d = smin(d, a, 3.);
+  // head, turned away on the pillow
+  float h = sdEll(p - vec3(3.5, 19., 163.), vec3(8.4, 9.4, 10.));
+  d = smin(d, h, 3.);
+  part = (sl > 0.5 && l < r + 0.01) ? sl : (sr > 0.5 && r < l + 0.01) ? sr : 0.;
+  return d;
+}
+// ---------------------------------------------------------------- her on her side (yellow and red): jointed
+// lying on her left side, her back toward +x, her front toward -x, her right side up; knees drawn up, the shins back
+// toward the foot end, the feet stacked with their soles toward the foot end and her back
+// curled up: knees drawn up to her front, the shins folded back under her bottom; feet pointed and stacked, soles toward her back
+const vec3 SH_HIP_T = vec3(-2., 23., 93.), SH_HIP_B = vec3(-2., 10., 93.);
+const vec3 SH_KNEE_T = vec3(-37.000, 20.000, 78.000), SH_KNEE_B = vec3(-38.000, 8.000, 81.000);
+const vec3 SH_ANK_T = vec3(-4.000, 15.000, 60.000), SH_ANK_B = vec3(-6.000, 6.000, 61.000);
+const vec3 SF_UT = vec3(0.193, -0.085, -0.978), SF_WT = vec3(0.625, 0.779, 0.056);
+const vec3 SF_UB = vec3(0.138, -0.034, -0.990), SF_WB = vec3(0.883, 0.457, 0.107);
+const vec3 RED_U = vec3(-0.572, -0.050, -0.818), RED_W = vec3(0.800, 0.187, -0.571);
+float sideLeg(vec3 p, vec3 hip, vec3 knee, vec3 ank, vec3 U0, vec3 W0, float ch, out float soleW){   // ch: +1 her right foot, -1 her left
+  vec3 sd = normalize(ank - knee), post = normalize(vec3(-sd.z, 0., sd.x));
+  float d = sdCap(p, ank, knee, 2.9, 5.6);
+  d = smin(d, sdCap(p, mix(ank, knee, 0.25) + post * 2.2, mix(ank, knee, 0.72) + post * 2.4, 3.4, 4.4), 3.);   // the calf
+  d = smin(d, sdCap(p, knee, hip, 5.4, 8.6), 3.);
+  vec3 u = normalize(U0), w = normalize(W0 - u * dot(W0, u)), v = cross(w, u) * ch;
+  vec3 o = p - (ank - 3.9 * u + 5.7 * w);
+  vec3 lf = vec3(dot(o, u), dot(o, v), dot(o, w));
+  float f = foot(lf * 1.55) / 1.55;
+  float dd = smin(d, f, 3.2);
+  soleW = (f < dd + 0.12 && lf.z > -2.2) ? 1. : 0.;
+  if (soleW > 0.5 && (length((lf - vec3(2.6, 0., -0.4)) / vec3(2.6, 2.6, 9.)) < 1. || length((lf - vec3(15.4, -0.6, -0.5)) / vec3(1.9, 3.8, 9.)) < 1. || lf.x > 18.6)) soleW = 2.;
+  return dd;
+}
+// tor: the torso and upper arms alone (for his tee)
+float herSide(vec3 p, out float part, out float tor){
+  float st, sb;
+  bool red = SCENE == 2, yel = SCENE == 1 || SCENE == 5;   // red: her top leg stretched toward the foot end; yellow: back behind her
+  vec3 kT = red ? vec3(-16.000, 20.000, 56.000) : yel ? vec3(18.000, 12.000, 61.000) : SH_KNEE_T, aT = red ? vec3(-6.000, 17.000, 19.000) : yel ? vec3(40.000, 6.200, 33.000) : SH_ANK_T;
+  vec3 uT = red ? RED_U : yel ? vec3(-0.210, -0.103, -0.972) : SF_UT, wT = red ? RED_W : yel ? vec3(0.959, 0.172, -0.226) : SF_WT;
+  float lt = sideLeg(p, SH_HIP_T, kT, aT, uT, wT, 1., st), lb = sideLeg(p, SH_HIP_B, SH_KNEE_B, SH_ANK_B, SF_UB, SF_WB, -1., sb);
+  float d = min(lt, lb);
+  float b = sdEll(p - vec3(0., 17., 94.), vec3(11., 16.5, 12.));
+  b = smin(b, sdEll(p - vec3(6.5, 23., 90.), vec3(10., 9.5, 11.)), 2.);
+  b = smin(b, sdEll(p - vec3(6.5, 10., 90.), vec3(10., 8.5, 11.)), 2.);
+  d = smin(d, b, 3.);
+  float t = sdEll(p - vec3(-1., 15., 108.), vec3(9.5, 13., 9.5));
+  t = smin(t, sdEll(p - vec3(-2., 16., 126.), vec3(11., 15.5, 14.)), 5.);
+  t = smin(t, sdEll(p - vec3(-2., 17., 143.), vec3(9., 19., 7.)), 4.);
+  float ua = min(sdCap(p, vec3(-2., 31., 143.), vec3(-15., 25., 133.), 4.2, 3.4), sdCap(p, vec3(-3., 4., 143.), vec3(-19., 6., 154.), 4., 3.4));
+  tor = smin(t, ua, 3.);
+  d = smin(d, t, 4.);
+  float a = min(ua, min(sdCap(p, vec3(-15., 25., 133.), vec3(-22., 15., 157.), 3.2, 2.6), sdCap(p, vec3(-19., 6., 154.), vec3(-13., 8., 170.), 3.2, 2.6)));
+  d = smin(d, a, 3.);
+  d = smin(d, sdCap(p, vec3(-3., 17., 149.), vec3(-5., 18., 156.), 5., 4.6), 3.);
+  d = smin(d, sdEll(p - vec3(-6., 19., 162.), vec3(8.4, 9.4, 10.)), 3.);
+  part = (st > 0.5 && lt < lb + 0.01) ? st : (sb > 0.5 && lb < lt + 0.01) ? sb : 0.;
+  return d;
+}
+// her on her side with his tee, her panties, her hair and the clip: (distance, material); d: her body alone
+vec2 herSideDressed(vec3 p, out float d){
+  float part, tor; d = herSide(p, part, tor);
+  vec2 her = vec2(d, part > 1.5 ? M_PAD : part > 0.5 ? M_SOLE : M_SKIN);
+  float tee = max(tor - 0.9, 109. + 1.5 * sin(p.y * 0.4) - p.z);
+  tee = max(tee, max(p.z - 151., -sdCap(p, vec3(-15., 25., 133.), vec3(-40., 0., 133.), 3.8, 3.8)));
+  if (tee < her.x + 0.6) her = vec2(min(tee, her.x), M_TEE); else her.x = min(her.x, tee);
+  float lat = p.y - 16.5;
+  if (her.y == M_SKIN && p.z > mix(92., 79.5, smoothstep(-9., 2., p.x)) + 1.15 * abs(lat) && p.z < 103.5 + 0.8 * sin(p.y * 0.3) && p.x > -12.) her.y = M_PANTY;
+  float hr = sdEll(p - vec3(-4., 19.5, 163.), vec3(9.8, 10.8, 11.4));
+  hr = smin(hr, sdEll(p - vec3(5., 15., 162.), vec3(7., 9., 12.)), 4.);
+  hr = smin(hr, sdEll(p - vec3(6., 23., 151.), vec3(4.5, 7., 9.)), 3.);
+  hr = max(hr, 146. - p.z);
+  if (hr < her.x) her = vec2(hr, M_HAIR);
+  float clip = sdEll(p - vec3(1.5, 28.4, 160.), vec3(1.6, 1.4, 1.7));
+  if (clip < her.x) her = vec2(clip, M_CLIP);
+  return her;
+}
+// a proper warm duvet: about L thick over the mattress (a plump layer), draped over her (distance b) in one soft mound
+// (fillet R), with a few broad soft folds. Cut it with smax(.., k ~ L/2) so its hems come out round, like a filled duvet's
+float duvet(vec3 p, float b, float L, float R){
+  float folds = 1.7 * sin(p.x * 0.065 + p.z * 0.03 + 0.6) * sin(p.z * 0.05 + 1.1) + 0.8 * sin(p.x * 0.15 - p.z * 0.1 + 0.4) + 0.35 * sin(p.z * 0.23 + p.x * 0.12);
+  float layer = abs(p.y - L * 0.5) - L * 0.5;
+  return smin(b - L * 0.8, layer, R) - folds;
+}
+// where a duvet runs over the bed's long edges (x = 10 +- 70) it rolls over and hangs down the sides
+float duvetHang(vec3 p, float L, float z0, float z1){
+  float h = max(abs(abs(p.x - 10.) - 72.5 - 0.8 * sin(p.z * 0.21)) - 3.2, max(p.y - L + 2., -30. - p.y + 3. * sin(p.z * 0.17)));
+  return smax(h, max(z0 - p.z, p.z - z1), 5.);
+}
+// what a thick duvet rests on when she lies on her side: her body with the hollows bridged (waist, between the knees
+// and her chest, along her legs), so the cover makes one soft mound instead of following every curve
+float sideHull(vec3 p, float d){
+  float h = sdEll(p - vec3(-2., 16., 120.), vec3(13., 19., 34.));
+  h = smin(h, sdEll(p - vec3(1., 16., 92.), vec3(15., 17., 16.)), 10.);
+  h = smin(h, sdCap(p, vec3(-4., 12., 90.), vec3(-34., 12., 76.), 10., 8.), 10.);
+  h = smin(h, sdCap(p, vec3(-34., 12., 76.), vec3(-8., 8., 60.), 8., 6.), 8.);
+  bool yel = SCENE == 1 || SCENE == 5;   // yellow's top leg goes back behind her, out from under the cover
+  h = smin(h, sdCap(p, vec3(-3., 20., 92.), yel ? vec3(18., 12., 61.) : vec3(-15., 19., 56.), 9., 6.5), 10.);
+  if (!yel) h = smin(h, sdCap(p, vec3(-15., 19., 56.), vec3(-6., 17., 22.), 6.5, 4.5), 8.);
+  return smin(d, h, 6.);
+}
+vec2 herProne(vec3 p, out float d){
+  // her
+  float part; d = body(p, part);
+  vec2 her = vec2(d, part > 1.5 ? M_PAD : part > 0.5 ? M_SOLE : M_SKIN);
+  // his tee: the torso inflated, from the shoulders down to a hem that rode up to z 108
+  float tee = max(d - 0.9 + 0.25 * sin(p.x * 0.7 + p.z * 0.4) * smoothstep(110., 140., p.z), 106.5 + 1.5 * sin(p.x * 0.35) - p.z);
+  tee = max(tee, -sdCap(p, vec3(-40., 9.5, 160.), vec3(-14., 12., 171.), 3.6, 3.));
+  tee = max(tee, -sdCap(p, vec3(40., 9.5, 160.), vec3(14., 12., 171.), 3.6, 3.));
+  tee = max(tee, p.z - 152.);
+  if (tee < her.x + 0.6) her = vec2(min(tee, her.x), M_TEE); else her.x = min(her.x, tee);
+  // panties: rose, high-cut, so the lower half of each cheek is bare
+  if (her.y == M_SKIN && p.z > 79. + 0.25 * abs(p.x) + 0.025 * p.x * p.x && p.z < 109. && p.y > 6.) her.y = M_PANTY;
+  // her hair: over the back of her head, spread on the pillow and down onto her shoulders
+  float hr = sdEll(p - vec3(3.5, 20.2, 163.5), vec3(9.4, 10.4, 11.));
+  hr = smin(hr, sdEll(p - vec3(4., 16.5, 156.), vec3(15., 4.2, 10.)), 3.);
+  hr = smin(hr, sdEll(p - vec3(-5., 13.5, 168.), vec3(14., 3.2, 9.)), 3.);
+  hr = max(hr, -(p.z - 145.));
+  if (hr < her.x) her = vec2(hr, M_HAIR);
+  // the flower clip, on the near side of her head
+  float clip = sdEll(p - vec3(-5.4, 25.5, 160.), vec3(1.7, 1.7, 1.3));
+  if (clip < her.x) her = vec2(clip, M_CLIP);
+  return her;
+}
+float sheetY(vec3 p){   // the sheet's soft wrinkles (unplugged: creased where she lay)
+  float c = SCENE == 3 ? smoothstep(16., 2., p.x) * smoothstep(-44., -24., p.x) * smoothstep(40., 70., p.z) * smoothstep(165., 145., p.z) : 0.;
+  return 0.35 * sin(p.x * 0.21 + p.z * 0.05) * sin(p.z * 0.13) + 0.25 * sin(p.x * 0.09 - p.z * 0.17) + c * (0.9 * sin(p.x * 0.45 + p.z * 0.12) + 0.6 * sin(p.z * 0.31 - p.x * 0.2));
+}
+vec2 map(vec3 p){
+  vec2 res = vec2(1e9, 0.);
+  if (SCENE == 3) p.x = 20. - p.x;   // unplugged is drawn mirrored, so her side of the bed is on your left, clear of the summary
+  if (SCENE == 2) {
+    // red: the living room at dawn. The couch along the room, her back to you, facing its back, wrapped up in a
+    // blanket; the TV behind you
+    res = U(res, vec2(p.x + 80., M_WALL));
+    res = U(res, vec2(p.y + 45., M_FLOOR));
+    float seat = sdBox(p - vec3(-12., -12., 92.), vec3(40., 12., 94.), 4.);
+    seat = max(seat, -sdBox(p - vec3(-12., 0., 92.), vec3(42., 1.4, 0.7), 0.4));                 // the seam between the cushions
+    float back = sdBox(p - vec3(-50., 24., 92.), vec3(9., 30., 96.), 5.);
+    float arm = min(sdBox(p - vec3(-12., 6., -15.), vec3(44., 26., 9.), 5.), sdBox(p - vec3(-12., 6., 199.), vec3(44., 26., 9.), 5.));
+    float couch = min(min(seat, back), arm);
+    couch = min(couch, sdBox(p - vec3(-12., -32., 92.), vec3(42., 8., 112.), 2.));
+    res = U(res, vec2(couch, M_SHEET));
+    res = U(res, vec2(sdEll(p - vec3(-6., 8., 177.), vec3(21., 9.5, 12.)), M_PILLOW));          // the cushion under her head
+    float d; res = U(res, herSideDressed(p, d));
+    // a thick warm blanket: she is wrapped in it from her shoulder to her toes, only her head out on the cushion; it
+    // runs up against the couch's back and falls over the seat's front edge
+    float L = 9.;
+    float duv = duvet(p, sideHull(p, d) + 2.5, L, 18.);
+    float topZ = 143. + 2. * sin(p.x * 0.21) + 1. * sin(p.x * 0.6) + 3. * exp(-(p.x - 2.) * (p.x - 2.) / 150.);
+    duv = smax(duv, p.z - topZ, 5.);
+    duv = smax(duv, -2. - p.z + 1.5 * sin(p.x * 0.2), 5.);
+    duv = smax(duv, -p.x - 41., 4.);
+    duv = smax(duv, p.x - 31., 4.);
+    float fall = max(abs(p.x - 33. - 0.8 * sin(p.z * 0.23)) - 3., max(p.y - L + 2., -30. - p.y + 3. * sin(p.z * 0.19)));
+    fall = smax(fall, max(-2. - p.z, p.z - topZ), 5.);
+    duv = smin(duv, fall, 7.);
+    res = U(res, vec2(duv, M_BLANKET));
+    return res;
+  }
+  // the room: the wall behind the headboard, the floor, the bed
+  res = U(res, vec2(205. - p.z, M_WALL));
+  res = U(res, vec2(p.y + 48., M_FLOOR));
+  float bed = sdBox(p - vec3(10., -24., 95.), vec3(68., 24., 108.), 3.) - 0. ;
+  float sh = max(bed, p.y - sheetY(p));
+  res = U(res, vec2(min(bed, sh), M_SHEET));
+  res = U(res, vec2(sdBox(p - vec3(10., 22., 199.), vec3(74., 46., 3.), 1.5), M_WOOD));
+  res = U(res, vec2(sdBox(p - vec3(10., 66., 199.), vec3(76., 2.2, 4.), 1.), M_WOOD));
+  // her pillow (green: she hugs yours, here); dented where her head was in unplugged
+  res = U(res, vec2(sdEll(p - vec3(2., 6.5, 170.), vec3(31., 8., 17.)) + (SCENE == 3 ? 3.2 * exp(-dot(p.xz - vec2(2., 168.), p.xz - vec2(2., 168.)) / 90.) : 0.), M_PILLOW));
+  if (SCENE == 1 || SCENE == 5) res = U(res, vec2(p.x + 112., M_WALL));
+  if (SCENE == 0) {
+  float d; vec2 her = herProne(p, d);
+  res = U(res, her);
+  // the duvet: a thick warm one, pulled up to her shoulders, over all of her down to mid-calf; both lower legs and feet
+  // out at the foot end, soles up
+  float L = 10.;
+  float duv = duvet(p, d + 1.5, L, 17.);
+  float edgeZ = 47. + 1.6 * sin(p.x * 0.19 + 0.5) + 0.8 * sin(p.x * 0.53);   // her lower legs and feet out
+  float topZ = 146. + 2.2 * sin(p.x * 0.17) + 1.2 * sin(p.x * 0.6) - 3. * exp(-(p.x - 3.) * (p.x - 3.) / 120.);
+  duv = smax(duv, edgeZ - p.z, 5.5);
+  duv = smax(duv, p.z - topZ, 5.5);
+  duv = smax(duv, abs(p.x - 10.) - 71., 4.);
+  duv = smin(duv, duvetHang(p, L, edgeZ, topZ), 7.);
+  res = U(res, vec2(duv, M_BLANKET));
+  // the other pillow, his side, plumped
+  res = U(res, vec2(sdEll(p - vec3(44., 7.5, 177.), vec3(25., 8.5, 15.)), M_PILLOW));
+  } else if (SCENE == 1 || SCENE == 5) {
+    // yellow: face down with her head turned away from you, deep under a thick duvet up to her shoulders. She kicked
+    // one corner off: her right lower leg and foot are out, the left one stays tucked in. Her phone still lit on your
+    // pillow by her head (5 = the same without the phone's light, for its mask)
+    float d; vec2 her = herProne(p, d);
+    res = U(res, her);
+    vec3 pp = p - vec3(29., 14.7, 171.); pp.xy = mat2(0.97, -0.24, 0.24, 0.97) * pp.xy; pp.xz = mat2(0.94, 0.34, -0.34, 0.94) * pp.xz;   // on your pillow, by her head
+    res = U(res, vec2(sdBox(pp, vec3(3.6, 0.45, 7.2), 0.6), M_PHONE));
+    res = U(res, vec2(sdBox(pp - vec3(0., 0.95, 0.), vec3(3.0, 0.1, 6.4), 0.15), M_GLOW));
+    float L = 10.;
+    float duv = duvet(p, d + 1.5, L, 17.);
+    float edgeZ = mix(-14., 47., smoothstep(-6., 5., p.x)) + 1.6 * sin(p.x * 0.19 + 0.5) + 0.8 * sin(p.x * 0.53);
+    float topZ = 146. + 2.2 * sin(p.x * 0.17) + 1.2 * sin(p.x * 0.6) - 3. * exp(-(p.x - 3.) * (p.x - 3.) / 120.);
+    duv = smax(duv, edgeZ - p.z, 5.5);
+    duv = smax(duv, p.z - topZ, 5.5);
+    duv = smax(duv, abs(p.x - 10.) - 71., 4.);
+    duv = smin(duv, duvetHang(p, L, edgeZ, topZ), 7.);
+    // over the foot end it rolls down too, where it still covers her right foot
+    float foot = max(abs(p.z + 15.5 + 0.7 * sin(p.x * 0.23)) - 3.2, max(p.y - L + 2., -30. - p.y + 3. * sin(p.x * 0.19)));
+    foot = smax(foot, max(-61. - p.x, p.x - 3. + 3. * sin(p.y * 0.2)), 5.);
+    duv = smin(duv, foot, 7.);
+    res = U(res, vec2(duv, M_BLANKET));
+    res = U(res, vec2(sdEll(p - vec3(44., 7.5, 177.), vec3(25., 8.5, 15.)), M_PILLOW));
+  } else if (SCENE == 3) {
+    // unplugged: the bed she left. The thick duvet smooth on your side, up to your pillow; on hers folded back corner
+    // to corner where she got out (the folded part lies doubled on top, a soft roll along the fold); the sheet creased
+    // where she lay, the dent in her pillow, her clip left in it. A folded note on your pillow
+    float L = 10.;
+    float top = 148. - 1.6 * max(12. - p.x, 0.) + 2.2 * sin(p.x * 0.27);   // the top edge: folded back on her side
+    float duv = duvet(p, 1e3, L, 10.);
+    duv -= L * 0.85 * smoothstep(26., 8., top - p.z) * smoothstep(18., 8., p.x);   // the folded-back part, doubled
+    duv = smin(duv, sdCap(p, vec3(16., L * 0.9, 148.), vec3(-60., L * 0.9, 26.), 6.5, 7.5), 8.);   // its soft roll
+    duv = smax(duv, p.z - top, 5.5);
+    duv = smax(duv, -11. - p.z, 5.);
+    duv = smax(duv, abs(p.x - 10.) - 71., 4.);
+    duv = smin(duv, duvetHang(p, L, -11., top), 7.);
+    float foot = max(abs(p.z + 15.5 + 0.7 * sin(p.x * 0.23)) - 3.2, max(p.y - L + 2., -30. - p.y + 3. * sin(p.x * 0.19)));
+    duv = smin(duv, smax(foot, abs(p.x - 10.) - 73., 5.), 7.);
+    res = U(res, vec2(duv, M_BLANKET));
+    res = U(res, vec2(sdEll(p - vec3(44., 7.5, 177.), vec3(25., 8.5, 15.)), M_PILLOW));
+    // the note, folded once, a little tented; a small heart drawn on it
+    vec3 q = p - vec3(42., 16.6, 171.); q.xz = mat2(0.96, 0.28, -0.28, 0.96) * q.xz;
+    float note = sdBox(q - vec3(0., 0.6 - 0.12 * abs(q.x), 0.), vec3(6.5, 0.18, 4.6), 0.1);
+    res = U(res, vec2(note, M_NAIL));
+    res = U(res, vec2(max(sdBox(q - vec3(2.4, 0.75 - 0.12 * 2.4, 0.), vec3(1.1, 0.3, 1.), 0.), -note - 0.02), M_CLIP));
+    res = U(res, vec2(sdEll(p - vec3(8., 12.6, 166.), vec3(1.8, 1.2, 1.8)), M_CLIP));
+  }
+  return res;
+}
+vec3 nrm(vec3 p){ vec2 e = vec2(0.02, 0.); return normalize(vec3(map(p + e.xyy).x - map(p - e.xyy).x, map(p + e.yxy).x - map(p - e.yxy).x, map(p + e.yyx).x - map(p - e.yyx).x)); }
+float shadow(vec3 p, vec3 l){ float r = 1., t = 0.3; for (int i = 0; i < 48; i++){ float h = map(p + l * t).x; r = min(r, 10. * h / t); t += clamp(h, 0.2, 6.); if (r < 0.001 || t > 220.) break; } return clamp(r, 0., 1.); }
+void main(){
+  vec2 uv = (gl_FragCoord.xy - 0.5 * R) / R.y; uv.y = uv.y;
+  vec3 f = normalize(TGT - CAM), r = normalize(cross(f, vec3(0., 1., 0.))), u = cross(r, f);
+  vec3 rd = normalize(f * (0.5 / tan(FOV * 0.5)) + uv.x * r + uv.y * u);
+  float t = 0.; vec2 h; vec3 p;
+  for (int i = 0; i < 220; i++){ p = CAM + rd * t; h = map(p); if (h.x < 0.004 * t * 0.1 + 0.002) break; t += h.x * 0.8; if (t > 600.) break; }
+  if (t > 600.) { O = vec4(0., 0., 1., 1.); return; }
+  vec3 n = nrm(p);
+  // the morning sun through the blinds on the window to her left: stripes where the slats' shadows fall
+  vec3 L = (SCENE == 1 || SCENE == 5) ? normalize(vec3(0.85, 0.42, 0.25)) : SCENE == 3 ? normalize(vec3(0.8, 0.45, 0.3)) : normalize(vec3(0.58, 0.68, 0.1));   // yellow: a low sun through the gap in the curtains
+  float tw = (95. - p.x) / L.x; vec3 pw = p + L * tw;   // (unplugged: the blinds are up, no slats)                 // where the ray to the sun crosses the window
+  float slat = step(fract(pw.y / 7.5), 0.66) ; if (SCENE == 3) slat = 1.;
+  float win = step(abs(pw.z - 80.), 120.) * step(abs(pw.y - 100.), 110.);
+  float sun = max(dot(n, L), 0.) * shadow(p + n * 0.05, L) * slat * win;
+  float amb = 0.5 + 0.5 * n.y;
+  float ao = clamp(map(p + n * 1.5).x / 1.5, 0., 1.) * 0.5 + 0.5;
+  float k = (SCENE == 1 || SCENE == 5) ? 0.8 : SCENE == 3 ? 0.55 : 1.;   // unplugged: the blinds up but a grey morning   // yellow: the curtains half drawn, the sun weaker
+  float light = clamp(0.12 + 0.30 * amb * ao + 0.72 * sun * k, 0., 1.);
+  if (SCENE == 1) { vec3 q = vec3(28.5, 18.5, 171.) - p; float dq = length(q); light = clamp(light + 0.9 * max(dot(n, q / dq), 0.) * 500. / (500. + dq * dq) * shadow(p + n * 0.05, q / dq), 0., 1.); }
+  if (SCENE == 2) {
+    vec3 q = vec3(190., 85., 80.) - p; float dq = length(q); vec3 lq = q / dq;
+    float tv = max(dot(n, lq), 0.) * shadow(p + n * 0.05, lq);
+    light = clamp(0.07 + 0.16 * amb * ao + 0.86 * tv * (0.9 + 0.1 * sin(p.y * 0.05)), 0., 1.);
+  }
+  if (h.y == M_GLOW) light = 1.;
+  O = vec4(h.y / 16., light, clamp(t / 600., 0., 1.), 1.);
+}
+</script>
+<script>
+const c = document.getElementById('c');
+window.render = (w, h, scene, cam, tgt, fov) => {
+  c.width = w; c.height = h;
+  const gl = c.getContext('webgl2', { preserveDrawingBuffer: true });
+  const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, '#version 300 es\nin vec2 a;void main(){gl_Position=vec4(a,0.,1.);}'); gl.compileShader(vs);
+  const fs = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, document.getElementById('fs').textContent); gl.compileShader(fs);
+  if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) return 'ERR ' + gl.getShaderInfoLog(fs);
+  const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr); gl.useProgram(pr);
+  const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  gl.uniform2f(gl.getUniformLocation(pr, 'R'), w, h); gl.uniform1i(gl.getUniformLocation(pr, 'SCENE'), scene);
+  gl.uniform3f(gl.getUniformLocation(pr, 'CAM'), ...cam); gl.uniform3f(gl.getUniformLocation(pr, 'TGT'), ...tgt); gl.uniform1f(gl.getUniformLocation(pr, 'FOV'), fov);
+  gl.viewport(0, 0, w, h); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  const px = new Uint8Array(w * h * 4); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  // flip to top-down and hand back as a PNG
+  const k = document.createElement('canvas'); k.width = w; k.height = h; const g = k.getContext('2d'), im = g.createImageData(w, h);
+  for (let y = 0; y < h; y++) im.data.set(px.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4);
+  g.putImageData(im, 0, 0); return k.toDataURL('image/png');
+};
+</script></body></html>
