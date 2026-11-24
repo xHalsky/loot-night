@@ -1,10 +1,5 @@
 // Furniture, dialogue and other small content tables.
 
-export interface FurnitureDef { id: 'dummy' | 'bed'; name: string; stat: 'atk' | 'hp'; pct: number[]; gold: number[]; mats: number[] }
-export const FURNITURE: FurnitureDef[] = [
-  { id: 'dummy', name: 'Training Dummy', stat: 'atk', pct: [0.10, 0.18, 0.25], gold: [300, 700, 1500], mats: [8, 16, 30] },
-  { id: 'bed', name: 'Bed', stat: 'hp', pct: [0.10, 0.18, 0.25], gold: [300, 700, 1500], mats: [8, 16, 30] },
-];
 
 // Mom's lines. The ending tells the reply: '?' -> really?!, '...' -> mhm, '!' -> wow.
 export const MOM_LINES: { text: string; need: 0 | 1 | 2 }[] = [
@@ -40,19 +35,6 @@ export const PEEK_PASS = ['"Okay. Don\'t stay up too late."', '"Mhm. Spreadsheet
 export const PEEK_CAUGHT = ['"Is that... a dragon?"', '"Work, huh?"', '"Seriously? Again?"'];
 export const FAKEOUT_LINES = ['Steps go past. She went to the kitchen.', 'Bathroom. False alarm.'];
 
-export const TRADE_CHAT = [
-  ['Kubson', 'WTS Runed Sword, 300g, no lowballs'],
-  ['xXBartekXx', 'LF healer for Warlock, need 1 more'],
-  ['Wiktor', 'anyone seen a loot goblin on floor 3?'],
-  ['GoldSeller99', 'cheap gold, totally legit, trust'],
-  ['Kubson', 'LFG Ogre, have tank, need dps'],
-];
-export const NPCS = [
-  { tag: 'Kubson', x: 150, y: 250, color: '#d9534f' },
-  { tag: 'xXBartekXx', x: 330, y: 245, color: '#6fcf7f' },
-  { tag: 'Wiktor', x: 470, y: 290, color: '#6aa8ff' },
-  { tag: 'GoldSeller99', x: 70, y: 300, color: '#8e8a99' },
-];
 
 // Calls with a short dialogue (#23): each step shows the caller's line and three replies; one is right.
 export interface TalkStep { line: string; right: string; wrong: [string, string] }

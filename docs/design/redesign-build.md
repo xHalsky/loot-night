@@ -26,6 +26,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
 - **Each RPG system is reworked and drawn in the new look in the same step**, so the old RPG UI (`ui/monitor.ts`,
   `ui/dungeon.ts`, `ui/town.ts`, `ui/townMap.ts`, the side panel in `ui/panels.ts`) is never adapted only to be
   thrown away. Where a step can't wait for its new drawing, the old UI gets the smallest change that keeps it working.
+  The RPG's old UI is gone (0.62.3); the same holds for real life from step 3: each area's old DOM goes when its
+  new drawing lands.
 - **The renderer stays the page's code.** New drawing for live state goes in `src/render/page/live.js` (in `ORDER`
   after the page's modules): functions that take a view model and reuse the page's pieces (`drawDungeon`, the rigs,
   `hpBar`, `markTag`, `windup`, `skillBar`, `curioWindow`, `sidePanel`...). `src/render/rpgView.ts` builds the view

@@ -243,7 +243,6 @@ export interface GameState {
   trees?: Partial<Record<HeroId, string[]>>;   // skill tree nodes bought, per hero (#53)
   autocast?: Record<string, boolean>;          // autocast switches, 'hero:slot' (#53)   // the first legendary of a save comes within LEGENDARY_FIRST_BY drops
   night: Night | null;
-  townWin?: 'merchant' | 'appraiser' | 'salvage' | 'auction' | `build:${'training' | 'inn' | 'library' | 'treasury'}` | null;   // a service window, or a plot's build window (#50)
   screen: Screen; paused: boolean; debug: boolean; timeScale: number;
   realLifeOff: boolean;   // debug (#52, 1.1): nobody is home; the RPG runs alone (not saved)
   results: Results | null;

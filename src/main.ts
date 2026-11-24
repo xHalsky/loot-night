@@ -4,10 +4,9 @@ import { T } from './config/tuning';
 import { isCall, S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
-import { DESK_W, BATTLE_W, BAND_H } from './ui/layout';
-import { townHit, townHover } from './ui/townMap';
+import { DESK_W } from './ui/layout';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
+import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -17,11 +16,10 @@ import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } f
 import { choosePath, returnToTown, travelToDungeon, catchGoblin, pickStartFloor, debugEndFloor } from './systems/dungeon';
 import { chooseCurio, endCurio } from './systems/curios';
 import { toast } from './core/fx';
-import { ACT_BY_ID } from './data/apartment';
 import { startPre, cancelPre, episodeAnswer } from './systems/preemptive';
 import type { PreId } from './data/preemptive';
-import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction, openService, servicePick, serviceRun } from './systems/town';
-import { monUiHtml, monUiLiveHtml } from './ui/town';
+import { buildCity, openService, servicePick, serviceRun } from './systems/town';
+import { monUiLiveHtml } from './ui/town';
 import { altTab, excelInput } from './systems/excel';
 import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, cancelMonster } from './systems/monster';
@@ -169,12 +167,8 @@ const actions: Record<string, (arg: string) => void> = {
   pickFloor: a => pickStartFloor(Number(a)),   // #52, 1.4: the town's floor picker
   gate: () => travelToDungeon(),
   sleep: () => endNight('sleep'),
-  identify: () => identify(), vendor: () => vendor(), salvage: () => salvage(), list: () => list(),
   build: a => buildCity(a as 'training'),
-  townWin: a => openTownWin((a || null) as 'merchant' | null),
-  buildWin: a => openTownWin(a ? `build:${a}` as 'build:inn' : null),
-  svc: a => { const [k, id] = a.split(':'); serviceAction(k as 'vendor', id); },
-  portal: () => { S.g.townWin = null; travelToDungeon(); },
+  portal: () => travelToDungeon(),
   openPhone: () => openPhone(),
   openMonster: () => openMonster(),
   cancelMonster: () => cancelMonster(),
@@ -458,26 +452,7 @@ monCanvas.addEventListener('pointerdown', ev => {
     if (b) excelInput(b.cmd);
     return;
   }
-  if (n.location === 'town') {   // the city (#50): click a building
-    const id = x < BATTLE_W ? townHit(x, y) : null;
-    if (id === 'portal') { S.g.townWin = null; travelToDungeon(); }
-    else if (id === 'training' || id === 'inn' || id === 'library' || id === 'treasury') openTownWin(`build:${id}`);
-    else if (id) openTownWin(id);
-    return;
-  }
 });
-
-// The city (#50): a building under the mouse glows and shows its tooltip; the cursor says it can be clicked.
-monCanvas.addEventListener('pointermove', ev => {
-  const n = S.g.night;
-  const r = monCanvas.getBoundingClientRect();
-  const x = (ev.clientX - r.left) * (MON_W / r.width), y = (ev.clientY - r.top) * (MON_H / r.height);
-  const id = n && n.location === 'town' && n.monitor === 'rpg' && !n.switching && x < BATTLE_W ? townHit(x, y) : null;
-  townHover.id = id;
-  monCanvas.style.cursor = id ? 'pointer' : 'default';
-  if (id) monCanvas.dataset.tip = `town:${id}`; else delete monCanvas.dataset.tip;
-});
-monCanvas.addEventListener('pointerleave', () => { townHover.id = null; delete monCanvas.dataset.tip; });
 
 // Away from the desk (a pre-emptive action): nothing on the desk reacts, only the away card.
 window.addEventListener('pointerdown', ev => {
@@ -574,10 +549,10 @@ function render() {
     setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
     setHtml('youCard', youHtml());
     setHtml('feedCard', feedHtml());
-    setHtml('monUi', liveShown() ? monUiLiveHtml() : monUiHtml());
+    setHtml('monUi', monUiLiveHtml());   // the run end card over the town; the rest of the RPG is the renderer's
     setHtml('winLayer', windowHtml());
     el('ui').classList.toggle('cv', livePanelShown());   // the panel is drawn by the renderer: the DOM keeps only its item windows
-    setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : uiPanelHtml());
+    setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : '');   // dark until the renderer's fonts load
     setHtml('toasts', toastsHtml());
     setHtml('taskbar', taskbarHtml());
     updateWindowDynamics();

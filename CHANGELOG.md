@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.62.3 (2026-11-24)
+
+- **The old RPG drawing is gone** (steps 1 and 2 are closed: #52, #53, #67). The renderer has drawn the dungeon,
+  the floor map, the town and the side panel since 0.62, so the old DOM side panel, the town's service and build
+  windows, the canvas town (`ui/townMap.ts`), the old sprites and VFX, and 447 CSS rules nothing could produce any
+  more are removed (about 1,900 lines). A check walked 60 screens (title, town tabs, dungeon, map, pause, debug,
+  every phone, dog and window state) and found no element any removed rule could style.
+- The alt-tab switch now freezes and brings back the renderer's picture (the battle area or the town and the
+  panel); it showed the dark monitor underneath, or the old town.
+- Old one-off screenshot scripts for the removed town windows are gone; `test/layout.py` keeps one town shot.
+
 ## 0.62.2 (2026-11-24)
 
 - **The looter runs for the loot** (#52 1.3, the last open piece of step 1). On the walk Garrote (the Knight on night

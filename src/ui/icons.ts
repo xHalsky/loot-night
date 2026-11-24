@@ -36,12 +36,6 @@ const GLYPH: Record<string, string[]> = {
   shield: ['##########', '#........#', '#.######.#', '#.######.#', '#.######.#', '.#.####.#.', '.#.####.#.', '..#.##.#..', '...#..#...', '....##....'],
   ankh: ['...####...', '..#....#..', '..#....#..', '...#..#...', '##########', '....##....', '....##....', '....##....', '....##....', '....##....'],
 };
-export const ABILITY_GLYPHS: Record<string, [string, string][]> = {
-  knight: [['sword', '#dfe6ef'], ['shout', '#ff8a4d'], ['hammer', '#c9a46a'], ['star', '#f2b84b']],   // the ultimate is the gold star
-  rogue: [['sword', '#dfe6ef'], ['dagger', '#e8b07a'], ['cloud', '#a999bd'], ['star', '#f2b84b']],
-  mage: [['bolt', '#c9a0ff'], ['flame', '#ff8a4d'], ['frost', '#8fd8ff'], ['star', '#f2b84b']],
-  healer: [['cross', '#f2e9d8'], ['plus', '#6fcf7f'], ['shield', '#8fb3ff'], ['star', '#f2b84b']],
-};
 export function glyph(name: string, color: string, size = 28): string {
   const rows = GLYPH[name] ?? GLYPH.star;
   let rects = '';

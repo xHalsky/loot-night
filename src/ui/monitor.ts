@@ -1,24 +1,14 @@
 import { T } from '../config/tuning';
-import { S, N, type Vfx } from '../core/state';
-import { HERO_SPRITES, type Px } from '../data/heroes';
-import { ENEMY_BY_ID } from '../data/enemies';
-import { maxHp } from '../systems/stats';
-import { MAP_INFO } from '../data/items';
-import { NPCS, TRADE_CHAT } from '../data/content';
+import { S, N } from '../core/state';
+import {  type Px } from '../data/heroes';
 import { PIECES } from '../systems/excel';
-import { drawTownMap } from './townMap';
 import { sfx } from './audio';
-import { GAME_W, GAME_H, BATTLE_W, BAND_H, SCENE_H } from './layout';
+import { GAME_W, GAME_H, BATTLE_W } from './layout';
 
 /** The canvas is the whole game screen (#49); the side panel is DOM over its right part. */
 export const MON_W = GAME_W, MON_H = GAME_H;
 const FONT = '"Pixelify Sans", monospace';
 
-export function drawPx(c: CanvasRenderingContext2D, px: Px[], x: number, y: number, s: number, alpha = 1) {
-  c.globalAlpha = alpha;
-  for (const [a, b, w, h, col] of px) { c.fillStyle = col; c.fillRect(x + a * s, y + b * s, w * s, h * s); }
-  c.globalAlpha = 1;
-}
 
 export function text(c: CanvasRenderingContext2D, s: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'left', weight = 400) {
   c.font = `${weight} ${size}px ${FONT}`;
@@ -50,22 +40,17 @@ export function drawMonitor(c: CanvasRenderingContext2D, live = false) {
     return;
   }
   if (n.monitor === 'excel') { drawExcel(c); return; }
-  if (n.location === 'town') { drawTownScreen(c); return; }
-  if (live) { sidePanelBack(c); return; }   // V2: the battle area is drawn by the renderer (render/liveRpg.ts)
+  if (live) { sidePanelBack(c); return; }   // V2: the dungeon, the town and the panel are drawn by the renderer (render/liveRpg.ts)
   drawDungeon(c);
 }
 
-/** Until the renderer is ready (its fonts load in a moment), the battle area stays dark (V2 draws the dungeon). */
+/** Until the renderer is ready (its fonts load in a moment), the battle area stays dark (V2 draws the RPG). */
 function drawDungeon(c: CanvasRenderingContext2D) {
   c.fillStyle = '#0a0814'; c.fillRect(0, 0, BATTLE_W, GAME_H);
   sidePanelBack(c);
 }
 /** Under the DOM side panel: its colour, so a frozen frame (the alt-tab switch) still shows a panel there. */
 function sidePanelBack(c: CanvasRenderingContext2D) { c.fillStyle = '#2a1f14'; c.fillRect(BATTLE_W, 0, GAME_W - BATTLE_W, GAME_H); }
-function drawTownScreen(c: CanvasRenderingContext2D) {
-  drawTownMap(c);   // Ravenhold at night fills the whole battle area (#50)
-  sidePanelBack(c);
-}
 
 
 // ---------------- Excel: a spreadsheet that happens to be Tetris ----------------
@@ -204,101 +189,6 @@ function drawExcel(c: CanvasRenderingContext2D) {
   xlText(c, `Ready     Overtime ${n.excel.pay} g`, MON_W - 8, sb + 13, 10, '#555', 'right');
 }
 
-// ---------------- Battle VFX ----------------
-const rnd = (seed: number, k: number) => { const v = Math.sin(seed * 999 + k * 12.9898) * 43758.5453; return v - Math.floor(v); };
-export function drawVfx(c: CanvasRenderingContext2D, v: Vfx) {
-  const p = v.t / v.dur;
-  const a = Math.max(0, 1 - p);
-  c.save();
-  c.lineCap = 'round';
-  switch (v.kind) {
-    case 'slash': {
-      const sweep = Math.min(1, p * 2.5);
-      c.strokeStyle = `rgba(255,255,255,${a})`; c.lineWidth = 6 * a + 1;
-      c.beginPath(); c.arc(v.x - 6, v.y - 4, 30, -2.6, -2.6 + sweep * 2.4); c.stroke();
-      c.strokeStyle = `rgba(255,220,140,${a})`; c.lineWidth = 2;
-      c.beginPath(); c.arc(v.x - 6, v.y - 4, 24, -2.6, -2.6 + sweep * 2.4); c.stroke();
-      break;
-    }
-    case 'claw': {
-      const len = Math.min(1, p * 4);
-      c.strokeStyle = `rgba(255,70,70,${a})`; c.lineWidth = 4;
-      for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(v.x + 12 - k * 10, v.y - 20); c.lineTo(v.x + 12 - k * 10 - 14 * len, v.y - 20 + 34 * len); c.stroke(); }
-      break;
-    }
-    case 'bolt': case 'fire': {
-      const travel = v.kind === 'bolt' ? 0.55 : 0.4;
-      const col = v.kind === 'bolt' ? '185,140,255' : '255,140,60';
-      if (p < travel) {
-        const q = p / travel;
-        const hx = v.x2 + (v.x - v.x2) * q, hy = v.y2 - 10 + (v.y - v.y2 + 10) * q - Math.sin(q * Math.PI) * 20;
-        c.strokeStyle = `rgba(${col},0.5)`; c.lineWidth = 4;
-        c.beginPath(); c.moveTo(v.x2, v.y2 - 10); c.lineTo(hx, hy); c.stroke();
-        c.fillStyle = `rgb(${col})`; c.beginPath(); c.arc(hx, hy, v.kind === 'fire' ? 8 : 6, 0, Math.PI * 2); c.fill();
-        c.fillStyle = '#fff'; c.beginPath(); c.arc(hx, hy, 3, 0, Math.PI * 2); c.fill();
-      } else {
-        const q = (p - travel) / (1 - travel);
-        const n = v.kind === 'fire' ? 14 : 8;
-        for (let k = 0; k < n; k++) {
-          const ang = rnd(v.seed, k) * Math.PI * 2, r = q * (v.kind === 'fire' ? 34 : 22) * (0.5 + rnd(v.seed, k + 50));
-          c.fillStyle = k % 3 === 0 ? `rgba(255,240,160,${1 - q})` : `rgba(${col},${1 - q})`;
-          c.fillRect(v.x + Math.cos(ang) * r - 3, v.y + Math.sin(ang) * r - 3, 6, 6);
-        }
-      }
-      break;
-    }
-    case 'frost': {
-      const q = Math.min(1, p * 2);
-      c.strokeStyle = `rgba(160,225,255,${a})`; c.lineWidth = 3;
-      for (let k = 0; k < 6; k++) {
-        const ang = (k / 6) * Math.PI * 2;
-        c.beginPath(); c.moveTo(v.x, v.y); c.lineTo(v.x + Math.cos(ang) * 28 * q, v.y + Math.sin(ang) * 28 * q); c.stroke();
-      }
-      c.fillStyle = `rgba(200,240,255,${a * 0.5})`;
-      c.beginPath(); c.moveTo(v.x, v.y - 22 * q); c.lineTo(v.x + 14 * q, v.y); c.lineTo(v.x, v.y + 22 * q); c.lineTo(v.x - 14 * q, v.y); c.fill();
-      break;
-    }
-    case 'heal': {
-      for (let k = 0; k < 4; k++) {
-        const ox = (rnd(v.seed, k) - 0.5) * 40, rise = p * 40 + k * 6;
-        c.fillStyle = `rgba(111,207,127,${a})`;
-        c.fillRect(v.x + ox - 2, v.y - rise - 6, 4, 12); c.fillRect(v.x + ox - 6, v.y - rise - 2, 12, 4);
-      }
-      break;
-    }
-    case 'taunt': {
-      for (let k = 0; k < 2; k++) {
-        const q = Math.max(0, p - k * 0.25) / (1 - k * 0.25);
-        c.strokeStyle = `rgba(255,90,70,${1 - q})`; c.lineWidth = 3;
-        c.beginPath(); c.arc(v.x, v.y, 10 + q * 60, 0, Math.PI * 2); c.stroke();
-      }
-      text(c, '!', v.x, v.y - 50 - p * 10, 26, `rgba(255,90,70,${a})`, 'center', 600);
-      break;
-    }
-    case 'bash': {
-      const r = 10 + p * 24;
-      c.fillStyle = `rgba(255,220,90,${a})`;
-      c.beginPath();
-      for (let k = 0; k < 16; k++) { const ang = (k / 16) * Math.PI * 2, rr = k % 2 ? r * 0.45 : r; c.lineTo(v.x + Math.cos(ang) * rr, v.y + Math.sin(ang) * rr); }
-      c.fill();
-      break;
-    }
-    case 'smite': {
-      const g = c.createLinearGradient(0, 40, 0, v.y + 30);
-      g.addColorStop(0, 'rgba(255,240,170,0)'); g.addColorStop(1, `rgba(255,240,170,${a})`);
-      c.fillStyle = g; c.fillRect(v.x - 8 + p * 4, 40, 16 - p * 8, v.y - 10);
-      c.fillStyle = `rgba(255,250,210,${a})`; c.beginPath(); c.arc(v.x, v.y, 10 + p * 10, 0, Math.PI * 2); c.fill();
-      break;
-    }
-    case 'ward': {
-      c.strokeStyle = `rgba(143,179,255,${a})`; c.lineWidth = 3;
-      c.fillStyle = `rgba(143,179,255,${a * 0.15})`;
-      c.beginPath(); c.ellipse(v.x, v.y, 60 + p * 80, 30 + p * 40, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-      break;
-    }
-  }
-  c.restore();
-}
 
 /** Alt-tab, old-Windows style (a fullscreen game changing display modes). Over the random lag:
  *  1. freeze: the last frame hangs and tears (shifted horizontal slices),
@@ -357,11 +247,17 @@ function desktop(c: CanvasRenderingContext2D) {
   c.fillStyle = '#000'; c.textAlign = 'right'; c.fillText(new Date().toTimeString().slice(0, 5), MON_W - 8, MON_H - 7);
 }
 function drawTarget(c: CanvasRenderingContext2D, to: string) {
-  const n = S.g.night!;
   c.clearRect(0, 0, MON_W, MON_H);
   if (to === 'excel') drawExcel(c);
-  else if (n.location === 'town') drawTownScreen(c);
-  else drawDungeon(c);
+  else { drawDungeon(c); liveFrame(c); }
+}
+/** The renderer's last RPG frame (its battle area and side panel are canvases of their own, over this one), so the
+ *  alt-tab switch freezes and brings back the real picture, not the dark monitor under it. */
+function liveFrame(c: CanvasRenderingContext2D) {
+  const a = document.getElementById('rpgArea') as HTMLCanvasElement | null, b = document.getElementById('spArea') as HTMLCanvasElement | null;
+  c.imageSmoothingEnabled = false;
+  if (a?.width) c.drawImage(a, 0, 0, BATTLE_W, GAME_H);
+  if (b?.width) c.drawImage(b, BATTLE_W, 0, GAME_W - BATTLE_W, GAME_H);
 }
 
 function drawSwitching(c: CanvasRenderingContext2D, sw: { to: string; t: number; max: number }) {
@@ -373,6 +269,7 @@ function drawSwitching(c: CanvasRenderingContext2D, sw: { to: string; t: number;
     const s = swSnap.getContext('2d')!;
     s.clearRect(0, 0, MON_W, MON_H);
     s.drawImage(c.canvas, 0, 0);
+    if (sw.to === 'excel') liveFrame(s);   // leaving the RPG: freeze the renderer's picture
     swSmear.getContext('2d')!.clearRect(0, 0, MON_W, MON_H);
   }
   c.clearRect(0, 0, MON_W, MON_H);

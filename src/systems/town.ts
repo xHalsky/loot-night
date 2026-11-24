@@ -112,7 +112,6 @@ export function applyCity() {
   S.g.bagSize = T.BAG_SIZE + BAG_PLUS[f.treasury];
 }
 
-export function openTownWin(w: NonNullable<typeof S.g.townWin> | null) { S.g.townWin = w; sfx.click(); }
 
 // ---- services in the side panel (grid doc §6b): pick items in the bag grid, then one gold button acts on all of them
 /** Does the item apply here? Locked, unknown and maps never do; at the Appraiser only the unknown ones. */

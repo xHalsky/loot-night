@@ -3,9 +3,6 @@ import type { Rarity, Slot, Stat, MapKind } from '../core/state';
 export const RARITY_COLOR: Record<Rarity, string> = {
   common: '#8e8a99', uncommon: '#6fcf7f', rare: '#6aa8ff', epic: '#b98cff', legendary: '#ff9a4d',
 };
-export const RARITY_BG: Record<Rarity, string> = {
-  common: '#3a3342', uncommon: '#1f3a2c', rare: '#1f2f4a', epic: '#34244f', legendary: '#4a2f17',
-};
 export const RARITY_MULT: Record<Rarity, number> = { common: 1, uncommon: 1.3, rare: 1.7, epic: 2.2, legendary: 3 };
 export const HAS_DOWNSIDE: Record<Rarity, boolean> = { common: false, uncommon: false, rare: true, epic: true, legendary: true };
 

@@ -9,7 +9,7 @@ async def dbg(pg, a):   # an F1 debug button
     await pg.evaluate("()=>{window.__lootnight.S.g.debug=true}"); await pg.wait_for_timeout(120)
     await act(pg, f'[data-act={a}]'); await pg.evaluate("()=>{window.__lootnight.S.g.debug=false}"); await pg.wait_for_timeout(120)
 async def ev(pg, js): await pg.evaluate("x=>{const g=window.__lootnight.S.g, n=g.night; eval(x)}", js)
-RESET = "n.visit={stage:'idle',t:0,nextAt:999,fake:false,checked:false,result:'',kind:'peek'}; n.monitor='rpg'; n.headset=false; n.zone=0; n.tired=12; n.boost=0; n.lap=null; n.game=null; n.interrupts=[]; n.clock=21*60; n.apt.asleep=false; n.cansHidden=false; g.townWin=null; n.lootFly=[]; n.selected=null; n.dropPopup=null; g.timeScale=1; n.apt.calm=999;"
+RESET = "n.visit={stage:'idle',t:0,nextAt:999,fake:false,checked:false,result:'',kind:'peek'}; n.monitor='rpg'; n.headset=false; n.zone=0; n.tired=12; n.boost=0; n.lap=null; n.game=null; n.interrupts=[]; n.clock=21*60; n.apt.asleep=false; n.cansHidden=false; n.lootFly=[]; n.selected=null; n.dropPopup=null; g.timeScale=1; n.apt.calm=999;"
 async def main():
     shots = []
     async with async_playwright() as p:
@@ -29,9 +29,7 @@ async def main():
         async def hov(): await pg.mouse.move(314 + 469, 16 + 100)
         await shot('town_hover', '', 400, hov)
         await pg.mouse.move(700, 600)
-        await shot('town_service', "g.townWin='merchant'")
-        await shot('town_build', "g.townWin='build:inn'")
-        await shot('town_built', "g.furniture={training:3,inn:2,library:3,treasury:1}; g.townWin=null")
+        await shot('town_built', "g.furniture={training:3,inn:2,library:3,treasury:1}")   # services and builds: test/town.py
         await shot('town_built2', "g.furniture={training:1,inn:3,library:2,treasury:3}")
         await ev(pg, "g.furniture={}")
         await act(pg, '[data-act=portal]'); await pg.wait_for_timeout(300)

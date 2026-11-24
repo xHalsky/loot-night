@@ -3,7 +3,7 @@ import { VERSION } from '../config/version';
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
-import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
+import { isCall, S, N, type BagEntry, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, ULT_SLOT } from '../data/heroes';
 import { autocastBought, autocastOn } from '../systems/tree';
 import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
@@ -19,34 +19,25 @@ import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
 import { preBlocked, nextMult } from '../systems/preemptive';
 import { phoneAction } from '../systems/interrupts';
 import { planSvg } from './plan';
-import { RARITY_COLOR, RARITY_BG, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
+import { RARITY_COLOR, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { MOM_REPLIES } from '../data/content';
 import { SW, SH } from './monsterScene';
-import { headsetSvg, monsterStockSvg } from './peripherals';
-import { CITY, CD_PCT } from '../data/city';
-import { TOWN_SPOTS, type TownSpotId } from './townMap';
-import { SVC_INFO } from './town';
 import { isAway } from '../systems/autopilot';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
 import { CHAT_QS, VISIT_CUE } from '../data/content';
-import { heroStats, maxHp, xpNeeded, itemPower, heroPower, heroBaseStats } from '../systems/stats';
-import { abilitiesLocked, abilityUnlocked } from '../systems/battle';
-import { entryName, entryColor, entryValue, cap } from '../systems/loot';
-import { icon, glyph, ABILITY_GLYPHS } from './icons';
-import { canLeaveDungeon } from '../systems/dungeon';
+import { heroStats, maxHp, itemPower, heroPower } from '../systems/stats';
+import {  abilityUnlocked } from '../systems/battle';
+import { entryName, entryColor, cap } from '../systems/loot';
+import { icon } from './icons';
 import { moodZone } from '../systems/meters';
 import { fmtClock, parseTag } from '../core/fx';
 import type { MorningScene } from './her';
 import { hasSave } from '../systems/save';
 import { canSleep } from '../systems/night';
-import { ROOM_SHORT, ROOM_NAME } from '../data/apartment';
-import type { Room } from '../core/state';
+import {  ROOM_NAME } from '../data/apartment';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const btn = (act: string, label: string, arg = '', cls = '') => `<button class="btn ${cls}" data-act="${act}" data-arg="${esc(arg)}">${label}</button>`;
-const meter = (label: string, value: string, pct: number, color: string, mark?: number) =>
-  `<div class="meter"><div class="meter-row"><span>${label}</span><b style="color:${color}">${value}</b></div>` +
-  `<div class="meter-bar"><div style="width:${Math.round(Math.max(0, Math.min(100, pct)))}%;background:${color}"></div>${mark !== undefined ? `<i style="left:${mark}%"></i>` : ''}</div></div>`;
 
 // ---------------- Girlfriend panel (her world: warm, handwritten, hearts) ----------------
 export function herHeadHtml(): string {
@@ -164,10 +155,6 @@ export function preBusyHtml(): string {
   return p.away ? `<div class="away-layer">${EMPTY_CHAIR}${card}</div>` : `<div class="busy-wrap">${card}</div>`;
 }
 
-// ---------------- Apartment map (FNAF layer) ----------------
-// Blueprint of the apartment (docs/design/her.md). No marker for her: you listen.
-// While you peek, a vague blob shows roughly where she is.
-const ROOM_C: Record<Room, [number, number]> = { bedroom: [46, 42], bathroom: [120, 40], kitchen: [174, 44], hallway: [96, 95], living: [58, 152] };
 /** The last sound you heard of her: what, where, how long ago. Never where she is now (docs/design/her.md). */
 export function heardHtml(): string {
   const n = N();
@@ -333,8 +320,6 @@ function phoneHtml(g: PhoneGame): string {
   return `<div class="phone-win">${statusBar()}<div class="ph-screen ${g.stage}">${body}</div>${timer}<button class="ph-home" data-act="closeGame" title="Swipe home: put the phone down"></button></div>`;
 }
 
-const hint = (dir: 'left' | 'right' | 'up' | 'down' | 'tap' | 'hold', x: number, y: number) =>
-  `<div class="mhint h-${dir}" style="left:${x}px;top:${y}px">${{ left: '&larr;', right: '&rarr;', up: '&uarr;', down: '&darr;', tap: 'CLICK', hold: 'HOLD' }[dir]}</div>`;
 
 const M_STEPS: [MonsterGame['stage'], string, string][] = [
   ['drawer', 'Drawer', 'Grab the drawer handle and pull.'],
@@ -485,18 +470,6 @@ export function tooltipHtml(): string {
     const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 40, 720 - 60));
     return `<div class="tooltip" style="left:${left}px;top:${top}px"><div>${esc(hover.key.slice(5))}</div></div>`;
   }
-  if (parts[0] === 'town') {   // a building in the city (#50): what it is, what it does, the cost
-    const id = parts[1] as TownSpotId, spot = TOWN_SPOTS.find(s => s.id === id)!;
-    let line = '', cost = '';
-    if (id === 'portal') { line = `Start a run at floor ${S.g.startFloor}.`; cost = '15 min'; }
-    else if (id in SVC_INFO) line = SVC_INFO[id as keyof typeof SVC_INFO].hint;
-    else {
-      const d = CITY.find(f => f.id === id)!, L = S.g.furniture[d.id] ?? 0;
-      line = L ? `Level ${L}: ${d.effect[L - 1]}` : `Empty plot, materials ready. Built: ${d.effect[0]}`;
-      cost = L >= 3 ? 'Fully built' : `${L ? 'Upgrade' : 'Build'}: ${d.gold[L]} g · ${d.mats[L]} Souls`;
-    }
-    return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 250)}px;top:${Math.min(hover.y + 12, 720 - 90)}px"><div class="tt-name">${spot.name}</div><div>${line}</div>${cost ? `<div class="tt-sub">${cost}</div>` : ''}</div>`;
-  }
   if (parts[0] === 'autosalvage') return `<div class="tooltip" style="left:${Math.min(hover.x - 120, 1280 - 250)}px;top:${hover.y + 14}px"><div class="tt-name">Auto-salvage</div><div>Common and uncommon drops turn straight into Souls.</div></div>`;
   if (parts[0] === 'pre') return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 270)}px;bottom:${Math.max(8, 720 - hover.y + 14)}px">${preTip(parts[1] as PreId)}</div>`;   // low on screen: open upwards
   else if (parts[0] === 'skill' || parts[0] === 'hero') {
@@ -546,43 +519,17 @@ export function tooltipHtml(): string {
   const left = Math.min(hover.x + 16, 1280 - 250), top = Math.min(hover.y + 12, 720 - 200);
   return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
 }
-function slotShort(e: BagEntry): string {
-  if (e.kind === 'map') return `MAP<br>${MAP_INFO[e.map].name.split(' ')[0]}`;
-  if (e.kind === 'feather') return 'PHOENIX';
-  if (!e.item.identified) return '???';
-  // Show the item noun only: drop the rarity adjective and any "of ..." suffix.
-  const noun = e.item.name.split(' ').slice(1).join(' ').split(' of ')[0];
-  return esc(noun);
-}
-function entryStyle(e: BagEntry): string {
-  if (e.kind === 'item') return `background:${RARITY_BG[e.item.rarity]};border-color:${RARITY_COLOR[e.item.rarity]}`;
-  return `background:#2a2030;border-color:${entryColor(e)};color:${entryColor(e)}`;
-}
 
 function affixLines(item: Item): string {
   if (!item.identified) return `<div class="dim">Unidentified: stats hidden. Identify at the Appraiser in town.</div>`;
   return item.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('');
 }
 
-/** One line: better or worse for the hero you are looking at. */
-/** A long name may wrap in a narrow cell: a soft hyphen at about 60% (Knighten-stein), shown only if it breaks. */
-const softBreak = (name: string) => name.length > 9 ? `${name.slice(0, Math.ceil(name.length * 0.6))}&shy;${name.slice(Math.ceil(name.length * 0.6))}` : name;
 function powerCompare(h: Hero, item: Item): string {
   const d = heroPower(h, { [item.slot]: item }) - heroPower(h);
   return d > 0 ? `<span style="color:#6fcf7f">\u25b2 +${d} power for ${h.name}</span>` : d < 0 ? `<span style="color:#ff8a80">\u25bc ${d} power for ${h.name}</span>` : `<span class="dim">Same power for ${h.name}</span>`;
 }
 
-function compareFor(heroIdx: number, item: Item): string {
-  const h = S.g.heroes[heroIdx];
-  const pBefore = heroPower(h), pAfter = heroPower(h, { [item.slot]: item }), pd = pAfter - pBefore;
-  const powLine = `<span style="color:${pd > 0 ? '#ffd27a' : pd < 0 ? '#ff8a80' : '#a999bd'}">\u25c6 Power ${pBefore} \u2192 ${pAfter}</span> `;
-  const before = heroStats(h);
-  const after = heroStats(h, { [item.slot]: item });
-  const keys: Stat[] = ['atk', 'hp', 'armor', 'speed', 'crit', 'luck'];
-  const parts = keys.map(k => ({ k, d: Math.round((after[k] - before[k]) * 10) / 10 })).filter(x => x.d !== 0)
-    .map(x => `<span style="color:${x.d > 0 ? '#6fcf7f' : '#ff8a80'}">${x.d > 0 ? '+' : ''}${x.d} ${STAT_LABEL[x.k].replace(' %', '%')}</span>`);
-  return powLine + (parts.join(' ') || '<span class="dim">no stat change</span>');
-}
 
 /** The item window (#49): over the party and gear block of the side panel, so the bag below stays clickable and
  *  the battle stays in view. One Equip button per hero with the power change. */
@@ -625,79 +572,6 @@ function dropPopupHtml(): string {
 /** The side panel inside the game screen (#49): the party, the selected hero's gear and stats, the bag and the
  *  Treasury row; in town the city menu (build, services) and the bag. No HP here (the battle and the skill bar
  *  show it), no instruction text in the headers. Hidden with the rest of the game (Excel, monitor off, switching). */
-export function uiPanelHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  const g = S.g;
-  const town = n.location === 'town';
-  const head = (l: string, r = '') => `<div class="sp-h"><span>${l}</span>${r}</div>`;
-  // --- bag: 18 slots, then the Treasury row (the building opens 2 per level; the rest show a lock) ---
-  const cells = Array.from({ length: T.BAG_SIZE + T.TREASURY_ROW }, (_, i) => {
-    if (i >= g.bagSize) return '<div class="bslot locked" aria-label="Locked: the Treasury opens it"><i class="lock-ico"></i></div>';
-    const e = g.bag[i];
-    if (!e) return `<div class="bslot empty${i >= T.BAG_SIZE ? ' tre' : ''}"></div>`;
-    const sel = n.selected === e.id ? ' sel' : '';
-    const swap = n.dropPopup ? ' swap' : '';
-    const fresh = n.fresh.some(f => f.id === e.id) ? ' fresh' : '';
-    const lock = e.kind === 'item' && e.item.locked ? '<i class="lockico">\u{1F512}</i>' : '';
-    const corner = e.kind === 'item' ? `<span class="val pow">${e.item.identified ? itemPower(e.item) : '?'}</span>` : `<span class="val">${entryValue(e)}</span>`;
-    // an upgrade for someone (#49): a green arrow on the item, so the bag says what to equip at a glance
-    const up = e.kind === 'item' && e.item.identified && g.heroes.some(h => heroPower(h, { [e.item.slot]: e.item }) > heroPower(h)) ? '<i class="up-ico" aria-label="An upgrade">\u25b2</i>' : '';
-    return `<div class="bslot${sel}${swap}${fresh}${e.run ? ' run' : ''}" title="${e.run ? 'Unbanked: the town portal banks it, a wipe loses it' : ''}" style="${entryStyle(e)}${fresh ? `;--new:${T.BAG_NEW_SEC}s` : ''}" data-item="bag:${e.id}">${entryIcon(e, 24)}${lock}${up}${corner}${fresh ? '<b class="new">NEW</b>' : ''}</div>`;
-  }).join('');
-  const full = g.bag.length >= g.bagSize;
-  const bag = head(`BAG <b class="${full ? 'full' : ''}">${g.bag.length}/${g.bagSize}</b>`,
-    `<button class="as-tog ${g.autoSalvage ? 'on' : ''}" data-act="autoSalvage" data-tip="autosalvage">Auto-salvage ${g.autoSalvage ? 'on' : 'off'}</button>`)
-    + `<div class="sp-bag" data-drop="bag">${cells}</div>`;
-  const foot = `<div class="sp-foot"><span class="gold">${g.gold} g · ${g.mats} Souls</span><span>record ${Math.max(g.record, n.deepest)}</span></div>`;
-  // in town three tabs (#53, grid doc §6b): Town, Inventory, Skill Tree (the tree tab is drawn by the renderer)
-  const tab = town ? (n.townTab ?? 'town') : null;
-  const tabs = town ? `<div class="sp-tabs">${[['town', 'Town'], ['inventory', 'Inventory'], ['tree', 'Skill Tree']].map(([id, l]) => `<button class="sp-tab ${tab === id ? 'on' : ''}" data-act="townTab" data-arg="${id}">${l}</button>`).join('')}</div>` : '';
-  if (tab === 'tree') return tabs;
-  if (tab === 'town') {
-    const rows = CITY.map(f => {
-      const L = g.furniture[f.id] ?? 0;
-      const pips = [0, 1, 2].map(k => `<i class="${k < L ? 'on' : ''}"></i>`).join('');
-      const afford = L < 3 && g.gold >= f.gold[L] && g.mats >= f.mats[L];
-      const act = L >= 3 ? '<span class="sp-max">Max</span>'
-        : `<button class="sp-build ${afford ? 'ok' : 'off'}" data-act="build" data-arg="${f.id}">${L ? 'Upgrade' : 'Build'} ${f.gold[L]} g · ${f.mats[L]}<i class="scrap"></i></button>`;
-      return `<div class="sp-city"><div><b>${f.name}</b><span class="pips">${pips}</span><small>${L ? f.effect[L - 1] : `Next: ${f.effect[0]}`}</small></div>${act}</div>`;
-    }).join('');
-    // the services are the buildings themselves now (click one in the city, #50); the way down stays here too
-    // the way down (#52, 1.4): floor 1 and every checkpoint you unlocked
-    const cps = [...S.g.checkpoints].sort((x, y) => x - y), f = cps.includes(S.g.startFloor) ? S.g.startFloor : 1;
-    const gate = `<div class="sp-svcs sp-pick"><button class="sp-arrow" data-act="pickFloor" data-arg="-1" ${cps[0] === f ? 'disabled' : ''}>\u25c0</button><button class="sp-gate" data-act="portal">Enter the dungeon · floor ${f}</button><button class="sp-arrow" data-act="pickFloor" data-arg="1" ${cps[cps.length - 1] === f ? 'disabled' : ''}>\u25b6</button></div>`;
-    return tabs + `<div class="sp-top">${head('RAVENHOLD · BUILD')}<div class="sp-cityrows">${rows}</div>${gate}${itemPopHtml()}</div>` + bag + foot;
-  }
-  // --- party: three cards (level, power, "!" when one falls behind); drop gear on a card to equip it ---
-  const ht = n.heroTab;
-  const gh = g.heroes[ht];
-  const powers = g.heroes.map(h => heroPower(h));
-  const best = Math.max(...powers);
-  const cards = g.heroes.map((h, i) => {
-    const behind = best > 0 && powers[i] < best * T.POWER_BEHIND;
-    return `<button class="sp-card ${i === ht ? 'on' : ''} ${h.downed ? 'downed' : ''}" style="--hc:${HERO_COLORS[h.id]}" data-act="heroTab" data-arg="${i}" data-drop="hero:${i}" data-tip="hero:${i}">
-      <span class="sp-ini">${h.name[0]}</span><span class="sp-nm"><b>${h.name}</b><small>Lv ${h.level} \u25c6${powers[i]}</small></span>${behind ? '<em class="sp-need">!</em>' : ''}
-      <i class="sp-xp"><i style="width:${Math.round((h.xp / xpNeeded(h)) * 100)}%"></i></i></button>`;
-  }).join('');
-  const GEAR_ORDER: Item['slot'][] = ['helm', 'armor', 'boots', 'weapon', 'ring', 'trinket'];
-  const slots = GEAR_ORDER.map(sl => {
-    const it = gh.gear[sl];
-    const style = it ? `background:${RARITY_BG[it.rarity]};border-color:${RARITY_COLOR[it.rarity]}` : '';
-    return `<div class="dslot ${it ? 'full' : ''}" style="${style}" data-drop="slot:${sl}" ${it ? `data-item="gear:${ht}:${sl}"` : ''}>${icon(sl, it ? '#f2e9d8' : '#5a4a3a', 22)}${it ? `<span class="spow">${it.identified ? itemPower(it) : '?'}</span>` : ''}</div>`;
-  }).join('');
-  const st = heroStats(gh), base = heroBaseStats(gh);
-  const r0 = (v: number) => String(Math.round(v)), r1 = (v: number) => String(Math.round(v * 10) / 10);
-  const stat = (k: Stat, label: string, fmt: (v: number) => string) => {
-    const d = st[k] - base[k];
-    return `<div class="sp-stat"><span>${label}</span><b>${fmt(st[k])}${Math.abs(d) >= 0.05 ? `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : ''}${fmt(d)}</em>` : ''}</b></div>`;
-  };
-  const gear = `<div class="sp-gear"><div class="sp-slots">${slots}</div><div class="sp-stats">${stat('hp', 'HP', r0)}${stat('atk', 'ATK', r1)}${stat('armor', 'ARM', r1)}${stat('speed', 'SPD', r1)}${stat('crit', 'CRIT', r1)}${stat('luck', 'LUCK', r1)}</div></div>`;
-  return tabs + `<div class="sp-top">${head('PARTY')}<div class="sp-cards">${cards}</div>`
-    + head(`${gh.name.toUpperCase()} · ${gh.role}`, `<b class="sp-pow">\u25c6 ${powers[ht]}</b>`) + gear + itemPopHtml() + '</div>' + bag + foot;
-}
-
-/** The item window or the bag-full popup for the renderer's panel (V2): the DOM keeps only these. */
 export function uiPopHtml(): string { return itemPopHtml(); }
 /** The item window or the bag-full popup, if one is open (drawn over the side panel's top block). */
 function itemPopHtml(): string {

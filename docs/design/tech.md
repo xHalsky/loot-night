@@ -63,10 +63,10 @@ and "Redesign frame": the mockup's frame (Dungeon, Battle, Map, Town, Q4) drawn 
 
 ## Known debt
 
-- Some content still lives in UI files (town chat phrases in `ui/town.ts`, cable colours and count in
-  `systems/pets.ts`); move to `src/data/` and `tuning.ts` when touched.
-- Unused leftovers: `FURNITURE` in `data/content.ts` (replaced by `data/city.ts`, kept for save migration
-  only in `applyCity`).
+- Some content still lives outside `src/data/` (cable colours and count in `systems/pets.ts`); move to
+  `src/data/` and `tuning.ts` when touched.
+- The RPG's old drawing (DOM side panel, town windows, canvas town, sprites) went in 0.62.3. Unused exports left
+  in rules and real-life code (`healParty`, `anyBoss`, `moodLabel`, a few layout constants) go when touched.
 - Tag pushes blocked from Claude sessions: #11.
 - The renderer draws on the CPU: in headless Chrome (2 cores) the full frame takes 50 to 70 ms and the RPG screen
   about 22 ms. Before it drives the game every frame (V2), static parts need caching or a lower redraw rate.

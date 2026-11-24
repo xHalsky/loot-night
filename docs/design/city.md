@@ -5,7 +5,7 @@
 **The city is the hub, on the monitor.** Ravenhold at night, seen from above at an angle like a SNES jRPG town,
 filling the whole battle area (334 × 232 on the grid). Since 0.62 it is the redesign's town (`screenTown` in
 `src/render/page/town.js`, through `liveTown` and the view in `src/render/rpgView.ts`; grid doc §6); the old
-canvas town (`src/ui/townMap.ts`) is only the fallback. The map follows the build: an unbuilt plot is a building
+canvas town (`src/ui/townMap.ts`) was removed in 0.62.3. The map follows the build: an unbuilt plot is a building
 site, a built one its building, and the static layer is rebuilt when a level changes. Lv 2 and 3 show the Lv 1
 building for now (#81). Dark medieval with a gothic edge: thick stone
 houses under slate roofs on a grid of cobbled streets that meet at right angles (three east to west, two north to
