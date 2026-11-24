@@ -16,7 +16,7 @@ S.g = initialState(); startNight();
 ok(S.g.howto, 'the first night opens with the how-to-hide card');
 const t0 = N().threat; for (let i = 0; i < 120; i++) step(1 / 60);
 ok(N().threat === t0, 'the night waits while the card is open');
-S.g.howto = false; N().nextInterruptAt = 1e9;
+S.g.howto = false; N().phoneScript = []; N().friendsLeft = 0;
 for (let i = 0; i < 60 * (T.TIP_HER_AT + 1); i++) step(1 / 60);
 ok(S.g.tipsSeen.includes('her_show') && !!N().tip, `her opening line after ${T.TIP_HER_AT} s, pinned in the feed`);
 const lines = () => N().log.filter(l => l.text.includes('wants pets')).length;

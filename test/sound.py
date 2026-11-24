@@ -23,7 +23,7 @@ async def main():
             s, e = lp[cue]
             good = abs((e - s) - sec) < 0.01 and 0.24 < s < 0.4
             print(f'loop {cue}: {s:.3f}..{e:.3f}', 'ok' if good else 'FAIL'); ok &= good
-        await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9;}")
+        await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9;}")
         cases = [("tv", "living", 30, False, 'tv'), ("tea", "kitchen", 15, False, 'kettle'), ("shower", "bathroom", 80, False, 'shower'),
                  ("shower", "bathroom", 2, True, None), ("phone", "bedroom", 10, False, None)]
         for act_id, room, t, cued, want in cases:

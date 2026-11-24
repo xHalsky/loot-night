@@ -85,7 +85,7 @@ async def main():
         # the how-to card opens on the first night: a pop-up too
         await shot(pg, 'windows', 'howto_card', sel='.howto .card')
         await act(pg, '[data-act=howtoClose]')
-        await ev(pg, "n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.tired=10; n.apt.t=999; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset');")
+        await ev(pg, "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.tired=10; n.apt.t=999; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset');")
         await pg.wait_for_timeout(300)
         # ---- town windows (the night starts in town) ----
         await ev(pg, "g.townWin='merchant'"); await pg.wait_for_timeout(300)

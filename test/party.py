@@ -11,7 +11,7 @@ GEAR = """()=>{const S=window.__lootnight.S; let id=1000;
  h.gear={weapon:mk('weapon','common',2,[{stat:'atk',amount:3}])};
  S.g.bag.push({kind:'item',id:'b1',item:mk('armor','epic',8,[{stat:'armor',amount:9},{stat:'hp',amount:30}])});
  S.g.bag.push({kind:'item',id:'b2',item:mk('boots','legendary',9,[{stat:'speed',amount:4},{stat:'hp',amount:20}])});
- S.g.night.heroTab=2; S.g.night.nextInterruptAt=1e9; S.g.night.dog.next=1e9; S.g.night.apt.lastVisitEnd=1e9;}"""
+ S.g.night.heroTab=2; S.g.night.phoneScript=[]; S.g.night.friendsLeft=0; S.g.night.dog.next=1e9; S.g.night.apt.lastVisitEnd=1e9;}"""
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])

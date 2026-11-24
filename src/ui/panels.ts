@@ -223,7 +223,8 @@ function phoneObjHtml(): string {
     screen = `<div class="ios call"><div class="ios-di"></div><div class="ios-cname">${CALLER[it.kind][0]}</div><div class="ios-csub">${CALLER[it.kind][1]}</div>
       <div class="ios-mrow"><span>\u23F0<br>Remind</span><span>\u2709<br>Message</span></div>
       <div class="ios-mslide"><i>&#9742;</i><span>slide to answer</span></div>
-      <div class="ios-cbtn red" data-decline="1"><span>&#9742;</span></div><div class="ios-clab">Decline</div></div>`;
+      <div class="ios-cbtns"><div class="ios-cbtn red" data-decline="1"><span>&#9742;</span></div><div class="ios-cbtn spk" data-speaker="1"><span>&#128266;</span></div></div>
+      <div class="ios-clab"><span>Decline</span><span>Speaker</span></div></div>`;
   } else if (it && it.msgs.length) {
     const [app, who, col] = APP[it.kind];
     const banners = it.msgs.slice(-3).reverse().map((m, i) => `<div class="ios-ban ${i === 0 && it.max - it.t - it.pingAt < 0.4 ? 'new' : ''}"><i style="background:${col}"></i><div><b>${who}</b><small>${app}</small><span>${esc(m)}</span></div></div>`).join('');
@@ -275,7 +276,8 @@ function phoneHtml(g: PhoneGame): string {
     body = `<div class="ios-incoming"><div class="ios-cname big">${CALLER[g.app][0]}</div><div class="ios-csub">${CALLER[g.app][1]}</div></div>
       <div class="ios-row2"><div class="ios-mini"><span>\u23F0</span>Remind Me</div><div class="ios-mini"><span>\u2709</span>Message</div></div>
       <div class="ph-slide"><div id="dragEl" class="ph-knob" data-drag="answer" data-axis="x" data-dir="1" data-dist="${T.SLIDE_DIST}">&#9742;</div><span>slide to answer</span></div>
-      <button class="ios-endbtn" data-act="closeGame"><span>&#9742;</span></button><div class="ios-sub2">Decline</div>`;
+      <div class="ph-pick"><button class="ios-endbtn" data-act="closeGame"><span>&#9742;</span></button><button class="ios-spk" data-act="speaker" title="Hands free: keep playing. Loud while it lasts."><span>&#128266;</span></button></div>
+      <div class="ph-pick-lab"><span>Decline</span><span>Speaker</span></div>`;
   } else if (g.stage === 'locked') {
     const [app, who, col] = APP[g.app];
     body = `<div class="ph-lock-date">${['Monday', 'Tuesday'][0]}</div><div class="ph-lock-time">${fmtClock(N().clock)}</div>
@@ -285,7 +287,8 @@ function phoneHtml(g: PhoneGame): string {
       <div class="ph-hint">Face ID: hold to unlock</div>
       ${quit('Put down')}`;
   } else if (g.stage === 'talk') {
-    const st = g.app === 'friends' ? `misses ${g.misses}/${T.FRIENDS_MAX_MISSES}${N().headset ? ' \u00B7 headset' : ' \u00B7 ON SPEAKER'}` : 'one wrong word: he leaves';
+    const spk = g.speaker ? (N().headset ? ' \u00B7 speaker, in the headset' : ' \u00B7 ON SPEAKER') : '';
+    const st = (g.app === 'friends' ? `misses ${g.misses}/${T.FRIENDS_MAX_MISSES}` : 'one wrong word: he leaves') + spk;
     body = `<div class="ios-incall"><b>${CALLER[g.app][0]}</b><span>${st}</span></div>
       <div class="ph-bubble in">${esc(g.line)}</div>
       <div class="timebar"><div id="phBar" style="width:${Math.max(0, g.t / g.max) * 100}%"></div></div>
@@ -295,7 +298,7 @@ function phoneHtml(g: PhoneGame): string {
   } else if (g.stage === 'call') {
     const reading = g.read > 0;
     const mark = ['...', '?', '!'][g.need];
-    body = `<div class="ios-incall"><b>Mom</b><span>beat ${g.beat + 1}/${T.MOM_BEATS} \u00B7 misses ${g.misses}/${T.MOM_MAX_MISSES}</span></div>
+    body = `<div class="ios-incall"><b>Mom</b><span>beat ${g.beat + 1}/${T.MOM_BEATS} \u00B7 misses ${g.misses}/${T.MOM_MAX_MISSES}${g.speaker ? (N().headset ? ' \u00B7 speaker, in the headset' : ' \u00B7 ON SPEAKER') : ''}</span></div>
       <div class="ph-bubble in mom-line">${esc(g.line)}<span class="mark m${g.need}">${mark}</span></div>
       <div class="track ${reading ? 'reading' : ''}"><div class="zone" style="left:${g.zone * 100}%;width:${T.MOM_ZONE * 100}%"></div><div id="momMarker" class="marker"></div></div>
       <div class="ph-chips mom-replies">${MOM_REPLIES.map((r, i) => btn('mom', `<small>${['...', '?', '!'][i]}</small> ${r}`, String(i), `chip c${i}`)).join('')}</div>
@@ -308,7 +311,7 @@ function phoneHtml(g: PhoneGame): string {
     if (g.app === 'boss') {
       const r = g.rows[Math.min(g.row, g.rows.length - 1)];
       ask = `<div class="ph-bubble in">row ${g.row + 1}/${g.rows.length}: <b>${r.a} + ${r.b}</b> = ?</div>`;
-      reply = r.options.map((o, i) => btn('boss', `<small>${i + 1}</small> ${o}`, String(o), 'chip')).join('');
+      reply = r.options.map(o => btn('boss', String(o), String(o), 'chip')).join('');
     } else reply = btn('textReply', 'Five more minutes, love \u2665', '', 'chip');
     body = `<div class="ios-nav"><button class="ios-back" data-act="closeGame">\u2039</button><div class="ios-who"><i style="background:${col}">${who[0]}</i><b>${who}</b></div><span id="phTime">${Math.ceil(g.t)} s</span></div>
       <div class="ios-thread">${history}${ask}</div>
@@ -718,7 +721,7 @@ export function debugHtml(): string {
     <div><b>DEBUG</b> · speed x${g.timeScale} · ${btn('dbgLife', g.realLifeOff ? 'Real life: OFF' : 'Real life: on', '', 'sm')}</div>
     ${n ? `<div class="dim">${pacingLine()}${liveMs() ? ` · render ${liveMs().toFixed(1)} ms` : ''}</div>` : ''}
     ${n ? (() => { const c = cityOutlook(); return `<div class="dim">income tonight ${S.g.gold - n.goldStart >= 0 ? '+' : ''}${S.g.gold - n.goldStart} g · bag ${c.bagGold} g / ${c.bagScraps} scraps · next ${c.next ? `${c.next.name} ${c.next.gold} g + ${c.next.mats}` : 'none'} ${c.now ? '(now)' : c.withBag ? '(with the bag)' : '(short)'}</div>`; })() : ''}
-    ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
+    ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · phone ${n.phoneScript.filter(x => !x.done).map(x => x.kind + ' ' + fmtClock(x.at)).join(', ') || 'done'}${n.friendsLeft ? ` · boys ${n.friendsLeft}` : ''} · gap ${Math.max(0, T.REAL_LIFE_GAP_SEC - (n.threat - n.lastDemand)).toFixed(0)}s · phase ${n.phase}</div>` : ''}
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
     <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgCall', 'Courier', 'courier', 'sm')}${btn('dbgCall', 'Boys', 'friends', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>

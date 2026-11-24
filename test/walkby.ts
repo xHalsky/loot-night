@@ -10,7 +10,7 @@ import { updateVisits } from '../src/systems/visits';
 let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + msg); if (!c) fails++; };
 const night = (mood: number) => {
-  S.g = initialState(); startNight(); const n = N(); n.nextInterruptAt = 1e9; n.dog.next = 1e9;
+  S.g = initialState(); startNight(); const n = N(); n.phoneScript = []; n.friendsLeft = 0; n.dog.next = 1e9;
   n.clock = T.BED_FROM + 1; n.mood = mood; n.monitor = 'rpg'; n.apt.t = 0.01; n.apt.lastVisitEnd = -999; n.apt.moving = 0;
   let kinds: string[] = [];
   for (let i = 0; i < 60 * 30; i++) { const before = n.visit.stage; updateVisits(1 / 60); if (before === 'idle' && n.visit.stage !== 'idle') kinds.push(n.visit.kind); }

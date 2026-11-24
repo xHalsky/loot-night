@@ -13,7 +13,7 @@ async def main():
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(400)
         await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
-        await pg.evaluate("()=>{const g=window.__lootnight.S.g, n=g.night; n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup');}")
+        await pg.evaluate("()=>{const g=window.__lootnight.S.g, n=g.night; n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup');}")
         await act(pg, '[data-act=portal]'); await pg.wait_for_timeout(300)
         # an identified item in the bag, a map, gear on Pawel
         await pg.keyboard.press('F1'); await pg.wait_for_timeout(100)

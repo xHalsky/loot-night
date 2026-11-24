@@ -43,7 +43,7 @@ def closeup(scene, src, name, box, zoom, k=2):
 def native(scene, fn, name):
     p = f'{OUT}/{scene}/{name}.png'; shutil.copy(f'test/her_native/{fn}', p); made[scene].append(p)
 
-QUIET = "n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.apt.calm=1e9; n.tired=10; n.peekSus=-1e9;"
+QUIET = "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.apt.calm=1e9; n.tired=10; n.peekSus=-1e9;"
 def crack(room, activity):
     return f"{QUIET} n.visit={{...n.visit, stage:'idle', t:999, from:'{activity}', checked:false, result:''}}; const a=n.apt; a.room='{room}'; a.activity='{activity}'; a.t=999; a.moving=0; a.asleep=false; n.peeking=true; n.peek=1; n.headset=false;"
 LIVING = (112, 138, 148, 214)   # the living-room opening at the hallway's far end, webcam canvas px

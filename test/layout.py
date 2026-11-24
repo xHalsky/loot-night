@@ -18,7 +18,7 @@ async def main():
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await act(pg, '[data-act=newGame]'); await pg.wait_for_timeout(200); await act(pg, '[data-act=howtoClose]')
-        await ev(pg, "n.nextInterruptAt=1e9; n.dog.next=1e9; g.nightsPlayed=1; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset'); g.gold=650; g.mats=26;")
+        await ev(pg, "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; g.nightsPlayed=1; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset'); g.gold=650; g.mats=26;")
         async def shot(name, js='', wait=500, before=None):
             await ev(pg, RESET); await ev(pg, js)
             if before: await before()
@@ -55,7 +55,7 @@ async def main():
         await shot('midnight', "n.clock=25*60+20; n.apt.asleep=true; n.apt.wake=35; n.noise=42; g.timeScale=0")
         async def phone():
             await dbg(pg, 'dbgMom'); await pg.wait_for_timeout(600)
-        await shot('phone_ring', "n.nextInterruptAt=1e9", 300, phone)
+        await shot('phone_ring', "n.phoneScript=[]; n.friendsLeft=0", 300, phone)
         await ev(pg, "n.interrupts=[]")
         async def popup():
             await ev(pg, "const e=g.bag.find(x=>x.kind==='item'&&x.item.identified); if(e) n.selected=e.id")

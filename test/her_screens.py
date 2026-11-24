@@ -43,7 +43,7 @@ async def door_clip(pg, x, y, w, h):   # a box on the webcam canvas (its own px)
     return {'x': r[0] + x * r[2], 'y': r[1] + y * r[2], 'width': w * r[2], 'height': h * r[2]}
 CLOSE = {'kitchen_counter_from_behind': (196, 96, 96, 250), 'shower_frosted_glass': (168, 116, 70, 130), 'tv_her_feet_on_the_armrest': (100, 130, 90, 100)}
 
-QUIET = "n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.apt.calm=1e9; n.tired=10; n.peekSus=-1e9;"
+QUIET = "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.apt.calm=1e9; n.tired=10; n.peekSus=-1e9;"
 def visit(stage, frm='tv', kind='visit', result='chatMeh', lean=False, extra=''):
     return f"{QUIET} n.peeking=false; n.peek=0; n.visit={{...n.visit, stage:'{stage}', t:999, from:'{frm}', kind:'{kind}', result:'{result}', checked:true, lean:{'true' if lean else 'false'}, chat:null}}; {extra}"
 def crack(room, activity, moving=0, stage='idle'):

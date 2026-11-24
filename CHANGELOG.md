@@ -3,6 +3,27 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.64.0 (2026-11-24)
+
+- **The phone: fewer events, each worth taking** (#54 3.2, the rest of step 3). A night script replaces the random
+  timer (every 20 to 35 s): the courier once (20:30 to 21:30), Mom once around 21:00 (one callback if declined), the
+  boss's texts once around 22:00, the boys 1 or 2 times on the floor before a boss floor, her texts after midnight.
+  Nothing in the first 45 s.
+- **Each one pays:** Mom heals the party and gets the fallen up; the boss pays 50 zł overtime (not gold; ignoring him
+  now costs nothing); the courier brings a gaming mouse, skill cooldowns -10% until dawn (his loot parcel broke the
+  money rule); the boys' raid buff lasts until that boss fight ends. Mom is 2 beats, the boss one row of sums.
+- **One demand at a time:** a phone event or the dog waits while anything else asks for you, 15 s after the last,
+  and never during her footsteps, her at the door, her shower, a boss wind-up or a calm you earned. It slides
+  later, never drops. Her bedtime text only waits for the phone.
+- **Only calls buzz;** texts light the lock screen silently and wait 60 s. **Speaker** on every call (desk and hand):
+  hands free, keep playing, Noise while it lasts (none with the headset). **Face-down is Do Not Disturb:** silent,
+  and what runs out counts as ignored. **Touch only:** the 1 2 3 keys for Mom and the boss are gone.
+- `test/phone.ts` (replaces `test/calls.ts`): the script, the spacing, each event, speaker, Do Not Disturb.
+  `test/phone.py` shoots the desk call, the hand call, a call on speaker and a silent text.
+- Sims: good bot unchanged in outcome (sleeps, 3 stars, caught 0). **Idle bot: now reaches dawn in 4 of 5 seeds
+  (Mood 69, 2 stars: Deep and Sweet), was unplugged:** the phone no longer taxes Mood for the boss, the flip or the
+  random stream, and catches alone stop short of red. Left for the tuning after the redesign.
+
 ## 0.63.0 (2026-11-24)
 
 - **Stars that reward greed** (#54 3.1, redesign step 3 begins). Three goals, a star each, no ladder: **Deep** (any

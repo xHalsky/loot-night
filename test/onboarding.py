@@ -30,7 +30,7 @@ async def main():
         esc = await pg.evaluate("()=>!document.querySelector('.screen.howto') && !window.__lootnight.S.g.paused")
         print('pause menu reopens it:', re, '| Esc closes it:', esc); ok &= re and esc
         # the first-night end-cue label in her note
-        await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; S.g.timeScale=0; n.nextInterruptAt=1e9; Object.assign(n.apt,{activity:'tea',room:'kitchen',moving:0,cued:true,t:2}); n.visit.stage='idle'; n.headset=false;}")
+        await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; S.g.timeScale=0; n.phoneScript=[]; n.friendsLeft=0; Object.assign(n.apt,{activity:'tea',room:'kitchen',moving:0,cued:true,t:2}); n.visit.stage='idle'; n.headset=false;}")
         await pg.wait_for_timeout(300)
         note = await pg.evaluate("()=>document.querySelector('.her-note').textContent")
         print('end-cue label:', note); ok &= 'kettle clicked off' in note.lower()

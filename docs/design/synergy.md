@@ -16,7 +16,7 @@ All new numbers go in `tuning.ts`; banter lines in a `banter.ts` data file.
 | Goodwill | Forgiveness, the Raid pass (calm, Noise allowed) | Cuddle, good chat, lean visit, sweet answers when she leans in, her text answered; catches take it | New in 0.30 |
 | Noise | Visit timing, waking her | Combat, dog, Goblin Fuel, loud curio choices, a legendary yell, a wipe slam | Only punishes; distance and masking (#17) add the read; curios make it a price you choose to pay |
 | Excel | Passes checks, overtime gold | Alt-tab | Fine (Looks busy cut in 0.20) |
-| Interrupts | Mom heals, boss pays gold and goes quiet, courier pays an item, the boys a raid buff or Noise, her text Goodwill | Timers, the headset (the boys) | Fine |
+| Interrupts | Mom heals and revives, the boss pays zł, the courier's mouse cuts cooldowns, the boys a raid buff until the boss (or Noise), her text Goodwill | The night script, the one-demand rule, the headset (speaker) | Fine |
 | Dog and cables | Noise, NO SIGNAL; Good Boy (goblins x2), a fast fix keeps Flow; a wipe calls him over | A timer, a wipe | Fine (0.29) |
 | Tiredness | Yawns, microsleeps, sluggish, Drowsy misses; of Madness affix | Clock, sleep debt, Goblin Fuel | Fine: the Witching Hour gives staying up a reward side (0.31) |
 

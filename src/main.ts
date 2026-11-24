@@ -21,7 +21,7 @@ import type { PreId } from './data/preemptive';
 import { buildCity, openService, servicePick, serviceRun } from './systems/town';
 import { monUiLiveHtml } from './ui/town';
 import { altTab, excelInput } from './systems/excel';
-import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
+import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, answerSpeaker, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, cancelMonster } from './systems/monster';
 import { drawMonsterScene, monsterTilt } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
@@ -174,6 +174,7 @@ const actions: Record<string, (arg: string) => void> = {
   cancelMonster: () => cancelMonster(),
   textReply: () => textReply(),
   mom: a => momReply(Number(a)),
+  speaker: () => answerSpeaker(),
   talk: a => talkPick(Number(a)),
   boss: a => bossPick(Number(a)),
   closeGame: () => closeGame(false),
@@ -186,9 +187,9 @@ const actions: Record<string, (arg: string) => void> = {
   chatAnswer: a => chatAnswer(Number(a)),
   cuddle: a => cuddleAnswer(a === '1'),
   cuddleQuit: () => endCuddle(null),
-  dbgMom: () => spawnInterrupt('mom'),
-  dbgBoss: () => spawnInterrupt('boss'),
-  dbgCall: a => spawnInterrupt(a as 'courier'),
+  dbgMom: () => spawnInterrupt('mom', true),
+  dbgBoss: () => spawnInterrupt('boss', true),
+  dbgCall: a => spawnInterrupt(a as 'courier', true),
   dbgGoblin: () => { N().goblin = { t: T.GOBLIN_SEC }; sfx.goblin(); },
   dbgSfx: a => audition(a),
   coachClose: () => closeCoach(),
@@ -278,6 +279,7 @@ document.addEventListener('pointerdown', ev => {
   const t = ev.target as HTMLElement;
   if (!S.g.night || S.g.paused) return;
   if (t.closest('[data-decline]')) { ev.preventDefault(); ev.stopImmediatePropagation(); declineCall(); return; }
+  if (t.closest('[data-speaker]')) { ev.preventDefault(); ev.stopImmediatePropagation(); answerSpeaker(); return; }   // answer on speaker, the phone stays on the desk
   if (t.closest('[data-phone]')) { ev.preventDefault(); ev.stopImmediatePropagation(); pswipe = { x0: ev.clientX, dx: 0, moved: false }; sfx.click(); }
 }, true);
 document.addEventListener('pointermove', ev => {
@@ -478,15 +480,15 @@ window.addEventListener('keydown', ev => {
   if (wakeUp()) { ev.preventDefault(); return; }
   if (ev.key === 'Tab') { ev.preventDefault(); altTab(); return; }
   const k = ev.key.toLowerCase();
-  if (k === 'h' && !n.game) { toggleHeadset(); return; }
+  const handsFree = !n.game || (n.game.kind === 'phone' && !!n.game.speaker);   // a call on speaker keeps your hands free
+  if (k === 'h' && handsFree) { toggleHeadset(); return; }
   if (k === 'm' && !n.game) { monsterKey(); return; }   // the Monster button on the YOU card (#49)
   if (k === 'l' && hover.key) { const [kind, a, b] = hover.key.split(':'); const id = kind === 'bag' ? a : S.g.heroes[Number(a)]?.gear[b as 'weapon']?.id; if (id) toggleLock(id); return; }
-  if (n.game) {
-    const i = ['1', '2', '3'].indexOf(k);
+  // The phone is touch only (#54, 3.2): no keys answer it. A call on speaker leaves your hands free, so the skill
+  // keys and the rest still work while it lasts.
+  if (n.game && !(n.game.kind === 'phone' && n.game.speaker)) {
     const gm = n.game;
     if (gm.kind === 'monster' && (ev.key === ' ' || ev.code === 'Space')) { ev.preventDefault(); monsterTilt(true); return; }   // Space tilts the can, wherever it is (#61, #62)
-    if (i >= 0 && gm.kind === 'phone' && gm.stage === 'call') momReply(i);
-    else if (i >= 0 && gm.kind === 'phone' && gm.stage === 'chat' && gm.app === 'boss') bossPick(gm.rows[gm.row].options[i]);
     return;
   }
   if (n.monitor === 'excel') {

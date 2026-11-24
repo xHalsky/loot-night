@@ -43,7 +43,7 @@ async def main():
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await act(pg, '[data-act=newGame]'); await pg.wait_for_timeout(300); await act(pg, '[data-act=howtoClose]')
-        await ev(pg, "n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.tired=10; n.apt.t=999; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset');")
+        await ev(pg, "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.tired=10; n.apt.t=999; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset');")
         await dbg(pg, 'dbgEpic'); await pg.wait_for_timeout(300)   # in town the drop goes straight to the bag
         await act(pg, '[data-act=portal]'); await pg.wait_for_timeout(700)
 

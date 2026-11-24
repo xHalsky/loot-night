@@ -8,6 +8,7 @@ import { updateVisits } from '../systems/visits';
 import { updatePre } from '../systems/preemptive';
 import { updateCurioTimers } from '../systems/curios';
 import { updateInterrupts } from '../systems/interrupts';
+import { updateRealLife } from '../systems/reallife';
 import { updateCuddle } from '../systems/cuddle';
 import { updateExcel } from '../systems/excel';
 import { updateDungeon } from '../systems/dungeon';
@@ -33,7 +34,8 @@ export function step(dt: number) {
   updateTips(dt);
   if (life) { updateLap(dt); updateDog(dt); }
   const busyWithHer = !!g.night.lap || g.night.game?.kind === 'cuddle';
-  if (life && !busyWithHer) updateInterrupts(dt); else g.night.nextInterruptAt += dt;   // her time (or nobody home): the phone waits
+  if (life) updateRealLife();   // one demand at a time (#54, 3.2): the gap restarts while anything asks for you
+  if (life && !busyWithHer) updateInterrupts(dt);   // her time (or nobody home): the phone waits
   updateCuddle(dt);
   updateSwitch(dt);
   updateExcel(dt);

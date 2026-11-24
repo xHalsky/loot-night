@@ -33,7 +33,7 @@ function gearUp() {
 const DT = 1 / 60;
 function calm() {
   const n = N();
-  n.interrupts = []; n.nextInterruptAt = 1e9; n.dog.next = 1e9; n.dog.stage = 'away';
+  n.interrupts = []; n.phoneScript = []; n.friendsLeft = 0; n.dog.next = 1e9; n.dog.stage = 'away';
   n.apt.lastVisitEnd = n.threat; n.visit.stage = 'idle'; n.tired = 0; n.mood = 0;
   S.g.night!.dropPopup = null; n.selected = null;
 }

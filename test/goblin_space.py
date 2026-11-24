@@ -10,7 +10,7 @@ async def main():
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await pg.click('[data-act=newGame]'); await pg.wait_for_timeout(300)
         if await pg.locator('[data-act=howtoClose]').count(): await pg.click('[data-act=howtoClose]')
-        await pg.evaluate("()=>{const g=window.__lootnight.S.g,n=g.night; n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset')}")
+        await pg.evaluate("()=>{const g=window.__lootnight.S.g,n=g.night; n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset')}")
         await pg.click('[data-act=portal]'); await pg.wait_for_timeout(400)
         await pg.click('[data-act=openMonster]'); await pg.wait_for_timeout(300)        # a real click: focus lands on the button
         await pg.evaluate("()=>{const g=window.__lootnight.S.g.night.game; g.stage='drink'; g.opened=true}"); await pg.wait_for_timeout(300)

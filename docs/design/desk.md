@@ -18,44 +18,51 @@ Goodwill ([screen.md](screen.md)).
 
 ### The phone
 
-One iPhone on the desk (iPhone proportions, Dynamic Island, left of the keyboard), one notification at a
-time (`INTERRUPT_CAP`), every `INTERRUPT_INTERVAL_SEC`. The screen stays off until something arrives.
+One iPhone on the desk (iPhone proportions, Dynamic Island, left of the keyboard), one thing at a time. The screen
+stays off until something arrives. **Fewer events, each worth taking** (#54, 3.2; `systems/interrupts.ts`): a night
+has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 
-- **Vibration you can count.** Calls: a long rattling buzz every 1.4 s. Messages come in bursts of 1 to 3;
-  each one is one short double buzz, the phone visibly jumps, and a banner pops onto the lock screen at
-  the same moment. The boss may follow up halfway through.
-- **On the desk.** A call shows the iOS incoming-call screen; the red Decline declines at once, a tap
-  anywhere else picks up. Messages wake it to the lock screen with banners.
-- **On the desk it is big** (#49): the 90 × 186 phone drawn 1.38x at the desk's left edge, running off the bottom.
-  On the desk's incoming-call screen the Decline button sits right under the slider, so it stays in view.
-- **In your hand.** The phone leaves the desk and opens as a 186 × 398 window over the battle area with iOS
-  screens: incoming call (slide to answer), lock screen with Face ID (hold `FACE_UNLOCK_SEC`), in-call
-  screen, iMessage thread with blue quick-reply buttons. Every screen can be left (put down, Decline, red
-  end button, back chevron, home bar, the close X); leaving counts as ignoring. Layout rules (#45): the
-  lock screen shows the two newest banners and a "+N more" line, so the Face ID ring is always a full
-  76 px circle; every reply (Mom, the courier, the boys) is one full-width button per row that grows with
-  its text; chat threads fade out at the top instead of cutting a bubble; the instruction lives in the
-  feedback line. `python3 test/phone.py` shoots every stage of every phone game.
-- **Flip it face-down.** Grab and swipe left or right, any time; it lifts and turns in 3D. It stays face-down
-  until you flip it back. Face-down it is silent (#47): no buzz, no shake, no countdown ring; when a call or a
-  message comes in, its screen only lights the desk around it (a soft cool glow that flares on each new
-  message and pulses during a call). For players who want to ignore the phone and play. Flipping a message
-  face-down dismisses it (cheaper than ignoring); messages that expire face-down count as unseen (half
-  penalty). To answer anything, flip it back up.
+**The night script** (`PHONE_SCRIPT`, made at 20:00 by `planPhone`; F1 shows what is left):
 
-| Who | Minigame | Success | Ignore or fail | Decline |
+| When | Who | Answer | Ignore or fail | Decline |
 |---|---|---|---|---|
-| Mom (call, before midnight) | 3 lines; her line's ending (… ? !) tells the reply (mhm / really?! / wow), tapped while a marker sweeps through a zone; `MOM_MAX_MISSES` | Full party heal | Mood +`MOM_FAIL_MOOD` and she calls your girlfriend (next visit soon) | Mood +`MOM_DECLINE_MOOD`, she calls back in 40 to 60 s |
-| Boss (messages) | Two easy sums in a chat, `BOSS_WINDOW_SEC`; wrong total −2 s | Overtime bonus `BOSS_GOLD` gold, and no boss messages for `BOSS_QUIET_SEC` | Mood +`BOSS_FAIL_MOOD` | Flip: he pings again in `BOSS_FLIP_FOLLOWUP_SEC` |
-| Her (bedtime text) | Tap "Five more minutes, love" | Waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | Flip: Waking +`TEXT_FLIP_WAKE` |
-| Courier (call, until `COURIER_UNTIL` 22:00, 2 a night) | Two steps: his line, three replies, get him to leave the parcel with a neighbour; one wrong reply and he leaves; `COURIER_TALK_SEC` | The parcel: one rare-or-better item at your depth, into the bag | Parcel lost (nothing else) | Parcel lost ("he leaves a note") |
-| The Boys (group call, 3 a night) | On speaker: Noise +`FRIENDS_SPEAKER_NOISE`/s while open (none with the headset on). Two steps of declining politely; a rude reply = Noise +8 and a miss, `FRIENDS_MAX_MISSES` misses = fail | **Raid buff**: party +20% damage, +10% speed for 30 s | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: it rings in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
+| 20:30 to 21:30, once | Courier (call) | Two steps of his line and three replies, get the parcel left with a neighbour; one wrong reply and he leaves (`COURIER_TALK_SEC`). **Your new gaming mouse: skill cooldowns -`COURIER_MOUSE_CD` (10%) until dawn** | No parcel | No parcel ("he leaves a note") |
+| about 21:00, once (+1 callback) | Mom (call) | `MOM_BEATS` (2) lines; her line's ending (… ? !) tells the reply (mhm / really?! / wow), tapped while a marker sweeps through a zone; `MOM_MAX_MISSES` (3). **Party fully healed, the fallen get up** | Mood +`MOM_FAIL_MOOD` and she calls your girlfriend (next visit soon) | Mood +`MOM_DECLINE_MOOD`, she calls back once in 40 to 60 s |
+| about 22:00, once | Boss (texts, with an optional follow-up) | One row of sums (`BOSS_ROWS`), `BOSS_WINDOW_SEC`; wrong total -2 s. **Overtime pay +`BOSS_ZL` (50) zł** | Nothing ("The boss gave up. No overtime tonight.") | (texts can't be declined) |
+| 1 or 2 a night (`FRIENDS_PER_NIGHT`), on the floor before a boss floor, once a floor | The Boys (group call) | Two steps of declining politely; a rude reply = Noise +8 on speaker and a miss, `FRIENDS_MAX_MISSES` misses = fail. **Raid buff: +20% damage, +10% speed until that boss fight ends** | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
+| when she wakes (after midnight) | Her (text) | Tap "Five more minutes, love": waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | (texts can't be declined) |
 
-Which interrupt comes is weighted (`INTERRUPT_WEIGHTS`: Mom 3, boss 3, courier 2, the boys 2), with per-night caps
-(`INTERRUPT_PER_NIGHT`). Calls (Mom, courier, the boys) ring with the long buzz, show the incoming-call screen on the
-desk and in your hand, can be declined with red; face-down they ring silently (the glow) until they run out. F1 has a button for each.
+Each time is picked in its window at 20:00; nothing comes before `PHONE_FIRST_SEC` (45 s) into the night. Money rule:
+real life pays in zł or buffs, never RPG loot or gold (the courier's parcel was an item; the boss paid gold).
 
-Sluggish (Tired 70+) shortens every phone timer to `SLUGGISH_TIMER_MULT`.
+**One demand at a time from real life** (`systems/reallife.ts`): a phone event or the dog's arrival starts only when
+nothing else asks for you (the phone, a minigame, a pre-emptive action, the dog, her visit), `REAL_LIFE_GAP_SEC` (15 s)
+after the last thing did, and never while she is in the shower, during a boss wind-up or during a calm you earned
+(tea, the Raid pass, Text her). Scripted events slide later; they never drop. Her bedtime text only waits for the
+phone itself (she is awake and wondering; holding it back would let her walk in unannounced).
+
+- **Only calls buzz.** A call rattles every 1.4 s. Texts arrive silently: they only light the lock screen with
+  banners, and wait `TEXT_DEADLINE_SEC` (60 s). You notice them by looking at the desk.
+- **Speaker or pick up, on every call.** On the desk's incoming-call screen and in your hand: **Speaker** answers
+  with the phone on the desk; your hands stay free (keep playing, skills still cast, the headset key works) but the
+  call adds Noise +`SPEAKER_NOISE`/s while it lasts (none with the headset on: it plays in your ears). **Pick up**
+  (tap the phone, slide to answer) is hands busy and quiet.
+- **Touch only.** Every answer is a tap, a slide or a hold with the mouse; the 1 2 3 keys for Mom's replies and the
+  boss's sums are gone.
+- **Face-down is Do Not Disturb.** Grab and swipe it over, any time; it lifts and turns in 3D and stays down until you
+  flip it back. Everything is silent: no buzz, no shake, no countdown ring; a call or a text only lights the desk
+  around it (a soft cool glow). Whatever runs out meanwhile counts as ignored (Mom calls your girlfriend).
+- **On the desk it is big** (#49): the 90 × 186 phone drawn 1.38x at the desk's left edge, running off the bottom.
+  The incoming-call screen has Decline and Speaker under the slider; a tap anywhere else picks up.
+- **In your hand.** The phone leaves the desk and opens as a 186 × 398 window over the battle area with iOS
+  screens: incoming call (slide to answer, Decline, Speaker), lock screen with Face ID (hold `FACE_UNLOCK_SEC`),
+  in-call screen ("ON SPEAKER" on speaker), iMessage thread with quick-reply buttons. Every screen can be left (put
+  down, Decline, red end button, back chevron, home bar, the close X); leaving counts as ignoring. Layout rules
+  (#45): the lock screen shows the two newest banners and a "+N more" line; every reply is one full-width button per
+  row that grows with its text. (The phone's new look is V8, #73.)
+
+Sluggish (Tired 70+) shortens every call timer to `SLUGGISH_TIMER_MULT`. F1 has a button for each call (it skips the
+one-demand rule). `npx tsx test/phone.ts` checks the script, the spacing, each event, speaker and Do Not Disturb.
 
 ### Excel and alt-tab
 
@@ -139,7 +146,8 @@ microsleeps; then a `MONSTER_CRASH_SEC` crash (slower, Tiredness +`MONSTER_CRASH
 ### The dog and the cables
 
 A shiba stands on the floor; every `DOG_EVERY_SEC` his head, chest and front paws rise over the desk
-edge in front of the keyboard, whining (a little Noise). Pet him on the desk: hold and stroke gently; too fast (`DOG_FAST`) and
+edge in front of the keyboard, whining (a little Noise). He keeps to the one-demand rule (the phone above): his
+arrival slides later while something else asks for you, never drops. Pet him on the desk: hold and stroke gently; too fast (`DOG_FAST`) and
 he flinches. One random spot (an ear or the chin) is his favourite (×`DOG_SWEET_MULT`): eyes close,
 tongue out, hearts. His tail wags harder as he gets happier (no bars). Done: he licks your hand and lies
 down. Ignored after `DOG_WAIT_SEC`, he leaves; after 1 to 3 ignores (random each time) he slams into the
@@ -158,6 +166,14 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 
 ## Decisions
 
+- **The phone retune: fewer events, each worth taking** (0.64, #54 3.2; Paweł's brief from testing v0.48). A
+  random timer every 20 to 35 s made the phone noise: Mood taxes you could only avoid by stopping play. Now a night
+  script places 4 to 6 events, each pays something you want (a heal and revive, zł, a cooldown mouse, a raid buff)
+  and takes about 5 s. Speaker gives every call a choice (hands free but loud), face-down is an honest Do Not
+  Disturb, and real life asks for one thing at a time. Ignoring the boss costs nothing: he is an offer, not a
+  threat. Rejected: keeping the random timer with lower odds (still noise); Mood for ignoring the boss (a tax);
+  the courier's loot parcel (money rule: loot only from the game); letting the one-demand rule hold her visits back
+  too (she is the game's threat and isn't scripted; the rule shapes the phone and the dog around her).
 - **The Goblin Fuel break is hands-on physics** (0.49, #61). The fridge is out (he has no fridge at the desk; the
   cans live in the drawer). Drinking is a pour you control, not a timing bar: the three hold-and-release gulps
   were too simple. Lips on the rim count as in: without it the stream fell past his mouth and even perfect play

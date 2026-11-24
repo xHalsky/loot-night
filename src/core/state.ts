@@ -94,7 +94,7 @@ export interface Interrupt {
 }
 
 export interface PhoneGame {
-  kind: 'phone'; app: InterruptKind;
+  kind: 'phone'; app: InterruptKind; speaker?: boolean;   // speaker: answered on speaker, hands free, Noise while it lasts (#54, 3.2)
   stage: 'ringing' | 'locked' | 'call' | 'chat' | 'talk';   // talk: courier / friends dialogue
   t: number; max: number;            // time left in the current stage (0 = untimed)
   unlock: number; holding: boolean; drag: number;
@@ -132,7 +132,7 @@ export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
 /** A timed party buff or debuff (curios, the friends' raid buff). floor: lasts until the next floor instead of t. */
-export interface PartyBuff { name: string; dmg: number; speed: number; t: number; max: number; icon: string; floor?: boolean; crit?: number; fights?: number }   // fights: lasts this many battles instead of t
+export interface PartyBuff { name: string; dmg: number; speed: number; t: number; max: number; icon: string; floor?: boolean; crit?: number; fights?: number; cd?: number; night?: boolean; untilBoss?: boolean }   // fights: lasts this many battles instead of t; night: until dawn; untilBoss: until a boss fight ends; cd: cooldowns down
 
 export interface Night {
   clock: number; threat: number;
@@ -141,7 +141,9 @@ export interface Night {
   floor: number; battleIdx: number; floorMap: MapKind | 'plain'; checkpoint: number; deepest: number; deepTarget: number;   // deepTarget: tonight's floor for the Deep star (#54)
   enemies: Enemy[];
   mood: number; noise: number; catches: number; flow: number;
-  bossQuiet: number; bossCallback: number;   // threat time until the boss stays quiet; when he pings again after a flip (0 = none)
+  phoneScript: { kind: InterruptKind; at: number; done: boolean }[];   // tonight's phone events, by clock minute (#54, 3.2)
+  friendsLeft: number; friendsFloor: number;   // the boys' calls still to come tonight, the floor they last called on
+  lastDemand: number;                          // threat time real life last asked for you (phone, dog, her): the gap starts here
   monitor: 'rpg' | 'excel';
   action: 'none' | 'miniGame' | 'pre';   // pre: busy with a pre-emptive action (systems/preemptive.ts)
   dropQueue: BagEntry[];
@@ -176,10 +178,9 @@ export interface Night {
   unplugged: { kinds: number[]; colors: number[]; sockets: number[]; plugged: boolean[]; t0?: number; flow?: number } | null;   // cable minigame: per cable plug type + colour; sockets[slot] = cable index
   lap: LapState | null;
   cansHidden: boolean;
-  interrupts: Interrupt[]; nextInterruptAt: number;
+  interrupts: Interrupt[];
   game: MiniGame | null;
   excel: ExcelState;
-  callsTonight: Record<string, number>;   // interrupts spawned tonight, per kind (INTERRUPT_PER_NIGHT caps)
   pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)

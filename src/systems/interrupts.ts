@@ -9,22 +9,29 @@ import { toastAs } from '../core/fx';
 const toast = toastAs('PHONE');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 import { MOM_LINES, MOM_REPLIES, COURIER_TALKS, FRIENDS_TALKS, type TalkStep } from '../data/content';
-import { weighted } from '../core/rng';
-import { deliverPackage, entryName } from './loot';
 import { PRE_BY_ID, type PreId } from '../data/preemptive';
 import { addBuff } from './curios';
 import { coach } from './coach';
+import { realLifeFree } from './reallife';
 
 export const BOSS_MSGS = ['you there?', 'quick question', 'need the Q4 totals for the deck', 'asap pls', 'hello??'];
 export const HER_MSGS = ['are you coming to bed?', 'babe', 'its really late', 'hello??'];
 
-// One phone on the desk. Mom calls (slide to answer), the boss and the girlfriend
-// message (hold the phone to your face to unlock). One notification at a time.
+// One phone on the desk (#54, 3.2): fewer events, each worth taking. A night script instead of a random timer: the
+// courier once (20:30 to 21:30), Mom once around 21:00 (she calls back once if you decline), the boss's texts once
+// around 22:00, the boys 1 or 2 times during the floor before a boss floor, her texts after midnight. Only calls buzz;
+// texts wait silently on the lock screen. Every event takes about 5 s and 1 or 2 taps. Calls: speaker (hands free,
+// Noise) or pick up (hands busy). Face-down is Do Not Disturb. Nothing starts unless real life is free (reallife.ts).
 
-export function scheduleInterrupt(first = false) {
+/** Tonight's script, made at 20:00: a minute in each kind's window. */
+export function planPhone() {
   const n = N();
-  n.nextInterruptAt = n.threat + (first ? T.INTERRUPT_FIRST_DELAY_SEC : rand(...T.INTERRUPT_INTERVAL_SEC));
+  n.phoneScript = Object.entries(T.PHONE_SCRIPT).map(([kind, [a, b]]) => ({ kind: kind as InterruptKind, at: Math.round(rand(a, b)), done: false })).sort((x, y) => x.at - y.at);
+  n.friendsLeft = randi(...T.FRIENDS_PER_NIGHT); n.friendsFloor = 0;
+  n.lastDemand = 0;
 }
+/** The boys call during the floor before a boss floor, once a floor. */
+const friendsDue = () => { const n = N(); return n.friendsLeft > 0 && n.location === 'dungeon' && n.floor % T.CHECKPOINT_EVERY === T.CHECKPOINT_EVERY - 1 && n.friendsFloor !== n.floor && n.phase !== 'mapChoice'; };
 
 /** The phone is taken: something is on it, or it is in your hand (a call or chat, the Messages list, sending a text). */
 export const phoneBusy = () => { const n = N(); return n.interrupts.length > 0 || n.game?.kind === 'phone' || n.preMenu === 'phone' || phoneAction(); };
@@ -32,19 +39,13 @@ export const phoneBusy = () => { const n = N(); return n.interrupts.length > 0 |
 export const phoneAction = () => { const p = N().pre; return !!p && PRE_BY_ID[p.id as PreId]?.where === 'phone'; };
 const timerMult = () => (N().tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_TIMER_MULT : 1);
 
-export function spawnInterrupt(kind?: InterruptKind) {
+/** A phone event lands on the desk. Her text (she is awake and wondering) only waits for the phone to be free; every
+ *  other one waits for real life to be free too. */
+export function spawnInterrupt(k: InterruptKind, force = false) {
   const n = N();
-  if (phoneBusy()) return false;
-  const quiet = n.threat < n.bossQuiet;   // you answered him recently
-  const kinds = (['mom', 'boss', 'courier', 'friends'] as InterruptKind[]).filter(k =>
-    !(k === 'mom' && n.clock >= T.BED_FROM) &&               // Mom sleeps after midnight
-    !(k === 'boss' && quiet) &&
-    !(k === 'courier' && n.clock >= T.COURIER_UNTIL) &&       // no deliveries late at night
-    (n.callsTonight[k] ?? 0) < (T.INTERRUPT_PER_NIGHT[k] ?? 99));
-  if (!kinds.length && !kind) return false;
-  const k = kind ?? kinds[weighted(kinds.map(x => T.INTERRUPT_WEIGHTS[x] ?? 1))];
-  const base = { mom: T.MOM_TIMER, boss: T.BOSS_TIMER, text: T.TEXT_TIMER, courier: T.COURIER_TIMER, friends: T.FRIENDS_TIMER }[k];
-  const max = base * timerMult();
+  if (phoneBusy() || (k !== 'text' && !force && !realLifeFree())) return false;
+  const base = { mom: T.MOM_TIMER, boss: T.TEXT_DEADLINE_SEC, text: T.TEXT_DEADLINE_SEC, courier: T.COURIER_TIMER, friends: T.FRIENDS_TIMER }[k];
+  const max = base * (isCall(k) ? timerMult() : 1);
   // messages come in bursts of 1-3 (each one buzzes once); the boss may follow up mid-way
   const pend: number[] = [];
   if (!isCall(k)) {
@@ -52,22 +53,23 @@ export function spawnInterrupt(kind?: InterruptKind) {
     if (k === 'boss' && Math.random() < 0.7) { const b = randi(1, 2); for (let i = 0; i < b; i++) pend.push(max * 0.5 + i * 0.8); }
   }
   n.interrupts.push({ kind: k, t: max, max, msgs: [], pend, pingAt: -9 });
-  n.callsTonight[k] = (n.callsTonight[k] ?? 0) + 1;
-  if (isCall(k) && n.phoneDown <= 0) sfx.vibCall();   // face-down: silent (#47)
+  if (isCall(k) && n.phoneDown <= 0) sfx.vibCall();   // only calls buzz; face-down (Do Not Disturb): nothing does
   coach('phone');
   return true;
 }
 
 export function updateInterrupts(dt: number) {
   const n = N();
-  if (n.threat >= n.nextInterruptAt) { spawnInterrupt(); scheduleInterrupt(); }
-  if (n.momCallback && n.threat >= n.momCallback && !phoneBusy() && n.clock < T.BED_FROM) { n.momCallback = 0; spawnInterrupt('mom'); }
-  if (n.bossCallback && n.threat >= n.bossCallback && !phoneBusy()) { n.bossCallback = 0; spawnInterrupt('boss'); }
+  // the script: the first event due whose time has come; it slides later until real life is free
+  const due = n.threat >= T.PHONE_FIRST_SEC ? n.phoneScript.find(s => !s.done && n.clock >= s.at) : undefined;
+  if (due && spawnInterrupt(due.kind)) due.done = true;
+  else if (friendsDue() && spawnInterrupt('friends')) { n.friendsLeft--; n.friendsFloor = n.floor; }
+  else if (n.momCallback && n.threat >= n.momCallback && n.clock < T.BED_FROM && spawnInterrupt('mom')) n.momCallback = 0;
   updateDeclines(dt);
   for (const i of n.interrupts) i.t -= dt;
   const expired = n.interrupts.filter(i => i.t <= 0);
   n.interrupts = n.interrupts.filter(i => i.t > 0);
-  expired.forEach(i => fail(i.kind, n.phoneDown > 0 && !isCall(i.kind) ? 'unseen' : 'ignored'));
+  expired.forEach(i => fail(i.kind, 'ignored'));   // face-down too: Do Not Disturb, and a missed event is ignored
   // the phone keeps vibrating: calls every 1.4 s, messages every 3 s (same rhythm as the shake on the desk)
   for (const i of n.interrupts) {
     const e = i.max - i.t;
@@ -75,14 +77,13 @@ export function updateInterrupts(dt: number) {
     while (i.pend.length && e >= i.pend[0]) {
       i.pend.shift(); i.pingAt = e;
       const pool = i.kind === 'boss' ? BOSS_MSGS : HER_MSGS;
-      i.msgs.push(pool[Math.min(i.msgs.length, pool.length - 1)]);
-      if (n.phoneDown <= 0) sfx.vibMsg();   // face-down: it only lights up (#47)
+      i.msgs.push(pool[Math.min(i.msgs.length, pool.length - 1)]);   // silent: texts only light the lock screen
     }
   }
 
   const g = n.game;
   if (!g || g.kind !== 'phone') return;
-  if (g.stage === 'talk' && g.app === 'friends' && !n.headset) n.noise = Math.min(100, n.noise + T.FRIENDS_SPEAKER_NOISE * dt);   // on speaker
+  if (g.speaker && !n.headset && (g.stage === 'talk' || g.stage === 'call')) n.noise = Math.min(100, n.noise + T.SPEAKER_NOISE * dt);   // on speaker: she may hear
   if (g.stage === 'locked' && g.holding) {
     g.unlock += dt / T.FACE_UNLOCK_SEC;
     if (g.unlock >= 1) { sfx.good(); g.stage = 'chat'; g.t = g.app === 'boss' ? T.BOSS_WINDOW_SEC : T.TEXT_CHAT_SEC; g.max = g.t; g.feedback = ''; }
@@ -108,7 +109,7 @@ export function openPhone() {
   if (!n.interrupts.length) { n.preMenu = n.preMenu === 'phone' ? null : 'phone'; sfx.click(); return; }   // idle phone: its pre-emptive actions
   const it = n.interrupts.shift();
   if (!it) return;
-  n.action = 'miniGame';
+  n.action = 'miniGame';   // picked up: hands busy (speaker gives them back)
   sfx.click();
   const g: PhoneGame = {
     kind: 'phone', app: it.kind, stage: isCall(it.kind) ? 'ringing' : 'locked',
@@ -126,6 +127,16 @@ export function openPhone() {
   n.game = g;
 }
 
+/** Speaker (#54, 3.2): answer a call without holding the phone. Your hands stay free (keep playing, skills still
+ *  cast) but the call is loud while it lasts (Noise, none with the headset on). From the desk or from your hand. */
+export function answerSpeaker() {
+  const n = N();
+  if (!n.game && n.interrupts[0] && isCall(n.interrupts[0].kind)) openPhone();
+  const g = n.game;
+  if (!g || g.kind !== 'phone' || g.stage !== 'ringing') return;
+  g.speaker = true; n.action = 'none';
+  answerSlide(1);
+}
 /** Slide to answer (Mom). Called when the drag ends. */
 export function answerSlide(progress: number) {
   const g = N().game;
@@ -142,7 +153,7 @@ const talkSteps = (g: PhoneGame): TalkStep[] => (g.app === 'courier' ? COURIER_T
 function startTalk(g: PhoneGame) {
   g.stage = 'talk'; g.talk = randi(0, (g.app === 'courier' ? COURIER_TALKS : FRIENDS_TALKS).length - 1);
   g.t = g.max = g.app === 'courier' ? T.COURIER_TALK_SEC : T.FRIENDS_TALK_SEC;
-  g.beat = 0; g.misses = 0; g.feedback = g.app === 'friends' && !N().headset ? 'On speaker!' : '';
+  g.beat = 0; g.misses = 0; g.feedback = g.speaker && !N().headset ? 'On speaker!' : '';
   talkStep(g);
 }
 function talkStep(g: PhoneGame) {
@@ -164,7 +175,7 @@ export function talkPick(i: number) {
   }
   sfx.bad();
   if (g.app === 'courier') { g.feedback = `"${g.opts?.[i]}"?`; closeGame(false); return; }   // he gives up
-  g.misses++; n.noise = Math.min(100, n.noise + (n.headset ? 0 : T.FRIENDS_RUDE_NOISE));
+  g.misses++; n.noise = Math.min(100, n.noise + (n.headset || !g.speaker ? 0 : T.FRIENDS_RUDE_NOISE));
   g.feedback = 'Rude. They get louder.';
   if (g.misses >= T.FRIENDS_MAX_MISSES) { closeGame(false); return; }
   talkStep(g);
@@ -215,39 +226,28 @@ export function closeGame(success: boolean) {
 }
 
 function succeed(kind: InterruptKind) {
-  const n = N();
-  if (kind === 'mom') {
-    S.g.heroes.forEach(h => { if (!h.downed) h.hp = maxHp(h); });
-    toast('Mom: "Love you, eat something!" Party fully healed.', '#6fcf7f'); sfx.heal();
-  } else if (kind === 'boss') {
-    S.g.gold += T.BOSS_GOLD; n.bossQuiet = n.threat + T.BOSS_QUIET_SEC;
-    toast(`Report fixed. Overtime bonus +${T.BOSS_GOLD} gold, and he leaves you alone for a while.`, '#6fcf7f'); sfx.good();
+  if (kind === 'mom') {   // a whole party back on its feet
+    S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); });
+    toast('Mom: "Love you, eat something!" Party fully healed, the fallen get up.', '#6fcf7f'); sfx.heal();
+  } else if (kind === 'boss') {   // money rule: real life pays in zł
+    S.g.zl += T.BOSS_ZL;
+    toast(`Report fixed. Overtime pay +${T.BOSS_ZL} zł.`, '#6fcf7f'); sfx.good();
   } else if (kind === 'courier') {
-    const e = deliverPackage();
-    toast(`"Okay, flat 12." The parcel is yours: ${entryName(e)}.`, '#6fcf7f'); sfx.good();
+    addBuff({ name: 'Gaming mouse', dmg: 0, speed: 0, cd: T.COURIER_MOUSE_CD, t: 1, max: 1, icon: 'mouse', night: true });
+    toast(`"Okay, flat 12." Your new gaming mouse: skill cooldowns -${Math.round(T.COURIER_MOUSE_CD * 100)}% until dawn.`, '#6fcf7f'); sfx.good();
   } else if (kind === 'friends') {
-    addBuff({ name: 'Raid buff', dmg: T.FRIENDS_BUFF_DMG, speed: T.FRIENDS_BUFF_SPD, t: T.FRIENDS_BUFF_SEC, max: T.FRIENDS_BUFF_SEC, icon: 'raid' });
-    toast(`Danny: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage for ${T.FRIENDS_BUFF_SEC} s.`, '#6fcf7f'); sfx.good();
+    addBuff({ name: 'Raid buff', dmg: T.FRIENDS_BUFF_DMG, speed: T.FRIENDS_BUFF_SPD, t: 1, max: 1, icon: 'raid', untilBoss: true });
+    toast(`Danny: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage until the boss is down.`, '#6fcf7f'); sfx.good();
   } else replyText(true);
 }
 
 function fail(kind: InterruptKind, how: string) {
-  const n = N();
-  if (how === 'unseen') {   // the phone was face-down: you honestly did not see it
-    if (kind === 'text') { n.apt.wake = Math.min(T.WAKE_UP, n.apt.wake + T.TEXT_FLIP_WAKE); n.apt.textSent = false; addMood(T.TEXT_FLIP_MOOD); toast('Her text went unseen (phone face-down).', '#ffb07a'); }
-    else { addMood(Math.round(T.BOSS_FAIL_MOOD / 2)); toast(`Boss ping unseen (phone face-down). Mood +${Math.round(T.BOSS_FAIL_MOOD / 2)}.`, '#ffb07a'); }
-    return;
-  }
   if (kind === 'text') { replyText(false); return; }
+  if (kind === 'boss') { toast('The boss gave up. No overtime tonight.', '#a999bd'); return; }   // costs nothing (#54, 3.2)
   if (kind === 'courier') { toast(how === 'declined' ? 'Declined. The courier leaves a note. No parcel tonight.' : 'Missed delivery. The parcel goes back to the depot.', '#ffb07a'); return; }
   if (kind === 'friends') { friendsBlast(how); return; }
-  if (kind === 'mom') {
-    addMood(T.MOM_FAIL_MOOD); visitSooner();
-    toast(`Mom call ${how}. She called your girlfriend. Mood +${T.MOM_FAIL_MOOD}.`, '#ff8a80');
-  } else {
-    addMood(T.BOSS_FAIL_MOOD);
-    toast(`Boss ping ${how}. Mood +${T.BOSS_FAIL_MOOD}.`, '#ff8a80');
-  }
+  addMood(T.MOM_FAIL_MOOD); visitSooner();
+  toast(`Mom call ${how}. She called your girlfriend. Mood +${T.MOM_FAIL_MOOD}.`, '#ff8a80');
   sfx.bad();
 }
 
@@ -265,31 +265,21 @@ function friendsBlast(how: string) {
 
 // ---------- Declining without picking up (docs/design/desk.md) ----------
 // A call: hold the red Decline button (slower than ignoring, much faster than talking to Mom).
-// A message: drag the phone down to flip it face-down. It stays face-down until flipped back: new notifications are
-// silent, the screen only glows out from under the phone (#47).
+// Face-down is Do Not Disturb (#54, 3.2): swipe the phone over and everything is silent until you flip it back; the
+// screen only glows out from under it. What runs out meanwhile counts as ignored (Mom calls your girlfriend).
 
 export function setDeclineHold(on: boolean) {
   const n = N();
   n.declineHold = on && !!n.interrupts[0] && isCall(n.interrupts[0].kind) && !n.game;
 }
 
-/** Swipe the desk phone over. Face-down: a waiting message is dismissed (cheaper than ignoring it); later calls and
- *  messages are silent (a glow on the desk), and messages cost half if they run out unseen. */
+/** Swipe the desk phone over: Do Not Disturb until you flip it back. */
 export function togglePhoneDown() {
   const n = N();
   if (n.game?.kind === 'phone') return;
   sfx.flip();
-  if (n.phoneDown > 0) { n.phoneDown = 0; return; }
-  n.phoneDown = 1;
-  const it = n.interrupts[0];
-  if (it && !isCall(it.kind)) {
-    n.interrupts.shift();
-    if (it.kind === 'boss') { n.bossCallback = n.threat + rand(...T.BOSS_FLIP_FOLLOWUP_SEC); toast('Phone face-down. The boss can wait. He will ping again soon.', '#ffb07a'); }
-    else {
-      const a = n.apt; a.wake = Math.min(T.WAKE_UP, a.wake + T.TEXT_FLIP_WAKE); a.textSent = false; addMood(T.TEXT_FLIP_MOOD);
-      toast(`Phone face-down. She saw "delivered", no reply. Mood +${T.TEXT_FLIP_MOOD}.`, '#ffb07a');
-    }
-  }
+  n.phoneDown = n.phoneDown > 0 ? 0 : 1;
+  if (n.phoneDown) toast('Phone face-down: Do Not Disturb.', '#a999bd');
 }
 
 function updateDeclines(dt: number) {

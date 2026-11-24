@@ -13,7 +13,7 @@ function trial(cue: 'hall' | 'handle'): string {
   S.g = initialState();
   startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */ travelToDungeon();
   const n = N();
-  n.interrupts = []; n.nextInterruptAt = 1e9; n.dog.next = 1e9;
+  n.interrupts = []; n.phoneScript = []; n.friendsLeft = 0; n.dog.next = 1e9;
   startVisit(false, 'peek');
   n.visit.fake = false; n.visit.lean = false;
   let switched = false;

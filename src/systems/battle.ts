@@ -13,7 +13,7 @@ import { CD_PCT } from '../data/city';
 import { isAway, autopilotPull } from './autopilot';
 import { MARKS } from '../data/marks';
 import { overtimeGold } from './affixes';
-import { curioDmgMult, curioSpeedMult, partyCrit } from './curios';
+import { curioDmgMult, curioSpeedMult, partyCrit, partyCdMult } from './curios';
 import { coach } from './coach';
 import { RANK_X, ENEMY_SLOTS, MID_SLOT, HEAD_Y } from '../core/arena';
 import { dropFromKill } from './loot';
@@ -152,7 +152,7 @@ function castAbility(h: Hero, slot: number) {
   attacker = h;
   if (slot === ULT_SLOT) return castUlt(h, st, mult, me);
   const extraCd = (h.id === 'mage' && slot === 1 && rule('mage', 'inferno') ? T.RULE_INFERNO_CD : 0);
-  h.cd[slot] = (ABILITIES[h.id][slot].cd + extraCd) * (1 - heroFx(h, 'cd')) * (h.id === 'rogue' && slot === 1 && rule('rogue', 'shiv') ? 1 - T.RULE_SHIV : 1) * auraCd(h) * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1);
+  h.cd[slot] = (ABILITIES[h.id][slot].cd + extraCd) * (1 - heroFx(h, 'cd')) * (h.id === 'rogue' && slot === 1 && rule('rogue', 'shiv') ? 1 - T.RULE_SHIV : 1) * auraCd(h) * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1) * partyCdMult();
   if (n.cond !== 'silent') n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);   // Silent Halls: skills make no Noise
   sfx.ability();
   const A = ABILITIES[h.id][slot];

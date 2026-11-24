@@ -16,7 +16,7 @@ import { cuddleDone, startVisit, updateVisits } from '../src/systems/visits';
 
 let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + msg); if (!c) fails++; };
-const fresh = () => { S.g = initialState(); startNight(); const n = N(); n.nextInterruptAt = 1e9; n.dog.next = 1e9; n.noise = 0; return n; };
+const fresh = () => { S.g = initialState(); startNight(); const n = N(); n.phoneScript = []; n.friendsLeft = 0; n.dog.next = 1e9; n.noise = 0; return n; };
 const legendary = () => { let it = genItem(10, 4); while (it.rarity !== 'legendary') it = genItem(10, 4); return { kind: 'item' as const, id: it.id, item: it }; };
 
 let n = fresh(); n.dropQueue.push(legendary()); updateDrops(0); ok(n.noise === T.ECHO_YELL_NOISE, `legendary: he yells, Noise +${n.noise}`);

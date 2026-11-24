@@ -32,7 +32,7 @@ async def main():
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
-        await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; S.g.timeScale=0}")
+        await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; S.g.timeScale=0}")
         for name, js in CASES:
             await pg.evaluate("()=>{" + RESET + js + "}"); await pg.wait_for_timeout(250)
             path = f'test/him_{name}.png'

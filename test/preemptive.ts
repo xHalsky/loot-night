@@ -14,7 +14,7 @@ let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + msg); if (!c) fails++; };
 const fresh = (act: ActivityId, moving = false) => {
   S.g = initialState(); startNight();
-  const n = N(); n.nextInterruptAt = 1e9; n.dog.next = 1e9;
+  const n = N(); n.phoneScript = []; n.friendsLeft = 0; n.dog.next = 1e9;
   n.apt.activity = act; n.apt.room = moving ? 'hallway' : ACT_BY_ID[act].room; n.apt.moving = moving ? 1 : 0; n.apt.t = 999;
   return n;
 };

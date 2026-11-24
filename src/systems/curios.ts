@@ -147,7 +147,7 @@ export function addBuff(b: PartyBuff) {
 /** Every frame: buffs tick, the bank log gets read. */
 export function updateCurioTimers(dt: number) {
   const n = N();
-  n.partyBuffs = n.partyBuffs.filter(b => b.floor || b.fights !== undefined || (b.t -= dt) > 0);
+  n.partyBuffs = n.partyBuffs.filter(b => b.floor || b.night || b.untilBoss || b.fights !== undefined || (b.t -= dt) > 0);
   n.sulk = Math.max(0, n.sulk - dt);
   if (n.bankNotice > 0) {
     n.bankNotice -= dt;
@@ -162,7 +162,9 @@ export function updateCurioTimers(dt: number) {
 export function curioFloorEnd() { const n = N(); n.partyBuffs = n.partyBuffs.filter(b => !b.floor); }
 
 /** A battle ended: "next fight" buffs (Loved) are used up. */
-export function battleEnded() { const n = N(); n.partyBuffs = n.partyBuffs.filter(b => b.fights === undefined || --b.fights > 0); }
+export function battleEnded(boss = false) { const n = N(); n.partyBuffs = n.partyBuffs.filter(b => !(boss && b.untilBoss) && (b.fights === undefined || --b.fights > 0)); }   // the Raid buff lasts until a boss is down
+/** Cooldowns from real-life buffs (the courier's gaming mouse, #54). */
+export const partyCdMult = () => N().partyBuffs.reduce((m, b) => m * (1 - (b.cd ?? 0)), 1);
 export const partyCrit = () => N().partyBuffs.reduce((s, b) => s + (b.crit ?? 0), 0) + T.BLESS_ALTAR_CRIT * blessCount('altar');
 export const curioDmgMult = () => N().partyBuffs.reduce((m, b) => m * (1 + b.dmg), 1);
 export const curioSpeedMult = () => N().partyBuffs.reduce((m, b) => m * (1 + b.speed), 1);

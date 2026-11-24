@@ -137,7 +137,7 @@ export function updateDungeon(realDt: number) {
     }
   } else if (n.phase === 'battle') {
     const r = updateBattle(dt);
-    if (r === 'victory') battleEnded();
+    if (r === 'victory') battleEnded(isBossBattle());
     if (r === 'victory' && n.curioFight) {   // the troll: extra loot, then the walk goes on (not one of the floor's battles)
       const x = ENEMY_SLOTS[MID_SLOT].x;
       rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true, at: [x - 20, x, x + 20] });

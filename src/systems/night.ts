@@ -10,7 +10,7 @@ import { entryValue, removeEntry, sweepFloorLoot, genItem, itemEntry } from './l
 import { initVisits } from './visits';
 import { newExcel } from './excel';
 import { startTired } from './tired';
-import { scheduleInterrupt } from './interrupts';
+import { planPhone } from './interrupts';
 import { moodZone } from './meters';
 import { save } from './save';
 import { toastAs } from '../core/fx';
@@ -22,15 +22,15 @@ export function newNight(): Night {
   return {
     clock: T.NIGHT_START, threat: 0, location: 'town', phase: 'walk', phaseT: 0,
     floor: 1, battleIdx: 0, floorMap: 'plain', checkpoint: Math.max(1, ...S.g.checkpoints), deepest: 0, deepTarget: Math.max(T.STAR_DEEP_MIN, S.g.record + T.STAR_DEEP_OFFSET),
-    enemies: [], mood: T.MOOD_START, noise: 0, catches: 0, bossQuiet: 0, bossCallback: 0, flow: T.FLOW_MIN,
+    enemies: [], mood: T.MOOD_START, noise: 0, catches: 0, phoneScript: [], friendsLeft: 0, friendsFloor: 0, lastDemand: 0, flow: T.FLOW_MIN,
     monitor: 'rpg', action: 'none', dropQueue: [], floorLoot: [], fresh: [], lootFly: [], dropPopup: null, reserve: [], run: null, runCard: null, paths: null, safest: 0, mapAway: 0, feature: null, cond: null,
     visit: { stage: 'idle', t: 0, nextAt: 0, fake: false, checked: false, result: '', kind: 'peek' },
     apt: { room: 'living', activity: 'tv', t: 0, moving: 0, soundT: 0, heard: null, heardWhat: '', heardAt: 0, showerUsed: false, lastVisitEnd: 0, forceDoor: false, asleep: false, wake: 0, textSent: false, cued: false, calm: 0, forceKind: null },
     headset: false, scare: 0, zone: 0, tired: 0, blink: { state: 'open', lid: 0, nextIn: 40 }, boost: 0, crash: 0, cans: 0, bin: [], log: [], peeking: false, peek: 0, peekSus: 0, declineHold: false, decline: 0, phoneDown: 0, flipFx: 0, momCallback: 0, switching: null, dog: { stage: 'away', t: 0, next: T.DOG_FIRST_SEC, ignores: 0, limit: 2, pet: 0, sweet: 0, flinch: 0 }, unplugged: null, lap: null, cansHidden: false,
-    interrupts: [], nextInterruptAt: 0, game: null,
+    interrupts: [], game: null,
     excel: newExcel(),
     taunt: 0, ward: 0, lastStand: 0, smoke: 0, heist: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
-    callsTonight: {}, pre: null, preUses: {}, preMenu: null, towel: false, herReply: null,
+    pre: null, preUses: {}, preMenu: null, towel: false, herReply: null,
     curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null, goldStart: S.g.gold, coach: null,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,
@@ -51,7 +51,7 @@ export function startNight() {
   S.g.night.tired = startTired();
   S.g.monsters = Math.max(S.g.monsters ?? 0, T.MONSTER_PER_NIGHT);
   setHeadset(false); stopAmbience();
-  scheduleInterrupt(true);
+  planPhone();   // tonight's phone events (#54, 3.2)
   S.g.screen = 'night';
   S.g.paused = false;
   S.g.howto = S.g.nightsPlayed === 0;   // the first night opens with the how-to-hide card (#28)

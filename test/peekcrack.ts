@@ -10,7 +10,7 @@ import { setPeeking, updatePeek } from '../src/systems/peek';
 let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + msg); if (!c) fails++; };
 const setup = (room: string, activity: string, moving = 0) => {
-  S.g = initialState(); startNight(); const n = N(); n.nextInterruptAt = 1e9; n.dog.next = 1e9;
+  S.g = initialState(); startNight(); const n = N(); n.phoneScript = []; n.friendsLeft = 0; n.dog.next = 1e9;
   Object.assign(n.apt, { room, activity, moving, asleep: activity === 'sleep', t: 999 });
   return n;
 };

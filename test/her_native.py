@@ -39,7 +39,7 @@ async def ev(pg, js, arg=None):
     return await pg.evaluate("(arg)=>{const L=window.__lootnight, S=L.S, g=S.g, n=g.night; " + js + "}", arg)
 async def act(pg, sel):
     await pg.evaluate("s=>{const e=document.querySelector(s); if(!e) throw new Error('no '+s); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(150)
-QUIET = "n.nextInterruptAt=1e9; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.apt.calm=1e9; n.tired=10; n.peekSus=-1e9;"
+QUIET = "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.apt.calm=1e9; n.tired=10; n.peekSus=-1e9;"
 def crack(room, activity, stage='idle'):
     return f"{QUIET} n.visit={{...n.visit, stage:'{stage}', t:999, from:'{activity}', checked:false, result:''}}; const a=n.apt; a.room='{room}'; a.activity='{activity}'; a.t=999; a.moving=0; a.asleep=false; n.peeking=true; n.peek=1; n.headset=false;"
 

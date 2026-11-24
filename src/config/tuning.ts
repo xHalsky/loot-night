@@ -47,8 +47,6 @@ export const T = {
   // Phone declines: slower than nothing, faster than answering
   DECLINE_SEC: 1.6, FLIP_SEC: 1.0, PHONE_DOWN_SEC: 25,
   MOM_DECLINE_MOOD: 3, MOM_CALLBACK_SEC: [40, 60] as [number, number],
-  BOSS_FLIP_FOLLOWUP_SEC: [20, 30] as [number, number],   // flipping the phone on the boss: he pings again soon
-  TEXT_FLIP_WAKE: 12, TEXT_FLIP_MOOD: 3,
   // Door peek (hold the door)
   // Peeking: hold the door. It opens to a narrow crack in PEEK_OPEN_SEC, then creeps wider to PEEK_CRACK_MAX over
   // PEEK_CREEP_SEC (fractions of the door's width). Narrow shows the kitchen, medium the bathroom, wide the far end.
@@ -330,24 +328,27 @@ export const T = {
   WAKE_TEXT: 60,                  // "are you coming to bed?" text
   WAKE_UP: 100,                   // she gets up and comes to your door
   WAKE_AFTER_VISIT: 30,
-  TEXT_TIMER: 8, TEXT_REPLY_WAKE: -35, TEXT_REPLY_MOOD: -3, TEXT_IGNORE_WAKE: 25, TEXT_IGNORE_MOOD: 5,
+  TEXT_REPLY_WAKE: -35, TEXT_REPLY_MOOD: -3, TEXT_IGNORE_WAKE: 25, TEXT_IGNORE_MOOD: 5,
 
-  // --- Interrupts ---
-  INTERRUPT_INTERVAL_SEC: [20, 35] as [number, number],
-  INTERRUPT_FIRST_DELAY_SEC: 18,
-  INTERRUPT_CAP: 1,               // one phone: one notification at a time
-  // Which interrupt comes next (weights; Mom sleeps after midnight, couriers stop at COURIER_UNTIL).
-  INTERRUPT_WEIGHTS: { mom: 3, boss: 3, courier: 2, friends: 2 } as Record<string, number>,
-  INTERRUPT_PER_NIGHT: { courier: 2, friends: 3 } as Record<string, number>,   // at most this many a night
-  // Courier (#23): pick the right reply twice; the parcel is a rare+ item in your bag. Lost if not.
-  COURIER_TIMER: 8, COURIER_TALK_SEC: 8, COURIER_UNTIL: 22 * 60,
-  // The boys' group call (#23): on speaker while open (Noise per second, none with the headset on); decline them
-  // politely twice for a raid buff. Ignored or rude twice: Discord rings at full volume. Declined: chat spam.
-  FRIENDS_TIMER: 8, FRIENDS_TALK_SEC: 8, FRIENDS_SPEAKER_NOISE: 4, FRIENDS_RUDE_NOISE: 8, FRIENDS_MAX_MISSES: 2,
-  FRIENDS_FAIL_NOISE: 30, FRIENDS_DECLINE_NOISE: 15, FRIENDS_BUFF_DMG: 0.2, FRIENDS_BUFF_SPD: 0.1, FRIENDS_BUFF_SEC: 30,
-  MOM_TIMER: 8, MOM_FAIL_MOOD: 10, MOM_BEATS: 3, MOM_MAX_MISSES: 4, MOM_SWEEP_SEC: 2.4, MOM_ZONE: 0.3, MOM_READ_SEC: 1.6,   // she talks first (marker waits), then you reply
-  BOSS_TIMER: 12, BOSS_WINDOW_SEC: 15, BOSS_FAIL_MOOD: 8, BOSS_ROWS: 2,
-  BOSS_GOLD: 40, BOSS_QUIET_SEC: 150,   // answering the boss: an overtime bonus, and he leaves you alone for a while
+  // --- The phone (#54, 3.2): fewer events, each worth taking ---
+  // A night script instead of a random timer: each kind's window in clock minutes (a time is picked in it at 20:00).
+  // The boys call 1 or 2 times, during the floor before a boss floor. The first event waits PHONE_FIRST_SEC.
+  PHONE_SCRIPT: { courier: [20 * 60 + 30, 21 * 60 + 30], mom: [20 * 60 + 45, 21 * 60 + 15], boss: [21 * 60 + 45, 22 * 60 + 15] } as Record<string, [number, number]>,
+  PHONE_FIRST_SEC: 45, FRIENDS_PER_NIGHT: [1, 2] as [number, number],
+  // One demand at a time from real life (phone, dog): this far apart, and never while she is coming, at the door, in
+  // the room or in the shower, during a boss wind-up or a calm you earned. Scripted events slide later, never drop.
+  REAL_LIFE_GAP_SEC: 15,
+  TEXT_DEADLINE_SEC: 60,          // texts arrive silently on the lock screen and wait this long (only calls buzz)
+  SPEAKER_NOISE: 4,               // per second on speaker, headset off: your hands stay free, she may hear
+  // Courier (#23): pick the right reply twice; your new gaming mouse: skill cooldowns down until dawn.
+  COURIER_TIMER: 8, COURIER_TALK_SEC: 8, COURIER_MOUSE_CD: 0.1,
+  // The boys' group call (#23): decline them politely twice for a raid buff until that boss fight ends. Ignored or
+  // rude twice: Discord rings at full volume. Declined: chat spam.
+  FRIENDS_TIMER: 8, FRIENDS_TALK_SEC: 8, FRIENDS_RUDE_NOISE: 8, FRIENDS_MAX_MISSES: 2,
+  FRIENDS_FAIL_NOISE: 30, FRIENDS_DECLINE_NOISE: 15, FRIENDS_BUFF_DMG: 0.2, FRIENDS_BUFF_SPD: 0.1,
+  MOM_TIMER: 8, MOM_FAIL_MOOD: 10, MOM_BEATS: 2, MOM_MAX_MISSES: 3, MOM_SWEEP_SEC: 2.4, MOM_ZONE: 0.3, MOM_READ_SEC: 1.6,   // she talks first (marker waits), then you reply
+  BOSS_WINDOW_SEC: 10, BOSS_ROWS: 1,
+  BOSS_ZL: 50,                    // answering the boss: overtime pay in zł (not gold: money rule). Ignoring him costs nothing
   TEXT_CHAT_SEC: 8,
   FACE_UNLOCK_SEC: 1.2,           // hold the phone to your face
   SLIDE_DIST: 150, DOOR_DIST: 70, TAKE_DIST: 170, PULL_DIST: 60, TOSS_DIST: 130,
