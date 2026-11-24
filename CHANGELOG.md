@@ -3,6 +3,25 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.62.0 (2026-11-24)
+
+- **Ravenhold in the redesign's look** (V2 with #53; grid doc §6). The town on the monitor is the redesign's map,
+  drawn by the renderer: hover a building for its halo and card (a plot's card: level, next effect, cost), click
+  the Dungeon Portal to go down.
+- **No windows over the town: services are pages of the Town tab** (Paweł, 2026-11-19). The Salvage Forge, the
+  Merchant, the Appraiser and the Auction House open in the side panel next to the bag: each item shows what it
+  pays, the ones the service refuses are dimmed, pick several and one button does them all ("Sell 3 · +120 g").
+  The Merchant warns when you sell a rare or better; the Appraiser takes one item at a time and plays its reveal
+  in the panel. A plot lights its build row. The run end card still shows over the town. zł is drawn with its ł.
+- **The map shows what you built.** The redesign drew one state per plot (three built, the Treasury not); now an
+  unbuilt Library, Training Grounds or Inn is a building site with its materials and its mark on the notice board,
+  and a built Treasury is a squat vault with battlements, barred windows and a gold lock. Lv 2 and 3 art: #81.
+- **Reorder the party in town**: drag one party card onto another in the Inventory tab (it had no UI in town
+  since 0.56; the cards work in the dungeon too).
+- `test/town.py` (it replaced a DOM script that no longer ran) hovers, clicks a plot, salvages, sells and
+  identifies through the canvas and checks the gold and Souls. No rule changes: sims as in 0.61 (good: sleep,
+  caught 0, runs end floors 5 to 6; idle: unplugged, 2 wipes).
+
 ## 0.61.0 (2026-11-24)
 
 - **The side panel in the redesign's look** (V2 with #53; grid doc §5, §6b). The whole panel is drawn by the renderer:

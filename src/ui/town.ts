@@ -104,6 +104,12 @@ function runCardHtml(n: NonNullable<typeof S.g.night>): string {
     <span>${c.banked ? '' : 'Kept '}${c.souls} Souls</span>
     ${c.blessings.length ? `<span class="dim">Blessings: ${[...new Set(c.blessings)].map(id => BLESSINGS[id as BlessingId].name).join(', ')}</span>` : ''}</div>`;
 }
+/** Over the renderer's town (V2): only the run end card; the services live in the side panel now. */
+export function monUiLiveHtml(): string {
+  const n = S.g.night;
+  if (!n || n.location !== 'town' || n.monitor === 'excel' || n.monitorOff > 0 || n.switching) return '';
+  return runCardHtml(n);
+}
 export function monUiHtml(): string {
   const n = S.g.night;
   if (!n || n.monitor === 'excel' || n.monitorOff > 0 || n.switching) return '';

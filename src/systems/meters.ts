@@ -70,4 +70,5 @@ export function updateMeters(dt: number) {
   for (const t of n.toasts) t.t -= dt;
   n.toasts = n.toasts.filter(t => t.t > 0);
   if (n.reveal) { n.reveal.t -= dt; if (n.reveal.t <= 0) n.reveal = null; }
+  if (n.appraised) n.appraised.t += dt;   // the Appraiser's reveal in the panel: sparks, a flash, the card
 }

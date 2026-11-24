@@ -416,6 +416,104 @@ function bTreasury0() {
   DXV = 0;
   tl(283, 37, 26, 0.6, WARMC);
 }
+// ---- the plots follow the build's levels (0.62). The redesign drew the Library, Training Grounds and Inn at Lv 1
+// and the Treasury at Lv 0 (grid doc §9); these add the other Lv 0 plots and the Treasury's vault, from the
+// inventory §6 and city.md. Lv 2 and 3 show the Lv 1 building until they are drawn.
+let TOWN_LV = null, TOWN_KEY = '';   // the levels the cached layer was built for (null: the page's own scene)
+const plotLevel = (id) => (TOWN_LV && TOWN_LV[id] != null ? TOWN_LV[id] : SPOTS.find((s) => s.id === id).lv);
+const PLOT_BOARD = {};   // an unbuilt plot's notice board: its mark hangs there
+// cleared ground with ragged edges, stakes and string, a work lamp and a notice board (as the Treasury's plot)
+function plotGround(id, sd) {
+  const [bx, by, bw, bh] = SPOTS.find((s) => s.id === id).box;
+  DXV = 0;
+  for (let y = by + 1; y < by + bh; y++) for (let x = bx; x < bx + bw + 2; x++) {
+    const d = Math.min(x - bx, bx + bw + 1 - x, y - by - 1, by + bh - 1 - y) + 5 * (fbm(x * 0.18, y * 0.18, sd) - 0.5); if (d < 0.5) continue;
+    put(x, y, dirtV(x, y, 0.28), M_UMBER, 0);
+  }
+  const sx0 = bx + 8, sy0 = by + 15, sx1 = bx + bw - 8, sy1 = by + bh - 7, mx = Math.round((sx0 + sx1) / 2);
+  for (let x = sx0; x <= sx1; x++) if (x % 3) { put(x, sy0, 0.62, M_UMBER, 0); put(x, sy1, 0.62, M_UMBER, 0); }
+  for (let y = sy0; y <= sy1; y++) if (y % 3) { put(sx0, y, 0.62, M_UMBER, 0); put(sx1, y, 0.62, M_UMBER, 0); }
+  DXV = 4;
+  for (const [x, y] of [[sx0, sy0], [sx1, sy0], [sx0, sy1], [sx1, sy1], [mx, sy0], [mx, sy1]]) for (let j = -3; j <= 0; j++) put(x, y + j, j === -3 ? 0.8 : 0.66, M_UMBER, 0);
+  DXV = 8;
+  const lx = bx + 5, ly = sy0 + 4;
+  for (let y = ly; y <= ly + 15; y++) put(lx, y, 0.4, M_UMBER, 0); put(lx + 1, ly, 0.4, M_UMBER, 0); rect(lx + 1, ly + 1, 2, 3, 0.95, M_LOOT, 1);
+  const nx = sx1 - 7, ny = sy1 - 7;
+  for (let y = ny + 4; y <= ny + 11; y++) { put(nx + 1, y, 0.38, M_UMBER, 0); put(nx + 9, y, 0.3, M_UMBER, 0); }
+  for (let y = ny; y <= ny + 5; y++) for (let x = nx; x <= nx + 10; x++) put(x, y, y === ny ? 0.6 : 0.4 - (x - nx) * 0.01, M_UMBER, 0);
+  PLOT_BOARD[id] = [nx + 1, ny + 1];
+  DXV = 0;
+  tl(lx + 2, ly + 3, 26, 0.6, WARMC);
+  return [sx0, sy0];
+}
+function sandPile(cx, by, rx, ry) {
+  for (let y = by - ry; y <= by; y++) for (let x = cx - rx; x <= cx + rx; x++) { const e = Math.hypot((x + 0.5 - cx) / rx, (y + 0.5 - by) / ry); if (e < 1) put(x, y, 0.72 - 0.25 * ((x - cx) / rx) - 0.15 * ((y - by + ry) / ry) + (hash(x >> 1, y, 3) > 0.8 ? 0.06 : 0), M_UMBER, 0); }
+}
+function planks(x, y, len, n) { for (let k = 0; k < n; k++) line(x, y + 3 + k, x + len, y + k, 0.5 + (k & 1) * 0.14, M_UMBER, 0); }
+// Library, Lv 0: stone, planks, crates of books, scrolls, a lectern under a cloth (a scholar waits on the street)
+function bLibrary0() {
+  const [a, b] = plotGround('library', 93);
+  DXV = 3;
+  block(a + 3, b + 26, 6, 4, 2, { v: 0.5 }); block(a + 8, b + 28, 6, 4, 2, { v: 0.46 }); block(a + 4, b + 30, 6, 4, 2, { v: 0.54 });
+  planks(a + 3, b + 4, 12, 4);
+  for (const [cx, cy] of [[a + 18, b + 6], [a + 25, b + 8], [a + 20, b + 14]]) { crate(cx, cy, 6, 6); for (let i = 1; i < 5; i++) { const m = [M_DANGER, M_MAGIC, M_MOSS, M_LOOT][(i + cx) % 4]; put(cx + i, cy, 0.62, m, 0); put(cx + i, cy + 1, 0.44, m, 0); } }
+  for (const [x, y] of [[a + 4, b + 14], [a + 6, b + 16], [a + 3, b + 18]]) { for (let i = 0; i < 5; i++) put(x + i, y, i === 0 || i === 4 ? 0.6 : 0.86, M_UMBER, 0); put(x + 1, y + 1, 0.3, M_UMBER, 0); put(x + 3, y + 1, 0.26, M_UMBER, 0); }
+  DXV = 6;
+  const lx = a + 27, ly = b + 20;
+  for (let j = 0; j < 9; j++) for (let i = -Math.min(j, 4); i <= Math.min(j, 4); i++) put(lx + i, ly + j, 0.42 - i * 0.04 - (j === 8 ? 0.1 : 0) + (hash(i, j, 9) > 0.8 ? 0.06 : 0), M_DUSK, 0);
+  put(lx - 2, ly + 9, 0.3, M_UMBER, 0); put(lx + 2, ly + 9, 0.24, M_UMBER, 0);
+  DXV = 0;
+}
+// Training Grounds, Lv 0: logs, fence posts, a straw dummy on its back, a crate of practice swords, a target, sand
+function bTraining0() {
+  const [a, b] = plotGround('training', 94);
+  DXV = 4;
+  woodpile(a + 3, b + 3, 10, 6);
+  for (let k = 0; k < 3; k++) line(a + 15, b + 5 + k * 2, a + 27, b + 3 + k * 2, 0.58 - k * 0.06, M_UMBER, 0);
+  for (let i = 0; i < 9; i++) for (let j = 0; j < 3; j++) put(a + 32 + i, b + 5 + j, 0.6 - j * 0.12 + (hash(i, j, 4) > 0.7 ? 0.08 : 0), M_LOOT, 0);
+  line(a + 35, b + 3, a + 35, b + 9, 0.42, M_UMBER, 0); ellipse(a + 43, b + 6.5, 2, 2, 0.58, M_UMBER, 0);
+  crate(a + 5, b + 14, 7, 6); for (const i of [1, 3, 5]) for (let j = 1; j <= 4; j++) put(a + 5 + i, b + 14 - j, j === 4 ? 0.9 : 0.66, M_STONE, 0);
+  const tx = a + 19, ty = b + 16;
+  for (let j = -3; j <= 3; j++) for (let i = -3; i <= 3; i++) { const d = Math.hypot(i, j); if (d > 3.4) continue; put(tx + i, ty + j, d > 2.4 ? 0.5 : d > 1.3 ? 0.85 : 0.62, d > 2.4 || d <= 1.3 ? M_DANGER : M_UMBER, 0); }
+  line(tx + 2, ty + 3, tx + 4, ty + 6, 0.36, M_UMBER, 0);
+  sandPile(a + 37, b + 22, 8, 6);
+  DXV = 0;
+}
+// Inn, Lv 0: stacked kegs, planks, a table and benches, the tankard sign leaning, a hay cart
+function bInn0() {
+  const [a, b] = plotGround('inn', 95);
+  DXV = 4;
+  barrel(a + 3, b + 3); barrel(a + 8, b + 4);
+  barrelSide(a + 3, b + 16); barrelSide(a + 8, b + 16); barrelSide(a + 5, b + 12);
+  planks(a + 15, b + 2, 12, 4);
+  bench(a + 15, b + 12, 10);
+  for (let i = 0; i < 10; i++) { put(a + 15 + i, b + 15, 0.66 - i * 0.02, M_UMBER, 0); put(a + 15 + i, b + 16, 0.48 - i * 0.02, M_UMBER, 0); put(a + 15 + i, b + 17, 0.22, M_UMBER, 0); }
+  bench(a + 15, b + 19, 10);
+  const sx = a + 11, sy = b + 9;
+  for (let j = 0; j < 6; j++) for (let i = 0; i < 6; i++) put(sx + i, sy + j, i === 0 || j === 0 || i === 5 || j === 5 ? 0.3 : 0.46, M_UMBER, 0);
+  for (const [i, j] of [[1, 1], [2, 1], [3, 1], [1, 2], [2, 2], [3, 2], [4, 2], [1, 3], [2, 3], [3, 3], [4, 3]]) put(sx + i, sy + j, i === 4 ? 0.62 : 0.85 - j * 0.06, M_LOOT, 0);
+  cart(a + 25, b + 6); for (let i = 0; i < 9; i++) { const h = 2 + Math.round(1.5 * Math.sin((i + 0.5) / 9 * Math.PI)); for (let j = 0; j < h; j++) put(a + 26 + i, b + 5 - j, 0.5 + 0.1 * (h - j) / h + (hash(i, j, 6) > 0.75 ? 0.1 : 0), M_LOOT, 0); }
+  DXV = 0;
+}
+// Treasury, Lv 1: a squat vault with battlements and buttresses, barred windows, an iron-banded door with a gold lock
+function bTreasury1() {
+  DXV = 10;
+  for (let y = 22; y < 31; y++) for (let x = 282; x < 327; x++) put(x, y, 0.3 + 0.05 * (hash(x >> 2, y >> 1, 61) - 0.5) + (y === 22 ? 0.12 : 0), M_STONE, 0);
+  facade(282, 34, 45, 28, { v: 0.44, sd: 61, eave: 2 });
+  for (let x = 280; x < 329; x++) { for (let y = 31; y < 34; y++) put(x, y, (y === 31 ? 0.62 : 0.46) - (x - 280) * 0.002, M_STONE, 0); if ((x - 280) % 6 < 3) for (let y = 27; y < 31; y++) put(x, y, y === 27 ? 0.72 : 0.54 - ((x - 280) % 6 === 2 ? 0.1 : 0), M_STONE, 0); }
+  DXV = 6;
+  for (const bx of [279, 293, 312, 325]) block(bx, 40, 4, 22, 2, { v: 0.5 });
+  for (const wx of [286, 317]) {
+    for (let i = -1; i <= 5; i++) put(wx + i, 39, 0.3, M_STONE, 0);
+    for (let j = 0; j < 7; j++) for (let i = 0; i < 5; i++) { const bar = i % 2 === 1; put(wx + i, 40 + j, bar ? 0.56 : 0.5 - j * 0.03, bar ? M_STONE : M_LOOT, bar ? 0 : 1); }
+    for (let i = -1; i <= 5; i++) put(wx + i, 47, 0.58, M_STONE, 0);
+    tl(wx + 2, 44, 12, 0.3, WARMC);
+  }
+  door16(300, 47, 9, 14, { frame: M_STONE, fv: 0.6 });
+  put(304, 54, 0.95, M_LOOT, 1); put(304, 55, 0.8, M_LOOT, 0);
+  for (const tx of [297, 311]) { put(tx, 51, 0.3, M_UMBER, 0); put(tx, 50, 0.9, M_LOOT, 1); put(tx, 49, 0.75, M_LOOT, 1); tl(tx, 49, 20, 0.6, WARMC); }
+  DXV = 0;
+}
 // Merchant: a clapboard shop under wooden shingles, a bay window of bottles, a striped awning with a scalloped
 // edge, a counter of fruit and potions, goods piled outside; two market stalls on the plaza
 function bMerchant() {
@@ -652,8 +750,8 @@ function buildTownLayer() {
   bScenery();
   // the named buildings, each tagged for the hover halo
   const tagBy = (id, fn) => { const k = SPOTS.findIndex((s) => s.id === id) + 1, V0 = L.V.slice(), M0 = L.M.slice(), E0 = L.E.slice(); fn(); for (let i = 0; i < W * H; i++) if (L.V[i] !== V0[i] || L.M[i] !== M0[i] || L.E[i] !== E0[i]) L.BT[i] = k; };
-  tagBy('portal', bPortal); tagBy('appraiser', bAppraiser); tagBy('library', bLibrary); tagBy('auction', bAuction);
-  tagBy('treasury', bTreasury0); tagBy('merchant', bMerchant); tagBy('training', bTraining); tagBy('forge', bForge); tagBy('inn', bInn);
+  tagBy('portal', bPortal); tagBy('appraiser', bAppraiser); tagBy('library', plotLevel('library') ? bLibrary : bLibrary0); tagBy('auction', bAuction);
+  tagBy('treasury', plotLevel('treasury') ? bTreasury1 : bTreasury0); tagBy('merchant', bMerchant); tagBy('training', plotLevel('training') ? bTraining : bTraining0); tagBy('forge', bForge); tagBy('inn', plotLevel('inn') ? bInn : bInn0);
   for (const [lx, ly] of LANTERNS) { lampPost(lx, ly); tl(lx, ly - 7, 20, 0.5, WARMC); }
   DXV = 0;
   castShadows(L);
@@ -669,6 +767,9 @@ let TOWN_DITHER = 0.03; // the town is hand-textured pixel art: almost no ordere
 // ---------------------------------------------------------------- frame
 function screenTown(ctx, t, o = {}) {
   setRes(BA_W, GS_H); CX = 167;
+  // the live town is rebuilt (and its lights re-baked) only when a building's level changes
+  const lv = o.live?.levels ? { library: o.live.levels.library | 0, treasury: o.live.levels.treasury | 0, training: o.live.levels.training | 0, inn: o.live.levels.inn | 0 } : null, key = lv ? JSON.stringify(lv) : '';
+  if (key !== TOWN_KEY) { TOWN_LV = lv; TOWN_KEY = key; TOWN_LAYER = null; }
   const L = TOWN_LAYER || buildTownLayer();
   const F = buf('ba', BA_W, GS_H); bind(F); CLIP = null;
   F.V.set(L.V); F.M.set(L.M); F.E.set(L.E); F.A.set(L.A); F.T.fill(0); F.DX.fill(0); F.I.set(L.I); F.G.fill(1); F.X.fill(0); F.LM = L.LM;
@@ -772,10 +873,9 @@ function townLife(F, t, lights, o) {
   // chimney smoke everywhere, sparks from the forge chimney
   for (const [i0, [sx, sy]] of (TOWN_LAYER.chimneys || []).entries()) smoke(sx, sy, t, i0, i0 === TOWN_LAYER.chimneys.length - 1 ? 26 : 16);
   for (let k = 0; k < 5; k++) { const q = (t * 0.5 + k / 5) % 1; put(Math.round(218 + Math.sin(q * 9 + k) * 3), Math.round(122 - q * 22), 1 - q * 0.7, M_LOOT, 1); }
-  // training grounds: two sparring in the ring
-  { const sw = Math.sin(t * 5); folk(119 + Math.round(sw), 173, 'knight', t, 0, 1); folk(128 - Math.round(sw), 173, 'folkC', t, 0, -1); if (sw > 0.9) put(124, 168, 1, M_STONE, 1); }
-  for (const tx of [112, 124]) flame(tx, 139, t, tx * 7, M_LOOT, 3);
-  for (const [bx, by] of [[86, 182], [150, 182]]) flame(bx, by - 1, t, bx * 11, M_LOOT, 3);
+  // training grounds: two sparring in the ring (once it is built)
+  if (plotLevel('training')) { const sw = Math.sin(t * 5); folk(119 + Math.round(sw), 173, 'knight', t, 0, 1); folk(128 - Math.round(sw), 173, 'folkC', t, 0, -1); if (sw > 0.9) put(124, 168, 1, M_STONE, 1); }
+  if (plotLevel('training')) { for (const tx of [112, 124]) flame(tx, 139, t, tx * 7, M_LOOT, 3); for (const [bx, by] of [[86, 182], [150, 182]]) flame(bx, by - 1, t, bx * 11, M_LOOT, 3); }
   // treasury plot: the work lamp flickers, a guard already on watch
   folk(292, 66, 'guard', t, 0, 1);
   // bard's notes rising
@@ -791,9 +891,10 @@ function townLife(F, t, lights, o) {
 // ---------------------------------------------------------------- map UI: halo, trade signs, name signs, overlay, tooltip
 const MARK_AT = { appraiser: [52, 44], library: [124, 44], auction: [264, 38], treasury: [318, 56], merchant: [210, 96], training: [114, 141], forge: [226, 158], inn: [325, 158] };
 function markSign(id, hot) {
-  const [x, y] = MARK_AT[id], m = SPOTS.find((s) => s.id === id).mark;
-  if (id !== 'treasury' && id !== 'training') { put(x + 4, y - 2, 0.4, M_STONE); put(x + 1, y - 2, 0.4, M_STONE); put(x + 2, y - 2, 0.4, M_STONE); put(x + 3, y - 2, 0.4, M_STONE); put(x + 1, y - 1, 0.3, M_STONE); put(x + 7, y - 1, 0.3, M_STONE); }
-  if (id !== 'training') { rectI(x, y, 9, 9, P.void); rectI(x + 1, y + 1, 7, 7, hot ? P.u3 : P.u2); }
+  const plot = SPOTS.find((s) => s.id === id).kind === 'plot', lv = plot ? plotLevel(id) : 1, board = plot && !lv;
+  const [x, y] = board ? PLOT_BOARD[id] ?? MARK_AT[id] : id === 'treasury' ? [316, 49] : MARK_AT[id], m = SPOTS.find((s) => s.id === id).mark;
+  if (!board && id !== 'training') { put(x + 4, y - 2, 0.4, M_STONE); put(x + 1, y - 2, 0.4, M_STONE); put(x + 2, y - 2, 0.4, M_STONE); put(x + 3, y - 2, 0.4, M_STONE); put(x + 1, y - 1, 0.3, M_STONE); put(x + 7, y - 1, 0.3, M_STONE); }
+  if (board || id !== 'training') { rectI(x, y, 9, 9, P.void); rectI(x + 1, y + 1, 7, 7, hot ? P.u3 : P.u2); }
   sprite(x + 1, y + 1, MARK[m], { O: hot ? 'pale' : 'u6', Y: 'gold', X: 'arcane', M: 'moon', u: 'u4' });
 }
 function nameSign(sp, hot) {
@@ -837,8 +938,8 @@ function tooltip(sp, st, t) {
 function townUI(F, t, lights, o) {
   const L = TOWN_LAYER, st = { ...SIDE_TOWN };
   const order = ['appraiser', 'treasury', 'portal', 'forge', 'library', 'merchant', 'inn', 'auction', 'training'];
-  const hid = o.hover ?? order[Math.floor(t / 3) % order.length], hk = SPOTS.findIndex((s) => s.id === hid) + 1;
-  hoverHalo(L, hk, t, hid === 'portal' ? M_MAGIC : M_LOOT);
+  const hid = o.live ? o.hover : o.hover ?? order[Math.floor(t / 3) % order.length], hk = SPOTS.findIndex((s) => s.id === hid) + 1;
+  if (hk > 0) hoverHalo(L, hk, t, hid === 'portal' ? M_MAGIC : M_LOOT);
   if (hid === 'portal') lights.push({ x: 167, y: 30, r: 60, i: 0.35 + 0.15 * Math.sin(t * 2.6), c: VIOLETC });
   for (const id of Object.keys(MARK_AT)) markSign(id, id === hid);
   // the portal's name sits on the cliff over the arch
@@ -846,7 +947,7 @@ function townUI(F, t, lights, o) {
   for (const sp of SPOTS) nameSign(sp, sp.id === hid);
   smokeU(0, 0, 92, 18, 0.62);
   text('Ravenhold · town', 4, 4, 'tiny', P.u6, { shadow: P.void });
-  if (!o.noTip) tooltip(SPOTS[hk - 1], st, t);
+  if (!o.noTip && hk > 0) tooltip(SPOTS[hk - 1], o.live ? { ...st, ...o.live } : st, t);
 }
 const SIDE_TOWN = { gold: 650, scraps: 26, record: 4, floor: 1, autoSalvage: true, levels: { training: 1, inn: 1, library: 1, treasury: 0 },
   bag: [{ icon: 'armor', r: 'epic', pow: 41 }, { icon: 'ring', r: 'rare', pow: 27 }, { icon: 'boots', r: 'uncommon', pow: 14 }, { icon: 'unknown', r: 'epic' }, { icon: 'map', r: 'rare' }] };

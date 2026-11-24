@@ -47,7 +47,8 @@ export function drawLiveRpg(cv: HTMLCanvasElement) {
   if (hp !== hovPath) { hovPath = hp; hovT = now / 1000; }
   const pp: PartyPointer = { drag: drag?.moved ? { from: drag.from, x: drag.x, y: drag.y, over: heroAt(drag.x, drag.y) } : null, hover: h?.act === 'hero' ? Number(h.arg) : -1 };
   treeHov = h?.act === 'treeNode' ? h.arg : null;
-  const r = PK.battleArea(buildBattleView(now, hovPath, hovT, pp, treeHov), now / 1000);
+  const townHov = h?.act === 'townSpot' ? h.arg : null;
+  const r = PK.battleArea(buildBattleView(now, hovPath, hovT, pp, treeHov, townHov), now / 1000);
   cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
   const ms = performance.now() - now; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms;
   hits = r.hits;

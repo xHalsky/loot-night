@@ -84,14 +84,14 @@ function serviceHead(X0, PW, y, name, mark, line) {
   sprite(X0 + 3, y + 2, ['..u', '.uu', 'uuu', '.uu', '..u']);
   text(name, X0 + 9, y + 3, 'silkb', P.u6, { shadow: P.void });
   sprite(X0 + PW - 10, y + 1, MARK[mark]);
-  text(line, X0 + 4, y + 13, 'tiny', P.u5, { shadow: P.void });
+  zl9(line, X0 + 4, y + 13, 'tiny', P.u5, { shadow: P.void });
 }
 // the next action: a flat gold button, palette-exact, so its dark label never sits on a dither (grid doc 2)
 function flatButton(x, y, w, label, ok, soul) {
   rectI(x, y, w, 15, P.void);
   rectI(x + 1, y + 1, w - 2, 13, ok ? P.gold : P.u2); rectI(x + 1, y + 1, w - 2, 1, ok ? P.pale : P.u3); rectI(x + 1, y + 13, w - 2, 1, ok ? P.copper : P.u1);
   const lw = measure(label, 'tiny') + (soul ? 7 : 0), lx = Math.round(x + w / 2 - lw / 2);
-  text(label, lx, y + 5, 'tiny', ok ? P.void : P.u4);
+  zl9(label, lx, y + 5, 'tiny', ok ? P.void : P.u4);   // 'zl' draws as zł (the auction)
   if (soul) sprite(lx + lw - 5, y + 4, SOUL, ok ? { X: 'void', M: 'pale' } : { X: 'u3', M: 'u4' });
 }
 function sidePanelTabs(st, t) {

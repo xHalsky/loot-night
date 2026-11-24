@@ -1,3 +1,4 @@
+import type { ServiceSpot, BagEntry } from '../core/state';
 import { T } from '../config/tuning';
 import { S, N, RARITIES } from '../core/state';
 import { removeEntry, entryName } from './loot';
@@ -112,6 +113,34 @@ export function applyCity() {
 }
 
 export function openTownWin(w: NonNullable<typeof S.g.townWin> | null) { S.g.townWin = w; sfx.click(); }
+
+// ---- services in the side panel (grid doc §6b): pick items in the bag grid, then one gold button acts on all of them
+/** Does the item apply here? Locked, unknown and maps never do; at the Appraiser only the unknown ones. */
+export function serviceApplies(svc: ServiceSpot, e: BagEntry): boolean {
+  if (e.kind !== 'item' || e.item.locked) return false;
+  return svc === 'appraiser' ? !e.item.identified : e.item.identified;
+}
+export function openService(svc: ServiceSpot | null) { const n = N(); n.svc = svc; n.svcPick = []; n.appraised = null; n.townTab = 'town'; n.plotHot = null; sfx.click(); }
+export function servicePick(id: string) {
+  const n = N(), e = S.g.bag.find(x => x.id === id);
+  if (!n.svc || !e || !serviceApplies(n.svc, e)) { sfx.bad(); return; }
+  const p = (n.svcPick ??= []);
+  if (n.svc === 'appraiser') { n.svcPick = p.includes(id) ? [] : [id]; sfx.click(); return; }   // one at a time: the reveal
+  if (p.includes(id)) p.splice(p.indexOf(id), 1); else p.push(id);
+  sfx.click();
+}
+/** The picked items' total: Souls at the forge, gold at the Merchant and the Appraiser (a cost), złoty at the auction. */
+export function serviceSum(svc: ServiceSpot, ids: string[]): number {
+  return ids.reduce((a, id) => a + (svc === 'forge' ? salvageYield(id) : svc === 'merchant' ? vendorValue(id) : svc === 'auction' ? listValue(id) : identifyCost(id)), 0);
+}
+export function identifyCost(id: string): number { const e = S.g.bag.find(x => x.id === id); return e?.kind === 'item' && e.item.rarity === 'legendary' ? T.IDENTIFY_COST.legendary : T.IDENTIFY_COST.epic; }
+export function serviceRun() {
+  const n = N(), svc = n.svc, ids = [...(n.svcPick ?? [])];
+  if (!svc || !ids.length) return;
+  for (const id of ids) serviceAction(svc === 'forge' ? 'salvage' : svc === 'merchant' ? 'vendor' : svc === 'auction' ? 'list' : 'identify', id);
+  if (svc === 'appraiser' && S.g.bag.find(x => x.id === ids[0] && x.kind === 'item' && x.item.identified)) n.appraised = { id: ids[0], t: 0 };
+  n.svcPick = [];
+}
 
 /** Actions from the service windows take the item id directly. */
 export function serviceAction(kind: 'identify' | 'vendor' | 'salvage' | 'list', id: string) {

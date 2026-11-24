@@ -10,7 +10,7 @@ import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
 import { youHtml, feedHtml, herHeadHtml, taskbarHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, deskHtml, windowHtml, uiPanelHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml, tonightHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
-import { HOTKEYS } from './data/heroes';
+import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
 import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip } from './systems/bag';
 import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } from './systems/loot';
@@ -20,8 +20,8 @@ import { toast } from './core/fx';
 import { ACT_BY_ID } from './data/apartment';
 import { startPre, cancelPre, episodeAnswer } from './systems/preemptive';
 import type { PreId } from './data/preemptive';
-import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction } from './systems/town';
-import { monUiHtml } from './ui/town';
+import { identify, vendor, salvage, list, buildCity, openTownWin, serviceAction, openService, servicePick, serviceRun } from './systems/town';
+import { monUiHtml, monUiLiveHtml } from './ui/town';
 import { altTab, excelInput } from './systems/excel';
 import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, setPhoneHold, textReply, setDeclineHold, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, cancelMonster } from './systems/monster';
@@ -145,6 +145,16 @@ const actions: Record<string, (arg: string) => void> = {
   treeNode: a => { N().treeSel = a; sfx.click(); },
   treeBuy: a => { const n = N(); if (n.treeHero || S.g.heroes[0]) buyNode((n.treeHero ?? S.g.heroes[0].id) as HeroId, a as NodeId); },
   treeRespec: a => respec(a as HeroId),
+  // the town map (V2): the portal goes down, a service opens in the panel's Town tab, a plot lights its build row
+  townSpot: a => {
+    const n = N();
+    if (a === 'portal') { travelToDungeon(); return; }
+    if (a === 'forge' || a === 'merchant' || a === 'appraiser' || a === 'auction') { openService(a); return; }
+    n.townTab = 'town'; n.svc = null; n.plotHot = a; sfx.click();
+  },
+  svcClose: () => openService(null),
+  svcPick: a => servicePick(a),
+  svcRun: () => serviceRun(),
   skipDrop: () => skipDrop(),
   nextFloor: () => choosePath(N().safest),   // the old map's button
   path: a => choosePath(Number(a)),          // a path card on the floor map (#52, 1.5)
@@ -227,9 +237,10 @@ document.addEventListener('pointermove', ev => {
     if (!inv.moved && Math.hypot(ev.clientX - inv.x0, ev.clientY - inv.y0) > 6) {
       inv.moved = true;
       const [kind, a, b] = inv.key.split(':');
-      const entry = kind === 'bag' ? S.g.bag.find(e => e.id === a) : (() => { const it = S.g.heroes[Number(a)]?.gear[b as 'weapon']; return it ? { kind: 'item' as const, id: it.id, item: it } : undefined; })();
-      ghost().innerHTML = entry ? entryIcon(entry, 34) : '';
-      ghost().style.display = 'block';
+      const entry = kind === 'bag' ? S.g.bag.find(e => e.id === a) : kind === 'gear' ? (() => { const it = S.g.heroes[Number(a)]?.gear[b as 'weapon']; return it ? { kind: 'item' as const, id: it.id, item: it } : undefined; })() : undefined;
+      const h = kind === 'hero' ? S.g.heroes[Number(a)] : null;
+      ghost().innerHTML = entry ? entryIcon(entry, 34) : h ? `<span class="ghost-hero" style="border-color:${HERO_COLORS[h.id]}">${HERO_NAME[h.id]}</span>` : '';
+      ghost().classList.toggle('hero', !!h); ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
   } else if ((ev.target as HTMLElement).id !== 'rpgArea' && (ev.target as HTMLElement).id !== 'spArea') {   // the live battle area and the panel's canvas set their own hover (V2)
@@ -246,7 +257,7 @@ document.addEventListener('pointerup', ev => {
     const { key, moved } = inv; inv = null;
     ghost().style.display = 'none';
     const [kind, a, b] = key.split(':');
-    if (!moved) { if (kind === 'bag') clickBagSlot(a); }
+    if (!moved) { if (kind === 'bag') clickBagSlot(a); else if (kind === 'hero') actions.heroTab(a); }
     else {
       const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
       const dropEl = under?.closest('[data-drop]') as HTMLElement | null;
@@ -255,6 +266,7 @@ document.addEventListener('pointerup', ev => {
       if (kind === 'bag' && dk === 'slot') equipItemOn(a, N().heroTab, dv);
       else if (kind === 'bag' && dk === 'hero') equipItemOn(a, Number(dv));
       else if (kind === 'gear' && dk === 'bag') unequip(Number(a), b);
+      else if (kind === 'hero' && dk === 'hero' && dv !== a) actions.swap(`${a},${dv}`);
     }
   }
   setHold(false);
@@ -340,6 +352,8 @@ el('spArea').addEventListener('pointerdown', ev => {
   // an item: pick it up (drag to equip or unequip, as the DOM bag did); a click without a drag selects it
   if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
   if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
+  // a party card: a click picks the hero, a drag onto another card swaps their ranks (the town had no reorder before)
+  if (h.act === 'heroTab') { inv = { key: `hero:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
   actions[h.act]?.(h.arg);
 });
 el('spArea').addEventListener('pointermove', ev => {
@@ -560,7 +574,7 @@ function render() {
     setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
     setHtml('youCard', youHtml());
     setHtml('feedCard', feedHtml());
-    setHtml('monUi', liveShown() ? '' : monUiHtml());
+    setHtml('monUi', liveShown() ? monUiLiveHtml() : monUiHtml());
     setHtml('winLayer', windowHtml());
     el('ui').classList.toggle('cv', livePanelShown());   // the panel is drawn by the renderer: the DOM keeps only its item windows
     setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : uiPanelHtml());

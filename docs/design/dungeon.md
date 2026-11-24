@@ -110,7 +110,8 @@ night 1 Knight, Healer, Mage; from night 2 Knight, Garrote, Mage, Healer. An old
 - **Swap:** press on a hero's portrait or his sprite and drag onto another. The portrait lifts under the pointer,
   the target's portrait gets a marching gold frame, both heroes a gold ring on the floor. On the drop they walk past
   each other for `SWAP_SEC` (1 s) without acting (no attacks, no skills; their wells dither with "swap"). In town
-  the order changes for free. A click without a drag selects the hero.
+  the order changes for free: drag one party card onto another in the side panel's Inventory tab (the cards work
+  the same in the dungeon). A click without a drag selects the hero.
 - **Enemies that break the line** (from floor `LINE_BREAK_FROM`, 6; `LINE_BREAK_CHANCE` 35% of encounters, never
   with a boss): a Ghoul or a Brute joins the pack. Its move comes on its 2nd action and then every 4th, after a
   `LINE_BREAK_WINDUP_SEC` (1 s) cast that names the rank: **Hook · rank 4** (a chain drags the last hero to the

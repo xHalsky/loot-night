@@ -11,6 +11,8 @@ export type Stat = 'atk' | 'hp' | 'armor' | 'speed' | 'crit' | 'luck';
 export type MapKind = 'elite' | 'shrine' | 'vault' | 'cursed' | 'goblin';
 
 export interface Affix { stat: Stat; amount: number }
+/** The town's services, opened in the side panel's Town tab (grid doc §6b). */
+export type ServiceSpot = 'forge' | 'merchant' | 'appraiser' | 'auction';
 export interface Item {
   id: string; name: string; slot: Slot; rarity: Rarity; ilvl: number;
   affixes: Affix[]; value: number; identified: boolean;
@@ -192,6 +194,8 @@ export interface Night {
   moodDrift: number;
   selected: string | null; heroTab: number;
   townTab?: 'town' | 'inventory' | 'tree'; treeHero?: HeroId; treeSel?: string;   // the town side panel's tab; the skill tree shown (#53)
+  svc?: ServiceSpot | null; svcPick?: string[]; plotHot?: string | null;           // a service open in the Town tab, the items picked; the plot clicked on the map
+  appraised?: { id: string; t: number } | null;                                     // the Appraiser's reveal in the panel
   everCaught: boolean; unidentifiedFound: number;
   goblin: { t: number } | null;
   fx: FloatFx[]; vfx: Vfx[]; beams: { x: number; color: string; t: number }[];

@@ -407,6 +407,7 @@ function liveTownPanel(st, t) {
   panelFrame();
   st.builds.forEach((b, k) => {
     const y = 14 + k * 19, hot = b.hot;
+    panelHit(X0, y, PW - 46, 18, '', '', b.tip);
     if (hot) { for (let j = y; j < y + 18; j++) for (let i = X0; i < X0 + PW; i++) putU(i, j, 0.3 - 0.1 * ((j - y) / 18) + 0.03 * (GR(i, j) - 0.5)); rectI(X0, y, 1, 18, P.gold); }
     for (let i = X0 + 2; i < X0 + PW - 2; i++) { putU(i, y + 18, 0.04); putU(i, y + 19, 0.32); }
     const nw = text(b.name, X0 + 4, y + 3, 'tiny', hot ? P.moon : P.u6, { shadow: P.void });
@@ -441,9 +442,81 @@ function livePanelAll(ctx, st, t) {
   setRes(SP_W, GS_H);
   const S = buf('lsp', SP_W, GS_H); clearFrame(S); bind(S); CLIP = null;
   if (st.tab === 'tree') liveTreePanel(st, t);
+  else if (st.tab === 'town' && st.svc) liveServicePanel(st, t);
   else if (st.tab === 'town') liveTownPanel(st, t);
   else livePartyPanel(st, t);
   if (st.tabs) { tabStrip(st.tab); let x = 4; for (const [id, , w] of TABS) { panelHit(x, 0, w, 11, 'townTab', id, ''); x += w; } }
   composeInto(ctx, S, { lights: [], ambient: [0.1, 0.1, 0.2], tint: 0, vig: 0 }, 0);
   return LIVE_PANEL_HITS;
+}
+
+
+// ---- the town (V2, #53; grid doc §6): Ravenhold drawn by the renderer, its buildings hit regions; the services open
+// in the side panel's Town tab
+function liveTown(ctx, st, t) {
+  LIVE_HITS = [];
+  for (const [id, b] of Object.entries(st.build)) BUILD[id] = { ...BUILD[id], fx: (l) => b.fx[l] ?? '', cost: b.cost };
+  screenTown(ctx, t, { live: { levels: st.levels, gold: st.gold, souls: st.souls }, hover: st.hover, noTip: st.noTip });
+  for (const sp of SPOTS) { const [x, y, w, h] = sp.box; liveHit(x, y, w, h, 'townSpot', sp.id, ''); }
+  return LIVE_HITS;
+}
+// a service page in the Town tab: the bag grid with values, picked items, the total and the flat gold button
+function liveServicePanel(st, t) {
+  const X0 = 4, PW = W - 4, S0 = st.svc;
+  panelFrame();
+  serviceHead(X0, PW, 14, S0.name, S0.mark, S0.line);
+  panelHit(X0, 14, 40, 10, 'svcClose', '', 'Back to the build list');
+  const y0 = 36;
+  S0.cells.forEach((c, k) => {
+    const x = X0 + 2 + (k % 6) * 22, y = y0 + Math.floor(k / 6) * 22;
+    liveCell(x, y, c && c.locked ? null : c);
+    if (!c || c.empty || c.locked) return;
+    if (!c.applies) { for (let j = y + 1; j < y + 20; j++) for (let i = x + 1; i < x + 20; i++) if ((i + j) & 1) putI(i, j, P.void); panelHit(x, y, 21, 21, '', '', 'bag:' + c.id); return; }
+    if (c.picked) { frameI(x - 1, y - 1, 23, 23, P.gold); frameI(x, y, 21, 21, P.gold); sprite(x + 14, y + 1, ['....O', '...OO', 'O.OO.', 'OOO..', '.O...'], null); }
+    if (c.badge) zl9(c.badge, x + 2, y + 2, 'tiny', P[c.badgeCol] || P.u6, { outline: P.void });
+    panelHit(x, y, 21, 21, 'svcPick', c.id, 'bag:' + c.id);
+  });
+  let y = y0 + Math.ceil(S0.cells.length / 6) * 22 + 4;
+  if (S0.reveal) {
+    const R = S0.reveal, q = R.t;
+    if (q < 1.4) {
+      const pulse = q > 0.9 ? (q - 0.9) / 0.5 : 0;
+      wellU(X0 + 2, y, PW - 4, 70, { v: 0.08 });
+      text('Looking closely...', X0 + PW / 2, y + 30, 'tiny', P.u5, { align: 'c', shadow: P.void });
+      if (pulse > 0) for (let k = 0; k < 18; k++) { const an = k / 18 * 6.283 + q * 3, r = 6 + pulse * 26; putI(Math.round(X0 + PW / 2 + Math.cos(an) * r), Math.round(y + 32 + Math.sin(an) * r * 0.6), k & 1 ? P.arcane : P.pale); }
+    } else {
+      const flash = q < 1.6, rc = P[RARITY_TEXT[R.cell.r]];
+      // lay the lines out first so the card grows with them (a special or a legend rule wraps)
+      const rows = [];
+      for (const [a, kind, fx] of R.lines) {
+        if (!fx) { rows.push([a, P[kind] || P.g6, null, 8]); continue; }
+        rows.push([a, P.u6, kind, 7]);
+        for (const ln of wrapTiny(fx, PW - 20)) rows.push([ln, P.u5, null, 7]);
+      }
+      const H = Math.min(222 - y, Math.max(80, 46 + rows.reduce((s, r) => s + r[3], 0)));
+      shadowU(X0 + 2, y, PW - 4, H, { k: 0.6, r: 4, dx: 2, dy: 3 });
+      leatherU(X0 + 3, y + 1, PW - 6, H - 2, { v: 0.13, vig: 0.25 });
+      mouldU(X0 + 2, y, PW - 4, H, { mat: M_MAGIC, k: 1, bosses: false });
+      text('IDENTIFIED', X0 + 8, y + 6, 'silkb', P.arcane, { shadow: P.void });
+      liveCell(X0 + 8, y + 15, R.cell);
+      for (const [k, ln] of wrapTiny(R.name, PW - 40).slice(0, 2).entries()) text(ln, X0 + 33, y + 17 + k * 7, 'tiny', rc, { shadow: P.void });
+      text(R.sub, X0 + 33, y + 31, 'tiny', P.u5, { shadow: P.void });
+      let ly = y + 42;
+      for (const [a, col, tag, h] of rows) {
+        if (ly > y + H - 10) break;
+        text(a, X0 + 8, ly, 'tiny', col, { shadow: P.void });
+        if (tag) text(tag, X0 + PW - 9, ly, 'tiny', P.d5, { align: 'r', shadow: P.void });
+        ly += h;
+      }
+      if (flash) for (let j = y; j < y + H; j++) for (let i = X0 + 2; i < X0 + PW - 2; i++) if (((i + j) & 1) === 0) putI(i, j, P.moon);
+    }
+  } else {
+    const w0 = zl9(S0.summary, X0 + 4, y, 'tiny', P.u6, { shadow: P.void });
+    if (S0.soul) soulGlyph(X0 + 6 + w0, y - 1);
+    for (const [k, ln] of wrapTiny(S0.why, PW - 8).entries()) text(ln, X0 + 4, y + 8 + k * 7, 'tiny', P.u4, { shadow: P.void });
+    flatButton(X0 + 4, y + 25, PW - 8, S0.button, S0.ok, S0.soul);
+    if (S0.ok) panelHit(X0 + 4, y + 25, PW - 8, 15, 'svcRun', '', S0.cost || '');
+    for (const [k, ln] of wrapTiny(S0.note || '', PW - 8).entries()) text(ln, X0 + 4, y + 46 + k * 7, 'tiny', P.u4, { shadow: P.void });
+  }
+  footerMoney(X0, PW, st);
 }

@@ -1,7 +1,7 @@
 // The battle area's view model (V2, #67): the game's state, read once a frame and handed to the renderer
 // (src/render/page/live.js). Rules never live here; this file only reads S.g / N() and lays things out on the grid.
 import { T } from '../config/tuning';
-import { S, N, type Enemy, type Hero, type HeroId, type Item, type BagEntry, type Stat } from '../core/state';
+import { S, N, RARITIES, type Enemy, type Hero, type HeroId, type Item, type BagEntry, type Stat, type ServiceSpot } from '../core/state';
 import { ENEMY_BY_ID, bossFor } from '../data/enemies';
 import { MAP_INFO, RARITY_COLOR } from '../data/items';
 import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
@@ -11,6 +11,11 @@ import { boughtCount, autocastBought, autocastOn, nodeState, nodeCost } from '..
 import { NODES, TREES, BUYABLE, type NodeId } from '../data/trees';
 import { heroPower, xpNeeded, heroStats, heroBaseStats, itemPower } from '../systems/stats';
 import { CITY } from '../data/city';
+import { serviceApplies, serviceSum } from '../systems/town';
+import { specialText } from '../systems/affixes';
+import { SPECIAL_BY_ID } from '../data/affixes';
+import { LEGEND_BY_ID, SET_BY_ID } from '../data/legendaries';
+import { STAT_LABEL } from '../data/items';
 import { maxHp } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
@@ -23,7 +28,7 @@ import { BLESSINGS, type BlessingId } from '../data/blessings';
  *  while the Skill Tree tab is open (the tree covers the town, #53). */
 export function liveActive(): boolean {
   const n = S.g.night;
-  return !!n && S.g.screen === 'night' && (n.location === 'dungeon' || n.townTab === 'tree');
+  return !!n && S.g.screen === 'night';   // the dungeon, the floor map, the town and the skill tree
 }
 /** The side panel is drawn by the renderer (V2 with #53): the party in the dungeon, the three tabs in town. */
 export function panelActive(): boolean {
@@ -61,6 +66,7 @@ export function treeView(hov: string | null) {
 export function panelView(hov: string | null) {
   const n = N(), town = n.location === 'town', tab = town ? (n.townTab ?? 'town') : 'party';
   if (tab === 'tree') return { ...treePanelView(hov), tabs: true };
+  if (tab === 'town' && n.svc) return { ...servicePanelView(n.svc), tabs: true };
   if (tab === 'town') return { ...townPanelView(), tabs: true };
   return { ...partyPanelView(), tabs: town, tab };
 }
@@ -106,10 +112,50 @@ function partyPanelView() {
 }
 function townPanelView() {
   const g = S.g, cps = [...g.checkpoints].sort((a, b) => a - b), f = cps.includes(g.startFloor) ? g.startFloor : 1;
-  const builds = CITY.map(c => { const lv = g.furniture[c.id] ?? 0; return { id: c.id, name: c.name, lv, fx: lv >= 3 ? c.effect[2] : `Next: ${c.effect[lv]}`, gold: c.gold[lv], souls: c.mats[lv], ok: lv < 3 && g.gold >= c.gold[lv] && g.mats >= c.mats[lv], tip: lv < 3 ? `${c.name}: ${c.effect[lv]} (15 min)` : '', hot: false }; });   // the plot hovered on the town map lights its row (V2 town, next)
+  const builds = CITY.map(c => { const lv = g.furniture[c.id] ?? 0; return { id: c.id, name: c.name, lv, fx: lv >= 3 ? c.effect[2] : `Next: ${c.effect[lv]}`, gold: c.gold[lv], souls: c.mats[lv], ok: lv < 3 && g.gold >= c.gold[lv] && g.mats >= c.mats[lv], tip: lv < 3 ? `${c.name}: ${c.effect[lv]} (15 min)` : '', hot: N().plotHot === c.id }; });   // the plot clicked on the map lights its row
   return { tab: 'town', builds, floor: f, canDown: cps[0] !== f, canUp: cps[cps.length - 1] !== f, ...bagView(), ...foot() };
 }
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+const SVC: Record<ServiceSpot, { name: string; mark: string; line: string }> = {
+  forge: { name: 'SALVAGE FORGE', mark: 'anvil', line: 'Melt gear into Souls.' },
+  merchant: { name: 'MERCHANT', mark: 'scales', line: 'Buys loot for gold.' },
+  appraiser: { name: 'APPRAISER', mark: 'eye', line: `Epics ${T.IDENTIFY_COST.epic} g, legendaries ${T.IDENTIFY_COST.legendary} g.` },
+  auction: { name: 'AUCTION HOUSE', mark: 'gavel', line: 'Sells loot for real money, in zl.' },
+};
+function servicePanelView(svc: ServiceSpot) {
+  const n = N(), g = S.g, picked = (n.svcPick ?? []).filter(id => g.bag.some(e => e.id === id));
+  const cells = [];
+  for (let k = 0; k < g.bagSize; k++) {
+    const e = g.bag[k], c = cellOf(e);
+    if (e) {
+      const ok = serviceApplies(svc, e), v = ok ? serviceSum(svc, [e.id]) : 0;
+      Object.assign(c, { applies: ok, picked: picked.includes(e.id), sel: false, badge: !ok ? '' : svc === 'forge' ? `+${v}` : svc === 'auction' ? `${v}zl` : `${v}g`, badgeCol: svc === 'forge' ? 'u6' : 'gold' });
+    }
+    cells.push(c);
+  }
+  const sum = serviceSum(svc, picked), k = picked.length;
+  const S0 = { ...SVC[svc], cells, soul: svc === 'forge', summary: '', why: 'Locked, unknown and maps: no.', button: '', ok: k > 0, note: '', cost: '', reveal: null as unknown };
+  if (svc === 'forge') { S0.summary = `${k} picked: +${sum}`; S0.button = `Salvage ${k} · +${sum}`; S0.note = "The bag's AUTO melts commons and uncommons as they drop."; }
+  if (svc === 'merchant') {
+    S0.summary = `${k} picked: +${sum} g`; S0.button = `Sell ${k} · +${sum} g`;
+    const rare = picked.map(id => g.bag.find(e => e.id === id)).find(e => e?.kind === 'item' && RARITIES.indexOf(e.item.rarity) >= 2);
+    if (rare && rare.kind === 'item') S0.note = `${rare.item.name} is ${rare.item.rarity}: the Auction House may pay more for it.`;
+  }
+  if (svc === 'auction') { S0.summary = `${k} picked: ~${sum} zl`; S0.button = `List ${k} · ~${sum} zl`; S0.note = `Pays tomorrow morning. ${T.COST_LIST_MIN} min each.`; }
+  if (svc === 'appraiser') {
+    S0.why = 'Only the unknown ones: epics and legendaries.';
+    S0.summary = k ? `Identify: ${sum} g (${T.COST_IDENTIFY_MIN} min)` : 'Pick an unknown item.'; S0.button = `Identify · ${sum} g`; S0.ok = k > 0 && g.gold >= sum;
+    const a = n.appraised, e = a && g.bag.find(x => x.id === a.id);
+    if (a && e && e.kind === 'item' && a.t < 6) {
+      const it = e.item, sp = it.special ? specialText(it) : null, who = it.legend ? LEGEND_BY_ID[it.legend].hero : it.set ? SET_BY_ID[it.set].hero : null;
+      const lines: [string, string, string][] = it.affixes.map(x => [`${x.amount >= 0 ? '+' : ''}${x.amount} ${STAT_LABEL[x.stat]}`, x.amount >= 0 ? 'g6' : 'crimson', '']);
+      if (sp) lines.push([SPECIAL_BY_ID[it.special!].suffix, sp.life ? 'real life' : 'cross', sp.text]);
+      if (it.legend) lines.push([LEGEND_BY_ID[it.legend].name, 'rule', LEGEND_BY_ID[it.legend].rule]);
+      S0.reveal = { t: a.t, cell: cellOf(e), name: it.name, sub: `${cap(it.rarity)} ${it.slot}${who ? ` · ${SHORT[who]}` : ''}`, lines };
+    }
+  }
+  return { tab: 'town', svc: S0, ...foot() };
+}
 function treePanelView(hov: string | null) {
   const n = N(), g = S.g, hero = treeHero(), bought = [...(g.trees?.[hero] ?? [])] as NodeId[];
   const id = ((hov ?? n.treeSel ?? BUYABLE.find(x => nodeState(hero, x) === 'buy') ?? 's2') as NodeId);
@@ -168,9 +214,17 @@ export function heroX(i: number): number {
   return Math.round(RANK_X[h.from] + (RANK_X[i] - RANK_X[h.from]) * e);
 }
 
-export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPointer = { drag: null, hover: -1 }, treeHov: string | null = null) {
+// ---- the town (V2, #53; grid doc §6): Ravenhold, the hovered building's halo and card; a service holds its halo
+function townView(hov: string | null) {
+  const g = S.g, n = N(), build: Record<string, { fx: string[]; cost: number[][] }> = {}, levels: Record<string, number> = {};
+  for (const c of CITY) { build[c.id] = { fx: ['', ...c.effect], cost: c.gold.map((gg, k) => [gg, c.mats[k]]) }; levels[c.id] = g.furniture[c.id] ?? 0; }
+  return { build, levels, gold: g.gold, souls: g.mats, hover: hov ?? n.svc ?? n.plotHot ?? null, noTip: !hov };
+}
+
+export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPointer = { drag: null, hover: -1 }, treeHov: string | null = null, townHov: string | null = null) {
   const g = S.g, n = N();
   if (n.location === 'town' && n.townTab === 'tree') return { tree: treeView(treeHov ?? n.treeSel ?? null) };
+  if (n.location === 'town') return { town: townView(townHov) };
   if (n.phase === 'mapChoice' && n.paths) return { paths: pathsView(hov, hovT) };
   // the party in marching order, front first (#52, 1.6): rank 1 is S.g.heroes[0]
   const order = g.heroes.map((h, i) => ({ h, i }));

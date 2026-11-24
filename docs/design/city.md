@@ -2,8 +2,12 @@
 
 ## Now
 
-**The city is the hub, on the monitor.** Ravenhold at night, seen from above at an angle like a SNES jRPG town
-(`src/ui/townMap.ts`), filling the whole battle area (668 × 464). Dark medieval with a gothic edge: thick stone
+**The city is the hub, on the monitor.** Ravenhold at night, seen from above at an angle like a SNES jRPG town,
+filling the whole battle area (334 × 232 on the grid). Since 0.62 it is the redesign's town (`screenTown` in
+`src/render/page/town.js`, through `liveTown` and the view in `src/render/rpgView.ts`; grid doc §6); the old
+canvas town (`src/ui/townMap.ts`) is only the fallback. The map follows the build: an unbuilt plot is a building
+site, a built one its building, and the static layer is rebuilt when a level changes. Lv 2 and 3 show the Lv 1
+building for now (#81). Dark medieval with a gothic edge: thick stone
 houses under slate roofs on a grid of cobbled streets that meet at right angles (three east to west, two north to
 south, an avenue south from the plaza). In the middle a square plaza of pale flagstones with a fountain; above it
 the court in front of the Dungeon Portal, cut into the cliff at the top centre: a pointed arch with skulls and
@@ -24,21 +28,29 @@ lantern posts at the street corners, the forge's hearth, the portal. Fires and l
 the forge sparks and steams. The static town (and every light that does not flicker) is drawn once per set of
 building levels and cached; the people, fire, water, magic and smoke move.
 
-**Every building shows its trade, and is the button.** Its name is painted on a wooden sign on the curb below it,
-and a shop sign with its mark (eye, book, gavel, coin, scales, crossed swords, anvil, tankard) hangs from its wall.
-Hovering a building gives it a soft gold halo that breathes, the cursor turns into a hand, the sign brightens and
-the tooltip says what it does. A click does what it says:
+**Every building shows its trade, and is the button.** Its name sits on a plate on the curb below it, and a shop
+sign with its mark (eye, book, gavel, coin, scales, crossed swords, anvil, tankard) hangs from its wall. Hovering a
+building gives it a gold halo, the cursor turns into a hand and a card says what it does (a plot's card: its level,
+the next effect and the cost). The open service keeps its halo. A click does what it says, always in the side
+panel's Town tab, never in a window over the town:
 
 | Building | Where | Looks like | Click: action | Cost |
 |---|---|---|---|---|
-| Appraiser | top left | A violet-slate tower: a crystal glowing on the spire with runes circling it, the eye window, star banners, a brass telescope; a curio shop with a crystal ball at its foot; the appraiser stands in a rune circle on the street | its window: identify epics (`IDENTIFY_COST.epic`) and legendaries; 2.5 s reveal | gold, 10 min |
-| Auction House | right of the portal | A pale guildhall: columned porch, a gold coin in the pediment, coin banners, a bell tower, lots glowing on two pedestals; the auctioneer on the steps, bidders raising paddles | its window: list for zł, paid next morning, price × the night's market factor (`MARKET_RANGE`) | 5 min |
-| Merchant | east side of the plaza | A wooden shop with a striped awning, a window of bottles, a counter of fruit and potions, two market stalls on the plaza | its window: sell for gold (unidentified items at `UNIDENTIFIED_VENDOR_MULT`) | free |
-| Salvage Forge | south, right of the avenue | A stone smithy with its hearth open to the street, a tall chimney; a lean-to with tools on the wall, a heap of broken blades, helms and shields, the anvil, a steaming quench barrel; the smith hammering, sparks | its window: break into Souls (`SALVAGE_YIELD` 1/2/4/8/16 by rarity) | free |
+| Appraiser | top left | A violet-slate tower: a crystal glowing on the spire with runes circling it, the eye window, star banners, a brass telescope; a curio shop with a crystal ball at its foot; the appraiser stands in a rune circle on the street | identify epics (`IDENTIFY_COST.epic`) and legendaries, one at a time; the reveal | gold, 10 min |
+| Auction House | right of the portal | A pale guildhall: columned porch, a gold coin in the pediment, coin banners, a bell tower, lots glowing on two pedestals; the auctioneer on the steps, bidders raising paddles | list for zł, paid next morning, price × the night's market factor (`MARKET_RANGE`) | 5 min each |
+| Merchant | east side of the plaza | A wooden shop with a striped awning, a window of bottles, a counter of fruit and potions, two market stalls on the plaza | sell for gold (unidentified items at `UNIDENTIFIED_VENDOR_MULT`) | free |
+| Salvage Forge | south, right of the avenue | A stone smithy with its hearth open to the street, a tall chimney; a lean-to with tools on the wall, a heap of broken blades, helms and shields, the anvil, a steaming quench barrel; the smith hammering, sparks | break into Souls (`SALVAGE_YIELD` 1/2/4/8/16 by rarity) | free |
 | Dungeon Portal | top centre | See above | goes down: enter the dungeon at the checkpoint | 15 min |
 
-Each service window opens over the town listing the backpack with one action button per item, with the grey/red
-close button. Locked items refuse every action. The side panel keeps an "Enter the dungeon · floor N" button too.
+**A service is a page of the Town tab** (`servicePanelView` / `liveServicePanel`): a header with its name, mark and
+one line ("◂" goes back to the build list), then the bag. Each item it takes shows what it pays in its corner
+(+Souls, gold or zł); the ones it refuses (locked, unknown at the merchant's or the forge, maps) are dimmed. Click
+items to pick them (a gold frame and a tick), then one button does them all: "Salvage 2 · +3", "Sell 1 · +40 g",
+"List 2 · ~14 zł", "Identify · 40 g". The Merchant warns when a picked item is rare or better (the Auction House
+may pay more); the Forge reminds you that AUTO melts commons and uncommons as they drop. The Appraiser takes one
+item at a time: "Looking closely..." with a ring of sparks, then a flash and the IDENTIFIED card (the item, its
+lines, its special or legendary rule) that stays for a few seconds. Locked items refuse every action. The Town
+tab keeps an "Enter the dungeon · floor N" button, and the Dungeon Portal on the map goes down too.
 
 **Build plots.** Four plots, each fixed to one building (`src/data/city.ts`): Library (left of the portal),
 Treasury (top right), Training Grounds (south, left of the avenue), Inn (bottom right). An unbuilt plot is cleared
@@ -52,10 +64,9 @@ the building's mark. The materials are the clue:
 | Training Grounds | logs, fence posts, a straw dummy on its back, a crate of practice swords, a target leaning on the logs, sand | a fenced sand yard: dummies, targets, a weapon rack, a sparring ring with two fighting, a gate with the crossed-swords banner and torches | + barracks, an archer, a drill | + a watchtower with a lookout, a torch and a banner, more sparring |
 | Inn | stacked kegs, planks, a table and benches, the tankard sign leaning, a hay cart; a traveller on a barrel with a mug | a half-timbered inn with bottle-glass windows, the tankard sign, barrels, drinkers on a bench | + a stable with a horse looking out | taller: a second floor with a balcony and a bard |
 
-A click on a plot (built or not) opens its build window over the town: name, level ("Empty plot, materials
-ready." at 0), the current effect, the next one and a Build / Upgrade button with its cost (greyed when you cannot
-pay). The side panel's BUILD rows do the same from the list: level pips, the current (or next) effect and the
-button.
+A click on a plot (built or not) lights its row in the Town tab's build list (and closes an open service): level
+pips, the next effect and the Build button with its cost (greyed when you cannot pay). Hovering the plot shows the
+same on its card. The run end card ("Run banked" / "Run lost") still shows over the town when you come back.
 
 | Building | Lv 1 / 2 / 3 | Gold | Scraps |
 |---|---|---|---|
@@ -102,6 +113,15 @@ results screen counts your bag too: "Sell and salvage your bag in the city: it p
   back to sell), and those two places carry the most light. Rejected: the old MMO crowd with guild tags and chat
   bubbles (busy at this zoom, and the guild jokes live in the feed, #44); scaffolding at level 0 (it read as
   built).
+- **No windows over the town: services are pages of the Town tab** (0.62, V2 with #53; Paweł, 2026-11-19). The
+  redesign draws the town on the grid; DOM windows over it covered the map you had just clicked and duplicated the
+  bag that sits right beside it. Now a building opens in the panel next to the bag, and you pick several items
+  and run the service once (one button, the total on it) instead of one button per item. A plot lights its build
+  row instead of opening a build window. Rejected: keeping the DOM windows over the redesign map (two looks on one
+  screen); a page per plot (the build row already holds level, effect and cost); one action button per item (a
+  bag of 18 was a long list of buttons; picks with a total read faster and match the forge's AUTO). The redesign
+  also brings name plates under the buildings back (0.48 rejected them as menu-like): at this zoom on the grid
+  the buildings are small and the plates are how you find the Appraiser on night one.
 - **Hub decisions near the bag** (0.45, #49): the build list and the bag share the side panel, so selling and
   building happen next to each other. Rejected: a separate town screen (one more screen to learn).
 - **Fixed buildings, upgradeable plots.** The earlier "player house with furniture" (Training Dummy,
