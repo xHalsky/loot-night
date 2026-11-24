@@ -8,6 +8,9 @@ import { sfx } from '../ui/audio';
 import { rollBattleDrops } from './loot';
 import { spawnCurioFight } from './battle';
 import { isAway } from './autopilot';
+import { FEATURES } from '../data/routes';
+/** Curios that only stand where a path's feature puts them? None yet: every curio can also turn up at random. */
+const FEATURE_ONLY = new Set<string>();
 import { addBlessing, blessCount } from './run';
 import { maxHp } from './stats';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
@@ -18,7 +21,8 @@ import { BLESSINGS, type BlessingId } from '../data/blessings';
 /** At the start of a battle floor: which walks (before battle 0, 1, 2) get a curio. */
 export function planCurios() {
   const n = N();
-  const count = randi(...T.CURIO_PER_FLOOR);
+  n.featureMet = false;
+  const count = Math.max(n.feature && FEATURES[n.feature].curio ? 1 : 0, randi(...T.CURIO_PER_FLOOR));
   const idx = [...Array(T.BATTLES_PER_FLOOR).keys()].sort(() => Math.random() - 0.5);
   n.curioPlan = idx.slice(0, count);
 }
@@ -33,7 +37,9 @@ export function startCurio() {
   const n = N();
   n.curioPlan = n.curioPlan.filter(i => i !== n.battleIdx);
   const recent = new Set(S.g.curiosSeen.slice(-3));   // avoid repeats within the last few
-  const def = pick(CURIOS.filter(c => !recent.has(c.id)));
+  const feat = n.feature ? FEATURES[n.feature].curio : undefined;   // the path's feature stands here (#52, 1.5)
+  const def = feat && !n.featureMet ? CURIO_BY_ID[feat] : pick(CURIOS.filter(c => !recent.has(c.id) && !FEATURE_ONLY.has(c.id)));
+  if (feat) n.featureMet = true;
   S.g.curiosSeen = [...S.g.curiosSeen, def.id].slice(-6);
   n.curio = { id: def.id, stage: 'ask', t: T.CURIO_WAIT_SEC, max: T.CURIO_WAIT_SEC };
   n.phase = 'curio';

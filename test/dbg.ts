@@ -2,7 +2,7 @@
 import { S, N, initialState } from '../src/core/state';
 import { step } from '../src/core/loop';
 import { startNight } from '../src/systems/night';
-import { travelToDungeon, chooseNextFloor } from '../src/systems/dungeon';
+import { travelToDungeon, choosePath } from '../src/systems/dungeon';
 import { altTab } from '../src/systems/excel';
 import { skipDrop } from '../src/systems/loot';
 S.g = initialState(); startNight(); S.g.howto = false; /* the bot reads the how-to card (#28) */ travelToDungeon();
@@ -12,7 +12,7 @@ for (let t = 0; t < 200; t += 1/60) {
   const want = v !== 'idle' && v !== 'passing';
   if (want && n.monitor === 'rpg' && !n.visit.fake) altTab();
   if (!want && n.monitor === 'excel') altTab();
-  if (n.phase === 'mapChoice') chooseNextFloor(null);
+  if (n.phase === 'mapChoice') choosePath(N().safest);
   if (n.dropPopup) skipDrop();
   step(1/60);
   if (!S.g.night) break;

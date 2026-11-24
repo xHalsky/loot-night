@@ -3,6 +3,27 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.55.0 (2026-11-24)
+
+- **The route choice** (#52, 1.5; grid doc §5b). When a floor ends, the renderer draws the floor map: the run so far
+  (the last four floors, "you are here"), a fork to each candidate room and 2 path cards (3 from floor 6, one before
+  a boss). A card is a floor with at most one feature and one condition, the danger in skulls; hover it and its road
+  inks itself and the margin gives the full text with + and -. Click to go down.
+  - Features: the six blessing curios and the Locked Chest are sure to stand on that floor (in place of a random
+    curio); Elite Pack and Goblin Den turn it into that map's floor.
+  - Conditions, each with a price and a payoff: Silent Halls (no Noise from crits and skills, drops -20%), Haunted
+    (ultimates +50% faster, every kill Noise +1), Flooded (drops +30%, cooldowns +20%), Pitch Dark (gold +50%,
+    enemies hit 15% harder), Swarming (Souls +50%, packs 50% bigger), Cursed (the Cursed Floor).
+  - Maps from loot are their own card ("uses your map"); at most three cards fit, one generated path always stays.
+  - Away 5 s in all (it adds up across glances), the party takes the safest path (no condition first, never a map)
+    and says so in the Feed. The hourglass marks it; the footer counts down.
+  - Card texts come from tuning.ts (`src/data/routes.ts`); the boss floor's note names the boss.
+- The 0.44 parchment map of the whole descent (#48) and its CSS are gone. F1's End floor now ends the floor properly
+  (with its route choice). New `test/routes.ts` (every feature and condition, the away rule), `test/dmap.py` reshot.
+- Sims (good, 3 nights): depth 5 to 6, 2 to 3 runs, encounters 9 to 13 s, rare+ 17 to 21 a night (unchanged; tuned
+  in 1.9). Idle: depth 2 to 3, 2 to 4 wipes, caught 0 to 1 (0 to 2 before, the same spread). Autopilot test
+  unchanged: away on the floor 10 boss wipes 30/30.
+
 ## 0.54.0 (2026-11-24)
 
 - **Run blessings** (#52, 1.5b). Curios are their only source; a blessing lasts until the run ends, stacks, and

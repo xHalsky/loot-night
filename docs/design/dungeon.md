@@ -37,7 +37,7 @@ healer, then the front enemy.
 
 **Bosses** rotate per checkpoint floor: floor 5 the Ogre, 10 the Warlock, 15 the Black Knight, then around
 again with floor scaling. Each has its own telegraphed move: a cast bar at the top centre and the skills
-that answer it pulsing red. The dungeon map names the boss on the path card for the boss floor.
+that answer it pulsing red. The floor map names the boss in the margin note of the boss floor's path.
 
 | Boss (HP / attack at floor 1 scale) | Move | Answer |
 |---|---|---|
@@ -149,17 +149,41 @@ area with a framed portrait per hero (vertical HP gauge, the one HP readout outs
 cards carry it; click to select in the side panel), then that hero's skills with glyph, hotkey (10 px), cooldown
 sweep and level lock. The auto attack has no button.
 
-**Choosing the next floor: the dungeon map** (#48). When a floor ends, the battle area shows your whole descent
-on an old parchment map (the side panel stays), drawn in faded brown ink, read top to bottom. Each row is one level (roman numeral
-in the margin): five floors left to right, then right to left, the boss room (red ink, double wall) at the
-end, and a staircase down to the next level; every room sits a little lower than the last. Rooms are joined
-by stairs. Each room shows what that floor was (crossed swords, vault chest, shrine cross, goblin, elite
-skull, cursed slime, boss crown), from `mapPath`, which is saved, so the map shows every night's descent.
-Floors you reached before but not tonight are fainter; the next floor and the one after are pencil sketches.
-Marks: "you are here" (a red ink ring), a flag on the checkpoint, a red X on your corpse. Four levels fit;
-older ones scroll off the top ("floors 1 to N above"). The choice is a row of path cards at the bottom: the
-plain or boss floor plus one card per map in the bag; hovering a card draws that room into the next slot
-and shows what it does. `python3 test/dmap.py` shoots it at a few depths. Maps (dropped as loot, 8% per drop):
+**Choosing the way down: the route choice** (#52, 1.5; grid doc §5b; `src/data/routes.ts`). When a floor ends,
+the battle area shows the floor map on vellum: the run so far down the left (the last four floors as gilded roundels,
+boss floors crimson, the last one "you are here" in a red-ink ring), and a fork from there to each candidate room,
+pencilled with its icons until you hover its card. Under the map, 2 path cards (`PATHS_EARLY`, up to floor 5) or 3
+(`PATHS_LATE` from floor `PATHS_LATE_FROM`), one before a boss floor. Each card shows the floor, a **feature** row
+and a **condition** row ("no feature", "no condition" when empty), the danger as 1 to 3 skulls. Hover a card: its
+road inks itself, the room gets the floor's numeral, and the margin writes its full text with a + for what you get
+and a - for what it costs. Click the card (or its room) to go down.
+- **Features** (`NODE_FEATURE_CHANCE` a card): what stands on that floor. Six are curios with a run blessing
+  (Wayside Shrine, Pilgrim, Supply Cart, Blood Altar, Moonwell, Ritual Circle), the Locked Chest is the strongbox;
+  each is sure to stand on the floor, in place of one of the random curios. Elite Pack and Goblin Den turn the floor
+  into that map's floor.
+- **Conditions** (`NODE_CONDITION_CHANCE` a card): change the whole floor, and every one pays.
+
+| Condition | Danger | Pays | Costs |
+|---|---|---|---|
+| Silent Halls | 1 | crits and skills make no Noise | drops -`COND_SILENT_DROPS` |
+| Haunted | 1 | ultimates charge +`COND_HAUNTED_ULT` faster | every kill +`COND_HAUNTED_NOISE` Noise |
+| Flooded | 2 | drops +`COND_FLOODED_DROPS` | cooldowns +`COND_FLOODED_CD` |
+| Pitch Dark | 2 | gold +`COND_DARK_GOLD` | enemies hit +`COND_DARK_ATK` harder |
+| Swarming | 2 | Souls +`COND_SWARM_SOULS` | packs +`COND_SWARM_PACK` bigger |
+| Cursed | 3 | the Cursed Floor (every drop one rarity better) | your heals do half |
+
+- **Maps from loot** add their own card (the map's name in its rarity colour, "uses your map"); at most
+  `PATHS_MAX` cards fit, so a map's card takes a generated one's place (one generated path always stays). A map
+  card has no road on the map: hovered, it shows as a dashed red route.
+- **Away.** The hourglass marks the safest card (no condition first, then the lowest danger, at random among
+  equals, never a map). Off the game (`isAway()`: Excel, mid alt-tab, at the door, a minigame) for
+  `MAP_AWAY_SEC` (5 s) in all, the party takes it and says so in the Feed. The time adds up and does not reset when
+  you glance back; the footer counts it down. The clock keeps running at its slow map pace meanwhile.
+- The card and margin texts are built in `routes.ts` from the tuning numbers (the renderer's own texts are only
+  the mockup's). `npx tsx test/routes.ts` checks every feature and condition and the away rule;
+  `python3 test/dmap.py` shoots the map (three paths with a map card, a condition, away, the boss floor).
+
+Maps (dropped as loot, 8% per drop):
 
 | Map | Effect |
 |---|---|
@@ -169,7 +193,6 @@ and shows what it does. `python3 test/dmap.py` shoots it at a few depths. Maps (
 | Cursed Floor | Your heals do `CURSED_HEAL` (half); every drop is one rarity better; violet fog |
 | Goblin Den | A loot goblin after every battle; each catch gives `GOBLIN_DEN_DROPS` items and +`GOBLIN_DEN_NOISE` Noise |
 
-With six possible paths, each node shows only its name; the description appears on hover.
 
 **Runs** (#52, 1.4; `src/systems/run.ts`). A run starts at the Dungeon Portal in the city, at floor 1 or any
 checkpoint you unlocked (the side panel's ◀ floor N ▶ by Enter the dungeon). Beating the boss of floor 5n unlocks
@@ -201,8 +224,8 @@ art. Over the scene: HP bars, mark tags, the cast's name with its bar, floating 
 light with the beam, the names flying up; the corner (where, Flow in yellow), the town portal plate, the buffs, the
 skill bar (portrait, HP tube, two skill wells and the ultimate's gilded well; cooldown sweeps, the answer pulse, the
 combo glow, "L3" on a skill still locked). Every action shows: slashes, claws, bolts, fire, frost, heal sparkles,
-Ward's and Taunt's rings. It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The town and
-the floor map are still the old drawing (V2 continues).
+Ward's and Taunt's rings. It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The floor map is
+drawn by the same renderer; the town is still the old drawing (V2 continues).
 
 **Away from the game** (`src/systems/autopilot.ts`, #52 1.2). When you *chose* to leave the game (Excel up,
 mid-switch, a minigame window open, or cables out because you ignored the dog), nobody casts the skills or the
@@ -263,7 +286,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 - **No auto-attack button.** It was always on, so the button was noise. Keys start at 1 / Q / A.
 - **Knight in front with the torch**, so the light leads the party and the front hero picks up loot.
 - **Floor choice on a map** instead of a list in the right panel: the choice reads as a route.
-- **The whole descent on parchment** (0.44, #48): the old node map showed only the next row, upward, so it
+- **The whole descent on parchment** (0.44, #48; replaced by the route choice in 0.55): the old node map showed only the next row, upward, so it
   never felt like going down and forgot where you had been. Rows of five ending in the boss match the
   checkpoint rhythm, and a serpentine fits four levels (20 floors) on the monitor. Map choices moved to cards
   under the map, so branches never collide with rooms. Rejected: one row per floor with scrolling (only six
@@ -303,7 +326,16 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   - Measured with `test/autopilot.ts` (lowest party HP, careful / skill spam): floor 5 Ogre 69% / 67%;
     floor 10 Warlock 52% / 62% with 1 to 3 wipes in 12; floor 15 Black Knight 60% / 55%, about 60 s.
     40 s on Excel wipes on all three. Shark at attack 32 wiped 3 to 4 in 10 (too punishing); at 24, 67 to 72%.
-- **Path cards hide descriptions until hover** (0.24, kept in 0.44): five map types make six paths possible.
+- **The route choice** (0.55, #52 1.5; Paweł approved the mockups on 2026-11-20): a path is a floor with at most one
+  feature and one condition, every condition pays, and the card shows only names and skulls, the full text in the
+  margin on hover (the descriptions stayed hidden until hover since 0.24; at 2 to 3 cards the names fit).
+  Away takes the **safest** path, not the riskiest: being away already costs the skills, a second punishment on the
+  map made leaving feel like a trap. The away time adds up across glances, or a glance every 4 s would stall the
+  party forever. A map card is never taken for you (it spends an item). A feature replaces a random curio instead
+  of adding one, so floors don't get longer. The map draws only the run so far (four floors), since runs start at
+  checkpoints. Rejected: the whole descent on parchment from 0.44 (#48: four levels in a serpentine; it read well
+  but the run is now the unit, and the cards needed the space); a full Slay the Spire branching map several floors
+  ahead (too much to read between alt-tabs); conditions that only cost (nobody would pick them).
 - **Marks reward order, not speed** (0.23): two skills that are fine alone are better in sequence, so the
   player has a reason to look at the fight between alt-tabs. Judged pays off only on skill hits: when it
   also healed off auto attacks, the party healed itself while you sat on Excel and the reckless autopilot
@@ -320,7 +352,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 ## Planned
 
 - **Away-from-PC dangers** (ideas, #24): Need/Greed rolls on rare+ drops (away = auto-pass, "xX_Ninja_Xx
-  won [Legendary]"), a 10 s floor vote on the node map (away = the riskiest floor), a ready check before
+  won [Legendary]"), a ready check before
   bosses, a Party Patience meter that vote-kicks you at 100.
 
 - Ultimates (slot 4) for later nights. Not scheduled.

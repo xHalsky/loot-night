@@ -87,7 +87,7 @@ function pathNote(st, c, x, y, w) {
   const head = c.boss ? 'FLOOR ' + st.floor + ' - BOSS' : c.map ? 'FLOOR ' + st.floor + ' - BY MAP' : 'FLOOR ' + st.floor;
   text(head, x, y, 'silkb', P.u1); y += 8;
   for (let i = x; i < x + w; i++) if (hash(i, 3, 17) > 0.15) inkP(i, y, 0.2); y += 4;
-  if (!c.feat && !c.cond && !c.map) { y = wrapInk('The stairs down. A plain floor: fights and the usual random curios.', x, y, w, P.u2); return y; }
+  if (!c.feat && !c.cond && !c.map) { y = wrapInk(c.boss ? (st.bossName ? 'The boss: ' + st.bossName + '. ' : 'The boss. ') + 'Beat it and new runs can start below it.' : 'The stairs down. A plain floor: fights and the usual random curios.', x, y, w, P.u2); return y; }
   if (c.map) {
     const M = MAPITEM[c.map]; inkIcon(ITEM.map, x - 1, y - 3);
     text(M.name, x + 14, y, 'tiny', P.u1); y += 10;

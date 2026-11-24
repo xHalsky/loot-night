@@ -81,6 +81,16 @@ export const T = {
   SOULS_PER_FLOOR_BASE: 3,        // each floor cleared gives 3 + floor Souls
   SOULS_PER_BOSS: 20,
   RUN_CARD_SEC: 2.5,              // the run end card over the battle area
+  // The route choice (#52, 1.5): path cards on the floor map
+  PATHS_EARLY: 2, PATHS_LATE: 3, PATHS_LATE_FROM: 6,   // cards for the next floor: 2 up to floor 5, 3 after (a map item adds one)
+  PATHS_MAX: 3,                   // what fits on the map; a map item's card takes a generated one's place
+  NODE_FEATURE_CHANCE: 0.5, NODE_CONDITION_CHANCE: 0.35,
+  MAP_AWAY_SEC: 5,                // the map off screen this long in all while the choice is open: the safest path is taken
+  COND_SILENT_DROPS: 0.2,         // Silent Halls: drops -20%; crits and skills make no Noise
+  COND_HAUNTED_NOISE: 1, COND_HAUNTED_ULT: 0.5,   // Haunted: every kill Noise +1; ultimates charge 50% faster
+  COND_FLOODED_CD: 0.2, COND_FLOODED_DROPS: 0.3,  // Flooded: cooldowns +20%; drops +30%
+  COND_DARK_ATK: 0.15, COND_DARK_GOLD: 0.5,       // Pitch Dark: enemies hit 15% harder; gold +50%
+  COND_SWARM_PACK: 0.5, COND_SWARM_SOULS: 0.5,    // Swarming: packs 50% bigger; Souls +50%
   // Real-time combat (#52, 1.2): every unit attacks on its own timer, attack interval = BASE_ATTACK_SEC x 10 / speed
   BASE_ATTACK_SEC: 1.2,           // speed 10: an attack every 1.2 s
   FLOW_SPEED: 0.25,               // at max Flow the party attacks this much faster, linear from Flow x1

@@ -561,9 +561,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #monUi .svc-name small { display: block; font-size: 9px; color: #a9957a; }
 #monUi .svc-empty { padding: 30px; text-align: center; color: #a9957a; }
 #monUi .svc-foot { padding: 4px 8px; font-size: 11px; color: #c9b08a; border-top: 2px solid #6a4a2a; }
-#monUi .nodemap { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #3a2c1c 0%, #20160e 80%); }
-#monUi .nm-svg { position: absolute; left: 0; top: 0; }
-#monUi .nm-foot { position: absolute; bottom: 6px; width: 100%; text-align: center; color: #8a7a5a; font-size: 10px; }
 /* the description shows on hover only, in a box above the row, so 6 paths fit side by side */
 .bottom-hint { flex: 1; text-align: center; font-size: 12px; color: #a9957a; padding: 8px; }
 .rp.town .furn { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; padding: 2px 0; }
@@ -924,43 +921,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
   background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(205,222,255,.95) 0%, rgba(175,200,255,.8) 62%, rgba(140,170,255,.32) 80%, rgba(120,150,255,0) 100%); filter: blur(7px); mix-blend-mode: screen; }
 .phone-wrap .phone3d { z-index: 1; }
 
-/* ---------- The dungeon map on parchment (#48): faded brown ink, pencil for what you have not seen ---------- */
-#monUi .nodemap.parchment { background: #120c08; }
-#monUi .parchment .nm-svg text { font-family: 'Pixelify Sans', monospace; }
-#monUi .parchment .nm-title-ink { font-size: 17px; fill: #5b4630; text-anchor: middle; letter-spacing: 3px; opacity: .8; }
-#monUi .parchment .nm-sub { position: absolute; top: 36px; width: 100%; text-align: center; font-size: 10px; color: #6a5236; opacity: .9; }
-#monUi .parchment .nm-lv { font-size: 13px; fill: #5b4630; text-anchor: middle; opacity: .55; }
-#monUi .parchment .nm-fn { font-size: 8px; fill: #5b4630; opacity: .75; }
-#monUi .parchment .nm-q { font-size: 13px; fill: #8a7658; opacity: .8; }
-#monUi .parchment .nm-note { font-size: 8px; fill: #5b4630; opacity: .65; }
-#monUi .parchment .nm-note.red { fill: #8a2e1c; opacity: .8; }
-#monUi .parchment .nm-you { font-size: 8px; fill: #8a2e1c; text-anchor: middle; letter-spacing: .5px; }
-#monUi .parchment .nm-room { fill: rgba(91,70,48,.10); stroke-width: 1.5; }
-#monUi .parchment .nm-room.next, #monUi .parchment .nm-room.later { fill: none; stroke-dasharray: 3 2.5; stroke-width: 1.2; }
-#monUi .parchment .nm-r { opacity: .82; }
-#monUi .parchment .nm-r.old { opacity: .5; }
-#monUi .parchment .nm-r.later { opacity: .55; }
-#monUi .parchment .nm-r.here { opacity: 1; }
-#monUi .parchment .nm-st { fill: none; stroke-width: 1.05; stroke: #5b4630; opacity: .7; stroke-linecap: round; }
-#monUi .parchment .nm-st.old { opacity: .38; }
-#monUi .parchment .nm-st.next { stroke: #8a7658; stroke-dasharray: 2 2; opacity: .85; }
-#monUi .parchment .nm-st.later { stroke: #8a7658; stroke-dasharray: 2 3; opacity: .45; }
-#monUi .parchment .nm-here { fill: none; stroke: #8a2e1c; stroke-width: 1.6; opacity: .75; stroke-dasharray: 9 2 4 2; }
-#monUi .parchment .nm-flag path { fill: none; stroke: #5b4630; stroke-width: 1.3; }
-#monUi .parchment .nm-x path { stroke: #8a2e1c; stroke-width: 2; stroke-linecap: round; }
-#monUi .parchment .ns { display: none; }
-#monUi .parchment .ns.def { display: inline; }
-#monUi .parchment:has(.nm-opt:hover) .ns.def { display: none; }
-#monUi .parchment:has(.nm-opt[data-i="0"]:hover) .ns-0, #monUi .parchment:has(.nm-opt[data-i="1"]:hover) .ns-1, #monUi .parchment:has(.nm-opt[data-i="2"]:hover) .ns-2,
-#monUi .parchment:has(.nm-opt[data-i="3"]:hover) .ns-3, #monUi .parchment:has(.nm-opt[data-i="4"]:hover) .ns-4, #monUi .parchment:has(.nm-opt[data-i="5"]:hover) .ns-5 { display: inline; }
-#monUi .parchment .nm-opts { position: absolute; left: 24px; right: 24px; bottom: 26px; display: flex; justify-content: center; gap: 6px; }
-#monUi .parchment .nm-opt { position: relative; display: flex; align-items: center; gap: 4px; padding: 3px 9px 3px 5px; background: rgba(240,226,190,.55); border: 1.5px solid rgba(91,70,48,.55); border-radius: 3px; color: #4a3826; font: 11px 'Pixelify Sans', monospace; cursor: pointer; }
-#monUi .parchment .nm-opt svg { filter: saturate(.75) brightness(.62); flex: none; }
-#monUi .parchment .nm-opt:hover { background: rgba(250,240,210,.85); border-color: #5b4630; box-shadow: 0 0 0 2px rgba(91,70,48,.25); }
-#monUi .parchment .nm-opt:first-child { border-color: #5b4630; }
-#monUi .parchment .nm-desc { display: none; position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); width: 170px; padding: 5px 7px; background: rgba(20,12,8,.95); border: 1px solid var(--nc); border-radius: 3px; font-style: normal; color: #e2d6c0; font-size: 10px; line-height: 1.2; text-align: center; z-index: 6; }
-#monUi .parchment .nm-opt:hover .nm-desc { display: block; }
-#monUi .parchment .nm-foot { bottom: 12px; color: #6a5236; opacity: .8; }
 #monUi .parchment .tbtn.tportal { left: auto !important; right: 20px !important; top: 14px !important; }
 
 /* =====================================================================================================
@@ -1012,7 +972,6 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 #monUi .buffs { right: 8px !important; top: 8px !important; }
 #monUi .curio { top: 12px !important; z-index: 4; }
 #monUi .svc-win { left: 134px !important; top: 60px !important; height: 340px !important; z-index: 4; }
-#monUi .nm-box { position: absolute; left: 26px; top: 56px; width: 616px; height: 352px; }
 #monUi .town-ov { position: absolute; width: 616px; height: 352px; pointer-events: none; }
 #monUi .town-ov > * { pointer-events: auto; }
 #monUi .town-ov .tname { pointer-events: none; }

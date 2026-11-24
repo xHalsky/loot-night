@@ -7,7 +7,7 @@ import { step } from '../src/core/loop';
 import { PACE } from '../src/systems/pacing';
 import { maxHp } from '../src/systems/stats';
 import { startNight } from '../src/systems/night';
-import { travelToDungeon, chooseNextFloor, returnToTown } from '../src/systems/dungeon';
+import { travelToDungeon, choosePath, returnToTown } from '../src/systems/dungeon';
 import { altTab } from '../src/systems/excel';
 import { openPhone, momReply, bossPick, answerSlide, setPhoneHold, textReply, talkPick } from '../src/systems/interrupts';
 import { petStroke, plugIn } from '../src/systems/pets';
@@ -135,7 +135,7 @@ while (S.g.screen === 'night' && t < 2000) {
       // bank the run when the party is hurt or the bag is nearly full (a careful player), else go on
       const hp = S.g.heroes.reduce((a, h) => a + h.hp / maxHp(h), 0) / S.g.heroes.length;
       if (mode === 'good' && (hp < 0.45 || S.g.bag.length >= S.g.bagSize - 2)) returnToTown();
-      else { const m = S.g.bag.find(e => e.kind === 'map'); chooseNextFloor(m ? m.id : null); }
+      else { const k = n.paths?.findIndex(c => c.map) ?? -1; choosePath(k >= 0 ? k : 0); }   // a map card if it has one, else the first path
     }
     if (n.dropPopup) {
       // the gear bot keeps its bag useful: a full bag swaps its least valuable item for a better new drop
@@ -161,7 +161,7 @@ while (S.g.screen === 'night' && t < 2000) {
     epicFound = n.unidentifiedFound;
     if (n.clock >= sleepAt && n.phase !== 'battle') { endNight('sleep'); break; }
   } else {
-    if (n.phase === 'mapChoice') chooseNextFloor(null);
+    if (n.phase === 'mapChoice') choosePath(N().safest);
     if (n.dropPopup) skipDrop();
   }
   const before = n.catches;

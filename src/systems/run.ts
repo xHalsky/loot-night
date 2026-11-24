@@ -10,11 +10,12 @@ const toast = toastAs('GAME');
 /** Gold the RPG pays: unbanked while a run is on, straight to your purse otherwise. */
 export function gainGold(amount: number) {
   const n = S.g.night;
+  if (n?.cond === 'dark' && n.location === 'dungeon') amount = Math.round(amount * (1 + T.COND_DARK_GOLD));   // Pitch Dark
   if (n?.run && n.location === 'dungeon') n.run.gold += amount; else S.g.gold += amount;
 }
 /** Souls the run earns go straight to the pool (one pool for the trees and the buildings); the run counts them. */
 export function gainSouls(amount: number) {
-  amount = Math.round(amount * blessPow('ritual', T.BLESS_RITUAL_SOULS));   // the chant
+  amount = Math.round(amount * blessPow('ritual', T.BLESS_RITUAL_SOULS) * (S.g.night?.cond === 'swarm' ? 1 + T.COND_SWARM_SOULS : 1));   // the chant; Swarming
   S.g.mats += amount;
   const n = S.g.night;
   if (n?.run) n.run.souls += amount;

@@ -8,6 +8,9 @@ type Hit = { x: number; y: number; w: number; h: number; act: string; arg: strin
 let started = false, ready = false, lastDraw = 0, shown = false;
 let hits: Hit[] = [];
 let msAvg = 0;
+let ptr: [number, number] | null = null, hovPath = -1, hovT = 0;
+/** The pointer over the battle area (grid px), for hovers the renderer draws (the floor map's paths). */
+export function livePointer(p: [number, number] | null) { ptr = p; }
 /** The renderer's cost per drawn frame (ms, smoothed), for the F1 overlay. */
 export function liveMs(): number { return shown ? msAvg : 0; }
 const FRAME_MS = 1000 / 30;
@@ -24,7 +27,9 @@ export function drawLiveRpg(cv: HTMLCanvasElement) {
   const now = performance.now();
   if (now - lastDraw < FRAME_MS - 1) return;
   lastDraw = now;
-  const r = PK.battleArea(buildBattleView(now), now / 1000);
+  const h = ptr ? liveHitAt(ptr[0], ptr[1]) : null, hp = h?.act === 'path' ? Number(h.arg) : -1;
+  if (hp !== hovPath) { hovPath = hp; hovT = now / 1000; }
+  const r = PK.battleArea(buildBattleView(now, hovPath, hovT), now / 1000);
   cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
   const ms = performance.now() - now; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms;
   hits = r.hits;

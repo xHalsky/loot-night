@@ -145,8 +145,10 @@ export function dropFromKill(e: Enemy) {
   const x = ENEMY_SLOTS[e.slot]?.x ?? 200;
   if (e.boss) rollBattleDrops(n.floor, { count: T.BOSS_DROPS, minRare: true, at: [x - 20, x, x + 20] });
   else if (e.elite) rollBattleDrops(n.floor, { count: 1, minRare: true, at: [x] });
-  else if (chance(T.DROP_CHANCE * blessPow('supply', T.BLESS_SUPPLY_DROPS))) rollBattleDrops(n.floor, { count: 1, at: [x] });
+  else if (chance(T.DROP_CHANCE * blessPow('supply', T.BLESS_SUPPLY_DROPS) * condDrops())) rollBattleDrops(n.floor, { count: 1, at: [x] });
 }
+/** The floor's condition on drops (#52, 1.5): Silent Halls fewer, Flooded more. */
+function condDrops(): number { const c = N().cond; return c === 'silent' ? 1 - T.COND_SILENT_DROPS : c === 'flooded' ? 1 + T.COND_FLOODED_DROPS : 1; }
 /** Once a fight is won: a map or a feather now and then. */
 export function rollBattleExtras() {
   const n = N(), out: BagEntry[] = [];

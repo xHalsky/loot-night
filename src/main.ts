@@ -14,7 +14,7 @@ import { HOTKEYS } from './data/heroes';
 import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip } from './systems/bag';
 import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } from './systems/loot';
-import { chooseNextFloor, returnToTown, travelToDungeon, catchGoblin, pickStartFloor } from './systems/dungeon';
+import { choosePath, returnToTown, travelToDungeon, catchGoblin, pickStartFloor, debugEndFloor } from './systems/dungeon';
 import { chooseCurio, endCurio } from './systems/curios';
 import { toast } from './core/fx';
 import { ACT_BY_ID } from './data/apartment';
@@ -30,7 +30,7 @@ import { setPeeking } from './systems/peek';
 import { drawDeskFx, drawLapFx, lapUiHtml, setDeskScale } from './ui/deskFx';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
 import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
-import { drawLiveRpg, liveHitAt, liveShown } from './render/liveRpg';
+import { drawLiveRpg, liveHitAt, liveShown, livePointer } from './render/liveRpg';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -134,7 +134,8 @@ const actions: Record<string, (arg: string) => void> = {
   useSel: () => useSelected(),
   heroTab: a => setHeroTab(Number(a)),
   skipDrop: () => skipDrop(),
-  nextFloor: a => chooseNextFloor(a || null),
+  nextFloor: () => choosePath(N().safest),   // the old map's button
+  path: a => choosePath(Number(a)),          // a path card on the floor map (#52, 1.5)
   curio: a => chooseCurio(a),
   pre: a => startPre(a as PreId),
   preMenu: () => { N().preMenu = null; },
@@ -182,7 +183,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgGold: () => { S.g.gold += 1000; S.g.mats += 30; },
   dbgMood: () => addMood(20),
   dbgClock: () => { N().clock += 60; },
-  dbgFloor: () => { const n = N(); if (n.location === 'dungeon') { n.phase = 'mapChoice'; n.enemies = []; } },
+  dbgFloor: () => debugEndFloor(),
   lapAns: a => lapAnswer(Number(a)),
   dbgDog: () => triggerDog(),
   dbgUnplug: () => triggerUnplug(),
@@ -314,10 +315,11 @@ el('rpgArea').addEventListener('pointerdown', ev => {
 });
 el('rpgArea').addEventListener('pointermove', ev => {
   const [x, y] = rpgXY(ev), h = liveHitAt(x, y), p = toStage(ev);
+  livePointer([x, y]);
   (el('rpgArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
   hover.key = h?.tip ? (h.tip.startsWith('skill:') ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
 });
-el('rpgArea').addEventListener('pointerleave', () => { hover.key = ''; });
+el('rpgArea').addEventListener('pointerleave', () => { hover.key = ''; livePointer(null); });
 
 el('doorCanvas').addEventListener('pointerdown', ev => {
   if (!S.g.night || S.g.paused) return;

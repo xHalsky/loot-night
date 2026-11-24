@@ -18,7 +18,7 @@ let LIVE_CANVAS = null;
 function pkBattleArea(vm, t) {
   if (!LIVE_CANVAS) { LIVE_CANVAS = document.createElement('canvas'); LIVE_CANVAS.width = BA_W; LIVE_CANVAS.height = GS_H; }
   if (vm.curio && vm.curio.card) for (const c of vm.curio.card.choices) { c.label = c.label.map(([s, k]) => [s, P[k]]); c.cost = c.cost.map(([s, k]) => [s, P[k]]); }
-  const hits = liveBattleArea(LIVE_CANVAS.getContext('2d'), vm, t);
+  const hits = vm.paths ? livePaths(LIVE_CANVAS.getContext('2d'), vm.paths, t) : liveBattleArea(LIVE_CANVAS.getContext('2d'), vm, t);
   return { canvas: LIVE_CANVAS, hits };
 }
 export const PK = {

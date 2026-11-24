@@ -12,7 +12,7 @@ import { T } from '../src/config/tuning';
 import { S, N, initialState } from '../src/core/state';
 import { step } from '../src/core/loop';
 import { startNight } from '../src/systems/night';
-import { travelToDungeon, chooseNextFloor, isBossBattle } from '../src/systems/dungeon';
+import { travelToDungeon, choosePath, isBossBattle } from '../src/systems/dungeon';
 import { queueAbility, moveOf } from '../src/systems/battle';
 import { maxHp, heroStats } from '../src/systems/stats';
 import { equipItemOn } from '../src/systems/bag';
@@ -74,7 +74,7 @@ function reach(boss: boolean, minFloor: number): string | null {
   for (let i = 0; i < 60 * 60 * 40; i++) {
     calm();
     const n = N();
-    if (n.phase === 'mapChoice') chooseNextFloor(null);
+    if (n.phase === 'mapChoice') choosePath(N().safest);
     if (n.phase === 'battle' && n.floor >= minFloor && isBossBattle() === boss && n.phaseT < 0.05) return JSON.stringify(S.g);
     if (n.phase === 'walk') gearUp();
     castReady();

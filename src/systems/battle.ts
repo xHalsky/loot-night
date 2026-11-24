@@ -60,7 +60,7 @@ export const bodies = (e: Enemy) => e.per ? Math.max(0, Math.ceil(e.hp / e.per -
 export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
   const n = N();
   const pool = ENEMIES.filter(d => (d.from ?? 1) <= floor);
-  const size = Math.min(T.PACK_MAX, T.PACK_MIN + Math.floor(floor / 2));
+  const size = Math.round(Math.min(T.PACK_MAX, T.PACK_MIN + Math.floor(floor / 2)) * (n.cond === 'swarm' ? 1 + T.COND_SWARM_PACK : 1));
   const defs: EnemyDef[] = boss ? [bossFor(floor, T.CHECKPOINT_EVERY)] : [];
   while (defs.length < size) defs.push(pick(pool));
   n.enemies = []; n.reserve = [];
@@ -140,8 +140,8 @@ function castAbility(h: Hero, slot: number) {
   const mult = heroDamageMult(h);
   h.queued = null;
   if (slot === ULT_SLOT) return castUlt(h, st, mult, me);
-  h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim');
-  n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);
+  h.cd[slot] = ABILITIES[h.id][slot].cd * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1);
+  if (n.cond !== 'silent') n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);   // Silent Halls: skills make no Noise
   sfx.ability();
   const A = ABILITIES[h.id][slot];
   if (h.id === 'knight' && slot === 1) {
@@ -232,7 +232,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   }
   const isCrit = chance((crit + partyCrit()) / 100);
   let dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - e.armor * 0.5));
-  if (isCrit) { dmg *= 2; if (!loudOnce || !critHeard) n.noise += T.NOISE_CRIT; critHeard = true; }
+  if (isCrit) { dmg *= 2; if ((!loudOnce || !critHeard) && n.cond !== 'silent') n.noise += T.NOISE_CRIT; critHeard = true; }
   if (e.shield) dmg = Math.max(1, Math.round(dmg * T.SHIELD_TAKEN));
   if (e.per) {   // a swarm: one body per single hit; Fire hits every body
     const left = bodies(e), cur = e.hp - (left - 1) * e.per;
@@ -321,6 +321,7 @@ function attackHero(e: Enemy, atk: number) {
   else target = alive[chance(0.7) || alive.length < 2 ? 0 : 1];
   const st = heroStats(target);
   let raw = atk;
+  if (n.cond === 'dark') raw *= 1 + T.COND_DARK_ATK;   // Pitch Dark
   const over = e.aliveSec - T.FURY_AFTER_SEC;
   if (over > 0) raw *= 1 + T.FURY_PER_SEC * over;
   if (n.ward > 0) raw *= ABILITIES.healer[2].power!;
@@ -470,7 +471,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   const flowK = 1 + T.FLOW_SPEED * clamp01((n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN));
   for (const h of S.g.heroes) {
     if (h.downed) continue;
-    h.ult = Math.min(1, h.ult + dt / T.ULT_CHARGE_SEC * blessPow('moonwell', T.BLESS_MOON_ULT));   // the ultimate charges only during fights
+    h.ult = Math.min(1, h.ult + dt / T.ULT_CHARGE_SEC * blessPow('moonwell', T.BLESS_MOON_ULT) * (n.cond === 'haunted' ? 1 + T.COND_HAUNTED_ULT : 1));   // the ultimate charges only during fights
     h.atb += atbRate(heroStats(h).speed) * dt * speedMult() * curioSpeedMult() * flowK;
     if (h.atb >= 100) { h.atb -= 100; heroAct(h); }
   }
@@ -490,6 +491,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
       const ot = overtimeGold();   // Spreadsheet Warrior: kills while Excel is up pay overtime
       if (ot) { gainGold(ot); const c = enemyCenter(e); floatText(c.x, enemyNumY(e) + 8, `+${ot}g overtime`, '#6fcf7f'); }
       dropFromKill(e);   // #52, 1.3: drops fall where the enemy died
+      if (n.cond === 'haunted') n.noise = Math.min(100, n.noise + T.COND_HAUNTED_NOISE);
       if (e.boss) {
         n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b');
         n.enemies.forEach(x => { if (x !== e && x.hp > 0) { x.hp = 0; x.maxHp = 0; } });   // without the boss the rest run

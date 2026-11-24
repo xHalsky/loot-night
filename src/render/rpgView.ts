@@ -2,8 +2,9 @@
 // (src/render/page/live.js). Rules never live here; this file only reads S.g / N() and lays things out on the grid.
 import { T } from '../config/tuning';
 import { S, N, type Enemy, type Hero, type HeroId } from '../core/state';
-import { ENEMY_BY_ID } from '../data/enemies';
+import { ENEMY_BY_ID, bossFor } from '../data/enemies';
 import { MAP_INFO, RARITY_COLOR } from '../data/items';
+import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
 import { ULT_SLOT, ABILITIES } from '../data/heroes';
 import { maxHp } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
@@ -16,7 +17,7 @@ import { BLESSINGS, type BlessingId } from '../data/blessings';
 /** The live battle area replaces the old one whenever the party is in the dungeon (not the floor map). */
 export function liveActive(): boolean {
   const n = S.g.night;
-  return !!n && S.g.screen === 'night' && n.location === 'dungeon' && n.phase !== 'mapChoice';
+  return !!n && S.g.screen === 'night' && n.location === 'dungeon';
 }
 
 const PAGE_ID: Record<HeroId, string> = { knight: 'knight', mage: 'mage', healer: 'priest' };
@@ -35,8 +36,25 @@ const colorIdx = (c: string) => /f2b84b|ffd/.test(c) ? 'gold' : /ff8a80|ff5a5a|e
 
 let flowStep = 0, flowGlowUntil = 0;
 
-export function buildBattleView(nowMs: number) {
+/** The floor map's view (#52, 1.5): the run so far, the path cards, the hovered one, the away hourglass. */
+function pathsView(hov: number, hovT: number) {
+  const n = N(), next = n.floor + 1, start = n.run?.startFloor ?? 1;
+  const hist: number[] = []; for (let f = Math.max(start, n.floor - 3); f <= n.floor; f++) hist.push(f);
+  const mapInfo: Record<string, { name: string; r: string; pays: string; cost: string }> = {};
+  const cards = (n.paths ?? []).map(c => {
+    if (c.map && c.mapKind) { mapInfo[c.mapKind] = { name: MAP_INFO[c.mapKind].name, r: 'rare', ...MAP_CARD[c.mapKind] }; return { map: c.mapKind }; }
+    return { ...(c.feat ? { feat: c.feat } : {}), ...(c.cond ? { cond: c.cond } : {}), ...(c.boss ? { boss: true } : {}) };
+  });
+  const portalOk = !n.run?.oath;
+  return { title: 'Shadow Crypt', sub: `Floor ${n.floor} cleared · ${next % T.CHECKPOINT_EVERY === 0 ? 'the boss waits below' : 'choose the way down'}`, floor: next, hist, cards, mapInfo,
+    safest: n.safest, away: n.mapAway, hov, hovT, flow: n.flow.toFixed(1), flowBar: (n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN),
+    bossName: next % T.CHECKPOINT_EVERY === 0 ? bossFor(next, T.CHECKPOINT_EVERY).name : '',
+    portalOk, portalLabel: portalOk ? '15 min' : 'oath', texts: { feat: FEATURE_TEXT, cond: CONDITION_TEXT } };
+}
+
+export function buildBattleView(nowMs: number, hov = -1, hovT = 0) {
   const g = S.g, n = N();
+  if (n.phase === 'mapChoice' && n.paths) return { paths: pathsView(hov, hovT) };
   // the party, front first (the knight leads; marching order comes with #52 1.6)
   const order = g.heroes.map((h, i) => ({ h, i }));
   const party = order.map(({ h }, rank) => {

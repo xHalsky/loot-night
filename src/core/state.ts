@@ -1,5 +1,6 @@
 import { T } from '../config/tuning';
 import { HERO_NAME } from '../data/heroes';
+import type { PathCard, FeatureId, ConditionId } from '../data/routes';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 export const RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
@@ -141,6 +142,8 @@ export interface Night {
   dropPopup: { entry: BagEntry; t: number } | null;
   reserve: { defId: string; elite: boolean }[];   // the pack waiting off screen (#52, 1.3)
   run: RunState | null;                           // the run since the town portal (#52, 1.4)
+  paths: PathCard[] | null; safest: number; mapAway: number;   // the route choice at a floor's end (#52, 1.5)
+  feature: FeatureId | null; cond: ConditionId | null; featureMet?: boolean;   // this floor's feature and condition; the feature's curio has stood
   runCard: (RunState & { banked: boolean; t: number }) | null;   // the run end card
   visit: VisitState;
   apt: Apartment;

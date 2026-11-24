@@ -7,11 +7,12 @@ import { gainGold, gainSouls, startRun, bankRun, loseRun, blessCount } from './r
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
-import { chance } from '../core/rng';
+import { chance, pick } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
 import { planCurios, curioDue, startCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
+import { FEATURES, CONDITIONS, type PathCard, type FeatureId, type ConditionId } from '../data/routes';
 import { triggerDog } from './pets';
 import { tip } from './tips';
 
@@ -24,8 +25,11 @@ export function enterDungeon(floor: number) {
   startFloor('plain');
 }
 
-function startFloor(map: MapKind | 'plain') {
+function startFloor(map: MapKind | 'plain', card?: PathCard) {
   const n = N();
+  n.feature = card?.feat ?? null; n.cond = card?.cond ?? null;
+  if (n.feature && FEATURES[n.feature].map) map = FEATURES[n.feature].map!;   // Elite Pack, Goblin Den
+  if (n.cond && CONDITIONS[n.cond].map) map = CONDITIONS[n.cond].map!;          // Cursed
   n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.phaseT = 0;
   n.curio = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
   n.deepest = Math.max(n.deepest, n.floor);
@@ -57,20 +61,53 @@ function floorEnd() {
   gainGold(pay); gainSouls(souls);
   toast(`Floor ${n.floor} cleared: +${pay} gold, +${souls} Souls.`, '#f2b84b');
   n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; tip('map');
+  makePaths();
 }
 
-export function chooseNextFloor(bagId: string | null) {
-  const n = N();
-  if (n.phase !== 'mapChoice') return;
-  let kind: MapKind | 'plain' = 'plain';
-  if (bagId) {
-    const e = removeEntry(bagId);
-    if (e && e.kind === 'map') kind = e.map;
+/** The route choice (#52, 1.5): 2 or 3 path cards for the next floor (one before a boss), each with at most one
+ *  feature and one condition; a map item in the bag adds its own card. The safest one is marked: away too long, it
+ *  is taken for you (never a map). */
+function makePaths() {
+  const n = N(), next = n.floor + 1, boss = next % T.CHECKPOINT_EVERY === 0;
+  const feats = Object.keys(FEATURES) as FeatureId[], conds = Object.keys(CONDITIONS) as ConditionId[];
+  const cards: PathCard[] = [];
+  if (boss) cards.push({ boss: true, ...(chance(T.NODE_CONDITION_CHANCE) ? { cond: pick(conds) } : {}) });
+  else {
+    // at most PATHS_MAX cards fit the map (grid doc §5b): a map item's card takes a generated one's place, but one
+    // generated path always stays
+    const maps = S.g.bag.filter(e => e.kind === 'map').slice(0, T.PATHS_MAX - 1);
+    const k = Math.max(1, Math.min(next >= T.PATHS_LATE_FROM ? T.PATHS_LATE : T.PATHS_EARLY, T.PATHS_MAX - maps.length));
+    for (let i = 0; i < k; i++) cards.push({ ...(chance(T.NODE_FEATURE_CHANCE) ? { feat: pick(feats) } : {}), ...(chance(T.NODE_CONDITION_CHANCE) ? { cond: pick(conds) } : {}) });
+    for (const e of maps) if (e.kind === 'map') cards.push({ map: e.id, mapKind: e.map });
   }
+  const danger = (c: PathCard) => (c.cond ? 10 + CONDITIONS[c.cond].danger : 0) + Math.random() * 0.5;
+  const pool = cards.map((c, i) => ({ c, i })).filter(q => !q.c.map);
+  n.paths = cards; n.mapAway = 0;
+  n.safest = pool.sort((a, b) => danger(a.c) - danger(b.c))[0]?.i ?? 0;
+}
+/** Debug (F1, End floor): the floor ends now, with its route choice. */
+export function debugEndFloor() { const n = N(); if (n.location === 'dungeon' && n.phase !== 'mapChoice') { n.enemies = []; n.reserve = []; floorEnd(); } }
+/** Off screen while the map waits: after MAP_AWAY_SEC in all the safest path is taken. */
+export function updateMapAway(dt: number) {
+  const n = N();
+  if (n.phase !== 'mapChoice' || !n.paths) return;
+  if (!isAway()) return;   // the same 'away' as the autopilot's: Excel, mid alt-tab, at the door, on the phone
+  n.mapAway += dt;
+  if (n.mapAway >= T.MAP_AWAY_SEC) { toast('[Party] Nobody picked a path. We took the safest way down.', '#a999bd'); choosePath(n.safest); }
+}
+
+/** Takes path card k down to the next floor (a map card uses up its map). */
+export function choosePath(k: number) {
+  const n = N();
+  if (n.phase !== 'mapChoice' || !n.paths?.[k]) return;
+  const card = n.paths[k];
+  let kind: MapKind | 'plain' = 'plain';
+  if (card.map) { const e = removeEntry(card.map); if (e && e.kind === 'map') kind = e.map; }
+  n.paths = null; n.mapAway = 0;
   n.floor++;
   sfx.click();
   if (kind !== 'plain') toast(`Next floor: ${MAP_INFO[kind].name}`, MAP_INFO[kind].color);
-  startFloor(kind);
+  startFloor(kind, card);
 }
 
 /** True while the player is inspecting an item or making a choice: the fight slows down. */
@@ -78,6 +115,7 @@ export function chooseNextFloor(bagId: string | null) {
 export function updateDungeon(realDt: number) {
   const n = N();
   if (n.location !== 'dungeon') return;
+  updateMapAway(realDt);
   const dt = realDt;   // an open item window does not slow the fight: gearing is part of the juggle (#49)
   if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); sfx.goblinLost(); } }
   // the Blood pact (#52, 1.5b): heroes bleed outside fights, never below 1 HP
