@@ -30,6 +30,7 @@ import { setPeeking } from './systems/peek';
 import { drawDeskFx, drawLapFx, lapUiHtml, setDeskScale } from './ui/deskFx';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
 import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
+import { drawLiveRpg, liveHitAt, liveShown } from './render/liveRpg';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug } from './systems/pets';
@@ -58,6 +59,7 @@ stage.innerHTML = `
       <div class="bezel"></div><div class="webcam" title="The webcam: the left panel is what it sees"><i></i></div>
       <div id="screen">
         <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
+        <canvas id="rpgArea" width="334" height="232"></canvas><div id="rpgBar" aria-hidden="true"></div>
         <div id="monUi"></div>
         <div id="ui"></div>
         <div id="winLayer"></div>
@@ -140,6 +142,7 @@ const actions: Record<string, (arg: string) => void> = {
   episode: a => episodeAnswer(a === '1'),
   curioLeave: () => { toast('The party walks past.', '#a999bd'); endCurio(); },
   toTown: () => returnToTown(),
+  goblin: () => catchGoblin(),   // the live battle area's goblin (V2)
   gate: () => travelToDungeon(),
   sleep: () => endNight('sleep'),
   identify: () => identify(), vendor: () => vendor(), salvage: () => salvage(), list: () => list(),
@@ -212,7 +215,7 @@ document.addEventListener('pointermove', ev => {
       ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
-  } else {
+  } else if ((ev.target as HTMLElement).id !== 'rpgArea') {   // the live battle area sets its own hover (V2)
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
   }
@@ -299,6 +302,22 @@ function applyPhoneDrag() {
 // The webcam view: hold the door to peek; click the plan on the wall to open it (#35).
 let planOpen = false;
 const camXY = (ev: PointerEvent) => { const r = el('doorCanvas').getBoundingClientRect(); return [(ev.clientX - r.left) / stageScale, (ev.clientY - r.top) / stageScale] as const; };
+// The live battle area (V2): its hit regions are in grid px; the tooltip keys are the old ones ('skill:h:s', 'text:...').
+const rpgXY = (ev: PointerEvent) => { const r = el('rpgArea').getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 334, ((ev.clientY - r.top) / r.height) * 232] as const; };
+el('rpgArea').addEventListener('pointerdown', ev => {
+  if (ev.button !== 0 || !S.g.night || S.g.paused) return;
+  const [x, y] = rpgXY(ev), h = liveHitAt(x, y);
+  if (!h || !h.act) return;
+  ev.preventDefault(); ev.stopPropagation(); hover.key = '';
+  actions[h.act]?.(h.arg);
+});
+el('rpgArea').addEventListener('pointermove', ev => {
+  const [x, y] = rpgXY(ev), h = liveHitAt(x, y), p = toStage(ev);
+  (el('rpgArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
+  hover.key = h?.tip ? (h.tip.startsWith('skill:') ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
+});
+el('rpgArea').addEventListener('pointerleave', () => { hover.key = ''; });
+
 el('doorCanvas').addEventListener('pointerdown', ev => {
   if (!S.g.night || S.g.paused) return;
   const hit = doorHit(...camXY(ev));
@@ -464,7 +483,8 @@ function render() {
   const g = S.g;
   const n = g.night;
   drawDoor(doorCtx);
-  drawMonitor(monCtx);
+  drawLiveRpg(el('rpgArea') as HTMLCanvasElement);   // V2 (#67): the battle area in the new look
+  drawMonitor(monCtx, liveShown());
   if (n) {
     setHtml('doorInfo', doorInfoHtml());
     setHtml('herHead', herHeadHtml());
@@ -473,7 +493,7 @@ function render() {
     setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
     setHtml('youCard', youHtml());
     setHtml('feedCard', feedHtml());
-    setHtml('monUi', monUiHtml());
+    setHtml('monUi', liveShown() ? '' : monUiHtml());
     setHtml('winLayer', windowHtml());
     setHtml('ui', uiPanelHtml());
     setHtml('toasts', toastsHtml());

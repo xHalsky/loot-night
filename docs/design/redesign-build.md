@@ -11,6 +11,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
 - **#52 1.1 and 1.2, 0.51.0:** real life off, pacing numbers, real-time combat, three slots with the ultimate,
   no autopilot penalties, Flow speed, compounding numbers (dungeon.md). The old skill bar shows the third well as the
   ultimate's charge until V2 draws it.
+- **V2, the battle area, 0.52.0:** the dungeon (walk, battle, curio, loot) is drawn by the renderer from the game
+  (dungeon.md). The old canvas and its DOM overlays stand down there; the town and the floor map are still old.
 
 ## Approach
 
@@ -29,8 +31,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | Step | What | Status |
 |---|---|---|
 | 1 | #52 1.1 and 1.2: real life off (F1), pacing numbers; real-time attack timers; two skills and the ultimate (3, E, D), ultimate charge, no autopilot skill use, Flow speed, exponential numbers | 0.51.0 |
-| 2 | V2: the battle area drawn by the renderer from game state (walk, battle, curio, loot, corner, buffs, skill bar), clicks through hit regions | next |
-| 3 | #52 1.3 and 1.4: floors with packs of six in two lanes, pickup during the walk; runs, checkpoints, wipes, unbanked loot, Souls | |
+| 2 | V2: the battle area drawn by the renderer from game state (walk, battle, curio, loot, corner, buffs, skill bar), clicks through hit regions | 0.52.0 |
+| 3 | #52 1.3 and 1.4: floors with packs of six in two lanes, pickup during the walk; runs, checkpoints, wipes, unbanked loot, Souls | next |
 | 4 | V2: the side panel (party, gear, stats, bag, footer) | |
 | 5 | #52 1.5 and 1.5b with the floor map (§5b): path cards, features, conditions, the away hourglass; run blessings (§5c) | |
 | 6 | #52 1.6 and 1.7: marching order, auras, swaps, the Hook (§5d); Garrote | |

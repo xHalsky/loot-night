@@ -158,15 +158,21 @@ plus any floor loot left on the corpse at that floor. Reaching that floor return
 
 **Loot goblin.** `GOBLIN_CHANCE` after a battle; runs for 6 s; click it for 3 drops, one rare or better.
 
-**The cave diorama** (`src/ui/dungeon.ts`). Drawn 1:1, as wide as the battle area (668 px) and 352 px tall at its
-bottom; above it a dark band (the cave's ceiling going up) where the curio windows open (#49). 2.5D side view lit like a cave: dark except the knight's
-flickering torch, which travels with the party, a dim glow around enemies, and light from loot beams
-and spells. Layers: far rock (slow parallax), stone arches, stalactites and roots, a perspective floor,
-units with ground shadows, fog swallowing the far end, and dark foreground silhouettes (pillars,
-chains, roots) sliding past faster, rim-lit by the torch.
-
-**Camera that acts.** Dollies with a sway while walking, pushes in when a fight starts, springs back on
-heavy hits (crits, Bash, Smite, Fire), shakes on crits, slowly zooms onto a legendary drop for about 3 s.
+**The Shadow Crypt, in the redesign's look** (V2, #67; grid doc §3 to §5). The battle area is drawn by the
+redesign's renderer (`src/render/page/live.js` from the view model in `src/render/rpgView.ts`) on the 334 × 232
+grid: a 64 px band where the curio card opens, the 142 px picture, the 26 px skill bar. The dark baroque ossuary in
+Moonwell 32, Bayer-dithered: far catacomb, the ossuary arcade, a perspective floor, ground mist, a foreground pillar
+pinned to the left edge in battle, warm candles against cold moonlight. The party walks in rank, front on the right
+(knight x 126, then 35 px apart); actors get the separation pass (fill light, rim, outline, halo). Enemies stand in
+the front lane (x 186, 226, 266), a boss behind them on the party's lane. The page's rigs stand in for the skeleton,
+the guardian (skeleton with helm and shield), the orc (zombie with a sword) and the shaman (necromancer); bats, imps,
+the bosses, curios and the goblin are the prototype's pixel sprites, lit and dithered like the rigs, until Paweł's
+art. Over the scene: HP bars, mark tags, the cast's name with its bar, floating numbers, loot lying in its rarity
+light with the beam, the names flying up; the corner (where, Flow in yellow), the town portal plate, the buffs, the
+skill bar (portrait, HP tube, two skill wells and the ultimate's gilded well; cooldown sweeps, the answer pulse, the
+combo glow, "L3" on a skill still locked). Every action shows: slashes, claws, bolts, fire, frost, heal sparkles,
+Ward's and Taunt's rings. It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The town and
+the floor map are still the old drawing (V2 continues).
 
 **Away from the game** (`src/systems/autopilot.ts`, #52 1.2). When you *chose* to leave the game (Excel up,
 mid-switch, a minigame window open, or cables out because you ignored the dog), nobody casts the skills or the

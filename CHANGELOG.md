@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.52.0 (2026-11-24)
+
+- **The dungeon in the redesign's look** (V2, #67, the battle area). The walk, the fights, the curios and the loot are
+  now drawn by the redesign's renderer from the game itself: the Shadow Crypt in Moonwell 32, the party of rigs
+  walking in rank, the enemies in the front lane with the boss behind, HP bars, mark tags, a boss's cast as its name
+  over a bar, floating numbers, loot in its rarity light with the beam, the corner with Flow in yellow, the town
+  portal plate, the buffs, the curio's parchment card, and the skill bar with its two wells and the ultimate's gilded
+  well (charge countdown, answer pulse, combo glow). Clicks and hovers go through the renderer's hit regions, so
+  skills, the portal, the curio choices, hero portraits and the goblin work as before; tooltips too.
+- Enemies without a rig on the page (bats, imps, the bosses), the curios and the goblin are the prototype's pixel
+  sprites, lit and dithered like the rest, until Paweł's art. The town and the floor map are still the old drawing.
+- The renderer redraws the battle area at 30 fps, about 22 ms a frame in headless Chrome (F1 shows it).
+- Coach mark "Big attack incoming" points at the new skill bar. Sims unchanged (drawing only).
+
 ## 0.51.0 (2026-11-24)
 
 The RPG on its own, part 1 (#52, steps 1.1 and 1.2).

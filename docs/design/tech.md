@@ -18,7 +18,9 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
   `vite.config.ts` concatenates them in the order of `page/ORDER` with `facade.js` at the end into one module,
   `virtual:pagekit`. The game reaches it only through `PK` (types in `pagekit.d.ts`). It draws into palette-index
   buffers on the CPU (Moonwell 32, Graphite, PC-98; Bayer 8 × 8 dither; UI palette-exact) and hands back canvases
-  at grid size. `grid.ts` holds the 640 × 360 grid and its whole-number scale.
+  at grid size. `grid.ts` holds the 640 × 360 grid and its whole-number scale. `rpgView.ts` reads the game into a view
+  model (no rules), `liveRpg.ts` draws it into `#rpgArea` at 30 fps and turns clicks and hovers into the game's
+  actions through the hit regions the renderer returns (grid px).
 
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.

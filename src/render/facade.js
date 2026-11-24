@@ -13,7 +13,17 @@ function pkInit() {
   })();
   return PK_READY;
 }
+let LIVE_CANVAS = null;
+/** The battle area from the game's view model (V2): a 334 x 232 canvas and the hit regions (grid px). */
+function pkBattleArea(vm, t) {
+  if (!LIVE_CANVAS) { LIVE_CANVAS = document.createElement('canvas'); LIVE_CANVAS.width = BA_W; LIVE_CANVAS.height = GS_H; }
+  if (vm.curio && vm.curio.card) for (const c of vm.curio.card.choices) { c.label = c.label.map(([s, k]) => [s, P[k]]); c.cost = c.cost.map(([s, k]) => [s, P[k]]); }
+  const hits = liveBattleArea(LIVE_CANVAS.getContext('2d'), vm, t);
+  return { canvas: LIVE_CANVAS, hits };
+}
 export const PK = {
+  ready: () => !!PK_READY && TC !== null,
+  battleArea: pkBattleArea,
   init: pkInit,
   /** The whole 640 x 360 frame as the mockup draws it (V1's check against still 00-default). */
   drawFrame: (scene, tScreen, t, moment, her, o) => drawFrame(scene, tScreen, t, moment, her, o || {}),

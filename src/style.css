@@ -976,6 +976,8 @@ kbd { border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-famil
 .bezel { left: 8px !important; top: 6px !important; width: 968px !important; height: 518px !important; border: 0 !important; border-radius: 12px; background: #0a0910 !important; box-shadow: 0 0 0 2px #000, 0 14px 30px rgba(0,0,0,.55); }
 .webcam { left: 476px !important; top: 0 !important; }
 #screen { position: absolute; left: 18px; top: 16px; width: 948px; height: 464px; overflow: hidden; z-index: 4; background: #120c08; }
+#rpgArea { position: absolute; left: 0; top: 0; width: 668px; height: 464px; z-index: 4; image-rendering: pixelated; display: none; }   /* V2: over #monitor (same z, later in the DOM), under #monUi */
+#rpgBar { position: absolute; left: 0; top: 412px; width: 668px; height: 52px; pointer-events: none; }   /* where the skill bar is: coach marks point at it */
 #monitor { left: 0 !important; top: 0 !important; width: 948px !important; height: 464px !important; }
 #monUi { left: 0 !important; top: 0 !important; width: 668px !important; height: 464px !important; }
 #winLayer { left: 0 !important; top: 0 !important; width: 948px !important; height: 464px !important; z-index: 7 !important; }

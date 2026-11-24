@@ -6,6 +6,7 @@ import { soundCues, soundStatus } from './audio';
 import { isCall, S, N, SLOTS, type BagEntry, type Stat, type Item, type Hero, type PhoneGame, type MonsterGame } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, HERO_ROLE } from '../data/heroes';
 import { pacingLine } from '../systems/pacing';
+import { liveMs } from '../render/liveRpg';
 import { markText } from '../data/marks';
 import { specialText, hasLife } from '../systems/affixes';
 import { END_HINT, COACH } from '../data/tips';
@@ -462,6 +463,10 @@ export function tooltipHtml(): string {
   if (!n || !hover.key) return '';
   const parts = hover.key.split(':');
   let body = '';
+  if (parts[0] === 'text') {   // a plain line from the live battle area (V2)
+    const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 40, 720 - 60));
+    return `<div class="tooltip" style="left:${left}px;top:${top}px"><div>${esc(hover.key.slice(5))}</div></div>`;
+  }
   if (parts[0] === 'town') {   // a building in the city (#50): what it is, what it does, the cost
     const id = parts[1] as TownSpotId, spot = TOWN_SPOTS.find(s => s.id === id)!;
     let line = '', cost = '';
@@ -804,7 +809,7 @@ export function debugHtml(): string {
   const n = g.night;
   return `<div class="debug">
     <div><b>DEBUG</b> · speed x${g.timeScale} · ${btn('dbgLife', g.realLifeOff ? 'Real life: OFF' : 'Real life: on', '', 'sm')}</div>
-    ${n ? `<div class="dim">${pacingLine()}</div>` : ''}
+    ${n ? `<div class="dim">${pacingLine()}${liveMs() ? ` · render ${liveMs().toFixed(1)} ms` : ''}</div>` : ''}
     ${n ? (() => { const c = cityOutlook(); return `<div class="dim">income tonight ${S.g.gold - n.goldStart >= 0 ? '+' : ''}${S.g.gold - n.goldStart} g · bag ${c.bagGold} g / ${c.bagScraps} scraps · next ${c.next ? `${c.next.name} ${c.next.gold} g + ${c.next.mats}` : 'none'} ${c.now ? '(now)' : c.withBag ? '(with the bag)' : '(short)'}</div>`; })() : ''}
     ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · next int ${(n.nextInterruptAt - n.threat).toFixed(1)}s · phase ${n.phase}</div>` : ''}
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>

@@ -35,5 +35,5 @@ export const COACH: Record<CoachId, { title: string; text: string; anchor: strin
   phone: { title: 'Your phone', text: 'Someone wants you. Click the phone to answer.', anchor: '.phone3d', side: 'above' },
   loot: { title: 'Loot!', text: 'A green \u25b2 means it is an upgrade. Right-click it to equip it, or drag it onto a hero.', anchor: '#ui .sp-bag', side: 'left' },
   headset: { title: 'Your headset', text: 'Click your head (or press H) to put it on. In the Zone you loot more, but you cannot hear her.', anchor: '#headHit', side: 'right' },
-  windup: { title: 'Big attack incoming', text: 'The boss winds up. Hit a skill now: Bash, Ward or Taunt.', anchor: '.ie-bar', side: 'above' },
+  windup: { title: 'Big attack incoming', text: 'The boss winds up. Hit a skill now: Bash, Ward or Taunt.', anchor: '#rpgBar', side: 'above' },
 };

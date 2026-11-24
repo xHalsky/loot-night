@@ -37,7 +37,7 @@ export function bar(c: CanvasRenderingContext2D, x: number, y: number, w: number
 export const GOBLIN: Px[] = [[3, 0, 6, 4, '#4caf50'], [4, 1, 1, 1, '#ffeb3b'], [7, 1, 1, 1, '#ffeb3b'], [2, 4, 8, 6, '#795548'], [9, 3, 3, 5, '#f2b84b'], [3, 10, 2, 3, '#4caf50'], [7, 10, 2, 3, '#4caf50']];
 export const goblinPos = () => { const n = N(); if (!n.goblin) return null; return { x: 600 - (1 - n.goblin.t / T.GOBLIN_SEC) * 640, y: 262 }; };
 
-export function drawMonitor(c: CanvasRenderingContext2D) {
+export function drawMonitor(c: CanvasRenderingContext2D, live = false) {
   const n = S.g.night;
   c.imageSmoothingEnabled = false;
   if (n?.switching) { drawSwitching(c, n.switching); return; }   // before clearing: it grabs the last frame
@@ -52,6 +52,7 @@ export function drawMonitor(c: CanvasRenderingContext2D) {
   }
   if (n.monitor === 'excel') { drawExcel(c); return; }
   if (n.location === 'town') { drawTownScreen(c); return; }
+  if (live) { sidePanelBack(c); return; }   // V2: the battle area is drawn by the renderer (render/liveRpg.ts)
   drawDungeon(c);
 }
 

@@ -281,7 +281,8 @@ const tick = (k, t0) => { PROF[k] = (PROF[k] || 0) * 0.9 + (performance.now() - 
 const PARTY = [{ id: 'priest', x: 21, ph: 0.0, hp: 0.55 }, { id: 'mage', x: 56, ph: 1.3, hp: 0.3 }, { id: 'rogue', x: 87, ph: 3.4, hp: 0.62 }, { id: 'knight', x: 126, ph: 2.6, hp: 0.68 }];
 const PARTY_DRAW = { priest: (...a) => priest(...a), mage: (...a) => mage(...a), rogue: (...a) => rogue(...a), knight: (...a) => knight(...a) };
 function drawDungeon(F, t, o = {}) {
-  const p = o.battle ? 9 : t - Math.floor(t / LOOP) * LOOP, cam = o.battle ? o.cam : camAt(t), walking = !o.battle && speedAt(p) > 0.15;
+  // o.live (the game, V2): the camera and the walk come from the game state instead of the page's script
+  const p = o.battle || o.live ? 9 : t - Math.floor(t / LOOP) * LOOP, cam = o.live ? o.live.cam : o.battle ? o.cam : camAt(t), walking = o.live ? o.live.walking : !o.battle && speedAt(p) > 0.15;
   let T0 = performance.now();
   bind(F); MAT = M_STONE; EMI = 0; TAG = 0; DXV = 0;
   const offFar = Math.round(cam * 0.3) + 60, offMid = Math.round(cam * 0.7), offFore = o.foreOff ?? (Math.round(cam * 1.45) - 40);
@@ -309,7 +310,7 @@ function drawDungeon(F, t, o = {}) {
   DXV = 0;
   // carts (one per loop, parked ahead)
   const k0 = Math.floor(cam / LOOP_D);
-  for (let k = k0 - 1; k <= k0 + 1 && !o.battle; k++) {
+  for (let k = k0 - 1; k <= k0 + 1 && !o.battle && !o.live; k++) {
     const wx = k * LOOP_D + distAt(6.5) + 108 / CART_S, sx = Math.round(CX + (wx - cam) * CART_S);
     if (sx < -60 || sx > W + 60) continue;
     mulEllipse(sx, CART_Y, 28, 3.5, 0.25);
@@ -326,14 +327,14 @@ function drawDungeon(F, t, o = {}) {
     TAG = n + 1;
     // out of battle Garrote carries his daggers reverse-gripped; walking, he runs his own gait (phase quantized to 8 frames)
     const wp = walking ? Math.floor((((t / ROGUE_WALK.T) + m.ph * 0.2) % 1) * ROGUE_WALK.frames) / ROGUE_WALK.frames : null;
-    PARTY_DRAW[m.id](m.x, CHAR_Y, s, b, t, !o.battle, wp);
+    PARTY_DRAW[m.id](m.x + (m.lunge || 0), CHAR_Y, s, b, t, !o.battle, wp);
     TAG = 0; MAT = M_STONE;
   });
   lights.push({ x: CX, y: 292, r: 190, i: 0.42, c: COLD, sy: 1.6 });
-  lights.push({ x: FX.book[0], y: FX.book[1], r: 150, i: 0.9 + 0.1 * Math.sin(t * 5), c: [1.0, 0.85, 1.45] });
-  lights.push({ x: FX.sun[0], y: FX.sun[1], r: 70, i: 0.5, c: WARM });
-  lights.push({ x: FX.censer[0], y: FX.censer[1], r: 34, i: 0.55, c: WARM });
-  lights.push({ x: FX.eyes[0], y: FX.eyes[1], r: 9, i: 0.5, c: [1.4, 0.75, 0.45] });
+  if (FX.book && PARTY.some((m) => m.id === { book: 'mage', sun: 'knight', censer: 'priest', eyes: 'rogue' }['book'])) lights.push({ x: FX.book[0], y: FX.book[1], r: 150, i: 0.9 + 0.1 * Math.sin(t * 5), c: [1.0, 0.85, 1.45] });
+  if (FX.sun && PARTY.some((m) => m.id === { book: 'mage', sun: 'knight', censer: 'priest', eyes: 'rogue' }['sun'])) lights.push({ x: FX.sun[0], y: FX.sun[1], r: 70, i: 0.5, c: WARM });
+  if (FX.censer && PARTY.some((m) => m.id === { book: 'mage', sun: 'knight', censer: 'priest', eyes: 'rogue' }['censer'])) lights.push({ x: FX.censer[0], y: FX.censer[1], r: 34, i: 0.55, c: WARM });
+  if (FX.eyes && PARTY.some((m) => m.id === { book: 'mage', sun: 'knight', censer: 'priest', eyes: 'rogue' }['eyes'])) lights.push({ x: FX.eyes[0], y: FX.eyes[1], r: 9, i: 0.5, c: [1.4, 0.75, 0.45] });
   T0 = tick('party', T0);
   if (o.enemies) o.enemies(F, t, lights);
   partyFX(F, t);
