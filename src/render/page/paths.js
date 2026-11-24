@@ -177,7 +177,7 @@ function screenPaths(ctx, t) {
   // HUD over the map: Flow (yellow bar, ink label) and the town portal
   const fw = text('Flow x1.4', 20, 20, 'tiny', P.u1);
   flowBar(20 + fw + 4, 21, 30, 4, 0.42, false);
-  button(W - 72, 15, 54, 19, [['Town portal', 'tiny', P.moon], ['15 min', 'tiny', P.d6]], { mat: M_MAGIC });
+  portalPlate(W - 18, 15, '15 min', true, { right: true });
   // the cards
   const awayF = awaySec / MAP_AWAY_SEC;
   st.cards.forEach((c, k) => pathCard2(MAP_CARD_X[n][k], CARD_Y, c, st, k === hov, k === st.safest, awayF));

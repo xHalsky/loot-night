@@ -46,9 +46,23 @@ function power(x, y, v, idx, align) {
   text(s, x0 + 6, y, 'tiny', idx, { shadow: P.void });
   return w;
 }
+// The Town portal plate: as wide as what it says ("bank 12 · 1240 g"), two lines with air between them. x is its
+// left edge, or its right edge with o.right. Returns [x, w] for the hit region.
+const PORTAL_H = 21;
+// Palette-exact bands (no dither under the text, grid doc 2): the name on arcane, what it banks on deep dusk.
+function portalPlate(x, y, label, on, o = {}) {
+  const w = Math.max(56, Math.max(measure('Town portal', 'tiny'), measure(label, 'tiny')) + 14), X = o.right ? x - w : x, cx = X + (w >> 1);
+  shadowU(X, y, w, PORTAL_H, { k: 0.55, r: 3, dx: 1, dy: 2 });
+  rectI(X, y, w, PORTAL_H, P.void);
+  rectI(X + 1, y + 1, w - 2, 10, on ? P.arcane : P.u2); rectI(X + 1, y + 1, w - 2, 1, on ? P.d5 : P.u3);
+  rectI(X + 1, y + 11, w - 2, PORTAL_H - 12, on ? P.d2 : P.u1);
+  text('Town portal', cx, y + 3, 'tiny', on ? P.moon : P.u4, { align: 'c', shadow: on ? P.void : undefined });
+  text(label, cx, y + 13, 'tiny', on ? P.d6 : P.u4, { align: 'c' });
+  return [X, w];
+}
 function portalButton(st) {
   const on = !st.inBattle;
-  button(4, 28, 54, 19, [['Town portal', 'tiny', P.moon], [on ? (st.label || '15 min') : 'after battle', 'tiny', on ? P.d6 : P.u4]], on ? { mat: M_MAGIC } : { off: true });   // st.label: what it banks (the game, #52 1.4)
+  return portalPlate(4, 28, on ? (st.label || '15 min') : 'after battle', on);   // st.label: what it banks (the game, #52 1.4)
 }
 function buffs(list, t) {
   smokeU(W, 0, 30 + list.length * 16, 34, 0.6);

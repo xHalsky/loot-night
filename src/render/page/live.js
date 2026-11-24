@@ -155,8 +155,8 @@ function liveBattleArea(ctx, vm, t) {
   if (vm.goblin) liveHit(vm.goblin.x - 16, CHAR_Y - 40, 32, 44, 'goblin', '', 'Catch the loot goblin!');
   // the corner, the portal, the buffs
   cornerOverlay(vm.corner, t);
-  portalButton({ inBattle: !vm.portalOk, label: vm.bank });
-  if (vm.portalOk) liveHit(4, 28, 54, 19, 'toTown', '', vm.bank === '15 min' ? 'Back to the city, 15 min' : `Back to the city, 15 min: banks this run (${vm.bank.slice(5)})`);
+  const [px, pw] = portalButton({ inBattle: !vm.portalOk, label: vm.bank });
+  if (vm.portalOk) liveHit(px, 28, pw, PORTAL_H, 'toTown', '', vm.bank === '15 min' ? 'Back to the city, 15 min' : `Back to the city, 15 min: banks this run (${vm.bank.slice(5)})`);
   buffs(vm.buffs, t);
   vm.buffs.forEach((b, k) => liveHit(W - 4 - 13 - k * 16, 3, 13, 13, '', '', b.tip));
   // the curio card in the band
@@ -235,8 +235,8 @@ function livePaths(ctx, st, t) {
   else { text('FLOOR ' + st.floor, nx, ny, 'silkb', P.u1); wrapInk('Hover a path to read it.', nx, ny + 12, 114, P.u2); }
   const fw = text('Flow x' + st.flow, 20, 20, 'tiny', P.u1);
   flowBar(20 + fw + 4, 21, 30, 4, st.flowBar, false);
-  button(W - 72, 15, 54, 19, [['Town portal', 'tiny', P.moon], [st.portalLabel, 'tiny', st.portalOk ? P.d6 : P.u4]], st.portalOk ? { mat: M_MAGIC } : { off: true });
-  if (st.portalOk) liveHit(W - 72, 15, 54, 19, 'toTown', '', 'Back to the city, 15 min: banks this run');
+  const [px, pw] = portalPlate(W - 18, 15, st.portalLabel, st.portalOk, { right: true });
+  if (st.portalOk) liveHit(px, 15, pw, PORTAL_H, 'toTown', '', st.portalLabel === '15 min' ? 'Back to the city, 15 min' : `Back to the city, 15 min: banks this run (${st.portalLabel.slice(5)})`);
   const awayF = st.away / MAP_AWAY_SEC;
   st.cards.slice(0, n).forEach((c, k) => { pathCard2(MAP_CARD_X[n][k], CARD_Y, c, st, k === hov, k === st.safest, awayF); liveHit(MAP_CARD_X[n][k], CARD_Y - 2, CARD_W, CARD_H + 2, 'path', k, ''); });
   const left = Math.max(0, Math.ceil(MAP_AWAY_SEC - st.away));

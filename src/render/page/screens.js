@@ -426,7 +426,7 @@ function screenMap(ctx, t) {
   // Flow + portal (HUD over the map)
   const fw = text('Flow x1.4', 20, 20, 'tiny', P.u1);
   groove(20 + fw + 4, 21, 30, 4, 0.42, M_STONE, [0.84, 0.66]);
-  button(W - 72, 15, 54, 19, [['Town portal', 'tiny', P.moon], ['15 min', 'tiny', P.d6]], { mat: M_MAGIC });
+  portalPlate(W - 18, 15, '15 min', true, { right: true });
   cards.forEach((cc, k) => pathCard(18 + k * 101, 164, cc, k === hov));
   const fl = 0.96 + 0.04 * Math.sin(t * 7) * Math.sin(t * 2.3);
   composeInto(ctx, F, { lights: [{ x: -30, y: -40, r: 820, i: 0.66 * fl, c: [1.1, 1.0, 0.86] }, { x: 380, y: 300, r: 330, i: 0.2, c: [0.72, 0.85, 1.3] }], ambient: [0.5, 0.49, 0.55], tint: 0.1, vig: 0 }, 0);

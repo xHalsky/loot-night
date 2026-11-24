@@ -116,6 +116,8 @@ function townPanelView() {
   return { tab: 'town', builds, floor: f, canDown: cps[0] !== f, canUp: cps[cps.length - 1] !== f, ...bagView(), ...foot() };
 }
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+/** The Town portal plate's second line: what it banks, or the trip's time when the run holds nothing yet. */
+const bankLabel = (u = unbanked()) => (u.items || u.gold ? `bank ${u.items} · ${u.gold} g` : '15 min');
 const SVC: Record<ServiceSpot, { name: string; mark: string; line: string }> = {
   forge: { name: 'SALVAGE FORGE', mark: 'anvil', line: 'Melt gear into Souls.' },
   merchant: { name: 'MERCHANT', mark: 'scales', line: 'Buys loot for gold.' },
@@ -201,7 +203,7 @@ function pathsView(hov: number, hovT: number) {
   return { title: 'Shadow Crypt', sub: `Floor ${n.floor} cleared · ${next % T.CHECKPOINT_EVERY === 0 ? 'the boss waits below' : 'choose the way down'}`, floor: next, hist, cards, mapInfo,
     safest: n.safest, away: n.mapAway, hov, hovT, flow: n.flow.toFixed(1), flowBar: (n.flow - T.FLOW_MIN) / (T.FLOW_MAX - T.FLOW_MIN),
     bossName: next % T.CHECKPOINT_EVERY === 0 ? bossFor(next, T.CHECKPOINT_EVERY).name : '',
-    portalOk, portalLabel: portalOk ? '15 min' : 'oath', texts: { feat: FEATURE_TEXT, cond: CONDITION_TEXT } };
+    portalOk, portalLabel: portalOk ? bankLabel() : 'oath', texts: { feat: FEATURE_TEXT, cond: CONDITION_TEXT } };
 }
 
 /** The pointer's business with the party (marching order, #52 1.6): a hero being dragged, the one under the pointer. */
@@ -271,7 +273,7 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
   // a drag: the portrait lifts under the pointer, rings under both heroes, the target's portrait gets the gold frame
   const drag = pp.drag ? { id: PAGE_ID[g.heroes[pp.drag.from]?.id ?? 'knight'], x: pp.drag.x, y: pp.drag.y, rings: [heroX(pp.drag.from), ...(pp.drag.over >= 0 && pp.drag.over !== pp.drag.from ? [heroX(pp.drag.over)] : [])] } : null;
   if (pp.drag && pp.drag.over >= 0 && pp.drag.over !== pp.drag.from) (bar as { dropOn: number }).dropOn = pp.drag.over;
-  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', bank: u.items || u.gold ? `bank ${u.items} · ${u.gold} g` : '15 min', buffs: buffList(), curio: curioView(), goblin: goblinView(), bar,
+  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', bank: bankLabel(u), buffs: buffList(), curio: curioView(), goblin: goblinView(), bar,
     drag, heroCard: !pp.drag && pp.hover >= 0 ? heroCard(pp.hover) : null };
 }
 

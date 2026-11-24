@@ -152,7 +152,7 @@ function button(x, y, w, h, lines, o = {}) {
   if (!o.flat) shadowU(x, y, w, h, { k: 0.55, r: 3, dx: 1, dy: 2 });
   const mat = o.mat ?? M_UMBER;
   plateU(x, y, w, h, o.mat === M_MAGIC ? { mat, top: 0.4, bot: 0.3, hi: 0.86, hiMat: M_DUSK, lo: 0.2, grain: 0.03 } : { mat, top: on ? 0.48 : 0.3, bot: on ? 0.24 : 0.16, hi: on ? 0.78 : 0.42, lo: 0.1 });
-  lines.forEach(([s, f, idx], k) => text(s, x + (w >> 1), y + 3 + k * 7, f, on ? idx : P.u4, { align: 'c', shadow: P.void }));
+  lines.forEach(([s, f, idx], k) => text(s, x + (w >> 1), y + (o.top ?? 3) + k * (o.lead ?? 7), f, on ? idx : P.u4, { align: 'c', shadow: P.void }));
 }
 function closeX(x, y) {
   for (let j = y; j < y + 9; j++) for (let i = x; i < x + 9; i++) {
