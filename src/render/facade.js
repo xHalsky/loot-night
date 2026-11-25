@@ -52,6 +52,9 @@ export const PK = {
   /** The plan (V9, #74; grid doc 7g) over the whole frame, 640 x 360: frame (what is behind, or null to keep it), the
    *  game's layout (ui/plan.ts); hits: the close box, then the sheet. */
   plan: (frame, layout, t) => drawPlanLive(frame, layout, t),
+  /** The morning (V10, #75; grid doc 7h): her CG by how the night ended, the summary, the caption; 640 x 360 and the
+   *  pink button's hit. scene: green, yellow, red or unplugged. */
+  morning: (scene, data, hover) => drawMorningLive(scene, data, hover),
   /** Caught (V7, #72; grid doc 7e): the full-frame scare, 640 x 360. rung 1 to 3, T seconds since the catch, cost the line. */
   caught: (rung, T, cost) => drawCaughtLive(rung, T, cost),
   /** The cable fix (V6): start it on the game's deal and rule; the pointer in scene px; draw it over the right screen. */

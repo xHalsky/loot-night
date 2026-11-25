@@ -39,9 +39,14 @@ The RPG keeps its own record: the deepest floor ever reached, which raises the n
 debt before and after, and near misses: "Deep: N floors short of tonight's target", Sweet's Mood short,
 Unseen's catches, and the cheapest city building with the gold and Souls still missing.
 
-**Morning screen.** Two columns: art on the left (she fell asleep in your shirt; from the foot of the bed,
-bare soles out from under the blanket, breathing), summary and the next-night button on the right.
-Auction listings pay out here in zł. **One reward per star** (`toMorning`): loot only comes from the game, so only
+**Morning screen** (grid doc 7h). A PC-98 dating-sim CG of her asleep over the whole frame, in her panel's 16 colours,
+picked by how the night ended (`morningScene`): green, asleep face down under the thick duvet, her feet out at the
+foot end; yellow, turned away with one foot out and her phone lit on your pillow; red, asleep on the couch wrapped
+in the duvet, the TV the only light; unplugged, the empty bed, her clip on her pillow and a note on yours. The caption
+in a night-plum window at the bottom; the summary in her beige paper window on the right: what the auction house sold,
+Wallet, Gold, Sleep debt and Best stars, LAST NIGHT's three stars with the reward each earned or "missed", the
+sleep-debt line, and her pink button for the next night (Enter and Esc too). The CGs are baked placeholders until
+Paweł's stills. Auction listings pay out here in zł. **One reward per star** (`toMorning`): loot only comes from the game, so only
 the RPG star pays in loot.
 - **Deep: a chest:** one item from the normal drop table at tonight's deepest floor, into the bag; a full bag keeps
   it as the next night's first drop (the bag-full window takes it from there).
@@ -111,6 +116,14 @@ happening.
   visit (it would teach the script, not the listening); the old title screen's eight bullets (nobody reads
   them before playing); tips that repeat every night (noise after the first night).
 
+- **The morning in the redesign's look** (0.72, V10 #75): the page's morning draws from the game's numbers and lines
+  (`render/morningView.ts`), never its sample text: the Tiredness the sleep debt leads to comes from `TIRED_BASE` and
+  `TIRED_PER_DEBT`, the rewards from the star tuning, the chest's name from the item rolled. It shows the time and no
+  day, and the button reads "Start night N": every night is Monday until the week (#56) names them, and "Tue 07:40" over
+  "Start Monday night" would contradict itself. The results screen stays as it is between the night and the morning:
+  the redesign has no results screen, and its numbers (depth against the record, near misses, the appraiser's
+  waiting items) have no place on the morning's summary. Rejected: folding the results into the morning (no room in
+  the summary without dropping the near misses); the page's day and night names now.
 - **Stars that reward greed** (0.63, #54; Paweł's brief from testing v0.48): the old ladder (survive, then Mood, then
   not caught) paid nothing for going deep, so the safe night and the greedy night scored the same. Now the RPG has
   its own star (Deep) and every star pays something the next night needs. Rejected: Deep counting only the run you

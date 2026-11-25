@@ -26,8 +26,7 @@ async def main():
         for scene, mood, ending in [('green', 20, 'sleep'), ('yellow', 55, 'sleep'), ('red', 85, 'sleep'), ('unplugged', 100, 'unplugged')]:
             await pg.evaluate("([m,e])=>{const S=window.__lootnight.S; S.g.results={ending:e,endClock:1500,stars:1,depth:5,prevRecord:4,debtBefore:0,debtAfter:0,mood:m,caught:false,unidentified:0,nearMisses:[]}; S.g.morning={paid:0,listings:0}; S.g.screen='morning'}", [mood, ending])
             await pg.wait_for_timeout(400)
-            r = await pg.evaluate("()=>{const e=document.querySelector('.m-art').getBoundingClientRect(); return [e.left,e.top,e.width,e.height]}")
-            await pg.screenshot(path=f'test/morning_{scene}.png', clip={'x':r[0],'y':r[1],'width':r[2],'height':r[3]})
+            await pg.screenshot(path=f'test/morning_{scene}.png')   # V10: the renderer's morning, full frame
         print('ERRORS', errs)
         await b.close()
 asyncio.run(main())

@@ -16,7 +16,6 @@ async ([kind, args]) => {
   else if (kind === 'back') { H.drawHerBack(c, 300, 100, 0.6, 'hoodie'); }
   else if (kind === 'frosted') { H.drawHer(c, 300, 100, 0.36, { outfit: 'towel', face: 'neutral', pose: 'stand' }); }
   else if (kind === 'peek') { H.drawHerPeek(c, { outfit: 'lounge', face: args[1], blink: false }, args[0], 120, 120); scale = 3; }
-  else if (kind === 'bed') { H.drawHerBed(c, 0, args[0]); scale = 2; opaque = true; }
   else if (kind === 'shower') { H.drawShowerPanel(c, 1, 0.6, 0); opaque = true; }
   // back to game pixels
   let src = cv;
@@ -26,8 +25,7 @@ async ([kind, args]) => {
     sc.putImageData(od, 0, 0); src = sm; }
   const sc2 = src.getContext('2d', { willReadFrequently: true }); const w = src.width, h = src.height, d = sc2.getImageData(0, 0, w, h).data;
   let x0 = w, y0 = h, x1 = -1, y1 = -1;
-  if (opaque && kind === 'bed') { x0 = 0; y0 = 0; x1 = 239; y1 = 119; }
-  else if (opaque) { x0 = 0; y0 = 0; x1 = 175; y1 = 175; }
+  if (opaque) { x0 = 0; y0 = 0; x1 = 175; y1 = 175; }
   else for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 0) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
   const out = document.createElement('canvas'); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
   out.getContext('2d').drawImage(src, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
@@ -73,8 +71,7 @@ async def main():
         await sprite('shower_daydream_panel', 'daydream bubble (drawn at 176x176, shown ~0.82x in a circle)', '176 px sprite, scaled down to 144 px in the bubble', 'shower', [])
         for name, pose, face in [('peek_ask_finger_on_lips', 0, 'neutral'), ('peek_hair_twirl', 1, 'blush'), ('peek_chin_on_fist', 2, 'wink')]:
             await sprite(name, 'leans into your face (questions), full stage', '3x (each sprite px = 3 game px)', 'peek', [pose, face])
-        for name, sc in [('morning_green_asleep_in_your_shirt', 'green'), ('morning_yellow_back_turned', 'yellow'), ('morning_red_asleep_on_couch', 'red'), ('morning_unplugged_empty_bed', 'unplugged')]:
-            await sprite(name, 'morning vignette', '2x (each sprite px = 2 game px)', 'bed', [sc])
+        # the morning vignettes are gone: the renderer's CGs replaced them (V10, test/morning.py)
 
         # drawn straight onto the webcam canvas (no sprite): crop the 296 x 532 canvas at 1:1
         async def door_crop(name, where, x, y, w, h):

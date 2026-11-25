@@ -3,6 +3,21 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.72.0 (2026-11-25)
+
+- **The morning is the redesign's** (V10, #75; grid doc 7h). A PC-98 dating-sim CG of her asleep fills the frame,
+  one per way the night ended: green, face down under the thick duvet with her feet out at the foot end; yellow,
+  turned away, one foot out, her phone lit on your pillow; red, on the couch wrapped in the duvet with the TV the
+  only light; unplugged, the empty bed with her clip on her pillow and the note on yours. The caption sits in a
+  night-plum window; the summary in her beige paper window: the auction house, Wallet, Gold, Sleep debt, Best stars,
+  LAST NIGHT's stars with what each paid, the sleep-debt line, and her pink button. Enter and Esc start the night too.
+  The CGs are placeholders until Paweł's stills.
+- **The game's numbers, not the page's sample.** Tiredness from the sleep debt, the rewards and the chest's item are
+  the game's; the button says "Start night N" and the clock shows no day until the week (#56) names the nights.
+- The results card before the morning is unchanged (the redesign has none). The old morning card, its vector bed art
+  (`drawHerBed`) and their CSS are gone. `test/morning.py` ends four nights four ways next to stills 040 to 043.
+  UI only: sims as before.
+
 ## 0.71.0 (2026-11-25)
 
 - **The cuddle break is the redesign's** (V9, #74; grid doc 7g). Her window, night plum with her name on a pink tab,

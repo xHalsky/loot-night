@@ -61,7 +61,7 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   wrap9(MORNING_CAPTION[scene] || '', cw - 30).slice(0, 2).forEach((l, k, a) => text(l, cx + 19, cy + (a.length > 1 ? 8 : 12) + k * 9, 'tiny', C9.beige));
   // the summary: her panel's beige paper window
   const sx = 440, sy = 14, sw = 192;
-  const NOTE = data.replay ? `Tonight is ${data.night} again. Party, gear, gold, Souls and city carry over.` : (data.debt > 0 ? `Sleep debt ${data.debt}: tonight starts at Tiredness ${10 + data.debt * 3}.` : 'No sleep debt: tonight starts fresh.') + ' Party, gear, gold and city carry over.';
+  const NOTE = data.note || (data.replay ? `Tonight is ${data.night} again. Party, gear, gold, Souls and city carry over.` : (data.debt > 0 ? `Sleep debt ${data.debt}: tonight starts at Tiredness ${10 + data.debt * 3}.` : 'No sleep debt: tonight starts fresh.') + ' Party, gear, gold and city carry over.');
   const noteLines = wrap9(NOTE, sw - 16).length;
   const headLines = wrap9(data.sold ? `Auction house sold ${data.sold} items: +${data.paid} zl` : 'Nothing sold overnight.', sw - 16).length;
   const repLines = data.replay ? wrap9('She pulled the plug. No stars, and the cheaper half of your bag is gone.', sw - 16).length : 0;
@@ -69,7 +69,7 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   win9(sx, sy, sw, sh);
   let y = sy + 7;
   text('Morning', sx + 8, y, 'tinyL', C9.plum);
-  text('Tue 07:40', sx + sw - 8, y + 5, 'tiny', C9.brown, { align: 'r' });
+  text(data.when || 'Tue 07:40', sx + sw - 8, y + 5, 'tiny', C9.brown, { align: 'r' });
   y += 20;
   for (let i = sx + 6; i < sx + sw - 6; i++) putI(i, y, (i & 1) ? C9.tan : C9.beige);
   y += 5;
@@ -106,10 +106,21 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   const by = y + 8, hov = !!o.hover;
   MORNING_BTN = [sx + 7, by, sw - 14, 20];
   win9(sx + 7, by, sw - 14, 20, { fill: hov ? C9.rose : C9.pink, hi: C9.skin, lo: C9.rose, edge: C9.plum });
-  text(data.replay ? data.night + ', again' : 'Start ' + data.night + ' night', sx + sw / 2, by + 7, 'tiny', C9.plum, { align: 'c' });
+  text(data.next || (data.replay ? data.night + ', again' : 'Start ' + data.night + ' night'), sx + sw / 2, by + 7, 'tiny', C9.plum, { align: 'c' });
   spr(sx + sw - 21, by + 7, ['x..', 'xx.', 'xxx', 'xx.', 'x..'], { x: C9.plum });
   const ctx = MORNING_CANVAS.getContext('2d'), img = ctx.createImageData(640, 360), D = img.data;
   for (let i = 0; i < 640 * 360; i++) { const q = PC98_RGB[F.I[i] < 0 ? 0 : F.I[i]], p = i * 4; D[p] = q[0]; D[p + 1] = q[1]; D[p + 2] = q[2]; D[p + 3] = 255; }
   ctx.putImageData(img, 0, 0);
   return MORNING_CANVAS;
+}
+
+// ---------------------------------------------------------------- live (V10, #75): the game's morning
+// data as MORNING_DEMO, from the game (render/morningView.ts), plus note, when and next (its own lines). Drawn only when
+// something changes (the button's hover): the picture is still.
+let MORNING_KEY = '';
+function drawMorningLive(scene, data, hover) {
+  const key = scene + '|' + JSON.stringify(data) + '|' + (hover ? 1 : 0);
+  if (key !== MORNING_KEY || !MORNING_CANVAS) { MORNING_KEY = key; drawMorning(scene, 0, data, { hover }); }
+  const [x, y, w, h] = MORNING_BTN;
+  return { canvas: MORNING_CANVAS, hits: [{ x, y, w, h, act: 'startNight', arg: '', tip: '' }] };
 }

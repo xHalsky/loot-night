@@ -5,7 +5,7 @@ import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, preBusyHtml, morningScene, coachHtml } from './ui/panels';
+import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, preBusyHtml, coachHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -25,6 +25,7 @@ import { openMonster, cancelMonster } from './systems/monster';
 import { monsterView, monsterTilt, monsterDown, monsterMove, monsterUp, monsterGrabbing, EB_SCENE } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawLapFx, lapUiHtml } from './ui/deskFx';
+import { morningView, morningScene } from './render/morningView';
 import { cuddleView, winToCuddle, CUD_WIN } from './render/herWinView';
 import { PLAN } from './ui/plan';
 import { caughtTick, caughtT, caughtEnd, caughtShot } from './render/caughtView';
@@ -42,7 +43,6 @@ import { phoneShown, phoneView } from './render/phoneView';
 import { deskView, deskTip } from './render/deskView';
 import { herView, herTip } from './render/herView';
 import { herRead, phoneScroll } from './systems/messages';
-import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
@@ -84,6 +84,7 @@ stage.innerHTML = `
   <div id="screens"></div>
   <div id="pause"></div>
   <canvas id="planArea" width="640" height="360"></canvas>
+  <canvas id="morningArea" width="640" height="360"></canvas>
   <div id="coachUi"></div>
   <canvas id="pkFrame" width="${GRID_W}" height="${GRID_H}"></canvas>
   <div id="debug"></div>
@@ -467,6 +468,7 @@ window.addEventListener('keydown', ev => {
   initAudio();
   const g = S.g;
   if (ev.key === 'F1') { ev.preventDefault(); g.debug = !g.debug; return; }
+  if (g.screen === 'morning' && (ev.key === 'Escape' || ev.key === 'Enter')) { ev.preventDefault(); actions.startNight(''); return; }   // her pink button (V10)
   if (g.screen !== 'night' || !g.night) return;
   const n = g.night;
   if (caughtT(performance.now()) >= 0) { ev.preventDefault(); caughtEnd(performance.now()); return; }   // her screen takes the key (V7)
@@ -661,6 +663,22 @@ planCanvas.addEventListener('pointerdown', ev => {   // the ✕ or a click outsi
 });
 planCanvas.addEventListener('pointermove', ev => { const h = planHitAt(ev); planCanvas.style.cursor = !h || h.act === 'planClose' ? 'pointer' : 'default'; hover.key = ''; });
 
+// The morning (V10, #75): her CG by how the night ended, the summary and the caption, all the renderer's. Still, so it
+// is drawn again only when something changes (the renderer keeps the last picture).
+const morningCanvas = el('morningArea') as HTMLCanvasElement, morningCtx = morningCanvas.getContext('2d')!;
+let morningHits: { x: number; y: number; w: number; h: number; act: string }[] = [], morningHover = false;
+function drawMorningScreen() {
+  const on = S.g.screen === 'morning' && !!S.g.morning && PK.ready();
+  morningCanvas.style.display = on ? 'block' : 'none';
+  if (!on) return;
+  const r = PK.morning(morningScene(), morningView(), morningHover);
+  morningCtx.drawImage(r.canvas, 0, 0); morningHits = r.hits;
+}
+const morningHitAt = (ev: PointerEvent) => { const b = morningCanvas.getBoundingClientRect(), x = ((ev.clientX - b.left) / b.width) * 640, y = ((ev.clientY - b.top) / b.height) * 360; return morningHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h) ?? null; };
+morningCanvas.addEventListener('pointerdown', ev => { initAudio(); const h = morningHitAt(ev); if (h) { ev.preventDefault(); sfx.click(); actions[h.act]?.(''); } });
+morningCanvas.addEventListener('pointermove', ev => { morningHover = !!morningHitAt(ev); morningCanvas.style.cursor = morningHover ? 'pointer' : 'default'; });
+morningCanvas.addEventListener('pointerleave', () => { morningHover = false; });
+
 (window as unknown as Record<string, unknown>).__lnCaught = () => ({ t: caughtT(performance.now()), ...caughtShot() });   // for the tests
 el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
@@ -806,8 +824,7 @@ function render() {
   }
   if (g.screen !== 'night' || g.paused || g.howto) stopAmbience();   // her TV does not follow you to the title or the morning
   setHtml('screens', screenHtml());
-  const ma = document.getElementById('morningArt') as HTMLCanvasElement | null;
-  if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());
+  drawMorningScreen();   // V10 (#75): the morning, drawn by the renderer
   if (!g.night || g.screen !== 'night') planOpen = false;
   drawPlanScreen();   // V9 (#74): the plan off the wall, drawn by the renderer
   setHtml('coachUi', g.screen === 'night' && !g.paused && !g.howto && !(g.night?.scare) && caughtT(performance.now()) < 0 ? coachHtml() : '');   // never over the caught screen

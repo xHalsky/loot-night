@@ -23,7 +23,6 @@ import {  abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, cap } from '../systems/loot';
 import { icon } from './icons';
 import { fmtClock } from '../core/fx';
-import type { MorningScene } from './her';
 import { hasSave } from '../systems/save';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -68,24 +67,6 @@ const PHONE_NOTE: Record<string, [string, string]> = {
   mom: ['MOM', 'calling...'], boss: ['BOSS', '"you there?"'], text: ['BABE', 'coming to bed?'], courier: ['COURIER', 'calling...'], friends: ['THE BOYS', 'group call'],
 };
 void PHONE_NOTE;
-
-// ---------------- Morning vignette by how the night ended (#22) ----------------
-export function morningScene(): MorningScene {
-  const r = S.g.results;
-  if (!r) return 'green';
-  if (r.ending === 'unplugged') return 'unplugged';
-  return r.mood < T.MOOD_GREEN ? 'green' : r.mood < T.MOOD_RED ? 'yellow' : 'red';
-}
-const MORNING_CAPTION: Record<MorningScene, string> = {
-  green: 'She fell asleep in your shirt again, hugging your pillow.',
-  yellow: 'Back turned. Her phone is still lit.',
-  red: 'She fell asleep on the couch. The TV is still on.',
-  unplugged: 'An empty bed. A note on your pillow: "Hope the loot was worth it."',
-};
-
-
-
-
 
 // ---------------- UI panel ----------------
 export function entryIcon(e: BagEntry, size: number): string {
@@ -278,31 +259,6 @@ export function screenHtml(): string {
       ${r.nearMisses.length ? `<div class="near"><div class="kicker">SO CLOSE</div>${r.nearMisses.map(m => `<div>${esc(m)}</div>`).join('')}</div>` : ''}
       ${r.unidentified ? `<div class="near"><div class="kicker" style="color:#b98cff">WAITING AT THE APPRAISER</div><div>${r.unidentified} unidentified item${r.unidentified > 1 ? 's' : ''} in your bag: ${'<span class="sil">???</span>'.repeat(Math.min(6, r.unidentified))}</div></div>` : ''}
       <div class="row">${btn('morning', 'Next morning →', '', 'wide gold')}</div>
-    </div></div>`;
-  }
-  if (g.screen === 'morning' && g.morning) {
-    const m = g.morning;
-    const debt = g.sleepDebt;
-    return `<div class="screen"><div class="card morning">
-      <div class="m-grid">
-        <div class="m-art"><canvas id="morningArt" width="480" height="240"></canvas><div class="dim m-cap">${MORNING_CAPTION[morningScene()]}</div></div>
-        <div class="m-info">
-          <div class="kicker">MORNING SUMMARY</div>
-          <h3>${m.listings ? `Auction house sold ${m.listings} item${m.listings > 1 ? 's' : ''}: +${m.paid} zł` : 'Nothing sold overnight.'}</h3>
-          ${m.chest || m.trust || m.breakfast ? `<div class="m-rewards">
-            ${m.chest ? `<div><b>★ Deep: a chest.</b> <span style="color:${RARITY_COLOR[m.chest.rarity]}">${esc(m.chest.identified ? m.chest.name : '??? (' + m.chest.rarity + ')')}</span>${m.chestWaits ? ' <span class="dim">(bag full: it waits for tonight)</span>' : ''}</div>` : ''}
-            ${m.trust ? `<div><b>★ Unseen: Trust.</b> Tonight starts with Goodwill +${T.STAR_UNSEEN_GOODWILL}.</div>` : ''}
-            ${m.breakfast ? `<div><b>★ Sweet: Breakfast.</b> She made breakfast: sleep debt -${T.STAR_SWEET_DEBT}.</div>` : ''}</div>` : `<div class="m-rewards dim">No stars, no rewards. Tonight's note has three.</div>`}
-          <div class="grid2">
-            <div><span class="dim">Wallet</span><b>${g.zl} zł</b></div>
-            <div><span class="dim">Sleep debt</span><b>${debt}</b></div>
-            <div><span class="dim">Gold</span><b>${g.gold}</b></div>
-            <div><span class="dim">Best stars</span><b>${g.bestStars} / 3</b></div>
-          </div>
-          <div class="m-note">${debt > 0 ? `Sleep debt ${debt}: tonight starts at Tiredness ${Math.min(100, T.TIRED_BASE + debt * T.TIRED_PER_DEBT)}.` : 'No sleep debt: tonight starts fresh.'} Party, gear, gold and city carry over.</div>
-        </div>
-      </div>
-      <div class="row">${btn('startNight', 'Start Monday night', '', 'wide gold')}</div>
     </div></div>`;
   }
   return '';

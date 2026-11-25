@@ -31,7 +31,8 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
   a second canvas drawn into `#dogOv` above the game screen. The cable fix uses `#ebArea` the same way as the break.
   Caught (`caughtView.ts`) goes into `#caughtArea` over everything, 640 × 360; while it is up nothing under it draws.
   The cuddle break (`herWinView.ts`) uses `#ebArea` like the break; the plan goes into `#planArea` over the whole frame,
-  from her panel's and the right screen's canvases (`ui/plan.ts` holds the layout as data).
+  from her panel's and the right screen's canvases (`ui/plan.ts` holds the layout as data). The morning
+  (`morningView.ts`) goes into `#morningArea`, drawn again only when it changes.
 
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.

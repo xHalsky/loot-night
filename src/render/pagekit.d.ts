@@ -10,6 +10,7 @@ declare module 'virtual:pagekit' {
     noSignal(t: number): HTMLCanvasElement;
     caught(rung: number, T: number, cost: string): HTMLCanvasElement;
     cuddle(bg: HTMLCanvasElement | null, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
+    morning(scene: string, data: unknown, hover: boolean): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     plan(frame: HTMLCanvasElement | null, layout: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     cableStart(deal: { kinds: number[]; colors: number[]; sockets: number[]; plugged: boolean[] }, plug: (p: number, slot: number) => boolean, elapsed: () => number): void;
     cableDown(x: number, y: number): boolean; cableMove(x: number, y: number): boolean; cableUp(): void; cableDragging(): boolean; cableWarm(ms: number): boolean; cablePoints(): { plugs: number[][]; slots: number[][] };

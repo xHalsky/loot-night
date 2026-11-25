@@ -325,74 +325,6 @@ export function drawHerPeek(c: CanvasRenderingContext2D, o: HerOpts, pose: numbe
   blit(c, sp, x - ax * px, y - ay * px, px, alpha);
 }
 
-/** Morning vignette by how the night ended (docs/design/eye-candy.md): seen from the foot end, 480 x 240.
- *  green: asleep in your shirt, hugging your pillow. yellow: back turned, her phone still lit.
- *  red: asleep on the couch, the TV still on. unplugged: an empty bed and a note. */
-export type MorningScene = 'green' | 'yellow' | 'red' | 'unplugged';
-export function drawHerBed(c: CanvasRenderingContext2D, t: number, scene: MorningScene = 'green') {
-  const breathe = Math.sin(t * 1.3) > 0 ? 1 : 0, flick = scene === 'red' ? Math.floor(t * 3) % 3 : 0;
-  const sp = pixelSprite(`bed:${scene}:${breathe}:${flick}`, 240, 120, cc => {
-    LW = 0.7; cc.scale(1.5, 1.5);
-    const couch = scene === 'red';
-    // room: morning light on the wall (the couch: grey dawn and TV light), the bed or the couch
-    cc.fillStyle = couch ? '#5a5a74' : '#e9d3c4'; cc.fillRect(0, 0, 160, 80);
-    if (!couch) { cc.fillStyle = 'rgba(255,230,170,.55)'; cc.beginPath(); cc.moveTo(98, 0); cc.lineTo(130, 0); cc.lineTo(110, 80); cc.lineTo(74, 80); cc.fill(); }
-    cc.fillStyle = couch ? '#6a4636' : '#8a5a44'; cc.fillRect(18, 6, 124, couch ? 22 : 14);   // headboard / couch back
-    if (couch) { cc.fillStyle = '#7a5444'; cc.fillRect(22, 9, 56, 15); cc.fillRect(82, 9, 56, 15); }   // back cushions
-    cc.fillStyle = couch ? '#8a3a3a' : '#f4efe8'; cc.fillRect(22, couch ? 26 : 18, 116, couch ? 42 : 50);   // seat / sheet
-    if (scene !== 'unplugged') cel(cc, smooth([[52, 15], [108, 15], [112, 26], [48, 26]]), couch ? '#c9a86a' : '#ffffff', couch ? '#a8884a' : '#dcd6cc', 1, { color: C.line, w: 1 });   // pillow / armrest cushion
-    if (scene === 'unplugged') {
-      cel(cc, smooth([[52, 15], [108, 15], [112, 26], [48, 26]]), '#ffffff', '#dcd6cc', 1, { color: C.line, w: 1 });
-      cel(cc, smooth([[28, 44], [80, 36], [136, 44], [138, 66], [24, 66]]), '#9fb7d9', '#7a93bd', 1.5, { color: C.line, w: 1 });   // blanket thrown back, flat
-      cc.save(); cc.translate(80, 19); cc.rotate(-0.12);
-      cc.fillStyle = '#fffbe6'; cc.fillRect(-9, -5, 18, 11); cc.strokeStyle = C.line; cc.lineWidth = 0.6; cc.strokeRect(-9, -5, 18, 11);
-      cc.strokeStyle = '#7a6a9a'; cc.lineWidth = 0.6; for (let i = 0; i < 3; i++) { cc.beginPath(); cc.moveTo(-6, -2 + i * 3); cc.lineTo(6 - i * 2, -2 + i * 3); cc.stroke(); }   // the note
-      cc.restore();
-      return;
-    }
-    // her head on the pillow: face (green, red) or the back of her head (yellow)
-    cc.save(); cc.translate(80, 6); cc.scale(0.42, 0.42);
-    cc.fillStyle = C.hair; cc.fill(smooth([[-34, 10], [-40, 36], [-30, 58], [0, 50], [30, 58], [40, 36], [34, 10], [0, -6]]));
-    if (scene === 'yellow') { cc.fillStyle = C.hair; cc.fill(smooth([[-20, -2], [-26, 24], [-18, 46], [0, 50], [18, 46], [26, 24], [20, -2], [0, -10]])); cc.fillStyle = C.hairL; cc.fill(smooth([[-8, 2], [-12, 20], [-4, 30], [2, 12]])); }
-    else head(cc, { outfit: 'pajama', face: 'sleepy' }, true);
-    cc.restore();
-    if (scene === 'yellow') {   // her phone, still lit, face down on the sheet; its cold light on the wall
-      const g = cc.createRadialGradient(118, 20, 2, 118, 20, 30); g.addColorStop(0, 'rgba(150,190,255,.55)'); g.addColorStop(1, 'rgba(150,190,255,0)');
-      cc.fillStyle = g; cc.fillRect(80, 0, 80, 50);
-      cc.fillStyle = '#1a1a22'; cc.fillRect(110, 22, 9, 5); cc.fillStyle = '#bcd6ff'; cc.fillRect(111, 23, 7, 3);
-    }
-    // blanket (bed) or a plaid throw (couch): soft mound with folds; one shoulder of your shirt peeking out
-    const [b1, b2] = couch ? ['#6f9a6f', '#4f7a55'] : ['#9fb7d9', '#7a93bd'];
-    const shift = scene === 'yellow' ? 6 : 0;
-    cel(cc, smooth([[24, 30], [60 + shift, 24], [100 + shift, 24], [136, 30], [140, 52], [134, 66], [26, 66], [20, 52]]), b1, b2, 1.5, { color: C.line, w: 1 });
-    if (couch) { cc.strokeStyle = 'rgba(240,230,180,.5)'; cc.lineWidth = 1; for (let x = 34; x < 132; x += 14) { cc.beginPath(); cc.moveTo(x, 28); cc.lineTo(x - 4, 64); cc.stroke(); } }
-    cc.strokeStyle = b2; cc.lineWidth = 1; cc.beginPath(); cc.moveTo(46, 36 + breathe); cc.quadraticCurveTo(70, 44, 92, 34 + breathe); cc.moveTo(66, 52); cc.quadraticCurveTo(90, 58, 120, 50); cc.stroke();
-    cel(cc, smooth([[66, 26], [78, 23], [80, 30], [68, 31]]), CLOTH.shirt[0], CLOTH.shirt[1], 0.5);
-    if (scene === 'green') {   // hugging your pillow: a second pillow under her chin, her arm over it
-      cc.save(); cc.translate(80, 31); cc.rotate(0.08);
-      cel(cc, smooth([[-17, -6], [15, -7], [18, 3], [-15, 5]]), '#ffffff', '#dcd6cc', 0.8, { color: C.line, w: 0.8 });
-      cel(cc, smooth([[-14, -3], [4, -6], [10, -3], [8, 0], [-12, 2]]), C.skin, C.skinS, 0.6, { color: C.line, w: 0.7 });
-      cc.restore();
-    }
-    // the feet: soles toward you, toes up, resting on the sheet
-    const sole = (cx: number, dir: number) => {
-      const p = smooth([[cx - 6.5 * dir, 56], [cx - 7.5 * dir, 62], [cx - 6 * dir, 68], [cx - 4 * dir, 74], [cx, 77.5], [cx + 4 * dir, 75], [cx + 5 * dir, 68], [cx + 6.5 * dir, 61], [cx + 6 * dir, 55]]);
-      cel(cc, p, C.sole, C.skinS, 0.8, { color: C.line, w: 1 });
-      cc.fillStyle = C.skinH; cc.beginPath(); cc.ellipse(cx - 0.5 * dir, 60, 4, 2.4, 0, 0, Math.PI * 2); cc.fill();       // ball of the foot
-      cc.fillStyle = C.skinS; cc.beginPath(); cc.ellipse(cx + 2 * dir, 67, 2.2, 3.4, 0, 0, Math.PI * 2); cc.fill();       // arch
-      cc.fillStyle = C.skinH; cc.beginPath(); cc.ellipse(cx, 74, 3, 2.2, 0, 0, Math.PI * 2); cc.fill();                   // heel
-      const tx = [-5.2, -2.2, 0.6, 3.2, 5.2], ty = [52.4, 52, 52.6, 53.4, 54.8], tr = [2, 1.6, 1.5, 1.3, 1.1];
-      tx.forEach((x, i) => { const xx = cx + x * dir; cc.fillStyle = C.sole; cc.beginPath(); cc.ellipse(xx, ty[i], tr[i], tr[i] * 1.25, 0, 0, Math.PI * 2); cc.fill(); cc.strokeStyle = C.line; cc.lineWidth = 0.6; cc.stroke(); });
-    };
-    sole(66, -1); sole(90, 1);
-    if (couch) {   // the TV, still on, lights the room from the left
-      cc.fillStyle = `rgba(110,150,255,${[0.22, 0.3, 0.18][flick]})`; cc.fillRect(0, 0, 160, 80);
-      cc.fillStyle = '#14141c'; cc.fillRect(0, 34, 12, 22); cc.fillStyle = ['#7aa0ff', '#9ab8ff', '#6a8af0'][flick]; cc.fillRect(1, 36, 10, 17);
-    }
-  });
-  blit(c, sp, 0, 0, 2);
-}
-
 /** Her from behind (through the crack: at the kitchen counter). Head top at (x, y), s = output scale.
  *  One small pose: long hair over her back, arms forward at the counter, bare legs and heels. */
 const BACK_TOP: Record<Outfit, string> = { lounge: 'tee', hoodie: 'hoodie', tank: 'tank', bighoodie: 'gamer', pajama: 'shirt', towel: 'towel' };
@@ -491,4 +423,4 @@ export function drawShowerPanel(c: CanvasRenderingContext2D, t: number, fog: num
 }
 
 // Test hook: test/her_screens.py draws her model sheets (every outfit, every face) with the game's own code.
-if (typeof window !== 'undefined') (window as unknown as { __lnHer: unknown }).__lnHer = { drawHer, drawHerBack, drawHerFrosted, drawHerPeek, drawHerBed, drawShowerPanel, OUTFIT_BY_ACTIVITY };
+if (typeof window !== 'undefined') (window as unknown as { __lnHer: unknown }).__lnHer = { drawHer, drawHerBack, drawHerFrosted, drawHerPeek, drawShowerPanel, OUTFIT_BY_ACTIVITY };

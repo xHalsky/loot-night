@@ -95,9 +95,7 @@ async def main():
         await ev(pg, "g.results={ending:'sleep',endClock:n.clock+200,stars:2,depth:4,prevRecord:3,debtBefore:1,debtAfter:2,mood:10,caught:false,unidentified:0,nearMisses:[]}; g.screen='results'"); await pg.wait_for_timeout(500)
         await act(pg, '[data-act=morning]'); await pg.wait_for_timeout(700)
         full = await shot(pg, '6_breakfast', 'plate_morning_screen')
-        bb = await pg.evaluate("()=>{const r=document.querySelector('#morningArt').getBoundingClientRect(); return [r.left,r.top,r.right,r.bottom]}")
-        where('6_breakfast', full, 'where', tuple(round(v) for v in bb), 'the morning picture: 240 x 120 px, shown at 2x (480 x 240)')
-        native('6_breakfast', '18_morning_green_asleep_in_your_shirt.png', 'native_morning_today_240x120')
+        # since V10 the whole morning is the renderer's CG (640 x 360, full frame): the full shot is the picture
         print('ERRORS', errs); await b.close()
 
     # board
