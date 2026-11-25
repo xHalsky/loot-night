@@ -17,7 +17,7 @@ export function morningView() {
   const g = S.g, m = g.morning!, goals = g.results?.goals, debt = g.sleepDebt;
   const chest = m.chest ? `a chest: ${m.chest.identified ? m.chest.name : `??? (${m.chest.rarity})`}${m.chestWaits ? ', tonight' : ''}` : '';
   return {
-    sold: m.listings, paid: m.paid, zl: g.zl, gold: g.gold, debt, best: g.bestStars, q4: 0,
+    sold: m.listings, paid: m.paid, zl: Math.floor(g.zl), gold: g.gold, debt, best: g.bestStars, q4: g.results?.q4 ?? 0,
     stars: [
       { name: 'Deep', got: !!goals?.deep, reward: chest },
       { name: 'Unseen', got: !!goals?.unseen, reward: `Trust: Goodwill +${T.STAR_UNSEEN_GOODWILL} tonight` },

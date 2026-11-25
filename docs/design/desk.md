@@ -83,13 +83,37 @@ one-demand rule). `npx tsx test/phone.ts` checks the script, the spacing, each e
 
 ### Excel and alt-tab
 
-**Excel is the cover.** Alt-tab (Tab or the taskbar buttons) flips the monitor between the game and an
-Excel sheet that looks like Excel: green title bar, ribbon, name box and formula bar, column letters,
-comma-formatted cells. The minigame is spreadsheet Tetris on an `EXCEL_COLS` × `EXCEL_ROWS` sheet:
-blocks fall every `EXCEL_FALL_SEC`, A/D move, W rotates, S lowers, Space drops (ribbon buttons for the
-mouse). It is optional: being on Excel is what passes her check. Overtime pay: `EXCEL_ROW_GOLD` gold per row, ×`EXCEL_MULTI` for multi-
-row clears. Topping out crashes the sheet (#REF!) and the board restarts. The RPG fights on behind it,
-recklessly ([dungeon.md](dungeon.md)).
+**Excel is the cover, and your job: Q4** (step 4, #55; grid doc 7i; `systems/q4.ts`, `render/q4View.ts`). Alt-tab
+(Tab or the taskbar buttons) flips the monitor between the game and a maximised Windows 98 Excel,
+"Q4_report_FINAL_v3.xls", over the whole game screen. Being on Excel is what passes her check; working in it pays
+złoty into the wallet the Auction House pays into. The RPG fights on behind it, recklessly ([dungeon.md](dungeon.md)).
+- **The sheet:** your job title and an Excel data bar to the next one (lifetime złoty); what the macros pay a
+  second; Sort's x2 chip; the Hustle bar; the report (five regions and a Total) with the four toys in its columns;
+  the Macros pane on the right; the status bar with "Q4 tonight: +N zł" and the wallet. Excel's own pointers.
+- **The toys, each pays** (times the title, Sort and Hustle), each with its sound, a moss "+N zł" rising over it and
+  a little animation: **AutoSum** (the big Σ or Space, `Q4_SUM`; the column rolls `Q4_ROLL_SEC`; `Q4_BALANCED_CHANCE`
+  lands a BALANCED stamp with a shake, x`Q4_BALANCED_MULT`); the **fill flick** (drag the corner of C4 down and let
+  go: the further and faster, the more cells, up to `Q4_FILL_MAX`; they fill in a cascade, `Q4_FILL_CELL` each, then
+  the column resets); **Sort** (the column reshuffles like a split-flap board; everything, toys and macros, pays
+  x`Q4_SORT_MULT` for `Q4_SORT_SEC`; `Q4_SORT_CD` cooldown, 3 s less from Team Lead); the **pivot spinner** (from
+  Analyst: grab the PivotTable, turn it by hand or fling it; it spins with momentum and friction, `Q4_PIVOT_TURN` a
+  full turn).
+- **Macros** (the pane: name, level, what it does, Buy at `Q4_MACRO_BASE` x 1.5^level; locked until their title):
+  Intern (AutoSum by itself), AutoFill (cells a second), VLOOKUP (+25% a filled cell), Conditional Formatting (+2%
+  BALANCED, 40% at most), Pivot macro (turns a second), Power Query (+100% of all the macros earn, a level). They run
+  all night, in the RPG and the town too (not while paused); Hustle doesn't touch them.
+- **Titles** by lifetime złoty (`Q4_TITLE_AT`): Intern, Junior Analyst, Analyst, Senior Analyst, Team Lead, Manager,
+  Director; each x`Q4_TITLE_MULT` on all of Q4. A promotion is Excel's dialog ("Congrats on your promotion!", the new
+  title, what it unlocked, OK or Enter) with confetti; earned in the RPG, it waits for Excel and the feed says so.
+  Q4 lasts across nights (the save); the morning shows what it paid.
+- **Hustle:** after an alt-tab into Excel the toys pay up to x`Q4_HUSTLE_MAX`, falling to x1 over `HUSTLE_DECAY_SEC`;
+  it charges back up while the RPG is on screen (`HUSTLE_RECHARGE_SEC`). Short stints, her visits, pay best.
+- **Looking busy** (FNAF 2's mask): while she is in on a Peek and Excel is up, a toy in the last `Q4_BUSY_SEC` runs
+  her visit x`Q4_BUSY_MULT` (she leaves sooner); idle `Q4_IDLE_SEC` and her timer waits, her note asking "What are you
+  working on?", until you act. It never causes a catch by itself; switching back to the RPG while she is there still
+  does.
+- **Noise:** every toy action makes `Q4_NOISE` (a flick or a fling `Q4_NOISE_FLICK`, a sort `Q4_NOISE_SORT`); the
+  Silent keys (Shop) halve it. The "of Greed" affix (gold a kill while Excel is up) is unchanged.
 
 **Alt-tab lag.** Every switch, both ways, takes a random `ALT_TAB_LAG_SEC` (1.0 to 2.5 s). No input
 works meanwhile (only pause and debug); a second alt-tab is ignored; skills cannot be cast. Until it
@@ -259,8 +283,16 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   play Excel to fill a bar they did not watch, and it caught players who switched in time (the lag ate the
   time Excel needed to fill it). The reckless autopilot now carries the cost of hiding. Rejected: keeping
   the meter but filling it faster (the same thing with extra UI).
-- **Excel as Tetris** instead of a rhythm game: the rhythm game was too fast and gave nothing. Honest
-  work pays (overtime gold) but is never required.
+- **Q4 instead of Tetris** (0.75, step 4, #55). The handoff made Excel your job: it must be fun to touch, pay
+  something on every action, level up fast and keep earning while you play, in złoty (the real-life money; gold
+  stays the RPG's). The numbers are grid doc 7i's (2026-11-20), not the handoff's first ones: AutoSum 0.4 zł, a cell
+  0.15, a turn 1.2, titles x1.25, macros at base x 1.5^level and Power Query added, not multiplied (doubling made
+  millions a night). Looking busy brings back a reason to act in Excel without the old meter's flaw: it never
+  causes a catch, it only decides how long she stays. Rejected: keeping Tetris beside Q4 (two jobs on one sheet);
+  Hustle on the macros (it would punish leaving Excel, the opposite of the RPG loop); a promotion dialog over the RPG
+  (it waits for Excel, where it means something).
+- **Excel as Tetris** (0.20 to 0.74) instead of a rhythm game: the rhythm game was too fast and gave nothing. Honest
+  work paid (overtime gold) but was never required. Replaced by Q4.
 - **No hands; he is only in the drink** (0.49.1, #62). The cursor handles the drawer, the can and the tab, and the
   can floats in the drink and the throw. Showing him in every shot (0.49.0) cluttered the drawer and throw shots
   without adding anything. In the drink he tips his head back, which turns his mouth up toward the can: drinking

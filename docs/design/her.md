@@ -139,7 +139,8 @@ the mouse moves faster than `CUDDLE_JERK` ("too fast!"). Warmth ≥ `CUDDLE_PASS
 `CUDDLE_PASS_MOOD`; below: +`CUDDLE_FAIL_MOOD`. The close X means pulling away for the game (refuse
 penalty). While cuddling, the party keeps the safe autopilot, Flow is frozen, and the phone and dog wait.
 
-On Peek and Chat, switching back to the game while she still stands there gets you caught. Switching to
+On Peek and Chat, switching back to the game while she still stands there gets you caught. On a Peek she watches
+you work: busy in Q4 she leaves sooner, idle she waits and asks what you are working on ([desk.md](desk.md), Q4). Switching to
 Excel takes 1 to 2.5 s ([desk.md](desk.md)): commit on the hallway cue or earlier.
 
 **Caught (ladder per night).** Every catch: the scare and a sting, Mood +`CATCH_MOOD`, and Guilt (party

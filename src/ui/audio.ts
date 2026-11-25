@@ -250,6 +250,13 @@ export const sfx = {
   vibMsg() { if (!play('buzzmsg')) for (const w of [0, 0.22]) for (let i = 0; i < 3; i++) tone(162, 0.045, 'sawtooth', 0.09, w + i * 0.045); },
   key() { play('key', { jitter: 0.06 }) || tone(1200 + Math.random() * 200, 0.03, 'square', 0.05); },
   click() { tone(700, 0.03, 'square', 0.08); },
+  // Q4 (#55): every action has its own sound
+  q4Sum() { tone(1100, 0.025, 'square', 0.07); tone(1650, 0.04, 'triangle', 0.06, 0.03); noise(0.03, 0.05, 3500, 0.01); },
+  q4Stamp() { tone(120, 0.12, 'sine', 0.35, 0, 60); noise(0.08, 0.2, 900); tone(1650, 0.06, 'triangle', 0.08, 0.06); },
+  q4Tick() { tone(2400 + Math.random() * 300, 0.012, 'square', 0.045); },
+  q4Clack() { for (let i = 0; i < 7; i++) { tone(900 + Math.random() * 500, 0.015, 'square', 0.06, i * 0.08); noise(0.02, 0.06, 2200, i * 0.08); } },
+  q4Whir() { tone(220, 0.5, 'triangle', 0.06, 0, 520); },
+  q4Promo() { [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, 0.14, 'square', 0.1, i * 0.07)); noise(0.3, 0.05, 5000, 0.35); },
   hiss(_loud: boolean) { play('can') || noise(0.35, 0.12, 2500, 0, 'game', 'highpass'); },
   canOpen() { play('can') || noise(0.45, 0.16, 3000, 0.05, 'game', 'highpass'); },
   fridge() { play('fridge') || tone(180, 0.3, 'sawtooth', 0.06, 0, 120); },

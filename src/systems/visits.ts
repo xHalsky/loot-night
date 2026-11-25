@@ -1,3 +1,4 @@
+import { q4Look, q4Up } from './q4';
 import { T } from '../config/tuning';
 import { S, N, type VisitKind } from '../core/state';
 import { chance, pick, weighted } from '../core/rng';
@@ -108,7 +109,10 @@ export function updateVisits(dt: number) {
   }
   if (v.stage === 'far' || v.stage === 'hall' || v.stage === 'passing') telegraphSounds(dt);
   if (v.stage === 'in' && n.game?.kind === 'cuddle') return;     // you are cuddling: the visit waits for it
-  v.t -= dt;
+  // looking busy (#55, 4.5): she watches you work in Excel; busy, she leaves sooner; idle, she waits and asks
+  const look = v.stage === 'in' && v.checked && v.result === 'pass' && q4Up() ? q4Look() : 1;
+  if (look !== 1 || v.stage !== 'in') n.q4.asked = look === 0;
+  v.t -= dt * look;
   if (v.stage === 'in') { updateIn(dt); if (v.t > 0) return; }
   if (v.t > 0) return;
   switch (v.stage) {

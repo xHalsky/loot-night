@@ -355,11 +355,37 @@ export const T = {
   FACE_UNLOCK_SEC: 1.2,           // hold the phone to your face
   SLIDE_DIST: 150, DOOR_DIST: 70, TAKE_DIST: 170, PULL_DIST: 60, TOSS_DIST: 130,
 
-  // --- Excel rhythm ---
-  EXCEL_COLS: 8, EXCEL_ROWS: 12,
-  EXCEL_FALL_SEC: 0.8,            // one row per 0.8 s: slow and readable
-  EXCEL_ROW_GOLD: 6,              // overtime pay per cleared row
-  EXCEL_MULTI: [0, 1, 2.5, 4, 6], // pay multiplier for 1-4 rows at once
+  // --- Q4, the Excel clicker (handoff step 4, #55; numbers from grid doc 7i, 2026-11-20: all to be tuned in playtests) ---
+  // The toys pay on every action, times the title, Sort and Hustle; the macros pay on their own all night (not Hustle).
+  Q4_SUM: 0.4,                    // zl an AutoSum (Space or the big sigma)
+  Q4_BALANCED_CHANCE: 0.10, Q4_BALANCED_MULT: 5,   // an AutoSum lands BALANCED this often and pays this many times
+  Q4_ROLL_SEC: 0.4,               // the column rolls this long after an AutoSum
+  Q4_FILL_CELL: 0.15,             // zl a filled cell
+  Q4_FILL_MAX: 10,                // cells one flick can fill (a faster flick fills more)
+  Q4_FILL_TICK_SEC: 0.04,         // the cascade: a cell every 40 ms
+  Q4_SORT_MULT: 2, Q4_SORT_SEC: 5, Q4_SORT_CD: 10, Q4_SORT_CD_LEAD: 3,   // Sort: everything x2 for 5 s; 10 s cooldown, 3 s less from Team Lead
+  Q4_SORT_FLAP_SEC: 0.6,          // the split-flap reshuffle
+  Q4_PIVOT_TURN: 1.2,             // zl a full turn of the pivot table
+  Q4_PIVOT_FRICTION: 0.5,         // its spin slows by this share a second
+  Q4_PIVOT_MAX: 20,               // rad/s: the fastest fling
+  Q4_HUSTLE_MAX: 3,               // toys pay up to x3 right after you switch to Excel...
+  HUSTLE_DECAY_SEC: 15,           // ...down to x1 over this...
+  HUSTLE_RECHARGE_SEC: 30,        // ...and it charges back up while the RPG is on screen
+  Q4_TITLE_AT: [0, 50, 300, 1500, 6000, 25000, 100000],   // lifetime zl for each title (data/q4.ts names them)
+  Q4_TITLE_MULT: 1.25,            // each title: all of Q4 x1.25 (stacking)
+  Q4_MACRO_GROWTH: 1.5,           // a macro level costs base x 1.5^level
+  // the macros: base cost, the title that unlocks them (index), what a level does
+  Q4_MACRO_BASE: { intern: 20, autofill: 60, vlookup: 150, cond: 300, pivotm: 800, pq: 4000 } as Record<string, number>,
+  Q4_MACRO_AT: { intern: 0, autofill: 1, vlookup: 2, cond: 3, pivotm: 3, pq: 5 } as Record<string, number>,
+  Q4_INTERN_SUMS: 0.5,            // AutoSums a second, a level
+  Q4_AUTOFILL_CELLS: 1,           // cells a second, a level
+  Q4_VLOOKUP: 0.25,               // +25% a filled cell, a level
+  Q4_COND: 0.02, Q4_COND_MAX: 0.40,   // +2% BALANCED chance a level, 40% at most
+  Q4_PIVOTM_TURNS: 0.3,           // turns a second, a level
+  Q4_PQ: 1,                       // Power Query: +100% of what the macros earn, a level (added, not multiplied)
+  Q4_PIVOT_AT: 2,                 // the pivot spinner unlocks at Analyst
+  Q4_NOISE: 0.5, Q4_NOISE_FLICK: 1, Q4_NOISE_SORT: 1.5, Q4_NOISE_SPIN: 1,   // Noise a toy action makes (the Silent keys halve it)
+  Q4_BUSY_SEC: 2, Q4_IDLE_SEC: 3, Q4_BUSY_MULT: 1.5,   // looking busy while she is in: acted in the last 2 s, her visit runs x1.5; idle 3 s, it waits
 
   // --- Economy ---
   START_GOLD: 100, START_ZL: 50,

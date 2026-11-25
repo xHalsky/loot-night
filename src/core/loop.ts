@@ -10,7 +10,7 @@ import { updateCurioTimers } from '../systems/curios';
 import { updateInterrupts } from '../systems/interrupts';
 import { updateRealLife } from '../systems/reallife';
 import { updateCuddle } from '../systems/cuddle';
-import { updateExcel } from '../systems/excel';
+import { updateQ4 } from '../systems/q4';
 import { updateDungeon } from '../systems/dungeon';
 import { updateDrops } from '../systems/loot';
 import { checkNightEnd } from '../systems/night';
@@ -38,7 +38,7 @@ export function step(dt: number) {
   if (life && !busyWithHer) updateInterrupts(dt);   // her time (or nobody home): the phone waits
   updateCuddle(dt);
   updateSwitch(dt);
-  updateExcel(dt);
+  updateQ4(dt);        // Q4: the toys' animations, Hustle, the macros all night (#55)
   updateDungeon(dt);     // walking, battle, loot
   updateDrops(dt);
   updatePacing(dt);

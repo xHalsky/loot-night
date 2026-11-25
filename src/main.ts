@@ -3,7 +3,7 @@ import './ios.css';
 import { T } from './config/tuning';
 import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
-import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
+import { drawMonitor, MON_W, MON_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
 import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml, preBusyHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
@@ -19,7 +19,9 @@ import { startPre, cancelPre, episodeAnswer } from './systems/preemptive';
 import type { PreId } from './data/preemptive';
 import { buildCity, openService, servicePick, serviceRun } from './systems/town';
 import { monUiLiveHtml } from './ui/town';
-import { altTab, excelInput } from './systems/excel';
+import { altTab } from './systems/excel';
+import { q4Sum, q4PromoOk } from './systems/q4';
+import { q4Down, q4Move, q4Up, q4CursorKind, q4Dragging } from './render/q4View';
 import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, answerSpeaker, phoneAction, setPhoneHold, textReply, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, cancelMonster } from './systems/monster';
 import { monsterView, monsterTilt, monsterDown, monsterMove, monsterUp, monsterGrabbing, EB_SCENE } from './ui/monsterScene';
@@ -448,18 +450,20 @@ document.addEventListener('contextmenu', ev => {
   if (kind === 'bag') equipItemOn(a, N().heroTab); else unequip(Number(a), b);
 });
 
+// Q4 (step 4, #55): the mouse on Excel, in the game screen's px (474 x 232); drags go on outside the monitor
+const q4XY = (ev: PointerEvent) => { const r = monCanvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 474, ((ev.clientY - r.top) / r.height) * 232] as const; };
+const q4On = () => { const n = S.g.night; return !!n && !S.g.paused && n.monitor === 'excel' && !n.switching && n.monitorOff <= 0 && !n.game; };
 monCanvas.addEventListener('pointerdown', ev => {
-  const n = S.g.night;
-  if (!n || S.g.paused) return;
-  const r = monCanvas.getBoundingClientRect();
-  const x = (ev.clientX - r.left) * (MON_W / r.width);
-  const y = (ev.clientY - r.top) * (MON_H / r.height);
-  if (n.monitor === 'excel') {
-    const b = XL_BUTTONS.find(b => x >= b.x && x <= b.x + b.w && y >= XL_BTN_Y && y <= XL_BTN_Y + XL_BTN_H);
-    if (b) excelInput(b.cmd);
-    return;
-  }
+  if (!q4On() || ev.button !== 0) return;
+  if (q4Down(...q4XY(ev), performance.now())) ev.preventDefault();
 });
+monCanvas.addEventListener('pointermove', ev => {
+  if (!q4On()) { monCanvas.style.cursor = 'default'; return; }
+  const [x, y] = q4XY(ev), k = q4CursorKind(x, y);
+  monCanvas.style.cursor = k === 'pointer' ? PK.q4Cursor('arrow') : PK.q4Cursor(k);
+});
+document.addEventListener('pointermove', ev => { if (q4Dragging() && S.g.night) q4Move(...q4XY(ev), performance.now()); });
+document.addEventListener('pointerup', () => { if (q4Dragging()) q4Up(performance.now()); });
 
 // Away from the desk (a pre-emptive action): nothing on the desk reacts, only the away card.
 window.addEventListener('pointerdown', ev => {
@@ -502,10 +506,9 @@ window.addEventListener('keydown', ev => {
     if (gm.kind === 'monster' && (ev.key === ' ' || ev.code === 'Space')) { ev.preventDefault(); monsterTilt(true); return; }   // Space tilts the can, wherever it is (#61, #62)
     return;
   }
-  if (n.monitor === 'excel') {
-    const map: Record<string, 'left' | 'right' | 'rotate' | 'down' | 'drop'> = { a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right', w: 'rotate', arrowup: 'rotate', s: 'down', arrowdown: 'down', ' ': 'drop' };
-    const cmd = map[k];
-    if (cmd) { ev.preventDefault(); excelInput(cmd); }
+  if (n.monitor === 'excel') {   // Q4: Space is AutoSum; Enter closes the promotion
+    if (ev.key === ' ' || ev.code === 'Space') { ev.preventDefault(); if (!ev.repeat) q4Sum(); }
+    else if (ev.key === 'Enter' && n.q4.promo) { ev.preventDefault(); q4PromoOk(); }
     return;
   }
   g.heroes.forEach((h, hi) => {

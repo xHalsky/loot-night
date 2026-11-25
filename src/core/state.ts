@@ -121,9 +121,25 @@ export interface DogState { stage: 'away' | 'up' | 'happy'; t: number; next: num
 /** She leans into your face from the right, asking three things (docs/design/her.md, #65). */
 export interface LapState { stage: 'arrive' | 'ask' | 'react' | 'leave'; t: number; q: number; asked: number; order: number[]; sweet: number; rude: number; face: 'smile' | 'neutral' | 'pout' | 'blush' | 'wink'; line: string; outfit: string }
 
-// Excel: a slow spreadsheet Tetris. Filled rows pay overtime gold.
-export interface ExcelPiece { k: number; cells: [number, number][]; x: number; y: number }
-export interface ExcelState { board: number[][]; piece: ExcelPiece | null; next: number; fallT: number; rows: number; pay: number; clearFx: number; crashFx: number }
+// Q4, Excel: the clicker that pays zl (#55, systems/q4.ts).
+/** Q4 for the whole save (#55): lifetime zl earned in Q4 (the titles come from it) and each macro's level. */
+export interface Q4Save { life: number; rank: number; macros: Record<string, number> }
+/** Q4 tonight: what it paid, Sort, Hustle, the toys' state (their animations), looking busy, the promotion to show. */
+export interface Q4Night {
+  tonight: number;                 // zl Q4 paid tonight (the morning shows it)
+  sortT: number; sortCd: number;   // Sort's x2 left, its cooldown
+  flapT: number;                   // the split-flap reshuffle, counting down
+  charge: number; hustle: number;  // Hustle: charged in the RPG (0..1), in Excel what is left of it (0..1, x1 to x3)
+  lastAct: number;                 // the night's clock (threat) of the last toy action: looking busy
+  asked: boolean;                  // she is in and you sat idle: "What are you working on?"
+  roll: number; stamp: number; sums: number;   // AutoSum: the roll and the BALANCED stamp counting down; how many so far (the column's numbers)
+  fill: { n: number; done: number; t: number; hold: number } | null;   // a flick: cells to fill, filled, the cascade's clock, the hold after it
+  pivot: { ang: number; om: number; acc: number; grab: boolean };      // the spinner: angle, its spin (rad/s), the angle toward the next paid turn, held
+  auto: { sum: number; fill: number; turn: number };                  // the macros' fractions toward the next press, cell, turn
+  pops: { s: string; toy: string; i: number; t: number }[];           // the zl that just paid, rising over the toy that paid it
+  promo: { title: number; t: number } | null;                          // a promotion to show (its dialog), and since when
+  last: 'sum' | 'fill' | 'sort' | 'pivot';                             // the toy used last (the formula bar)
+}
 
 /** A pre-emptive action in progress. stage: doing it; ask = her "stay for one episode?"; episode = staying.
  *  away: you are not at the desk. withHer: her apartment routine pauses (she is with you). */
@@ -181,7 +197,7 @@ export interface Night {
   cansHidden: boolean;
   interrupts: Interrupt[];
   game: MiniGame | null;
-  excel: ExcelState;
+  q4: Q4Night;
   pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
   phApp?: 'home' | 'messages' | 'babe' | 'boys'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
@@ -216,6 +232,7 @@ export interface Results {
   ending: 'sleep' | 'dawn' | 'unplugged';
   endClock: number; stars: number; depth: number; prevRecord: number;
   debtBefore: number; debtAfter: number; mood: number; caught: boolean;
+  q4?: number;                     // zl Q4 paid that night (#55)
   unidentified: number; nearMisses: string[];
   goals: { deep: boolean; unseen: boolean; sweet: boolean; target: number };   // the three stars (#54, 3.1)
 }
@@ -230,6 +247,8 @@ export interface GameState {
   furniture: Record<'training' | 'inn' | 'library' | 'treasury', number>;   // city building levels
   sleepDebt: number;
   monsters: number;
+  q4: Q4Save;           // Q4: lifetime zl and the macros (#55)
+  owned: string[];      // the Shop's lasting things you bought (#55, 4.6)
   bestStars: number; record: number; nightsPlayed: number;
   mapPath: (string | null)[];    // the dungeon map (#48): what each floor was the last time you entered it, by floor number
   tipsSeen: string[];   // first-time tips already shown (#28)
@@ -265,7 +284,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0, floorCans: [],
+    sleepDebt: 0, monsters: 3, q4: { life: 0, rank: 0, macros: {} }, owned: [], bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0, floorCans: [],
     pendingListings: [], pity: 0, uid: 1, checkpoints: [1], startFloor: 1, drops: 0, legendaryFound: false,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1, realLifeOff: false,
     results: null, morning: null,

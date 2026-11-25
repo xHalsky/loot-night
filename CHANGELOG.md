@@ -3,6 +3,25 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.75.0 (2026-11-25)
+
+- **Q4: Excel is your job now** (step 4, #55; grid doc 7i). The spreadsheet Tetris is gone; Excel is a maximised
+  Windows 98 "Q4_report_FINAL_v3.xls" that pays złoty on every action, with its own sound, a "+N zł" pop and an
+  animation: AutoSum (the big Σ or Space; now and then BALANCED, x5), the fill flick (drag the corner down: further
+  and faster fill more cells), Sort (everything x2 for 5 s, then a cooldown), the pivot spinner from Analyst (grab it
+  and fling it; every turn pays). The Macros pane sells automation that earns all night, in the RPG and the town too:
+  Intern, AutoFill, VLOOKUP, Conditional Formatting, Pivot macro, Power Query.
+- **Titles come fast** (Intern to Director by lifetime złoty, each x1.25 on Q4), each with Excel's "Congrats on your
+  promotion!" dialog and confetti; Q4 is saved across nights and the morning shows what it paid.
+- **Hustle:** right after alt-tabbing in, the toys pay up to x3, falling to x1 over 15 s; it recharges in the RPG.
+- **Looking busy:** on a Peek, with Excel up, acting in Q4 makes her leave sooner; sit idle 3 s and she waits, her
+  note asking "What are you working on?". It never catches you by itself. Every toy action makes a little Noise.
+- Healero's first-time tip explains it. Numbers are grid doc 7i's (to be tuned in playtests). Sims (good bot now
+  works in Excel during her visits, two AutoSums a second): before, good 3 stars, caught 0, avg Noise 19 to 36;
+  after, good 3 stars, caught 0, avg Noise 53 to 77, Q4 13 to 50 zł a night; idle as before (it never opens Excel).
+- `test/q4.py` plays every toy, the dialog, a macro and looking busy next to stills 004 and 011 to 014. The Shop app
+  (the rest of #55) comes next.
+
 ## 0.74.0 (2026-11-25)
 
 - **The small pieces, second half** (V11, #76; grid doc 7k):

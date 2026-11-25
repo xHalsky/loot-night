@@ -2,7 +2,7 @@ import { T } from '../config/tuning';
 import { PK } from 'virtual:pagekit';
 import { S, N } from '../core/state';
 import {  type Px } from '../data/heroes';
-import { PIECES } from '../systems/excel';
+import { q4View, q4SetHits } from '../render/q4View';
 import { sfx } from './audio';
 import { GAME_W, GAME_H, BATTLE_W } from './layout';
 
@@ -55,140 +55,18 @@ function drawDungeon(c: CanvasRenderingContext2D) {
 function sidePanelBack(c: CanvasRenderingContext2D) { c.fillStyle = '#2a1f14'; c.fillRect(BATTLE_W, 0, GAME_W - BATTLE_W, GAME_H); }
 
 
-// ---------------- Excel: a spreadsheet that happens to be Tetris ----------------
-// Layout mimics Excel: title bar, ribbon, formula bar, column letters, row numbers, sheet tabs.
-export const XL = { x: 98, y: 104, cw: 34, ch: 18 };
-export const XL_BUTTONS: { cmd: 'left' | 'rotate' | 'down' | 'right' | 'drop'; label: string; x: number; w: number }[] = [
-  { cmd: 'left', label: '< Move', x: 330, w: 52 }, { cmd: 'right', label: 'Move >', x: 386, w: 52 }, { cmd: 'rotate', label: 'Rotate', x: 442, w: 52 },
-  { cmd: 'down', label: 'Down', x: 498, w: 44 }, { cmd: 'drop', label: 'Drop', x: 546, w: 60 },
-];
-export const XL_BTN_Y = 42, XL_BTN_H = 22, XL_BTN_W = 0;
-const XL_FILL = ['#ddebf7', '#ffeb9c', '#c6efce', '#e2efda', '#fce4d6', '#ededed', '#ffc7ce'];
-const XL_INK = ['#1f4e79', '#7f6000', '#006100', '#375623', '#843c0c', '#3a3a3a', '#9c0006'];
-const SANS = 'Inter, Calibri, Arial, sans-serif';
-const COLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').concat(['AA', 'AB', 'AC']);
-
-function xlText(c: CanvasRenderingContext2D, s: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'left', weight = 400) {
-  c.font = `${weight} ${size}px ${SANS}`; c.fillStyle = color; c.textAlign = align; c.textBaseline = 'alphabetic'; c.fillText(s, x, y);
-}
-const cellValue = (cx: number, cy: number, k: number) => ((cx * 731 + cy * 397 + k * 157) % 9000 + 120).toLocaleString('en-US');
-
+// ---------------- Excel: Q4, the clicker that pays zl (step 4, #55), drawn by the renderer ----------------
+let q4At = 0, q4Last: HTMLCanvasElement | null = null;
 function drawExcel(c: CanvasRenderingContext2D) {
-  const n = N();
-  const ex = n.excel;
-  const { x: bx, y: by, cw, ch } = XL;
-  const NC = Math.ceil((MON_W - 30) / cw), NR = Math.floor((MON_H - by - 20) / ch);   // the sheet fills the whole game screen (#49)
-  // Title bar
-  c.fillStyle = '#217346'; c.fillRect(0, 0, MON_W, 22);
-  xlText(c, 'AutoSave', 8, 15, 10, '#d9ead3'); c.fillStyle = '#d9ead3'; c.fillRect(56, 8, 14, 7);
-  xlText(c, 'Q4_report_FINAL_v3.xlsx - Excel', MON_W / 2, 15, 11, '#ffffff', 'center', 600);
-  xlText(c, '—   ▢   ✕', MON_W - 10, 15, 11, '#ffffff', 'right');
-  // Ribbon tabs
-  c.fillStyle = '#f3f3f3'; c.fillRect(0, 22, MON_W, 18);
-  ['File', 'Home', 'Insert', 'Page Layout', 'Formulas', 'Data', 'Review', 'View'].forEach((t, i) => {
-    const x = 10 + [0, 32, 72, 114, 184, 246, 284, 330][i];
-    xlText(c, t, x, 35, 10, i === 1 ? '#217346' : '#444', 'left', i === 1 ? 600 : 400);
-    if (i === 1) { c.fillStyle = '#217346'; c.fillRect(x, 38, 28, 2); }
-  });
-  // Ribbon toolbar (left: fake tools, right: the controls as ribbon buttons)
-  c.fillStyle = '#fbfbfb'; c.fillRect(0, 40, MON_W, 26);
-  c.strokeStyle = '#e1e1e1'; c.beginPath(); c.moveTo(0, 65.5); c.lineTo(MON_W, 65.5); c.stroke();
-  xlText(c, 'Paste', 10, 57, 10, '#444'); xlText(c, 'Calibri', 50, 57, 10, '#444'); xlText(c, '11', 96, 57, 10, '#444');
-  xlText(c, 'B', 118, 57, 11, '#444', 'left', 700); xlText(c, 'I', 132, 57, 11, '#444'); xlText(c, 'U', 142, 57, 11, '#444');
-  xlText(c, 'Conditional Formatting', 164, 57, 10, '#444'); xlText(c, 'Σ AutoSum', 276, 57, 10, '#444');
-  for (const b of XL_BUTTONS) {
-    c.fillStyle = '#ffffff'; c.fillRect(b.x, XL_BTN_Y, b.w, XL_BTN_H);
-    c.strokeStyle = '#c8c8c8'; c.strokeRect(b.x + 0.5, XL_BTN_Y + 0.5, b.w - 1, XL_BTN_H - 1);
-    xlText(c, b.label, b.x + b.w / 2, XL_BTN_Y + 15, 10, b.cmd === 'drop' ? '#217346' : '#333', 'center', b.cmd === 'drop' ? 600 : 400);
+  if (!PK.ready()) { c.fillStyle = '#c0c0c0'; c.fillRect(0, 0, MON_W, MON_H); return; }
+  const now = performance.now();
+  if (!q4Last || now - q4At >= 33) {   // 30 fps
+    q4At = now;
+    const r = PK.q4(q4View(now), now / 1000);
+    q4SetHits(r.hits); q4Last = r.canvas;
   }
-  // Formula bar
-  const p = ex.piece;
-  const active = p ? `${COLS[2 + p.x]}${Math.max(1, p.y + 1)}` : 'C1';
-  c.fillStyle = '#ffffff'; c.fillRect(0, 66, MON_W, 20);
-  c.strokeStyle = '#d4d4d4'; c.strokeRect(4.5, 68.5, 50, 15);
-  xlText(c, active, 8, 80, 10, '#333');
-  xlText(c, 'fx', 66, 80, 11, '#777', 'left', 600);
-  xlText(c, p ? `=SUM(C${Math.max(1, p.y + 1)}:J${Math.max(1, p.y + 1)})` : '=SUM(C1:J1)', 86, 80, 10, '#333');
-  // Column letters + row numbers
-  c.fillStyle = '#f0f0f0'; c.fillRect(0, 86, MON_W, 18); c.fillRect(0, 104, 30, ch * NR);
-  for (let i = 0; i < NC; i++) {
-    const x = 30 + i * cw;
-    const inBoard = i >= 2 && i < 10;
-    if (p && inBoard && p.cells.some(([cx]) => 2 + p.x + cx === i)) { c.fillStyle = '#d2e4d6'; c.fillRect(x, 86, cw, 18); }
-    xlText(c, COLS[i], x + cw / 2, 99, 10, '#555', 'center');
-  }
-  for (let j = 0; j < NR; j++) xlText(c, String(j + 1), 15, by + j * ch + 13, 10, '#555', 'center');
-  // Grid
-  c.fillStyle = '#ffffff'; c.fillRect(30, by, MON_W - 30, ch * NR);
-  c.strokeStyle = '#e1e1e1'; c.lineWidth = 1;
-  for (let i = 0; i <= NC; i++) { c.beginPath(); c.moveTo(30 + i * cw + 0.5, 86); c.lineTo(30 + i * cw + 0.5, by + NR * ch); c.stroke(); }
-  for (let j = 0; j <= NR; j++) { c.beginPath(); c.moveTo(0, by + j * ch + 0.5); c.lineTo(MON_W, by + j * ch + 0.5); c.stroke(); }
-  // Column A/B labels for realism
-  ['Region', 'North', 'South', 'East', 'West', 'Central', 'Online', 'Retail', 'B2B', 'Export', 'Misc', 'TOTAL'].forEach((t, j) => xlText(c, t, 34, by + j * ch + 13, 10, j === 0 || j === 11 ? '#000' : '#333', 'left', j === 0 || j === 11 ? 700 : 400));
-  // Board frame (print area style, dashed)
-  c.save(); c.setLineDash([4, 3]); c.strokeStyle = '#7f7f7f'; c.strokeRect(bx + 0.5, by + 0.5, 8 * cw, 12 * ch); c.restore();
-  const cell = (cx: number, cy: number, k: number, mode: 'data' | 'active' | 'ghost') => {
-    if (cy < 0) return;
-    const px = bx + cx * cw, py = by + cy * ch;
-    if (mode === 'ghost') {
-      c.save(); c.setLineDash([3, 2]); c.strokeStyle = '#217346'; c.strokeRect(px + 1.5, py + 1.5, cw - 3, ch - 3); c.restore();
-      return;
-    }
-    c.fillStyle = mode === 'active' ? '#e8f2ea' : XL_FILL[k];
-    c.fillRect(px + 1, py + 1, cw - 1, ch - 1);
-    xlText(c, cellValue(cx, cy, k), px + cw - 3, py + 13, 9, mode === 'active' ? '#000' : XL_INK[k], 'right');
-  };
-  ex.board.forEach((row, j) => row.forEach((v, i) => { if (v) cell(i, j, v - 1, 'data'); }));
-  if (p) {
-    let gy = p.y;
-    const fitsAt = (yy: number) => p.cells.every(([cx, cy]) => { const yyy = yy + cy; return yyy < 12 && (yyy < 0 || ex.board[yyy][p.x + cx] === 0); });
-    while (fitsAt(gy + 1)) gy++;
-    if (gy !== p.y) p.cells.forEach(([cx, cy]) => cell(p.x + cx, gy + cy, p.k, 'ghost'));
-    p.cells.forEach(([cx, cy]) => cell(p.x + cx, p.y + cy, p.k, 'active'));
-    // Excel selection border around the active block + fill handle
-    c.strokeStyle = '#217346'; c.lineWidth = 2;
-    const has = (x: number, y: number) => p.cells.some(([cx, cy]) => cx === x && cy === y);
-    for (const [cx, cy] of p.cells) {
-      if (p.y + cy < 0) continue;
-      const px = bx + (p.x + cx) * cw, py = by + (p.y + cy) * ch;
-      c.beginPath();
-      if (!has(cx, cy - 1)) { c.moveTo(px, py + 1); c.lineTo(px + cw, py + 1); }
-      if (!has(cx, cy + 1)) { c.moveTo(px, py + ch); c.lineTo(px + cw, py + ch); }
-      if (!has(cx - 1, cy)) { c.moveTo(px + 1, py); c.lineTo(px + 1, py + ch); }
-      if (!has(cx + 1, cy)) { c.moveTo(px + cw, py); c.lineTo(px + cw, py + ch); }
-      c.stroke();
-    }
-    const last = p.cells.reduce((a, b) => (b[1] > a[1] || (b[1] === a[1] && b[0] > a[0]) ? b : a));
-    if (p.y + last[1] >= 0) { c.fillStyle = '#217346'; c.fillRect(bx + (p.x + last[0] + 1) * cw - 3, by + (p.y + last[1] + 1) * ch - 3, 5, 5); }
-    c.lineWidth = 1;
-  }
-  if (ex.clearFx > 0) { c.fillStyle = `rgba(198,239,206,${ex.clearFx})`; c.fillRect(bx, by, 8 * cw, 12 * ch); }
-  if (ex.crashFx > 0) { c.fillStyle = `rgba(255,199,206,${Math.min(0.85, ex.crashFx)})`; c.fillRect(bx, by, 8 * cw, 12 * ch); xlText(c, '#REF!', bx + 4 * cw, by + 110, 22, '#9c0006', 'center', 700); }
-  // Side table in columns L:P (a real-looking little report)
-  const tx = 30 + 11 * cw, tw = 5 * cw;
-  c.fillStyle = '#217346'; c.fillRect(tx, by, tw, ch);
-  xlText(c, 'Overtime log', tx + 4, by + 13, 10, '#fff', 'left', 600);
-  const rows: [string, string][] = [['Rows filled', String(ex.rows)], ['Overtime pay', `${ex.pay} g`], ['Per row', `${T.EXCEL_ROW_GOLD} g`], ['Next block', '']];
-  rows.forEach(([k, v], i) => {
-    const y = by + (i + 1) * ch;
-    c.fillStyle = i % 2 ? '#f2f8f4' : '#ffffff'; c.fillRect(tx, y, tw, ch);
-    xlText(c, k, tx + 4, y + 13, 10, '#333'); xlText(c, v, tx + tw - 4, y + 13, 10, '#000', 'right', 600);
-  });
-  PIECES[ex.next].forEach(([cx, cy]) => { c.fillStyle = XL_FILL[ex.next]; c.fillRect(tx + 3 * cw + cx * 9, by + 4 * ch + 3 + cy * 7, 8, 6); c.strokeStyle = '#999'; c.strokeRect(tx + 3 * cw + cx * 9 + 0.5, by + 4 * ch + 3 + cy * 7 + 0.5, 7, 5); });
-  c.strokeStyle = '#a6a6a6'; c.strokeRect(tx + 0.5, by + 0.5, tw, ch * 5);
-  // Note (Excel comment) with the rules
-  const nx = tx + 4, ny = by + 6 * ch + 4;
-  c.fillStyle = '#fff2cc'; c.fillRect(nx, ny, tw - 8, ch * 5 + 10);
-  c.strokeStyle = '#bf9000'; c.strokeRect(nx + 0.5, ny + 0.5, tw - 9, ch * 5 + 9);
-  c.fillStyle = '#c00000'; c.beginPath(); c.moveTo(nx + tw - 16, ny); c.lineTo(nx + tw - 8, ny); c.lineTo(nx + tw - 8, ny + 8); c.fill();
-  ['Note:', 'Fill a whole row C:J', 'and it clears + pays', 'overtime. Excel open =', 'she sees you work.', 'A/D W S Space · Tab'].forEach((l, i) => xlText(c, l, nx + 5, ny + 13 + i * 15, 10, '#3f3100', 'left', i === 0 ? 700 : 400));
-  // Sheet tabs + status bar
-  const sb = by + NR * ch;
-  c.fillStyle = '#f0f0f0'; c.fillRect(0, sb, MON_W, MON_H - sb);
-  c.fillStyle = '#ffffff'; c.fillRect(40, sb, 54, 18);
-  xlText(c, 'Q4', 67, sb + 13, 10, '#217346', 'center', 600); c.fillStyle = '#217346'; c.fillRect(40, sb + 16, 54, 2);
-  xlText(c, 'Overtime', 120, sb + 13, 10, '#555', 'center'); xlText(c, '+', 160, sb + 13, 12, '#555', 'center');
-  xlText(c, `Ready     Overtime ${n.excel.pay} g`, MON_W - 8, sb + 13, 10, '#555', 'right');
+  c.imageSmoothingEnabled = false;
+  c.drawImage(q4Last, 0, 0, 474, 232, 0, 0, MON_W, MON_H);
 }
 
 

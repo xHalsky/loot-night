@@ -36,7 +36,8 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
   in `main.ts`): pause and How to hide into `#modalArea`, the microsleep's lids into `#microArea` (no input of its
   own), away from the PC and the inspect window into `#rsSmall` over the right screen. Coach marks go into
   `#coachArea` and the real-life tooltips into `#tipArea` (both let the pointer through); the RPG's tooltip card is
-  part of the battle area's or the panel's view (`setRpgTip` in `liveRpg.ts`).
+  part of the battle area's or the panel's view (`setRpgTip` in `liveRpg.ts`). Q4 (`q4View.ts`) is drawn into the
+  monitor canvas (`ui/monitor.ts`) at 30 fps when Excel is up; its hit regions come back in game-screen px.
 
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.

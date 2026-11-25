@@ -64,6 +64,10 @@ export const PK = {
   away: (bg, st, t) => drawAwayLive(bg, st, t),
   inspect: (bg, o, t) => drawInspectLive(bg, o, t),
   /** A coach mark over the whole frame, transparent (V11): id, { title, text }; hits: the close box, then the callout. */
+  /** Q4, the Excel clicker (step 4, #55; grid doc 7i): the game screen, 474 x 232, from the game's view; hits in its px. */
+  q4: (st, t) => drawQ4Live(st, t),
+  /** Excel's pointers as CSS cursors: 'arrow', 'cell', 'fill'. */
+  q4Cursor: (kind) => q4Cursor(kind),
   coach: (id, o, t) => drawCoachLive(id, o, t),
   /** A tooltip over the whole frame, transparent (V11): { style: desk | pc | her, title, key, lines, note } at the pointer. */
   tip: (tip, x, y) => drawTipLive(tip, x, y),

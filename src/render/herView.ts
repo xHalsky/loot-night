@@ -45,6 +45,7 @@ function middle(hover: string) {
   if (v.stage === 'passing') { label = 'footsteps'; body = 'She walked past. Phew.'; tone = 'warn'; }
   if (v.stage === 'in') {
     label = 'she is in'; body = v.result === 'caught' ? 'Caught.' : v.result === 'look' ? '"Nothing. Just looking at you."' : v.checked ? 'She bought it.' : '"Still working, babe?"'; tone = v.result === 'caught' ? 'alarm' : 'warn';
+    if (v.result === 'pass' && n.q4.asked) body = '"What are you working on?"';   // looking busy (#55): you sat idle in Excel
     const secs = `${Math.max(0, Math.ceil(v.t))} s`;
     if (v.result === 'offer') return { win: { label: 'SNACK RUN', right: secs, line: '"I made you a sandwich."', warm: true, pills: [{ name: 'Take the plate', cost: `party +${Math.round(T.SNACK_HEAL * 100)}% HP`, act: 'takePlate', arg: '0', tip: 'plate' }] as Pill[] } };
     if (v.result === 'ask') return { win: { label: 'CUDDLE', right: secs, line: '"Come cuddle for a bit?"', pills: [{ name: 'Come here', cost: `${T.CUDDLE_SEC} s with her`, act: 'cuddle', arg: '1', tip: 'cuddleYes' }, { name: 'One sec, babe', cost: 'she sighs', act: 'cuddle', arg: '0', tip: 'cuddleNo' }] as Pill[] } };

@@ -44,7 +44,8 @@ picked by how the night ended (`morningScene`): green, asleep face down under th
 foot end; yellow, turned away with one foot out and her phone lit on your pillow; red, asleep on the couch wrapped
 in the duvet, the TV the only light; unplugged, the empty bed, her clip on her pillow and a note on yours. The caption
 in a night-plum window at the bottom; the summary in her beige paper window on the right: what the auction house sold,
-Wallet, Gold, Sleep debt and Best stars, LAST NIGHT's three stars with the reward each earned or "missed", the
+Wallet, Gold, Sleep debt and Best stars, LAST NIGHT's three stars with the reward each earned or "missed", what Q4
+paid ("Q4 last night: +N zł", [desk.md](desk.md)), the
 sleep-debt line, and her pink button for the next night (Enter and Esc too). The CGs are baked placeholders until
 Paweł's stills. Auction listings pay out here in zł. **One reward per star** (`toMorning`): loot only comes from the game, so only
 the RPG star pays in loot.

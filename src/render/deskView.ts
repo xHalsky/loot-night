@@ -51,7 +51,7 @@ export function deskView(phoneHover = false) {
   const ph = deskPhone();
   return {
     screen: n.monitor === 'excel' ? 'excel' : 'rpg',
-    clock: fmtClock(n.clock), zl: g.zl, witching: n.clock >= T.BEDTIME, sleepOk: n.clock >= T.EARLIEST_SLEEP, flash,
+    clock: fmtClock(n.clock), zl: Math.floor(g.zl), witching: n.clock >= T.BEDTIME, sleepOk: n.clock >= T.EARLIEST_SLEEP, flash,
     tired: Math.round(n.tired), yawn: T.TIRED_YAWN, zone: n.headset ? Math.round(n.zone * 30) : 0, headset: n.headset,
     cans: g.monsters, hideCans, cansHidden: cansHidden && !hideCans, drinkAct: hideCans ? 'hideCans' : canDrink && !cansHidden ? 'openMonster' : '',
     note: [n.deepest >= n.deepTarget ? 'y' : '!', n.everCaught ? 'x' : 'y', red ? '!' : 'y'], floorGoal: n.deepTarget,

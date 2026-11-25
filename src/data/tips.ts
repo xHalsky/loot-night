@@ -2,7 +2,7 @@
 // happens, as a line in the feed from her or from the guild chat (Magoo and Healero are your party: your friends Danny and Mike). Short, in their
 // voice, no walls of text. Plain text only (no em dashes).
 export type TipId = 'her_show' | 'plan' | 'pass' | 'caught' | 'endcue' | 'dog' | 'yawn'
-  | 'headset' | 'bed' | 'peek' | 'map' | 'shower';   // the core loop's firsts are coach marks instead (COACH below)
+  | 'headset' | 'bed' | 'peek' | 'map' | 'shower' | 'q4';   // the core loop's firsts are coach marks instead (COACH below)
 export const TIPS: Record<TipId, { who: 'her' | 'Magoo' | 'Healero'; text: string }> = {
   her_show: { who: 'her', text: "I'm watching my show, babe. Don't play all night, okay?" },
   plan: { who: 'Magoo', text: 'forgot the layout of your flat? the plan is taped to your wall, left of the door. click it' },
@@ -16,6 +16,7 @@ export const TIPS: Record<TipId, { who: 'her' | 'Magoo' | 'Healero'; text: strin
   peek: { who: 'Magoo', text: 'the wider you open the door, the more you see. and the more she sees you' },
   map: { who: 'Magoo', text: 'pick the next floor. hover a node to see what is there' },
   shower: { who: 'Healero', text: 'shower = 90 s of freedom. go loud' },
+  q4: { who: 'Healero', text: 'q4 pays real zl btw. space = autosum, drag the cell corner, sort for x2. quick visits pay best' },
 };
 /** On the first night her note names the cue that ends each activity (the tell that she is about to move). */
 export const END_HINT: Record<string, string> = {
