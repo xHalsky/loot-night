@@ -8,6 +8,7 @@ declare module 'virtual:pagekit' {
     ebreak(bg: HTMLCanvasElement | null, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     ebWarm(n: number, ms: number): boolean;
     noSignal(t: number): HTMLCanvasElement;
+    caught(rung: number, T: number, cost: string): HTMLCanvasElement;
     cableStart(deal: { kinds: number[]; colors: number[]; sockets: number[]; plugged: boolean[] }, plug: (p: number, slot: number) => boolean, elapsed: () => number): void;
     cableDown(x: number, y: number): boolean; cableMove(x: number, y: number): boolean; cableUp(): void; cableDragging(): boolean; cableWarm(ms: number): boolean; cablePoints(): { plugs: number[][]; slots: number[][] };
     cables(bg: HTMLCanvasElement | null, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };

@@ -83,7 +83,7 @@ happening.
   until the player does it: Tab, answering her, opening the phone, equipping, a skill. It also clears when the
   moment passes, after `COACH_MAX_SEC` real seconds, or with ✕. Once per save. A more important one bumps a
   less important one (footsteps > doorway > phone > wind-up > loot), and the bumped one comes back next time.
-  Hidden during the jumpscare.
+  Hidden while her caught screen is up.
 - **First-time tips** (`TIPS` in `src/data/tips.ts`, `src/systems/tips.ts`): everything else gets one line from
   her or the guild chat (Magoo and Healero, your party) in the feed, pinned at its top for `TIP_PIN_SEC`. Once per
   save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`) and the plan on the wall

@@ -20,8 +20,8 @@ const CAUGHT_READY = Promise.all(CAUGHT_SRC.map((src, k) => new Promise((res) =>
 const CAUGHT_COST = ['Caught 1 of 3 tonight · Flow reset', 'Caught 2 of 3 · Guilt: the party deals 10% less for 30 s', 'Caught 3 · she turns your monitor off for 8 s · Flow reset'];
 const CAUGHT_SCARE = 0.8;
 let CAUGHT_CANVAS = null;
-// n: 1, 2, 3 (the rung); T: seconds since the catch
-function drawCaught(n, T) {
+// n: 1, 2, 3 (the rung); T: seconds since the catch; cost: the line under WE NEED TO TALK. (the game passes its own)
+function drawCaught(n, T, cost = CAUGHT_COST[n - 1]) {
   if (!CAUGHT_CANVAS) { CAUGHT_CANVAS = document.createElement('canvas'); CAUGHT_CANVAS.width = 640; CAUGHT_CANVAS.height = 360; }
   setRes(640, 360); CLIP = null;
   const F = buf('caught', 640, 360); F.I.fill(-1); bind(F);
@@ -45,11 +45,21 @@ function drawCaught(n, T) {
     heart9(wx + 14, wy - 6, true);
     text('Babe', wx + 24, wy - 6, 'tiny', C9.plum);
     text('WE NEED TO TALK.', wx + 18, wy + 12, 'tinyL', C9.crimson, { shadow: C9.void });
-    text(CAUGHT_COST[n - 1], wx + 18, wy + 40, 'tiny', C9.lilac);
+    text(cost, wx + 18, wy + 40, 'tiny', C9.lilac);
     if (Math.floor(T * 2.5) % 2 === 0) spr(wx + ww - 18, wy + wh - 13, ['xxxxx', '.xxx.', '..x..'], { x: C9.moon });
   }
   const ctx = CAUGHT_CANVAS.getContext('2d'), img = ctx.createImageData(640, 360), D = img.data;
   for (let i = 0; i < 640 * 360; i++) { const q = PC98_RGB[F.I[i] < 0 ? 0 : F.I[i]], p = i * 4; D[p] = q[0]; D[p + 1] = q[1]; D[p + 2] = q[2]; D[p + 3] = 255; }
   ctx.putImageData(img, 0, 0);
   return CAUGHT_CANVAS;
+}
+
+// ---------------------------------------------------------------- live (V7, #72): the game's catch
+// After the scare the picture only changes with the blinking ▼, so the held screen is drawn once per blink.
+let CAUGHT_KEY = '';
+function drawCaughtLive(n, T, cost) {
+  const key = T >= CAUGHT_SCARE ? n + '|' + cost + '|' + (Math.floor(T * 2.5) % 2) : '';
+  if (key && key === CAUGHT_KEY && CAUGHT_CANVAS) return CAUGHT_CANVAS;
+  CAUGHT_KEY = key;
+  return drawCaught(n, T, cost);
 }

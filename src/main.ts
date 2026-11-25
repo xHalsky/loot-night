@@ -5,7 +5,7 @@ import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { hover, tooltipHtml, entryIcon, updateWindowDynamics, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml } from './ui/panels';
+import { hover, tooltipHtml, entryIcon, updateWindowDynamics, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, preBusyHtml, morningScene, planHtml, coachHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -25,6 +25,7 @@ import { openMonster, cancelMonster } from './systems/monster';
 import { monsterView, monsterTilt, monsterDown, monsterMove, monsterUp, monsterGrabbing, EB_SCENE } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawLapFx, lapUiHtml } from './ui/deskFx';
+import { caughtTick, caughtT, caughtEnd, caughtShot } from './render/caughtView';
 import { dogStroked, DOG_SPOTS } from './render/dogView';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
 import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
@@ -87,7 +88,7 @@ stage.innerHTML = `
   <div id="debug"></div>
   <div id="tooltipLayer"></div>
   <div id="ghost"></div>
-  <div id="scare"></div>
+  <canvas id="caughtArea" width="640" height="360"></canvas>
   <div id="eyelids"><div class="lid top"></div><div class="lid bot"></div><div class="lid-txt">zzz... click or press any key</div></div>`;
 
 const el = (id: string) => document.getElementById(id)!;
@@ -467,6 +468,7 @@ window.addEventListener('keydown', ev => {
   if (ev.key === 'F1') { ev.preventDefault(); g.debug = !g.debug; return; }
   if (g.screen !== 'night' || !g.night) return;
   const n = g.night;
+  if (caughtT(performance.now()) >= 0) { ev.preventDefault(); caughtEnd(performance.now()); return; }   // her screen takes the key (V7)
   if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); g.howto = false; } return; }   // the card: the night waits
   if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } g.paused = !g.paused; return; }
   if (g.paused) return;
@@ -603,6 +605,25 @@ ebCanvas.addEventListener('pointermove', ev => {
 document.addEventListener('pointerup', () => { if (cableShown) PK.cableUp(); if (S.g.night?.game?.kind === 'monster') { monsterUp(); ebCanvas.style.cursor = PK.ready() ? PK.ebCursor('hand') : 'default'; } });
 
 (window as unknown as Record<string, unknown>).__lnCables = () => PK.cablePoints();   // for the tests
+
+// Caught (V7, #72): the renderer's full-frame scare, then her screen held until a click or a key (or CAUGHT_HOLD_SEC).
+// Clicks and keys during it go to it, never to the game under it.
+const caughtCanvas = el('caughtArea') as HTMLCanvasElement, caughtCtx = caughtCanvas.getContext('2d')!;
+function drawCaughtScreen() {
+  const now = performance.now(); caughtTick(now);
+  const t = PK.ready() ? caughtT(now) : -1;
+  caughtCanvas.style.display = t >= 0 ? 'block' : 'none';
+  if (t < 0) return;
+  hover.key = '';
+  const c = caughtShot();
+  caughtCtx.drawImage(PK.caught(c.rung, t, c.line), 0, 0);
+}
+window.addEventListener('pointerdown', ev => {
+  const now = performance.now();
+  if (caughtT(now) < 0 || (ev.target as HTMLElement).closest('#debug')) return;
+  ev.preventDefault(); ev.stopImmediatePropagation(); caughtEnd(now);
+}, true);
+(window as unknown as Record<string, unknown>).__lnCaught = () => ({ t: caughtT(performance.now()), ...caughtShot() });   // for the tests
 el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
 const rsCanvas = el('rsArea') as HTMLCanvasElement, rsCtx = rsCanvas.getContext('2d')!;
@@ -713,11 +734,11 @@ function render() {
   const n = g.night;
   // the webcam and her panel (V4, #69): 15 fps, a webcam's own rate (reading the webcam back and dithering it costs a
   // few ms), on the frames the battle area and the panel skip; a click or a hover on the panel shows at once
-  const tNow = performance.now();
-  if (herDirty || (tNow - herLast >= 62 && (tNow - liveDrewAt() >= 8 || tNow - herLast >= 150))) { herLast = tNow; herDirty = false; drawDoor(doorCtx); drawHerPanel(); }
+  const tNow = performance.now(), covered = PK.ready() && caughtT(tNow) >= 0;   // her caught screen covers the whole frame (V7): nothing under it draws
+  if (!covered && (herDirty || (tNow - herLast >= 62 && (tNow - liveDrewAt() >= 8 || tNow - herLast >= 150)))) { herLast = tNow; herDirty = false; drawDoor(doorCtx); drawHerPanel(); }
   // under the energy break the right screen is dimmed behind its window: drawn four times a second, for the dim
   const behind = !(n?.game?.kind === 'monster' && PK.ready()) || performance.now() - ebBgLast > 200;
-  if (behind) {
+  if (behind && !covered) {
     drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
     drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
     drawDesk();    // V3 (#68): the right screen round the monitor, drawn by the renderer
@@ -753,12 +774,12 @@ function render() {
   if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());
   if (!g.night || g.screen !== 'night') planOpen = false;
   setHtml('planUi', planOpen ? planHtml() : '');
-  setHtml('coachUi', g.screen === 'night' && !g.paused && !g.howto && !(g.night?.scare) ? coachHtml() : '');   // never over the jumpscare
+  setHtml('coachUi', g.screen === 'night' && !g.paused && !g.howto && !(g.night?.scare) && caughtT(performance.now()) < 0 ? coachHtml() : '');   // never over the caught screen
   placeCoach();
   setHtml('pause', pauseHtml());
   setHtml('debug', debugHtml());
   drawPreview(el('pkFrame') as HTMLCanvasElement);
-  setHtml('scare', scareHtml());
+  drawCaughtScreen();   // V7 (#72)
   setHtml('tooltipLayer', inv?.moved ? '' : tooltipHtml());
 }
 

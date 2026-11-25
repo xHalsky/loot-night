@@ -105,7 +105,7 @@ export function herTip(key: string): string {
     case 'mood': return 'Her mood. It sours when she catches you or you ignore her, and recovers when you are sweet.';
     case 'heard': return 'The last thing you heard her do, and where. Her sounds tell you where she is.';
     case 'patience': return `Patience ${Math.round(100 - n.mood)}. Every heart she loses brings her to your door sooner.`;
-    case 'caught': return `Caught ${n.catches} of 3. Three and she unplugs the PC.`;
+    case 'caught': return `Caught ${n.catches} tonight. Every catch brings Guilt; the 1st also resets Flow, the 3rd turns your monitor off.`;
     case 'goodwill': return `Goodwill: earned with her. ${T.GOODWILL_RAID} buys a Raid night, ${T.GOODWILL_FORGIVE} forgives a catch.`;
     case 'noise': return `Your Noise.${n.apt.asleep ? ` Above ${T.WAKE_NOISE_FLOOR} it wakes her.` : ' How much reaches her depends on where she is.'}`;
     case 'wake': return `Waking up ${Math.round(n.apt.wake)}. At ${T.WAKE_TEXT} she texts you; full, she gets up.`;

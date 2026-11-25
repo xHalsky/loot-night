@@ -319,6 +319,7 @@ export const T = {
   HEAR_DISTANCE: { next: 2, middle: 1, far: 0.5 } as Record<string, number>,
   HEAR_MASK: { tv: 0.5, shower: 0 } as Record<string, number>,   // her activity covers your noise
   SCARE_SEC: 0.8,
+  CAUGHT_HOLD_SEC: 3.2,           // after the scare her screen stays this long so the cost can be read; a click or a key ends it (V7)
 
   // --- After midnight: she goes to bed ---
   BED_FROM: 24 * 60,

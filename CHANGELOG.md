@@ -3,6 +3,23 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.70.0 (2026-11-25)
+
+- **Caught is the redesign's** (V7, #72; grid doc 7e). The generic pixel face is gone: she stands in your doorway,
+  backlit by the hallway, a late PC-98 dating-sim portrait over the whole frame, one face per rung of the night's
+  ladder (a stern glare; glasses blank white and her face in shadow; furious, the hallway lit red). The PC-98 text
+  window: her name on a pink tab, WE NEED TO TALK., what the catch cost, a blinking ▼. The 0.8 s scare is the page's:
+  a white flash, an interlaced punch-in, a shake that settles.
+- **The line says what really happened**, from the rules and `tuning.ts`: Guilt is on every rung, so the 1st reads
+  "Caught 1 of 3 tonight · Flow reset · Guilt: the party deals 10% less for 30 s", the 4th "Caught 4 · ...". Her
+  panel's Caught tooltip no longer says three catches unplug the PC (the 3rd turns the monitor off; the PC goes when
+  her Mood fills).
+- **It holds so you can read it** (`CAUGHT_HOLD_SEC` 3.2 s after the scare). A click or a key after the scare puts it
+  away; clicks and keys while it is up never reach the game (no stray alt-tab). Nothing under it draws while it covers
+  the frame, so the scare runs at full frame rate.
+- `test/caught.py` gets caught three (and four) times with real peeks, next to stills 031 to 033. UI only: sims as
+  before.
+
 ## 0.69.0 (2026-11-25)
 
 - **The dog and the cable fix are the redesign's** (V6, #71; grid doc 7d). The renderer's shiba jumps up and rests his

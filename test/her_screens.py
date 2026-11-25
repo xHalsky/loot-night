@@ -12,7 +12,7 @@ GROUPS = {
     '3_daydream': 'His shower daydream (a thought bubble in the webcam view)',
     '4_leans_in': 'She leans into your face (the questions), over the whole screen',
     '5_morning': 'The morning vignettes',
-    '6_caught': 'Caught: the "We need to talk." jumpscare (a generic face, not her look yet)',
+    '6_caught': 'Caught: her PC-98 portrait in the doorway and WE NEED TO TALK. (V7)',
     '7_model_sheet': 'Model sheet, drawn by the game: every outfit, every face (game pixels, enlarged)',
 }
 shots = {k: [] for k in GROUPS}
@@ -145,7 +145,7 @@ async def main():
         await ev(pg, "n.lap=null"); await pg.wait_for_timeout(300)
 
         # ---- 6 caught (before the night ends) ----
-        await ev(pg, "n.scare=0.8"); await pg.wait_for_timeout(250)
+        await ev(pg, "n.catches++; n.scare=0.8"); await pg.wait_for_timeout(250)
         await shot(pg, '6_caught', 'we_need_to_talk_full_frame')
         await pg.wait_for_timeout(900)
 

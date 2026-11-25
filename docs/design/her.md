@@ -130,9 +130,18 @@ penalty). While cuddling, the party keeps the safe autopilot, Flow is frozen, an
 On Peek and Chat, switching back to the game while she still stands there gets you caught. Switching to
 Excel takes 1 to 2.5 s ([desk.md](desk.md)): commit on the hallway cue or earlier.
 
-**Caught (ladder per night).** Every catch: a 0.8 s scare face and a sting, Mood +`CATCH_MOOD`.
-1st: Flow reset. 2nd: Guilt, party −10% damage for 30 s. 3rd and later: she turns the monitor off for
-8 s and Flow resets.
+**Caught (ladder per night).** Every catch: the scare and a sting, Mood +`CATCH_MOOD`, and Guilt (party
+−`GUILT_DMG` damage for `GUILT_SEC`, [synergy.md](synergy.md)). 1st: Flow reset too. 3rd and later: she turns the
+monitor off for `MONITOR_OFF_SEC` and Flow resets.
+
+**The caught screen** (grid doc 7e). Her, head and shoulders, in your doorway with the hallway light behind her, a
+late PC-98 dating-sim portrait over the whole frame, one face per rung: a stern glare, then her glasses blank white
+with her face in shadow, then furious with the hallway lit red. A PC-98 text window: her name on a pink tab, WE NEED
+TO TALK., and what this catch cost, written from the rules above ("Caught 1 of 3 tonight · Flow reset · Guilt: the
+party deals 10% less for 30 s"; from the 4th on, "Caught 4 · ..."). The scare is `SCARE_SEC` (a white flash, an
+interlaced punch-in, a shake that settles); then the screen holds for `CAUGHT_HOLD_SEC` so the line can be read, with
+a blinking ▼. A click or a key after the scare puts it away; clicks and keys while it is up never reach the game.
+The night runs on under it, as it does while the monitor is off.
 
 **Lean visit.** `LEAN_CHANCE` (25%) of non-fake visits while Mood is green: no check. She leans on the
 door frame, barefoot, one foot rubbing against her other calf, smiling. Mood `LEAN_MOOD`.
@@ -165,6 +174,15 @@ visits and when she leans in. A small reaction bubble (?, !, heart, ...) over he
   outside the right edge, part of her off screen, the way someone leans between you and your monitor. Rejected:
   sitting on the desk over the battle area only, with the side panel left usable (#49): it read as a window on
   the PC, not her getting in your face.
+
+- **The caught screen in the redesign's look** (0.70, V7 #72). The portraits are the handoff's baked ones and keep
+  her glasses (the redesign's 2026-11-20 decision: all character art is a stand-in until Paweł draws it). The cost
+  line comes from the game's rules and numbers, not the page's three fixed lines: those left Guilt off the 1st and
+  3rd rungs, and Guilt has been on every rung since the echoes. The screen holds after the 0.8 s scare: in 0.8 s the
+  window is up for under 0.7 s, too short to read what the catch cost, and the decision is that the player learns the
+  ladder from the scare. A click or a key ends the hold, as the ▼ asks; while it is up nothing under it draws (it covers
+  the whole frame). Rejected: the scare alone (unreadable); pausing the night for the hold (she is still at the door
+  and the party fights on, as with the monitor off); the page's fixed lines (they misstate the 1st catch).
 
 - **Snack run never looks at the screen** (0.17): rewarding the player who reads the cue with staying in
   the game is what makes the cue worth reading. Hiding the cans costs one click during the footsteps,

@@ -46,6 +46,8 @@ export const PK = {
   ebCursor: (kind) => ebCursorURL(kind),
   /** The dog's NO SIGNAL (V6, #71): the monitor's message box drifting on black, 474 x 232. */
   noSignal: (t) => drawNoSignal(t),
+  /** Caught (V7, #72; grid doc 7e): the full-frame scare, 640 x 360. rung 1 to 3, T seconds since the catch, cost the line. */
+  caught: (rung, T, cost) => drawCaughtLive(rung, T, cost),
   /** The cable fix (V6): start it on the game's deal and rule; the pointer in scene px; draw it over the right screen. */
   cableStart: (deal, plug, elapsed) => { cableGame(deal, plug, elapsed); },
   cableDown: (x, y) => !!(CABLE.live && CABLE.live.down(x, y)),

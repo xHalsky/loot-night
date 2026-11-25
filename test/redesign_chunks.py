@@ -106,7 +106,7 @@ async def main():
         await shot(pg, '4_night_overlays', 'microsleep_full_frame')
         await ev(pg, "n.blink={state:'closing',lid:0.55,nextIn:9}"); await pg.wait_for_timeout(120)
         await shot(pg, '4_night_overlays', 'microsleep_eyelids_closing_full_frame')
-        await ev(pg, "n.blink={state:'open',lid:0,nextIn:999}; n.scare=0.8"); await pg.wait_for_timeout(250)
+        await ev(pg, "n.blink={state:'open',lid:0,nextIn:999}; n.catches++; n.scare=0.8"); await pg.wait_for_timeout(250)
         await shot(pg, '4_night_overlays', 'caught_full_frame')
         await pg.wait_for_timeout(900)
 

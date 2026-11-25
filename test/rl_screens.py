@@ -209,7 +209,7 @@ async def main():
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
         await ev(pg, "n.blink={state:'closed',lid:1,nextIn:9}"); await pg.wait_for_timeout(300)
         await shot(pg, 'windows', 'overlay_microsleep_full_frame')
-        await ev(pg, "n.blink={state:'open',lid:0,nextIn:999}; n.scare=0.8"); await pg.wait_for_timeout(250)
+        await ev(pg, "n.blink={state:'open',lid:0,nextIn:999}; n.catches++; n.scare=0.8"); await pg.wait_for_timeout(250)
         await shot(pg, 'windows', 'overlay_caught_scare_full_frame')
         await pg.wait_for_timeout(900)
         await ev(pg, "g.results={ending:'sleep',endClock:n.clock+200,stars:2,depth:4,prevRecord:3,debtBefore:1,debtAfter:2,mood:64,caught:false,unidentified:2,nearMisses:['She almost saw the screen at 23:40.']}; g.screen='results'"); await pg.wait_for_timeout(500)

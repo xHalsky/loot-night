@@ -398,15 +398,6 @@ export function debugHtml(): string {
   </div>`;
 }
 
-export function scareHtml(): string {
-  const n = S.g.night;
-  if (!n || n.scare <= 0) return '';
-  // Comedic jumpscare when caught: a big generic pixel face.
-  const px: [number, number, number, number, string][] = [[3,0,10,3,'#2a1810'],[2,2,12,2,'#2a1810'],[3,4,10,9,'#e8b98a'],[2,3,2,8,'#2a1810'],[12,3,2,8,'#2a1810'],[5,6,2,2,'#14101a'],[9,6,2,2,'#14101a'],[4,5,4,1,'#2a1810'],[8,5,4,1,'#2a1810'],[6,10,4,2,'#7a1f2b'],[4,13,8,3,'#5b3aa8']];
-  const rects = px.map(([x, y, w, h, c]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`).join('');
-  return `<div class="scare"><svg viewBox="0 0 16 16" width="420" height="420" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg><div>WE NEED TO TALK.</div></div>`;
-}
-
 export function toastsHtml(): string {
   const n = S.g.night;
   if (!n) return '';
