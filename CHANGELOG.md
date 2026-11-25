@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.73.0 (2026-11-25)
+
+- **The small pieces, first half** (V11, #76; grid doc 7k), all drawn by the renderer now:
+  - **Pause:** the whole frame black under a glass card, Resume (Esc) and How to hide.
+  - **How to hide:** the glass card over the dimmed frame, "Monday, 20:00", a picture for each of tonight's four tiles,
+    Got it (Esc and Enter too); the pause card opens it again.
+  - **The microsleep:** the lids close as an almond from top and bottom, warm where the light comes through, the
+    view greying toward them; shut, "zzz..." and "click or press any key".
+  - **Away from the PC** (making her tea): the right screen dims, your gaming chair stands empty in front of the desk
+    (and in the webcam), a glass card with what you are doing, the seconds left and a moss bar; her "Stay for one
+    episode?" is on the card with Stay and Back to the PC; the close box comes back early.
+  - **The Goblin Fuel inspect window** (new): once per save, the first time you get tired enough to yawn or reach for
+    the drink: the can at full size, what it does (from the tuning), the cans in the drawer, Drink (G) or Later.
+- `MONSTER_DRAWER` (8): the drawer's slots in the inspect window. The DOM pause, How-to card, eyelids and away layer
+  and their CSS are gone. `test/small.py` plays them all next to stills 062 to 065, 075 and 076. The old scripts'
+  `act` helper sends an action when its DOM button is gone; `test/preemptive.py` and `test/calls.py` (broken since V2
+  and V8, covered by `her.py`, `small.py` and `phone.py`) are deleted. UI only: sims as before.
+
 ## 0.72.0 (2026-11-25)
 
 - **The morning is the redesign's** (V10, #75; grid doc 7h). A PC-98 dating-sim CG of her asleep fills the frame,

@@ -2,7 +2,7 @@
 import asyncio, json
 from playwright.async_api import async_playwright
 async def act(pg, sel):
-    await pg.evaluate("s=>{const e=document.querySelector(s); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
+    await pg.evaluate("s=>{const e=document.querySelector(s); const m=/^\\[data-act=\\x22?(\\w+)\\x22?\\](?:\\[data-arg=\\x22?([^\\x22\\]]*)\\x22?\\])?$/.exec(s); if(!e && m){const b=document.createElement('button'); b.dataset.act=m[1]; if(m[2]!=null) b.dataset.arg=m[2]; document.getElementById('stage').appendChild(b); b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); b.remove(); return;} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
 GEAR = """()=>{const S=window.__lootnight.S; let id=1000;
  const mk=(slot,rarity,ilvl,affixes)=>({id:'t'+(id++),name:rarity[0].toUpperCase()+rarity.slice(1)+' '+slot,slot,rarity,ilvl,affixes,value:ilvl*20,identified:true});
  const [k,m,h]=S.g.heroes; k.level=6; m.level=6; h.level=5;

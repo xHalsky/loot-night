@@ -38,7 +38,7 @@ async def main():
             check(await until("n.game && n.game.kind === 'cuddle'", 2000), 'the cuddle break opens')
         async def follow(until_p, lead=0.0):
             while True:
-                q = await ev("1 - n.game.t / n.game.max") if await ev("!!n.game && n.game.kind === 'cuddle'") else 2
+                q = await ev("n.game && n.game.kind === 'cuddle' ? 1 - n.game.t / n.game.max : 2")
                 if q >= until_p: return q
                 x, y = dot(min(1, q + lead)); await pg.mouse.move(*win(x, y)); await pg.wait_for_timeout(30)
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)

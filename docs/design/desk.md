@@ -110,6 +110,17 @@ Q3_report.xls) while the window shrinks toward the taskbar in stutters, smearing
 with a monitor label ("1024 x 768 60Hz / Analog"); the new screen arrives blocky and sharpens.
 A Win9x hourglass cursor throughout; a relay click at the start, mode change and end.
 
+### The Goblin Fuel inspect window
+
+Once per save, the first time the drink matters (grid doc 7k): when you first get tired enough to yawn (`TIRED_YAWN`,
+the Drink button lights) with cans in the drawer and nothing else asking for you, or when you first reach for it (G or
+the Drink button), whichever comes first. A glass window over the dimmed right screen: "In your drawer" (and "New
+tonight" on the first night), the can at full size on an acid glow, bobbing; "Goblin Fuel", "100% greed. Tastes like a
+loot drop."; what it does as + and - lines and how to pour it, from the tuning; the cans you have as eight slots
+(`MONSTER_DRAWER`), the empty ones dark; "Topped up to 3 every night." (the Shop's line comes with the Shop, #55);
+Drink (G) goes on to the energy break, Later, the close box, Esc or Enter shut it. After that G and Drink go straight
+to the break.
+
 ### Goblin Fuel energy break
 
 The cans are not drawn on the desk (#49): the **Goblin Fuel button** on the YOU card (or G) is the can pack. It
@@ -278,6 +289,13 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   closed, as every interrupt must be escapable; the cables stay out until fixed. Rejected: keeping the DOM dog over
   the new desk (a different pixel scale in one picture); a stricter `DOG_FAST` (760, tried during the build: a normal
   quick stroke flinched); counting the fast fix from the slam (the window had not opened yet).
+- **The inspect window opens when the drink first matters** (0.73, V11 #76). The handoff's call was "the first time you
+  have cans"; in this build that is the start of the first night, right after the How-to card, so it would be the
+  second card in a row before anything has happened. It opens instead the first time you get tired enough to yawn
+  (the moment the Drink button lights and the drink is the answer) or the first time you reach for it, whichever is
+  first, and only while nothing else asks for you. On the week's Thursday, when the drink comes in, that is still the
+  night it arrives. Rejected: at the night's start (two cards in a row); only on G (a player who never presses it never
+  learns what it does).
 - **One click picks the can up; Space tilts it anywhere** (0.49.2, #62). Holding the mouse button down while
   tapping Space was easy to miss: one click without holding left the can floating and Space did nothing.
   Rejected: tilting only near his mouth (Space looked broken everywhere else).

@@ -5,7 +5,7 @@ import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, preBusyHtml, coachHtml } from './ui/panels';
+import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml, preBusyHtml, coachHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -27,6 +27,7 @@ import { setPeeking } from './systems/peek';
 import { drawLapFx, lapUiHtml } from './ui/deskFx';
 import { morningView, morningScene } from './render/morningView';
 import { cuddleView, winToCuddle, CUD_WIN } from './render/herWinView';
+import { demandActive } from './systems/reallife';
 import { PLAN } from './ui/plan';
 import { caughtTick, caughtT, caughtEnd, caughtShot } from './render/caughtView';
 import { dogStroked, DOG_SPOTS } from './render/dogView';
@@ -65,7 +66,7 @@ stage.innerHTML = `
   <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><canvas id="herArea" width="148" height="360"></canvas><div id="herNote" aria-hidden="true"></div><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"><span class="hh-tip" id="hhTip"></span></div></div>
   <div id="desk">
     <div id="deskInner">
-      <canvas id="rsArea" width="492" height="360"></canvas><div id="deskPhone" aria-hidden="true"></div><canvas id="ebArea" width="492" height="360"></canvas>
+      <canvas id="rsArea" width="492" height="360"></canvas><div id="deskPhone" aria-hidden="true"></div><canvas id="ebArea" width="492" height="360"></canvas><canvas id="rsSmall" width="492" height="360"></canvas>
       <div id="screen">
         <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
         <canvas id="rpgArea" width="334" height="232"></canvas><div id="rpgBar" aria-hidden="true"></div>
@@ -82,7 +83,7 @@ stage.innerHTML = `
   <canvas id="lapFx" width="1280" height="720"></canvas>
   <div id="lapUi"></div>
   <div id="screens"></div>
-  <div id="pause"></div>
+  <canvas id="modalArea" width="640" height="360"></canvas>
   <canvas id="planArea" width="640" height="360"></canvas>
   <canvas id="morningArea" width="640" height="360"></canvas>
   <div id="coachUi"></div>
@@ -91,7 +92,7 @@ stage.innerHTML = `
   <div id="tooltipLayer"></div>
   <div id="ghost"></div>
   <canvas id="caughtArea" width="640" height="360"></canvas>
-  <div id="eyelids"><div class="lid top"></div><div class="lid bot"></div><div class="lid-txt">zzz... click or press any key</div></div>`;
+  <canvas id="microArea" width="640" height="360"></canvas>`;
 
 const el = (id: string) => document.getElementById(id)!;
 const doorCtx = (el('doorCanvas') as HTMLCanvasElement).getContext('2d', { willReadFrequently: true })!;   // on the CPU: her panel reads it back every frame (V4)
@@ -170,7 +171,9 @@ const actions: Record<string, (arg: string) => void> = {
   build: a => buildCity(a as 'training'),
   portal: () => travelToDungeon(),
   openPhone: () => openPhone(),
-  openMonster: () => openMonster(),
+  openMonster: () => drinkOrInspect(),
+  inspectClose: () => { inspectOpen = false; },
+  inspectDrink: () => { inspectOpen = false; openMonster(); },
   cancelMonster: () => cancelMonster(),
   cablesHide: () => { cablesHidden = true; },
   textReply: () => textReply(),
@@ -457,7 +460,7 @@ monCanvas.addEventListener('pointerdown', ev => {
 // Away from the desk (a pre-emptive action): nothing on the desk reacts, only the away card.
 window.addEventListener('pointerdown', ev => {
   const t = ev.target as HTMLElement;
-  if (S.g.night?.pre?.away && !S.g.paused && !t.closest('#preUi') && !t.closest('#debug') && !t.closest('#pause')) { ev.preventDefault(); ev.stopImmediatePropagation(); }
+  if (S.g.night?.pre?.away && !S.g.paused && !t.closest('#preUi') && !t.closest('#rsSmall') && !t.closest('#debug') && !t.closest('#modalArea')) { ev.preventDefault(); ev.stopImmediatePropagation(); }
 }, true);
 // Alt-tab blackout: no input reaches anything until the switch finishes (window capture runs before every other listener).
 window.addEventListener('pointerdown', ev => {
@@ -471,6 +474,10 @@ window.addEventListener('keydown', ev => {
   if (g.screen === 'morning' && (ev.key === 'Escape' || ev.key === 'Enter')) { ev.preventDefault(); actions.startNight(''); return; }   // her pink button (V10)
   if (g.screen !== 'night' || !g.night) return;
   const n = g.night;
+  if (inspectOpen) {   // the inspect window: G drinks, Esc or Enter closes it (V11)
+    if (ev.key.toLowerCase() === 'g') { ev.preventDefault(); actions.inspectDrink(''); return; }
+    if (ev.key === 'Escape' || ev.key === 'Enter') { ev.preventDefault(); actions.inspectClose(''); return; }
+  }
   if (caughtT(performance.now()) >= 0) { ev.preventDefault(); caughtEnd(performance.now()); return; }   // her screen takes the key (V7)
   if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); g.howto = false; } return; }   // the card: the night waits
   if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } g.paused = !g.paused; return; }
@@ -508,7 +515,12 @@ function monsterKey() {
   const n = N();
   const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing' && n.visit.stage !== 'in';
   if (coming && S.g.monsters > 0 && !n.cansHidden) hideCans();
-  else if (!n.pre) openMonster();
+  else if (!n.pre) drinkOrInspect();
+}
+/** The first reach for the drink shows what it is first (V11): Drink G in the window goes on to the break. */
+function drinkOrInspect() {
+  if (S.g.monsters > 0 && !S.g.tipsSeen.includes('inspect:fuel')) { S.g.tipsSeen.push('inspect:fuel'); inspectOpen = true; sfx.click(); return; }
+  openMonster();
 }
 
 /** The shower panel covers the apartment map while she showers and you can hear it (docs/design/eye-candy.md). */
@@ -679,6 +691,81 @@ morningCanvas.addEventListener('pointerdown', ev => { initAudio(); const h = mor
 morningCanvas.addEventListener('pointermove', ev => { morningHover = !!morningHitAt(ev); morningCanvas.style.cursor = morningHover ? 'pointer' : 'default'; });
 morningCanvas.addEventListener('pointerleave', () => { morningHover = false; });
 
+// The small pieces (V11, #76; grid doc 7k), the renderer's. Full frame (#modalArea): pause and How to hide, with their
+// buttons; the microsleep's lids (#microArea, no input of its own: any click or key wakes you). Over the right screen
+// (#rsSmall): away from the PC and the Goblin Fuel inspect window. What is behind a dimmed piece is the frame the game
+// shows (her panel and the right screen), dimmed four times a second, or once for the pieces that stop the night.
+const frameCanvas = document.createElement('canvas'); frameCanvas.width = 640; frameCanvas.height = 360;
+function composeFrame() { const f = frameCanvas.getContext('2d')!; f.drawImage(herCanvas, 0, 0); f.drawImage(rsCanvas, 148, 0); return frameCanvas; }
+const modalCanvas = el('modalArea') as HTMLCanvasElement, modalCtx = modalCanvas.getContext('2d')!;
+const microCanvas = el('microArea') as HTMLCanvasElement, microCtx = microCanvas.getContext('2d')!;
+const rsSmallCanvas = el('rsSmall') as HTMLCanvasElement, rsSmallCtx = rsSmallCanvas.getContext('2d')!;
+type SmHit = { x: number; y: number; w: number; h: number; act: string; arg: string };
+let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt = 0, rsSmallAt = 0, rsSmallBg = 0, microAt = 0, inspectOpen = false;
+const HOWTO_GAME = {
+  ids: ['listen', 'tab', 'answer', 'headset'], isNew: [] as string[], head: 'Monday, 20:00',
+  tiles: {
+    listen: ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.'],
+    tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle.'],
+    answer: ['Answer her', 'Each visit wants something else. Plates clinking: hide your cans. Humming: talk to her. Slow steps: a cuddle.'],
+    headset: ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.'],
+  },
+  foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.',
+};
+function inspectView() {
+  const pct = (v: number) => Math.round(Math.abs(v) * 100);
+  return {
+    cans: S.g.monsters, max: Math.max(T.MONSTER_DRAWER, S.g.monsters),
+    bullets: [['+', `Party ${pct(T.MONSTER_SPEED)}% faster for ${T.MONSTER_BOOST_SEC} s.`], ['+', `Tiredness ${T.MONSTER_TIRED}.`],
+      ['-', `Then a sugar crash: ${pct(T.MONSTER_CRASH_SPEED)}% slower for ${T.MONSTER_CRASH_SEC} s, Tiredness +${T.MONSTER_CRASH_TIRED}.`]],
+    pour: `Pour it well: ${pct(T.MONSTER_DRINK_FULL)}% down for the full boost, ${pct(T.MONSTER_DRINK_HALF)}% for half.`,
+    shop: false, more: `Topped up to ${T.MONSTER_PER_NIGHT} every night.`, tag: S.g.nightsPlayed === 0 ? 'New tonight' : '',
+  };
+}
+function drawSmallPieces() {
+  const g = S.g, n = g.night, now = performance.now(), t = now / 1000, ready = PK.ready() && !!n && g.screen === 'night';
+  // the inspect window opens by itself the first time the drink matters: tired enough to yawn (the Drink button lights)
+  if (ready && !inspectOpen && g.monsters > 0 && !g.tipsSeen.includes('inspect:fuel') && !g.paused && !g.howto && n.tired >= T.TIRED_YAWN && !demandActive() && !n.switching && n.monitor === 'rpg') { g.tipsSeen.push('inspect:fuel'); inspectOpen = true; }
+  if (inspectOpen && (!ready || n.game || n.pre || n.switching)) inspectOpen = false;
+  // pause, How to hide
+  const modal = !ready ? '' : g.paused ? 'pause' : g.howto ? 'howto' : '';
+  if (modal !== modalWas) { modalWas = modal; modalCanvas.style.display = modal ? 'block' : 'none'; modalAt = 0; if (!modal) modalHits = []; }
+  if (modal && now - modalAt >= 66) {
+    const first = modalAt === 0; modalAt = now;
+    const r = modal === 'pause' ? PK.pause(t) : PK.howto(first ? composeFrame() : null, HOWTO_GAME, t, false);
+    modalCtx.drawImage(r.canvas, 0, 0); modalHits = r.hits;
+  }
+  // the microsleep: the lids close over the frame; shut, zzz
+  const lid = ready && !g.paused ? (n.blink.state === 'open' ? 0 : n.blink.state === 'closed' ? 1 : n.blink.lid) : 0;
+  microCanvas.style.display = lid > 0 ? 'block' : 'none';
+  if (lid > 0 && (lid >= 1 || now - microAt >= 50)) {   // closing: 20 fps (the frame through the lids, greyed); shut: the renderer keeps it
+    microAt = now;
+    microCtx.drawImage(PK.micro(lid >= 1 ? null : composeFrame(), lid, t).canvas, 0, 0);
+  }
+  // over the right screen: away from the PC, the inspect window
+  const p = ready ? n.pre : null, away = !!p && p.away && !g.paused;
+  const rs = away ? 'away' : inspectOpen && !g.paused ? 'inspect' : '';
+  rsSmallCanvas.style.display = rs ? 'block' : 'none';
+  if (!rs) { rsSmallHits = []; return; }
+  if (now - rsSmallAt < 33) return; rsSmallAt = now;
+  const bg = now - rsSmallBg > 250 ? rsCanvas : null; if (bg) rsSmallBg = now;
+  const what = p?.stage === 'episode' ? 'Watching one episode with her' : p?.outcome === 'kitchen' ? 'Stuck in a kitchen hug' : 'Making her tea';
+  const r = rs === 'away'
+    ? PK.away(bg, p!.stage === 'ask' ? { ask: `"Stay for one episode?" +${T.PRE_EPISODE_SEC} s away`, yes: 'Stay', no: 'Back to the PC' } : { what, left: p!.t, total: p!.max }, t)
+    : PK.inspect(bg, inspectView(), t);
+  rsSmallCtx.drawImage(r.canvas, 0, 0); rsSmallHits = r.hits;
+}
+const smXY = (c: HTMLCanvasElement, ev: PointerEvent) => { const b = c.getBoundingClientRect(); return [((ev.clientX - b.left) / b.width) * c.width, ((ev.clientY - b.top) / b.height) * c.height] as const; };
+const smHitAt = (hits: SmHit[], x: number, y: number) => hits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h) ?? null;
+for (const [c, hits] of [[modalCanvas, () => modalHits], [rsSmallCanvas, () => rsSmallHits]] as const) {
+  c.addEventListener('pointerdown', ev => {
+    ev.preventDefault(); initAudio();
+    const h = smHitAt(hits(), ...smXY(c, ev));
+    if (h) { sfx.click(); actions[h.act]?.(h.arg); modalAt = 0; }
+  });
+  c.addEventListener('pointermove', ev => { c.style.cursor = smHitAt(hits(), ...smXY(c, ev)) ? 'pointer' : 'default'; hover.key = ''; });
+}
+
 (window as unknown as Record<string, unknown>).__lnCaught = () => ({ t: caughtT(performance.now()), ...caughtShot() });   // for the tests
 el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
@@ -814,11 +901,6 @@ function render() {
     drawLapFx();
     setHtml('lapUi', lapUiHtml());
     setHtml('preUi', preBusyHtml());
-    const lid = n.blink.state === 'open' ? 0 : n.blink.lid;
-    const eye = el('eyelids');
-    eye.style.setProperty('--lid', `${lid * 50}%`);
-    eye.classList.toggle('closed', n.blink.state === 'closed');
-    eye.style.display = lid > 0 && g.screen === 'night' ? 'block' : 'none';
     el('desk').classList.toggle('yawn', n.yawn > 0);
     el('ui').classList.toggle('off', n.monitor === 'excel' || n.monitorOff > 0 || !!n.switching);   // the side panel is on the screen: it goes with it
   }
@@ -829,10 +911,10 @@ function render() {
   drawPlanScreen();   // V9 (#74): the plan off the wall, drawn by the renderer
   setHtml('coachUi', g.screen === 'night' && !g.paused && !g.howto && !(g.night?.scare) && caughtT(performance.now()) < 0 ? coachHtml() : '');   // never over the caught screen
   placeCoach();
-  setHtml('pause', pauseHtml());
   setHtml('debug', debugHtml());
   drawPreview(el('pkFrame') as HTMLCanvasElement);
   drawCaughtScreen();   // V7 (#72)
+  drawSmallPieces();   // V11 (#76): pause, How to hide, the microsleep, away from the PC, the Goblin Fuel inspect
   setHtml('tooltipLayer', inv?.moved ? '' : tooltipHtml());
 }
 

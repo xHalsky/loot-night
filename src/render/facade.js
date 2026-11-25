@@ -55,6 +55,14 @@ export const PK = {
   /** The morning (V10, #75; grid doc 7h): her CG by how the night ended, the summary, the caption; 640 x 360 and the
    *  pink button's hit. scene: green, yellow, red or unplugged. */
   morning: (scene, data, hover) => drawMorningLive(scene, data, hover),
+  /** The small pieces (V11, #76; grid doc 7k). Full frame, 640 x 360: pause; How to hide over the frame dimmed
+   *  (frame or null to keep; black when paused); the microsleep's lids (lid 0..1) over the frame. Right screen,
+   *  492 x 360: away from the PC (st { what, left, total } or { ask, yes, no }); the Goblin Fuel inspect window. */
+  pause: (t) => drawPauseLive(t),
+  howto: (frame, o, t, black) => drawHowtoLive(frame, o, t, black),
+  micro: (frame, lid, t) => drawMicroLive(frame, lid, t),
+  away: (bg, st, t) => drawAwayLive(bg, st, t),
+  inspect: (bg, o, t) => drawInspectLive(bg, o, t),
   /** Caught (V7, #72; grid doc 7e): the full-frame scare, 640 x 360. rung 1 to 3, T seconds since the catch, cost the line. */
   caught: (rung, T, cost) => drawCaughtLive(rung, T, cost),
   /** The cable fix (V6): start it on the game's deal and rule; the pointer in scene px; draw it over the right screen. */

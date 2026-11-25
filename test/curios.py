@@ -2,7 +2,7 @@
 import asyncio
 from playwright.async_api import async_playwright
 async def act(pg, sel):
-    await pg.evaluate("s=>{const e=document.querySelector(s); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
+    await pg.evaluate("s=>{const e=document.querySelector(s); const m=/^\\[data-act=\\x22?(\\w+)\\x22?\\](?:\\[data-arg=\\x22?([^\\x22\\]]*)\\x22?\\])?$/.exec(s); if(!e && m){const b=document.createElement('button'); b.dataset.act=m[1]; if(m[2]!=null) b.dataset.arg=m[2]; document.getElementById('stage').appendChild(b); b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); b.remove(); return;} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
 CLIP={'x':314,'y':16,'width':948,'height':464}   # the game screen (#49)
 async def curio(pg, cid, stage='ask', t=5, mx=7):
     await pg.evaluate("([c,s,t,m])=>{const S=window.__lootnight.S; const n=S.g.night; n.enemies=[]; n.phase='curio'; n.curio={id:c,stage:s,t:t,max:m}; S.g.timeScale=0;}", [cid, stage, t, mx])

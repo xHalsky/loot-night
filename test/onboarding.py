@@ -3,7 +3,9 @@
 import asyncio
 from playwright.async_api import async_playwright
 async def act(pg, sel):
-    await pg.evaluate("s=>{const e=document.querySelector(s); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(150)
+    await pg.evaluate("s=>{const e=document.querySelector(s); const m=/^\\[data-act=\\x22?(\\w+)\\x22?\\](?:\\[data-arg=\\x22?([^\\x22\\]]*)\\x22?\\])?$/.exec(s); if(!e && m){const b=document.createElement('button'); b.dataset.act=m[1]; if(m[2]!=null) b.dataset.arg=m[2]; document.getElementById('stage').appendChild(b); b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); b.remove(); return;} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(150)
+async def go(pg, a):   # an action, as the renderer's buttons send it (the DOM buttons are gone, V11)
+    await pg.evaluate("a=>{const e=document.createElement('button'); e.dataset.act=a; document.getElementById('stage').appendChild(e); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); e.remove()}", a); await pg.wait_for_timeout(150)
 async def main():
     ok = True
     async with async_playwright() as p:
@@ -13,21 +15,21 @@ async def main():
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await pg.screenshot(path='test/onb_title.png')
         await act(pg, '[data-act=newGame]'); await pg.wait_for_timeout(300)
-        card = await pg.evaluate("()=>!!document.querySelector('.screen.howto')")
+        card = await pg.evaluate("()=>!(!window.__lootnight.S.g.howto && document.getElementById('modalArea').style.display !== 'block')")
         t0 = await pg.evaluate("()=>window.__lootnight.S.g.night.threat"); await pg.wait_for_timeout(800)
         t1 = await pg.evaluate("()=>window.__lootnight.S.g.night.threat")
         print('card on night 1:', card, '| night waits:', t1 == t0); ok &= card and t1 == t0
         await pg.screenshot(path='test/onb_card.png')
-        await act(pg, '[data-act=howtoClose]'); await pg.wait_for_timeout(5500)
-        gone = await pg.evaluate("()=>!document.querySelector('.screen.howto') && window.__lootnight.S.g.night.threat > 3")
+        await go(pg, 'howtoClose'); await pg.wait_for_timeout(5500)
+        gone = await pg.evaluate("()=>(!window.__lootnight.S.g.howto && document.getElementById('modalArea').style.display !== 'block') && window.__lootnight.S.g.night.threat > 3")
         pinned = await pg.evaluate("()=>window.__lootnight.S.g.night.tip?.text || ''")   # the feed is drawn (V3): its pinned top row
         print('Got it closes, night runs:', gone, '| pinned tip:', pinned); ok &= gone and 'Her' in pinned
         await pg.screenshot(path='test/onb_tip.png', clip={'x': 960, 'y': 60, 'width': 320, 'height': 140})
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
-        await act(pg, '[data-act=howtoOpen]'); await pg.wait_for_timeout(200)
-        re = await pg.evaluate("()=>!!document.querySelector('.screen.howto')")
+        await go(pg, 'howtoOpen'); await pg.wait_for_timeout(200)
+        re = await pg.evaluate("()=>!(!window.__lootnight.S.g.howto && document.getElementById('modalArea').style.display !== 'block')")
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
-        esc = await pg.evaluate("()=>!document.querySelector('.screen.howto') && !window.__lootnight.S.g.paused")
+        esc = await pg.evaluate("()=>(!window.__lootnight.S.g.howto && document.getElementById('modalArea').style.display !== 'block') && !window.__lootnight.S.g.paused")
         print('pause menu reopens it:', re, '| Esc closes it:', esc); ok &= re and esc
         # the first-night end-cue label in her note
         await pg.evaluate("()=>{const S=window.__lootnight.S; const n=S.g.night; S.g.timeScale=0; n.phoneScript=[]; n.friendsLeft=0; Object.assign(n.apt,{activity:'tea',room:'kitchen',moving:0,cued:true,t:2}); n.visit.stage='idle'; n.headset=false;}")

@@ -31,6 +31,7 @@ export const T = {
 
   // --- Monster ---
   MONSTER_PER_NIGHT: 3,           // prototype: topped up to this at night start (desk shop later)
+  MONSTER_DRAWER: 8,              // the drawer holds this many (the inspect window shows the slots; the Shop, #55, fills them)
   MONSTER_TIRED: -35,
   MONSTER_BOOST_SEC: 60, MONSTER_SPEED: 0.30,   // party acts 30% faster
   MONSTER_CRASH_SEC: 20, MONSTER_CRASH_SPEED: -0.15, MONSTER_CRASH_TIRED: 10,

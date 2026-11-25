@@ -63,7 +63,7 @@ the RPG star pays in loot.
 | Tiredness | Effect (debuff icon I / II / III) |
 |---|---|
 | 30+ | Yawns blur the desk for 2 s, every `YAWN_EVERY_SEC` |
-| 50+ | Microsleeps every 30 to 50 s: eyelids drift shut over 1.6 s. Any click or key snaps them open (that input does nothing else). Fully shut = black until you react; you can miss her shadow. |
+| 50+ | Microsleeps every 30 to 50 s: eyelids drift shut over 1.6 s, an almond closing from top and bottom, warm where the light comes through them, the view greying toward them. Any click or key snaps them open (that input does nothing else). Fully shut = dark with one faint seam, "zzz..." and "click or press any key", until you react; you can miss her shadow. |
 | 70+ | Sluggish: phone timers 15% shorter, Flow builds 25% slower |
 | 90+ | Wrecked (threshold exists; extra effect not built) |
 
@@ -73,8 +73,9 @@ Goblin Fuel lowers Tiredness and blocks microsleeps while the boost lasts (see [
 happening.
 - **Title:** two lines (raid night, your girlfriend thinks you are doing spreadsheets; the RPG plays itself,
   your job is to listen, hide and keep everyone happy) and "turn the sound on".
-- **How-to-hide card** (`howtoHtml`): opens when the first night starts and the night waits until "Got it"
-  (or Esc / Enter). Four tiles, two lines each: 1 Listen (the sounds, the last-heard line, hold the door to
+- **How-to-hide card** (the renderer's glass card over the dimmed frame, grid doc 7k; `HOWTO_GAME` in `main.ts`):
+  opens when the first night starts and the night waits until "Got it" (or Esc / Enter). "Monday, 20:00", "Hide the
+  game before she sees it.", four tiles, each with a small picture, its number, its name and what to do: 1 Listen (the sounds, the last-heard line, hold the door to
   peek), 2 Tab to Excel (footsteps: switch now, never wait for the handle), 3 Answer her (each visit wants
   something else), 4 Headset (the Zone, but you are deaf to her). The pause menu reopens it.
 - **Tonight, a sticky note** (#42; drawn on the desk since 0.66, `tonightNote` in `render/page/desk.js`): stuck on
@@ -124,6 +125,12 @@ happening.
   the redesign has no results screen, and its numbers (depth against the record, near misses, the appraiser's
   waiting items) have no place on the morning's summary. Rejected: folding the results into the morning (no room in
   the summary without dropping the near misses); the page's day and night names now.
+- **Pause, How to hide and the microsleep in the redesign's look** (0.73, V11 #76, grid doc 7k). Pause blacks out the
+  whole frame (so it can't be used to peek) under a glass card with Resume (Esc) and How to hide. The How-to card's
+  tiles are tonight's: the build's four until the week (#56) brings Tuesday's five with lean in and the "new tonight"
+  frame, and its third tile keeps the build's "hide your cans" and "a cuddle", which are on from the first night here.
+  The lids draw over a picture of the frame: closing at 20 fps (a per-pixel pass over the whole frame), shut only when
+  the zzz changes. Rejected: the page's Tuesday card now (lean in isn't in the game yet).
 - **Stars that reward greed** (0.63, #54; Paweł's brief from testing v0.48): the old ladder (survive, then Mood, then
   not caught) paid nothing for going deep, so the safe night and the greedy night scored the same. Now the RPG has
   its own star (Deep) and every star pays something the next night needs. Rejected: Deep counting only the run you

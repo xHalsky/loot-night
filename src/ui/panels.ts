@@ -43,12 +43,11 @@ function preTip(id: PreId): string {
   return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs ${preText(d.cost)}</div><div>${preText(d.tip)}</div>`;
 }
 /** Your desk chair, nobody in it (placeholder art until #26). */
-const EMPTY_CHAIR = `<svg class="empty-chair" viewBox="0 0 160 220" width="160" height="220"><rect x="30" y="4" width="100" height="112" rx="22" fill="#2b2230" stroke="#120c16" stroke-width="3"/><rect x="42" y="16" width="76" height="88" rx="16" fill="#352a3c"/><rect x="72" y="114" width="16" height="16" fill="#1c1620"/><rect x="16" y="128" width="128" height="24" rx="10" fill="#3a2f42" stroke="#120c16" stroke-width="3"/><rect x="74" y="150" width="12" height="42" fill="#1c1620"/><path d="M28 206 L80 190 L132 206" stroke="#1c1620" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="28" cy="210" r="7" fill="#120c16"/><circle cx="132" cy="210" r="7" fill="#120c16"/><circle cx="80" cy="206" r="7" fill="#120c16"/></svg>`;
-/** Busy with an action: a small card; away from the desk: the empty chair over everything. */
+/** Busy with an action at the desk: a small card (away from the desk is the renderer's, main.ts drawSmallPieces). */
 export function preBusyHtml(): string {
   const n = N();
   const p = n.pre;
-  if (!p || phoneAction()) return '';   // phone actions play out in the phone itself (#63)
+  if (!p || phoneAction() || p.away) return '';   // phone actions play out in the phone itself (#63); away is the renderer's (V11)
   const d = PRE_BY_ID[p.id as PreId];
   const pct = Math.round((1 - p.t / p.max) * 100);
   const what = p.id === 'text' ? 'Typing...' : p.id === 'towel' ? (n.towel ? 'Pulling the towel away...' : 'Pushing a towel under the door...')
@@ -57,7 +56,7 @@ export function preBusyHtml(): string {
     ? `<div class="pa-btns"><button class="her-btn big" data-act="episode" data-arg="1">Stay (+${T.PRE_EPISODE_SEC} s away, a long calm)</button><button class="her-btn" data-act="episode" data-arg="0">Back to the PC</button></div>` : '';
   const card = `<div class="pre-card"><button class="mg-close" data-act="preCancel" title="${p.stage === 'ask' ? 'Back to the PC' : 'Stop and go back'}" style="right:-9px;top:-9px;width:22px;height:22px;font-size:12px">\u2715</button>
     <small>${d.name}</small><b>${what}</b><span>${Math.ceil(p.t)} s${p.away ? ' · the party is on autopilot' : ''}</span>${btns}<div class="pa-bar"><i style="width:${pct}%"></i></div></div>`;
-  return p.away ? `<div class="away-layer">${EMPTY_CHAIR}${card}</div>` : `<div class="busy-wrap">${card}</div>`;
+  return `<div class="busy-wrap">${card}</div>`;
 }
 
 
@@ -262,30 +261,6 @@ export function screenHtml(): string {
     </div></div>`;
   }
   return '';
-}
-
-export function pauseHtml(): string {
-  if (S.g.howto && S.g.screen === 'night') return howtoHtml();
-  return S.g.paused && S.g.screen === 'night' ? `<div class="screen dark"><div class="card"><h1>Paused</h1><p class="dim">The screen is blacked out so pausing can't be used to peek.</p><div class="row">${btn('resume', 'Resume', '', 'wide gold')}${btn('howtoOpen', 'How to hide', '', 'wide')}</div></div></div>` : '';
-}
-
-/** The one-screen how-to-hide card (#28): opens the first night, and from the pause menu. The night waits. */
-const HOWTO: [string, string, string][] = [
-  ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.',
-    '<rect x="14" y="6" width="22" height="34" rx="2" fill="#4a4a54"/><rect x="14" y="40" width="22" height="3" fill="#ffcf7a"/><path d="M40 16q5 7 0 14M44 12q8 11 0 22" stroke="#ff9ab8" stroke-width="2.4" fill="none"/>'],
-  ['Tab to Excel', 'Footsteps? Press <kbd>Tab</kbd> now. Switching takes a second or two, so never wait for the handle.',
-    '<rect x="4" y="16" width="20" height="16" rx="3" fill="#3a3a44"/><text x="14" y="28" font-size="9" fill="#fff" text-anchor="middle" font-family="Inter">Tab</text><path d="M26 24h6" stroke="#fff" stroke-width="2"/><rect x="34" y="12" width="20" height="24" rx="3" fill="#1d7a44"/><text x="44" y="29" font-size="13" fill="#fff" text-anchor="middle" font-weight="700" font-family="Inter">X</text>'],
-  ['Answer her', 'Each visit wants something else. Plates clinking: hide your cans. Humming: talk to her. Slow steps: a cuddle.',
-    '<rect x="8" y="8" width="42" height="28" rx="6" fill="#fff4f2"/><path d="M18 36l-4 8 10-8" fill="#fff4f2"/><text x="29" y="27" font-size="16" fill="#e8657f" text-anchor="middle" font-family="Patrick Hand">?!</text>'],
-  ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.',
-    '<path d="M14 30a15 15 0 0 1 30 0" stroke="#6a6a78" stroke-width="5" fill="none"/><rect x="9" y="27" width="9" height="15" rx="3" fill="#55555f"/><rect x="40" y="27" width="9" height="15" rx="3" fill="#55555f"/><rect x="10" y="30" width="2" height="9" fill="#9a6bff"/><rect x="46" y="30" width="2" height="9" fill="#9a6bff"/>'],
-];
-export function howtoHtml(): string {
-  const tiles = HOWTO.map(([h, p, svg], i) => `<div class="ht-tile"><svg viewBox="0 0 58 48" width="58" height="48">${svg}</svg><b><i>${i + 1}</i> ${h}</b><p>${p}</p></div>`).join('');
-  return `<div class="screen howto"><div class="card"><div class="kicker">MONDAY, 20:00 · HOW TO HIDE</div>
-    <div class="ht-grid">${tiles}</div>
-    <p class="dim">The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts); when they run out she pulls the plug.</p>
-    <div class="row">${btn('howtoClose', 'Got it', '', 'wide gold')}</div></div></div>`;
 }
 
 export function debugHtml(): string {

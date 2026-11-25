@@ -75,11 +75,13 @@ const smMarch = (x, y, w, h, t, idx = P.gold) => {   // a marching dashed ring (
 // the can big, what it does, how many you have. Drink · G starts the energy break; Later (or the close box) shuts it.
 // After that the Drink button's tooltip says the same in three lines, and G or Drink goes straight to the break.
 const INSPECT = [96, 40, 300, 214];   // right-screen px
-function inspectWindow(t) {
+const INSPECT_PAGE = { cans: 3, max: 8, bullets: [['+', 'Party 30% faster for 60 s.'], ['+', 'Tiredness -35.'], ['-', 'Then a sugar crash: 15% slower for 20 s, Tiredness +10.']],
+  pour: 'Pour it well: 85% down for the full boost, 60% for half.', shop: true };
+function inspectWindow(t, o = INSPECT_PAGE) {
   const [, , w, h] = INSPECT;
   return smLayer(w, h, () => {
     smGlass(0, 0, w, h);
-    text('In your drawer', 8, 6, 'tiny', P.moon); text('New tonight', 8 + measure('In your drawer', 'tiny') + 8, 6, 'tiny', P.gold);
+    text('In your drawer', 8, 6, 'tiny', P.moon); if (o.tag ?? 'New tonight') text(o.tag ?? 'New tonight', 8 + measure('In your drawer', 'tiny') + 8, 6, 'tiny', P.gold);
     smClose(w - 15, 4);
     // the can on an acid glow, standing on its shadow
     const cx = 52, cy = 116;
@@ -95,16 +97,18 @@ function inspectWindow(t) {
     let x = 104, y = 22;
     text('Goblin Fuel', x, y, 'tinyL', P.moon); y += 15;
     text('100% greed. Tastes like a loot drop.', x, y, 'tiny', P.u5); y += 13;
-    y = smBullets(x, y, w - x - 10, [['+', 'Party 30% faster for 60 s.'], ['+', 'Tiredness -35.'], ['-', 'Then a sugar crash: 15% slower for 20 s, Tiredness +10.']]);
+    y = smBullets(x, y, w - x - 10, o.bullets);
     y += 2;
-    for (const l of wrapTiny('Pour it well: 85% down for the full boost, 60% for half.', w - x - 10)) { text(l, x, y, 'tiny', P.s5); y += 8; }
+    for (const l of wrapTiny(o.pour, w - x - 10)) { text(l, x, y, 'tiny', P.s5); y += 8; }
     y += 6;
     // how many: the cans in the drawer, 3 of 8
-    for (let k = 0; k < 8; k++) smSprite('can15', x + k * 18, y, { dim: k >= 3 });
+    for (let k = 0; k < o.max; k++) smSprite('can15', x + k * 18, y, { dim: k >= o.cans });
     y += 40;
-    text('3 of 8 in the drawer.', x, y, 'tiny', P.u6);
-    const zw = measure('More in the Shop: 29 z', 'tiny');
-    text('More in the Shop: 29 z', x, y + 9, 'tiny', P.s5); glyph('lstroke', x + zw - 1, y + 8, P.s5); text('for four.', x + zw + 5, y + 9, 'tiny', P.s5);
+    text(o.cans + ' of ' + o.max + ' in the drawer.', x, y, 'tiny', P.u6);
+    if (o.shop) {
+      const zw = measure('More in the Shop: 29 z', 'tiny');
+      text('More in the Shop: 29 z', x, y + 9, 'tiny', P.s5); glyph('lstroke', x + zw - 1, y + 8, P.s5); text('for four.', x + zw + 5, y + 9, 'tiny', P.s5);
+    } else if (o.more) text(o.more, x, y + 9, 'tiny', P.s5);
     // what to do
     smBtn(x, h - 22, 104, 'Drink', { gold: true, key: 'G' });
     smBtn(x + 110, h - 22, 70, 'Later');
@@ -154,27 +158,29 @@ function howtoArt(id, x, y, t) {   // 64 x 40 pictures in the desk's colours
 }
 // Tuesday (week one): the listening tiles, then the two that came in tonight, the headset and lean in
 const HOWTO_IDS = ['listen', 'tab', 'answer', 'headset', 'lean'], HOWTO_NEW = ['headset', 'lean'];
-const HOWTO_TH = (tw) => 70 + Math.max(...HOWTO_IDS.map((id) => wrapTiny(HOWTO_TILES[id][1], tw - 12).length)) * 8 + 4;
-function howtoH() { const tw = HOWTO_IDS.length > 4 ? 82 : 104; return 42 + HOWTO_TH(tw) + 8 + 3 * 8 + 6 + 24; }
-function howtoCard(t) {
-  const w = 452, h = howtoH();
+const HOWTO_PAGE = { ids: HOWTO_IDS, isNew: HOWTO_NEW, tiles: HOWTO_TILES, head: 'Tuesday, 20:00',
+  foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.' };
+const HOWTO_TH = (tw, o = HOWTO_PAGE) => 70 + Math.max(...o.ids.map((id) => wrapTiny(o.tiles[id][1], tw - 12).length)) * 8 + 4;
+function howtoH(o = HOWTO_PAGE) { const tw = o.ids.length > 4 ? 82 : 104; return 42 + HOWTO_TH(tw, o) + 8 + wrapTiny(o.foot, 452 - 24).length * 8 + 6 + 24; }
+function howtoCard(t, o = HOWTO_PAGE) {
+  const w = 452, h = howtoH(o);
   return smLayer(w, h, () => {
     smGlass(0, 0, w, h);
-    text('Tuesday, 20:00', 12, 9, 'tiny', P.s5); text('How to hide', 12 + measure('Tuesday, 20:00', 'tiny') + 8, 9, 'tiny', P.gold);
+    text(o.head, 12, 9, 'tiny', P.s5); text('How to hide', 12 + measure(o.head, 'tiny') + 8, 9, 'tiny', P.gold);
     text('Hide the game before she sees it.', 12, 22, 'tinyL', P.moon);
-    const ids = HOWTO_IDS, tw = ids.length > 4 ? 82 : 104, th = HOWTO_TH(tw);
+    const ids = o.ids, tw = ids.length > 4 ? 82 : 104, th = HOWTO_TH(tw, o);
     ids.forEach((id, k) => {
-      const x = 12 + k * (tw + 4), y = 42, isNew = HOWTO_NEW.includes(id);
+      const x = 12 + k * (tw + 4), y = 42, isNew = o.isNew.includes(id);
       rectI(x, y, tw, th, P.s2); rectI(x, y, tw, 1, P.s3);
       if (isNew) frameI(x - 1, y - 1, tw + 2, th + 2, P.gold);
       howtoArt(id, x + Math.round((tw - 64) / 2), y + 8, t);
-      const [ti, body] = HOWTO_TILES[id];
+      const [ti, body] = o.tiles[id];
       rectI(x + 6, y + 55, 9, 9, isNew ? P.gold : P.s4); text(String(k + 1), x + 10, y + 57, 'tiny', P.void, { align: 'c' });
       text(ti, x + 19, y + 57, 'tiny', P.moon);
       wrapTiny(body, tw - 12).forEach((l, n) => text(l, x + 6, y + 70 + n * 8, 'tiny', P.u6));
       if (isNew) { const s = 'new tonight', sw = measure(s, 'tiny') + 6; rectI(x + tw - sw - 4, y + 4, sw, 9, P.gold); text(s, x + tw - sw / 2 - 4, y + 6, 'tiny', P.void, { align: 'c' }); }
     });
-    const foot = wrapTiny('The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.', w - 24);
+    const foot = wrapTiny(o.foot, w - 24);
     foot.forEach((l, n) => text(l, 12, 42 + th + 8 + n * 8, 'tiny', P.s5));
     smBtn(w / 2 - 50, h - 24, 100, 'Got it', { gold: true });
   });
@@ -289,9 +295,7 @@ function drawPause(ctx, t) {
 // ---------------------------------------------------------------- away from the PC: the empty chair
 // Charging the phone (15 s): you're up and gone. The right screen dims (it's what she would see), your chair,
 // pushed back and turned a little, stands in front of the desk lit by the monitor, and a small card says why.
-function drawAway(ctx, t, o = {}) {
-  smDim(ctx, [148, 0, 492, 360], 0.42);
-  const L = smLayer(492, 360, () => {
+function awayChair() {
     // the gaming chair from behind (the same shape as in the webcam, her.js CHAIR): black, its back to you and away
     // from the monitor, so in its own shadow; the screen just catches its edges in grey, the piping inset along them,
     // the armrests' ends beside it.
@@ -312,6 +316,8 @@ function drawAway(ctx, t, o = {}) {
       }
       putI(x, y, c);
     }
+}
+function awayCard(t, o = {}) {
     // the card
     const w = 176, h = 52, x = 160, y = 96;
     smGlass(x, y, w, h);
@@ -322,7 +328,10 @@ function drawAway(ctx, t, o = {}) {
     const bw = w - 16, n = Math.round(bw * (1 - left / T));
     rectI(x + 8, y + 38, bw, 5, P.void); rectI(x + 9, y + 39, n, 3, P.g5); rectI(x + 9, y + 39, n, 1, P.g6);
     text('close: back early', x + w - 8, y + h + 3, 'tiny', P.s4, { align: 'r' });
-  });
+}
+function drawAway(ctx, t, o = {}) {
+  smDim(ctx, [148, 0, 492, 360], 0.42);
+  const L = smLayer(492, 360, () => { awayChair(); awayCard(t, o); });
   ctx.drawImage(L, 148, 0);
 }
 
@@ -370,4 +379,78 @@ function drawSmall(ctx, kind, t) {
   else if (kind === 'microshut') drawMicro(ctx, t, 1);
   else if (kind === 'microhalf') drawMicro(ctx, t, 0.6);
   usePal(PAL_BASE);
+}
+
+// ---------------------------------------------------------------- live (V11, #76): the game's small pieces
+// Full-frame pieces (pause, How to hide, the microsleep) draw over a 640 x 360 picture of the frame the game composes
+// (her panel and the right screen); right-screen pieces (away, the inspect window) over a 492 x 360 one. Each returns
+// its canvas and the hit regions of its buttons (frame or right-screen px).
+const SML = { full: null, rs: null, bg: null, chair: null };
+const smCanvas = (k, w, h) => { if (!SML[k]) { SML[k] = document.createElement('canvas'); SML[k].width = w; SML[k].height = h; } return SML[k]; };
+// pause: the whole frame black (so it can't be used to peek), the card, Resume (Esc) and How to hide
+function drawPauseLive(t) {
+  const c = smCanvas('full', 640, 360), ctx = c.getContext('2d', { willReadFrequently: true });
+  drawPause(ctx, t); usePal(PAL_BASE);
+  const w = 232, h = 92, x = 320 - w / 2, y = 180 - h / 2;
+  return { canvas: c, hits: [{ x: x + 12, y: y + h - 26, w: 100, h: 14, act: 'resume', arg: '', tip: '' }, { x: x + 120, y: y + h - 26, w: 100, h: 14, act: 'howtoOpen', arg: '', tip: '' }] };
+}
+// How to hide over the frame dimmed behind it (frame: the picture behind, or null to keep the last; black: paused)
+function drawHowtoLive(frame, o, t, black) {
+  const c = smCanvas('full', 640, 360), ctx = c.getContext('2d', { willReadFrequently: true }), h = howtoH(o), y = Math.round((360 - h) / 2);
+  if (frame || black) {
+    const b = smCanvas('bg', 640, 360), bx = b.getContext('2d', { willReadFrequently: true });
+    if (black) { bx.fillStyle = '#0a0814'; bx.fillRect(0, 0, 640, 360); } else { bx.drawImage(frame, 0, 0); smDim(bx, null, 0.42, [94, y, 452, h]); }
+  }
+  ctx.drawImage(SML.bg || smCanvas('bg', 640, 360), 0, 0);
+  ctx.drawImage(howtoCard(t, o), 94, y); usePal(PAL_BASE);
+  return { canvas: c, hits: [{ x: 94 + 452 / 2 - 50, y: y + h - 24, w: 100, h: 14, act: 'howtoClose', arg: '', tip: '' }] };
+}
+// the microsleep: lid 0..1 (1 shut) over the frame
+// shut, the picture only changes with the zzz (twice a second): it is drawn again only then
+let MICRO_KEY = '';
+function drawMicroLive(frame, lid, t) {
+  const c = smCanvas('micro', 640, 360), ctx = c.getContext('2d', { willReadFrequently: true });
+  const key = lid >= 1 ? 'shut' + (Math.floor(t * 2) % 4) : '';
+  if (key && key === MICRO_KEY) return { canvas: c, hits: [] };
+  MICRO_KEY = key;
+  if (frame) ctx.drawImage(frame, 0, 0);
+  drawMicro(ctx, t, Math.max(0.001, lid)); usePal(PAL_BASE);
+  return { canvas: c, hits: [] };
+}
+// away from the PC: the right screen dimmed (bg four times a second), the empty chair, the card.
+// st: { what, left, total, ask } (ask: her question with Stay and Back to the PC)
+const AWAY_CARD = { x: 160, y: 96, w: 176 };
+function drawAwayLive(bg, st, t) {
+  const c = smCanvas('rs', RS_W, RS_H), ctx = c.getContext('2d');
+  if (bg) { const b = smCanvas('rsbg', RS_W, RS_H), bx = b.getContext('2d', { willReadFrequently: true }); bx.drawImage(bg, 0, 0); smDim(bx, [0, 0, RS_W, RS_H], 0.42); }
+  if (!SML.chair) { const L = smLayer(RS_W, RS_H, () => awayChair()); SML.chair = document.createElement('canvas'); SML.chair.width = RS_W; SML.chair.height = RS_H; SML.chair.getContext('2d').drawImage(L, 0, 0); }
+  if (SML.rsbg) ctx.drawImage(SML.rsbg, 0, 0); else { ctx.fillStyle = EB_PAL[P.void]; ctx.fillRect(0, 0, RS_W, RS_H); }
+  ctx.drawImage(SML.chair, 0, 0);
+  const { x, y, w } = AWAY_CARD, h = st.ask ? 66 : 52, hits = [{ x: x + w - 14, y: y + 4, w: 10, h: 10, act: 'preCancel', arg: '', tip: '' }];
+  const L = smLayer(w, h + 12, () => {
+    smGlass(0, 0, w, h);
+    text('Away from the PC', 8, 6, 'tiny', P.moon); smClose(w - 14, 4);
+    if (st.ask) {
+      text(st.ask, 8, 18, 'tiny', P.u6);
+      smBtn(8, 32, 74, st.yes, { gold: true }); smBtn(86, 32, w - 94, st.no);
+      text('The party is on autopilot.', 8, 52, 'tiny', P.s5);
+    } else {
+      text(st.what + ' · ' + Math.max(1, Math.ceil(st.left)) + ' s', 8, 17, 'tiny', P.u6);
+      text('The party is on autopilot.', 8, 26, 'tiny', P.s5);
+      const bw = w - 16, n = Math.round(bw * Math.max(0, Math.min(1, 1 - st.left / st.total)));
+      rectI(8, 38, bw, 5, P.void); rectI(9, 39, n, 3, P.g5); rectI(9, 39, n, 1, P.g6);
+      text('close: back early', w - 8, h + 3, 'tiny', P.s4, { align: 'r' });
+    }
+  });
+  ctx.drawImage(L, x, y); usePal(PAL_BASE);
+  if (st.ask) hits.push({ x: x + 8, y: y + 32, w: 74, h: 14, act: 'episode', arg: '1', tip: '' }, { x: x + 86, y: y + 32, w: w - 94, h: 14, act: 'episode', arg: '0', tip: '' });
+  return { canvas: c, hits };
+}
+// the Goblin Fuel inspect window over the dimmed right screen (bg four times a second); o: INSPECT_PAGE's shape
+function drawInspectLive(bg, o, t) {
+  const c = smCanvas('rs', RS_W, RS_H), ctx = c.getContext('2d'), [ix, iy, iw, ih] = INSPECT;
+  if (bg) { const b = smCanvas('rsbg', RS_W, RS_H), bx = b.getContext('2d', { willReadFrequently: true }); bx.drawImage(bg, 0, 0); smDim(bx, [0, 0, RS_W, RS_H], 0.42, [ix, iy, iw, ih]); }
+  if (SML.rsbg) ctx.drawImage(SML.rsbg, 0, 0); else { ctx.fillStyle = EB_PAL[P.void]; ctx.fillRect(0, 0, RS_W, RS_H); }
+  ctx.drawImage(inspectWindow(t, o), ix, iy); usePal(PAL_BASE);
+  return { canvas: c, hits: [{ x: ix + iw - 15, y: iy + 4, w: 10, h: 10, act: 'inspectClose', arg: '', tip: '' }, { x: ix + 104, y: iy + ih - 22, w: 104, h: 14, act: 'inspectDrink', arg: '', tip: '' }, { x: ix + 214, y: iy + ih - 22, w: 70, h: 14, act: 'inspectClose', arg: '', tip: '' }] };
 }

@@ -17,8 +17,11 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
 - **Costs.** Every action costs at least one of:
   - *Hands busy* at the desk (Text her 3 s, the towel 2 s). Skills say "Hands busy", alt-tab is blocked, the
     party is on the reckless autopilot.
-  - *Time away from the PC* (Make her tea). Everything above, plus no input at all: the desk dims to an empty
-    chair with a card (✕ = come back early, no effect). If a visit lands while you are away she sees
+  - *Time away from the PC* (Make her tea). Everything above, plus no input at all but the card: the right screen
+    dims (it is what she would see), your gaming chair stands empty in front of the desk, its back to you, and in
+    the webcam view, its front to the camera; a glass card over the monitor says what you are doing, the seconds
+    left and that the party is on autopilot, with a moss bar (✕ = come back early, no effect). Her "Stay for one
+    episode?" is on the card, with Stay and Back to the PC (grid doc 7k). If a visit lands while you are away she sees
     whatever is on screen: Excel = pass, the game = caught.
   - *A condition on where she is.* Read when you start (you text her now, you walk over now). The tooltip is
     the cost and one sentence on what it does, with the condition when there is one (tea: only while she is
