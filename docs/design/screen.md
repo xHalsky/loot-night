@@ -204,6 +204,12 @@ front, below her: both read at once.
 what it is, what it does in one line, and a cost, an unlock level or the one comparison that matters (an
 item: ▲ / ▼ power for the selected hero). Never formulas, prices, control hints or "use it when" advice;
 the click panels and the design docs hold the detail. `python3 test/tooltips.py` hovers each kind.
+Each takes the look of where the pointer is (grid doc 7k; `drawTips` in `main.ts`, `test/tips.py`): the desk's glass
+on the desk (Goblin Fuel's with its key, + and - lines and the count in the drawer), Windows 98's pale yellow on the
+PC's taskbar (the tabs, Sleep, the Witching Hour), her PC-98 paper on her panel and her windows (a name in plum when
+the line has one, the line in brown), and the RPG's leather card in the game screen, drawn by the battle area or the
+panel themselves (skills, heroes, plain lines). Items keep their DOM card: it compares stats and goes with the side
+panel's item details.
 
 ## Decisions
 

@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.74.0 (2026-11-25)
+
+- **The small pieces, second half** (V11, #76; grid doc 7k):
+  - **Coach marks:** one look everywhere, drawn by the renderer: a marching gold ring round the thing (a copper one
+    outside it), a glass callout with a gold top, a gold wedge pointing at it, "The game crawls until you do it." and a
+    close box. The pointer goes through to the thing; only the callout takes clicks.
+  - **Tooltips in the look of where the pointer is:** the desk's glass on the desk (Goblin Fuel's lists what it does,
+    the crash and the cans in the drawer), Windows 98's yellow on the taskbar, her paper on her panel and the cuddle
+    window, the RPG's leather card on skills, heroes and plain lines in the game screen (drawn by the battle area and
+    the panel). Item tooltips keep their DOM card for now (they go with the side panel's item details).
+- The loot coach mark says "a green arrow" (Tiny5 has no ▲). The DOM coach mark and its CSS are gone. `test/tips.py`
+  hovers each look next to stills 072 to 074; `test/coach.py` closes its mark with the real mouse. UI only: sims as
+  before. With this, real life is in the new look (V3 to V11).
+
 ## 0.73.0 (2026-11-25)
 
 - **The small pieces, first half** (V11, #76; grid doc 7k), all drawn by the renderer now:

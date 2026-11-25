@@ -85,8 +85,10 @@ happening.
   screen, so a new player knew the rules but not what a good night was.
 - **Coach marks for the core loop** (`COACH` in `src/data/tips.ts`, `src/systems/coach.ts`, #42): the first
   footsteps, her first time in the doorway, the first phone, the first loot and the first boss wind-up get a
-  callout next to the thing itself (a ring around it), and the game crawls at `COACH_SLOW` (a quarter speed)
-  until the player does it: Tab, answering her, opening the phone, equipping, a skill. It also clears when the
+  callout next to the thing itself, and the game crawls at `COACH_SLOW` (a quarter speed). The renderer draws them
+  one way everywhere (grid doc 7k): a marching gold ring round the target and a copper one 1 px out, a glass callout
+  with a gold top row, a gold wedge toward the target, "The game crawls until you do it." and a close box; the
+  pointer goes through to the target, except on the callout. The crawl lasts until the player does it: Tab, answering her, opening the phone, equipping, a skill. It also clears when the
   moment passes, after `COACH_MAX_SEC` real seconds, or with ✕. Once per save. A more important one bumps a
   less important one (footsteps > doorway > phone > wind-up > loot), and the bumped one comes back next time.
   Hidden while her caught screen is up.
@@ -125,6 +127,12 @@ happening.
   the redesign has no results screen, and its numbers (depth against the record, near misses, the appraiser's
   waiting items) have no place on the morning's summary. Rejected: folding the results into the morning (no room in
   the summary without dropping the near misses); the page's day and night names now.
+- **Coach marks and tooltips in the redesign's look** (0.74, V11 #76). Coach marks are the game talking, so one look
+  everywhere; their targets are the renderer's own rectangles (the DOM stand-ins they used to anchor on stay only for
+  the tests). Tooltips follow the pointer's world; the RPG's card is drawn inside the battle area and the panel because
+  its leather is lit by their light, and a free-floating copy would not match. Items keep the DOM card until the side
+  panel's item details are redrawn (with the RPG's pieces, not real life's). Rejected: one tooltip look for everything
+  (the grid doc's rule: real life is glass, the PC is Windows 98, hers are hers).
 - **Pause, How to hide and the microsleep in the redesign's look** (0.73, V11 #76, grid doc 7k). Pause blacks out the
   whole frame (so it can't be used to peek) under a glass card with Resume (Esc) and How to hide. The How-to card's
   tiles are tonight's: the build's four until the week (#56) brings Tuesday's five with lean in and the "new tonight"

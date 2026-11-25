@@ -8,6 +8,12 @@ type Hit = { x: number; y: number; w: number; h: number; act: string; arg: strin
 let started = false, ready = false, lastDraw = 0, shown = false;
 let hits: Hit[] = [];
 let msAvg = 0;
+/** The RPG's tooltip card (V11): main.ts sets it from the hover each frame; the battle area or the panel draws it. */
+export type RpgTip = { area: 'ba' | 'sp'; x: number; y: number; w?: number; lines: [string, string][] };
+let rpgTip: RpgTip | null = null, rpgTipDrawn = false;
+export function setRpgTip(t: RpgTip | null) { rpgTip = t; }
+/** Whether the last frames drew the card (else the DOM tooltip shows it: the town, the tree and the path cards). */
+export const rpgTipShown = () => rpgTipDrawn;
 let ptr: [number, number] | null = null, hovPath = -1, hovT = 0;
 /** The pointer over the battle area (grid px), for hovers the renderer draws (the floor map's paths, a hero's card). */
 export function livePointer(p: [number, number] | null) { ptr = p; if (drag && p) { drag.x = p[0]; drag.y = p[1]; if (Math.hypot(p[0] - drag.x0, p[1] - drag.y0) > 4) drag.moved = true; } }
@@ -50,7 +56,11 @@ export function drawLiveRpg(cv: HTMLCanvasElement) {
   const pp: PartyPointer = { drag: drag?.moved ? { from: drag.from, x: drag.x, y: drag.y, over: heroAt(drag.x, drag.y) } : null, hover: h?.act === 'hero' ? Number(h.arg) : -1 };
   treeHov = h?.act === 'treeNode' ? h.arg : null;
   const townHov = h?.act === 'townSpot' ? h.arg : null;
-  const r = PK.battleArea(buildBattleView(now, hovPath, hovT, pp, treeHov, townHov), now / 1000);
+  const vm = buildBattleView(now, hovPath, hovT, pp, treeHov, townHov) as Record<string, unknown>;
+  const tipHere = rpgTip?.area === 'ba' && !vm.town && !vm.tree && !vm.paths;
+  if (tipHere) vm.tip = rpgTip;
+  if (rpgTip?.area === 'ba' || !rpgTip) rpgTipDrawn = tipHere;
+  const r = PK.battleArea(vm, now / 1000);
   cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
   const ms = performance.now() - now; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms;
   hits = r.hits;
@@ -66,7 +76,9 @@ export function drawLivePanel(cv: HTMLCanvasElement) {
   const now = performance.now();
   if (now - lastPanel < FRAME_MS - 1) return;
   lastPanel = now;
-  const r = PK.panel(panelView(treeHov), now / 1000);
+  const pv = panelView(treeHov) as Record<string, unknown>;
+  if (rpgTip?.area === 'sp') { pv.tip = rpgTip; rpgTipDrawn = true; }
+  const r = PK.panel(pv, now / 1000);
   cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
   panelHits = r.hits;
 }

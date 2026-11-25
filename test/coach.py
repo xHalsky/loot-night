@@ -42,7 +42,9 @@ async def main():
         await pg.evaluate("()=>{" + fresh('door') + "n.monitor='excel'; n.switching=null; Object.assign(n.visit,{stage:'handle',kind:'chat',from:'tv',t:0.01});}"); await pg.wait_for_timeout(400)
         c = await coach(); print('doorway:', c); ok &= c == 'door'
         await pg.screenshot(path='test/coach_door.png')
-        await act(pg, '#coachUi .mg-close'); c = await coach(); print('  x closes it:', c is None); ok &= c is None
+        await pg.wait_for_timeout(200); xy = await pg.evaluate("()=>{const h=(window.__lnCoach()||[])[0]; return h ? [(h.x + h.w / 2) * 2, (h.y + h.h / 2) * 2] : null}")   # the renderer's close box (V11)
+        if xy: await pg.mouse.click(*xy); await pg.wait_for_timeout(200)
+        c = await coach(); print('  x closes it:', c is None); ok &= c is None
         # 3. the phone: a real tap opens it
         await pg.evaluate("()=>{" + fresh('phone') + "n.scare=0; n.monitor='rpg';}"); await dbg(pg, '[data-act=dbgMom]'); await pg.wait_for_timeout(300)
         c = await coach(); print('phone:', c); ok &= c == 'phone'

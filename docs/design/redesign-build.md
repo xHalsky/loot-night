@@ -25,9 +25,10 @@ gameplay steps). This file says how the build gets there and where it stands. It
   Left as DOM for now: the pop-up windows, Excel's content (its step).
 - **V5, the energy break, 0.68.0:** the five scenes ray-cast through their cameras over the dimmed right screen, on the
   game's own physics (desk.md, Goblin Fuel energy break); baked ahead in idle time.
-- **V11, the small pieces, 0.73.0 (first half):** pause, How to hide, the microsleep's lids, away from the PC (the empty
-  chair, the card) and the Goblin Fuel inspect window, all the renderer's (night.md, desk.md, preemptive.md). Coach
-  marks and tooltips follow.
+- **V11, the small pieces, 0.73.0 and 0.74.0:** pause, How to hide, the microsleep's lids, away from the PC (the empty
+  chair, the card), the Goblin Fuel inspect window, then coach marks and tooltips in each world's look, all the
+  renderer's (night.md, desk.md, preemptive.md, screen.md). Item tooltips keep the DOM card (the side panel's item
+  details).
 - **V10, the morning, 0.72.0:** her CG by how the night ended, the caption and the summary with the stars' rewards,
   all the renderer's, from the game's numbers (night.md). The results card before it is still the build's.
 - **V9, her windows, 0.71.0:** the cuddle break in her PC-98 window over the dimmed right screen, the plan as the
@@ -78,4 +79,4 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 15 | V7 (#72): caught | 0.70.0 |
 | 16 | V9 (#74): her windows (the cuddle break, the plan) | 0.71.0 |
 | 17 | V10 (#75): the morning | 0.72.0 |
-| 18 | V11 (#76): the small pieces | 0.73.0: pause, How to hide, microsleep, away, the inspect window |
+| 18 | V11 (#76): the small pieces | 0.73.0: pause, How to hide, microsleep, away, the inspect window; 0.74.0: coach marks, tooltips |

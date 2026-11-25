@@ -55,17 +55,17 @@ function ghostPortrait(id, x, y) {
 function wrapTiny_shadowed(str, maxW) { const out = []; let cur = ''; for (const w of str.split(' ')) { const n = cur ? cur + ' ' + w : w; if (measure(n, 'tiny') > maxW && cur) { out.push(cur); cur = w; } else cur = n; } if (cur) out.push(cur); return out; }
 // a tooltip card: the path cards' bronze and leather; lines [kind, text]: 'h' head, '+' you get, '-' it costs, 'n' note
 function tipCard(x, y, w, lines) {
-  let h = 8; for (const [k, s] of lines) h += k === 'h' ? 10 : wrapTiny(s, w - (k === 'n' ? 12 : 17)).length * 7 + 1;
+  let h = 8; for (const [k, s] of lines) h += k === 'h' ? 10 : wrapTiny(s, w - (k === 'n' || k === 'b' ? 12 : 17)).length * 7 + 1;
   shadowU(x, y, w, h, { k: 0.7, r: 4, dx: 2, dy: 3 });
   leatherU(x + 3, y + 3, w - 6, h - 6, { v: 0.13, vig: 0.25 });
   mouldU(x, y, w, h, { k: 0.9, bosses: false });
   let yy = y + 5;
   for (const [k, s, extra] of lines) {
     if (k === 'h') { const nw = text(s, x + 6, yy, 'tiny', P.moon, { shadow: P.void }); if (extra) extra(x + 6 + nw + 4, yy); yy += 10; continue; }
-    const tx = k === 'n' ? x + 6 : x + 11, col = k === '+' ? P.g5 : P.crimson;
+    const tx = k === 'n' || k === 'b' ? x + 6 : x + 11, col = k === '+' ? P.g5 : P.crimson;   // b: a plain line in bone (V11)
     if (k === '+') { putI(x + 7, yy + 1, col); putI(x + 6, yy + 2, col); putI(x + 7, yy + 2, col); putI(x + 8, yy + 2, col); putI(x + 7, yy + 3, col); }
     if (k === '-') { putI(x + 6, yy + 2, col); putI(x + 7, yy + 2, col); putI(x + 8, yy + 2, col); }
-    for (const ln of wrapTiny(s, w - (k === 'n' ? 12 : 17))) { text(ln, tx, yy, 'tiny', k === 'n' ? P.u4 : P.u6, { shadow: P.void }); yy += 7; }
+    for (const ln of wrapTiny(s, w - (k === 'n' || k === 'b' ? 12 : 17))) { text(ln, tx, yy, 'tiny', k === 'n' ? P.u4 : P.u6, { shadow: P.void }); yy += 7; }
     yy += 1;
   }
   return h;

@@ -179,6 +179,7 @@ function liveBattleArea(ctx, vm, t) {
   });
   // the hovered hero's card over his head; the portrait lifted under the pointer while dragging
   if (vm.heroCard) tipCard(clamp(Math.round(vm.heroCard.x - 75), 2, W - 152), 34, 150, vm.heroCard.lines.map(([k, s]) => [k, s, null]));
+  if (vm.tip) liveTip(vm.tip);
   if (vm.drag) ghostPortrait(vm.drag.id, Math.round(vm.drag.x - 11), Math.round(vm.drag.y - 12));
   composeInto(ctx, F, r, 0);
   return LIVE_HITS;
@@ -446,6 +447,7 @@ function livePanelAll(ctx, st, t) {
   else if (st.tab === 'town') liveTownPanel(st, t);
   else livePartyPanel(st, t);
   if (st.tabs) { tabStrip(st.tab); let x = 4; for (const [id, , w] of TABS) { panelHit(x, 0, w, 11, 'townTab', id, ''); x += w; } }
+  if (st.tip) liveTip(st.tip);
   composeInto(ctx, S, { lights: [], ambient: [0.1, 0.1, 0.2], tint: 0, vig: 0 }, 0);
   return LIVE_PANEL_HITS;
 }
@@ -519,4 +521,13 @@ function liveServicePanel(st, t) {
     for (const [k, ln] of wrapTiny(S0.note || '', PW - 8).entries()) text(ln, X0 + 4, y + 46 + k * 7, 'tiny', P.u4, { shadow: P.void });
   }
   footerMoney(X0, PW, st);
+}
+
+// the RPG's tooltip card next to the pointer (V11, #76; grid doc 5c, 7k): tip { x, y, w, lines [kind, text] }, kinds
+// h (the head), + and - (bullets), b (a plain line), n (a note); below the pointer, or above it near the bottom
+function liveTip(tip) {
+  const w = Math.min(tip.w || 132, W - 4);
+  let h = 8; for (const [k, s] of tip.lines) h += k === 'h' ? 10 : wrapTiny(s, w - (k === 'n' || k === 'b' ? 12 : 17)).length * 7 + 1;
+  const x = clamp(Math.round(tip.x + 8), 2, W - w - 2), y = tip.y + 14 + h > H - 2 ? Math.max(2, Math.round(tip.y - h - 6)) : Math.round(tip.y + 14);
+  tipCard(x, y, w, tip.lines.map(([k, s]) => [k, s, null]));
 }

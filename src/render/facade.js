@@ -63,6 +63,10 @@ export const PK = {
   micro: (frame, lid, t) => drawMicroLive(frame, lid, t),
   away: (bg, st, t) => drawAwayLive(bg, st, t),
   inspect: (bg, o, t) => drawInspectLive(bg, o, t),
+  /** A coach mark over the whole frame, transparent (V11): id, { title, text }; hits: the close box, then the callout. */
+  coach: (id, o, t) => drawCoachLive(id, o, t),
+  /** A tooltip over the whole frame, transparent (V11): { style: desk | pc | her, title, key, lines, note } at the pointer. */
+  tip: (tip, x, y) => drawTipLive(tip, x, y),
   /** Caught (V7, #72; grid doc 7e): the full-frame scare, 640 x 360. rung 1 to 3, T seconds since the catch, cost the line. */
   caught: (rung, T, cost) => drawCaughtLive(rung, T, cost),
   /** The cable fix (V6): start it on the game's deal and rule; the pointer in scene px; draw it over the right screen. */

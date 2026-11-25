@@ -5,7 +5,7 @@ import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml, preBusyHtml, coachHtml } from './ui/panels';
+import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml, preBusyHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -38,6 +38,7 @@ import { swapHeroes, ensureParty, hookLine, shoveLine } from './systems/ranks';
 import { toggleAutocast, buyNode, respec } from './systems/tree';
 import type { NodeId } from './data/trees';
 import type { HeroId } from './core/state';
+import { setRpgTip, rpgTipShown, type RpgTip } from './render/liveRpg';
 import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown, liveDrewAt } from './render/liveRpg';
 import { PK } from 'virtual:pagekit';
 import { phoneShown, phoneView } from './render/phoneView';
@@ -86,7 +87,8 @@ stage.innerHTML = `
   <canvas id="modalArea" width="640" height="360"></canvas>
   <canvas id="planArea" width="640" height="360"></canvas>
   <canvas id="morningArea" width="640" height="360"></canvas>
-  <div id="coachUi"></div>
+  <canvas id="coachArea" width="640" height="360"></canvas>
+  <canvas id="tipArea" width="640" height="360"></canvas>
   <canvas id="pkFrame" width="${GRID_W}" height="${GRID_H}"></canvas>
   <div id="debug"></div>
   <div id="tooltipLayer"></div>
@@ -336,6 +338,7 @@ el('spArea').addEventListener('pointermove', ev => {
   (el('spArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
   if (inv?.moved) return;
   hover.key = h?.tip ? (/^(bag|gear|hero|skill):|^autosalvage$/.test(h.tip) ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
+  hover.src = 'rpg'; hover.area = 'sp'; hover.ax = x; hover.ay = y;
 });
 el('spArea').addEventListener('contextmenu', ev => {
   ev.preventDefault();
@@ -371,6 +374,7 @@ el('rpgArea').addEventListener('pointermove', ev => {
   livePointer([x, y]);
   (el('rpgArea') as HTMLElement).style.cursor = liveDragging() ? 'grabbing' : h?.act === 'hero' || h?.act === 'heroTab' ? 'grab' : h?.act ? 'pointer' : 'default';
   hover.key = h?.tip ? (h.tip.startsWith('skill:') ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
+  hover.src = 'rpg'; hover.area = 'ba'; hover.ax = x; hover.ay = y;
 });
 el('rpgArea').addEventListener('pointerleave', () => { hover.key = ''; livePointer(null); });
 
@@ -406,7 +410,7 @@ herCanvas.addEventListener('pointermove', ev => {
   herCanvas.style.cursor = h?.act ? 'pointer' : hit === 'plan' ? 'zoom-in' : hit === 'door' ? 'grab' : 'default';
   const hv = h?.act ? `${h.act}:${h.arg}` : ''; if (hv !== herHover) { herHover = hv; herDirty = true; }
   const tip = h?.tip ? (h.tip.startsWith('pre:') ? h.tip : herTip(h.tip) && `text:${herTip(h.tip)}`) : hit && !S.g.night?.peeking ? `text:${herTip(hit)}` : '';
-  hover.key = tip || ''; hover.x = p.x; hover.y = p.y;
+  hover.key = tip || ''; hover.x = p.x; hover.y = p.y; hover.src = 'her';
 });
 herCanvas.addEventListener('pointerleave', () => { if (herHover) herDirty = true; herHover = ''; hover.key = ''; });
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
@@ -524,27 +528,6 @@ function drinkOrInspect() {
 }
 
 /** The shower panel covers the apartment map while she showers and you can hear it (docs/design/eye-candy.md). */
-// Coach mark: put the bubble next to its anchor and a ring around the anchor (stage coordinates).
-function placeCoach() {
-  const c = S.g.night?.coach;
-  const box = document.querySelector('#coachUi .coach') as HTMLElement | null;
-  const ring = document.querySelector('#coachUi .coach-ring') as HTMLElement | null;
-  if (!c || !box || !ring) return;
-  const a = document.querySelector(COACH[c.id].anchor) as HTMLElement | null;
-  if (!a) { box.style.visibility = ring.style.visibility = 'hidden'; return; }
-  const s = stage.getBoundingClientRect(), r = a.getBoundingClientRect();
-  const x = (r.left - s.left) / stageScale, y = (r.top - s.top) / stageScale, w = r.width / stageScale, h = r.height / stageScale;
-  Object.assign(ring.style, { left: `${x - 4}px`, top: `${y - 4}px`, width: `${w + 8}px`, height: `${h + 8}px`, visibility: 'visible' });
-  const bw = box.offsetWidth, bh = box.offsetHeight;
-  let bx = x + w / 2 - bw / 2, by = y + h / 2 - bh / 2;
-  const side = COACH[c.id].side;
-  if (side === 'over') by = y + 70;
-  if (side === 'right') { bx = x + w + 16; by = y + h / 2 - bh / 2; }
-  if (side === 'left') { bx = x - bw - 16; by = y + Math.min(h / 2, 60) - bh / 2; }
-  if (side === 'above') { by = y - bh - 16; }
-  bx = Math.max(8, Math.min(1280 - bw - 8, bx)); by = Math.max(8, Math.min(720 - bh - 8, by));
-  Object.assign(box.style, { left: `${bx}px`, top: `${by}px`, visibility: 'visible' });
-}
 
 // ---------- The energy break (V5, #70; grid doc 7c): the renderer's window over the dimmed right screen ----------
 const ebCanvas = el('ebArea') as HTMLCanvasElement, ebCtx = ebCanvas.getContext('2d')!;
@@ -618,18 +601,18 @@ ebCanvas.addEventListener('pointermove', ev => {
   const [x, y] = ebXY(ev), p = toStage(ev), h = ebHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h);
   if (S.g.night?.game?.kind === 'cuddle') {   // your hand is the cursor over her window (drawn by the renderer)
     ebCanvas.style.cursor = h ? 'pointer' : cudMouse ? 'none' : 'default';
-    hover.key = h ? `text:Pull away, back to the game. She won't like it (Mood +${T.CUDDLE_REFUSE_MOOD}).` : ''; hover.x = p.x; hover.y = p.y;
+    hover.key = h ? `text:Pull away, back to the game. She won't like it (Mood +${T.CUDDLE_REFUSE_MOOD}).` : ''; hover.x = p.x; hover.y = p.y; hover.src = 'cud';
     return;
   }
   if (cableShown) {
     const on = inEbScene(x, y) && PK.cableMove(x - EB_SCENE.x, y - EB_SCENE.y);
     ebCanvas.style.cursor = h ? 'pointer' : on ? PK.ebCursor(PK.cableDragging() ? 'grab' : 'hand') : 'default';
-    hover.key = h ? 'text:Close it. Click the dark monitor to come back to the cables.' : ''; hover.x = p.x; hover.y = p.y;
+    hover.key = h ? 'text:Close it. Click the dark monitor to come back to the cables.' : ''; hover.x = p.x; hover.y = p.y; hover.src = 'eb';
     return;
   }
   monsterMove(x - EB_SCENE.x, y - EB_SCENE.y);
   ebCanvas.style.cursor = h ? 'pointer' : inEbScene(x, y) && PK.ready() ? PK.ebCursor(monsterGrabbing() ? 'grab' : 'hand') : 'default';
-  hover.key = h ? 'text:Stop the energy break. Before the can is open nothing is lost.' : ''; hover.x = p.x; hover.y = p.y;
+  hover.key = h ? 'text:Stop the energy break. Before the can is open nothing is lost.' : ''; hover.x = p.x; hover.y = p.y; hover.src = 'eb';
 });
 document.addEventListener('pointerup', () => { if (cableShown) PK.cableUp(); if (S.g.night?.game?.kind === 'monster') { monsterUp(); ebCanvas.style.cursor = PK.ready() ? PK.ebCursor('hand') : 'default'; } });
 
@@ -766,6 +749,82 @@ for (const [c, hits] of [[modalCanvas, () => modalHits], [rsSmallCanvas, () => r
   c.addEventListener('pointermove', ev => { c.style.cursor = smHitAt(hits(), ...smXY(c, ev)) ? 'pointer' : 'default'; hover.key = ''; });
 }
 
+// Coach marks (V11, #76): the renderer's ring and callout over the frame; the pointer goes through to what it points
+// at, except on the callout (its close box closes it).
+const coachCanvas = el('coachArea') as HTMLCanvasElement, coachCtx = coachCanvas.getContext('2d')!;
+let coachHits: SmHit[] = [], coachAt = 0;
+function drawCoachScreen() {
+  const g = S.g, c = g.night?.coach, now = performance.now();
+  const on = !!c && PK.ready() && g.screen === 'night' && !g.paused && !g.howto && !g.night?.scare && caughtT(now) < 0 && !inspectOpen;
+  coachCanvas.style.display = on ? 'block' : 'none';
+  if (!on) { coachHits = []; return; }
+  if (now - coachAt < 66) return; coachAt = now;   // the ring marches at 15 fps
+  const d = COACH[c!.id], r = PK.coach(c!.id, { title: d.title, text: d.text }, now / 1000);
+  coachCtx.clearRect(0, 0, 640, 360); coachCtx.drawImage(r.canvas, 0, 0); coachHits = r.hits;
+}
+window.addEventListener('pointerdown', ev => {
+  if (!coachHits.length || coachCanvas.style.display !== 'block') return;
+  const [x, y] = smXY(coachCanvas, ev), h = smHitAt(coachHits, x, y);
+  if (!h) return;
+  ev.preventDefault(); ev.stopImmediatePropagation();
+  if (h.act) { sfx.click(); actions[h.act]?.(''); coachAt = 0; }
+}, true);
+
+// Tooltips (V11, #76; grid doc 7k): the look of where the pointer is. The desk's glass on the desk, Windows 98's yellow
+// on the PC's taskbar, her paper on her panel and her windows, the RPG's leather card in the game screen (drawn by the
+// battle area or the panel). Items keep their DOM card (the side panel's item details).
+const tipCanvas = el('tipArea') as HTMLCanvasElement, tipCtx = tipCanvas.getContext('2d')!;
+const PC_TIPS = new Set(['tab:rpg', 'tab:excel', 'sleep', 'witching']);
+type TipModel = { style: 'desk' | 'pc' | 'her'; title?: string; key?: string; lines: [string, string][]; note?: string };
+/** The DOM tooltip's HTML as card lines: the name, plain lines, and its coloured notes as + (green), - (red) or a note. */
+function htmlLines(html: string): [string, string][] {
+  const box = document.createElement('div'); box.innerHTML = html;
+  const root = box.querySelector('.tooltip') ?? box, out: [string, string][] = [];
+  for (const e of Array.from(root.children) as HTMLElement[]) {
+    const t = (e.textContent ?? '').replace(/\s+/g, ' ').trim(); if (!t) continue;
+    const col = e.style.color;
+    if (e.classList.contains('tt-name')) out.push(['h', t]);
+    else if (col === 'rgb(255, 138, 128)') out.push(['-', t]);
+    else if (col === 'rgb(159, 224, 138)') out.push(['+', t]);
+    else if (e.classList.contains('tt-sub') || e.classList.contains('tt-hint')) out.push(['n', t]);
+    else out.push(['b', t]);
+  }
+  return out;
+}
+const titled = (s: string): TipModel => { const m = /^([^:.]{2,24}): (.+)$/.exec(s); return m ? { style: 'her', title: m[1], lines: [['', m[2][0].toUpperCase() + m[2].slice(1)]] } : { style: 'her', lines: [['', s]] }; };
+function realTip(): TipModel | null {
+  const k = hover.key, n = S.g.night;
+  if (!k || !n) return null;
+  if (hover.src === 'desk' && k.startsWith('desk:')) {
+    const id = k.slice(5);
+    if (PC_TIPS.has(id)) return { style: 'pc', lines: [['', deskTip(id)]] };
+    if (id === 'drink' && S.g.monsters > 0) {
+      const pct = (v: number) => Math.round(Math.abs(v) * 100);
+      return { style: 'desk', title: 'Goblin Fuel', key: 'Drink (G)', lines: [['+', `Party ${pct(T.MONSTER_SPEED)}% faster for ${T.MONSTER_BOOST_SEC} s, Tiredness ${T.MONSTER_TIRED}.`], ['-', `Then a crash: ${pct(T.MONSTER_CRASH_SPEED)}% slower for ${T.MONSTER_CRASH_SEC} s.`], ['', 'While she is coming, G hides the cans.']], note: `${S.g.monsters} of ${Math.max(T.MONSTER_DRAWER, S.g.monsters)} in the drawer.` };
+    }
+    return { style: 'desk', lines: [['', deskTip(id)]] };
+  }
+  if (hover.src === 'eb' && k.startsWith('text:')) return { style: 'desk', lines: [['', k.slice(5)]] };
+  if ((hover.src === 'her' || hover.src === 'cud') && k.startsWith('text:')) return titled(k.slice(5));
+  if (hover.src === 'her' && k.startsWith('pre:')) { const L = htmlLines(tooltipHtml()), h = L.find(l => l[0] === 'h'); return { style: 'her', title: h?.[1], lines: L.filter(l => l[0] !== 'h').map(([, t]) => ['', t] as [string, string]) }; }
+  return null;
+}
+function rpgTipNow(): RpgTip | null {
+  const k = hover.key;
+  if (!k || hover.src !== 'rpg' || !/^(text|skill|hero):|^autosalvage$/.test(k)) return null;
+  const lines: [string, string][] = k.startsWith('text:') ? [['b', k.slice(5)]] : k === 'autosalvage' ? [['h', 'Auto-salvage'], ['b', 'Common and uncommon drops turn straight into Souls.']] : htmlLines(tooltipHtml());
+  return lines.length ? { area: hover.area as 'ba' | 'sp', x: hover.ax, y: hover.ay, w: hover.area === 'sp' ? 132 : 150, lines } : null;
+}
+function drawTips() {
+  const g = S.g, quiet = !g.night || inv?.moved || g.screen !== 'night' || g.paused || g.howto;
+  const real = quiet || !PK.ready() ? null : realTip(), rpg = quiet || !PK.ready() ? null : rpgTipNow();
+  setRpgTip(rpg);
+  tipCanvas.style.display = real ? 'block' : 'none';
+  if (real) { tipCtx.clearRect(0, 0, 640, 360); tipCtx.drawImage(PK.tip(real, Math.round(hover.x / 2), Math.round(hover.y / 2)), 0, 0); }
+  setHtml('tooltipLayer', quiet || real || (rpg && rpgTipShown()) ? '' : tooltipHtml());
+}
+
+(window as unknown as Record<string, unknown>).__lnCoach = () => coachHits;   // for the tests: the close box, then the callout
 (window as unknown as Record<string, unknown>).__lnCaught = () => ({ t: caughtT(performance.now()), ...caughtShot() });   // for the tests
 el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
@@ -835,8 +894,7 @@ rsCanvas.addEventListener('pointermove', ev => {
   strokeAt = null;
   rsCanvas.style.cursor = h?.act ? (h.act === 'phone' ? 'grab' : 'pointer') : 'default';
   deskPhoneHover = h?.act === 'phone';
-  const tip = h?.tip ? deskTip(h.tip) : '';
-  hover.key = tip ? `text:${tip}` : ''; hover.x = p.x; hover.y = p.y;
+  hover.key = h?.tip && deskTip(h.tip) ? `desk:${h.tip}` : ''; hover.x = p.x; hover.y = p.y; hover.src = 'desk';   // the tooltip's look follows the key (V11)
 });
 rsCanvas.addEventListener('pointerleave', () => { deskPhoneHover = false; strokeAt = null; });
 
@@ -909,13 +967,12 @@ function render() {
   drawMorningScreen();   // V10 (#75): the morning, drawn by the renderer
   if (!g.night || g.screen !== 'night') planOpen = false;
   drawPlanScreen();   // V9 (#74): the plan off the wall, drawn by the renderer
-  setHtml('coachUi', g.screen === 'night' && !g.paused && !g.howto && !(g.night?.scare) && caughtT(performance.now()) < 0 ? coachHtml() : '');   // never over the caught screen
-  placeCoach();
+  drawCoachScreen();   // V11 (#76): the coach mark, the renderer's; never over the caught screen
   setHtml('debug', debugHtml());
   drawPreview(el('pkFrame') as HTMLCanvasElement);
   drawCaughtScreen();   // V7 (#72)
   drawSmallPieces();   // V11 (#76): pause, How to hide, the microsleep, away from the PC, the Goblin Fuel inspect
-  setHtml('tooltipLayer', inv?.moved ? '' : tooltipHtml());
+  drawTips();   // V11 (#76): the tooltip in the look of where the pointer is; the DOM one for items
 }
 
 startLoop(render);

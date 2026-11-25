@@ -75,7 +75,9 @@ export function entryIcon(e: BagEntry, size: number): string {
 }
 
 // ---------------- Tooltip (hover, like an MMO) ----------------
-export const hover = { key: '', x: 0, y: 0 };
+/** What the pointer is over: its tooltip key, where (stage px), and since V11 whose look the tooltip takes (src: desk, her,
+ *  eb (a window over the right screen), cud (her cuddle window), rpg (the game screen; ax, ay in its area, area ba or sp)). */
+export const hover = { key: '', x: 0, y: 0, src: '', ax: 0, ay: 0, area: '' };
 
 function statLines(it: Item): string {
   return it.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('') + specialLine(it) + ruleLines(it);
@@ -292,11 +294,3 @@ export function toastsHtml(): string {
 /** Tonight (#42): a sticky note on his desk with the three stars, live. What a good night looks like, while you
  *  play it (the results screen used to be the first place that said so). Always on screen, in both RPG and Excel. */
 
-/** Coach mark (#42): a callout next to the thing, while the game crawls. Positioned by main.ts. */
-export function coachHtml(): string {
-  const c = S.g.night?.coach;
-  if (!c) return '';
-  const d = COACH[c.id];
-  return `<div class="coach ${d.side}" data-coach="${c.id}"><button class="mg-close" data-act="coachClose" title="Got it">\u2715</button>
-    <b>${d.title}</b><p>${d.text}</p><small>The game is slowed down until you do it.</small></div><div class="coach-ring"></div>`;
-}

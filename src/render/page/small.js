@@ -241,6 +241,7 @@ function drawCoach(ctx, id, t) {
     smClose(x + w - 14, y + 4);
   });
   ctx.drawImage(L, 0, 0);
+  return [x, y, w, h];
 }
 function smPtr(x, y, ink = P.void, fill = P.moon) { PTR_ARROW.forEach((r, j) => [...r].forEach((c, i) => { if (c === 'v') putI(x + i, y + j, ink); else if (c === 'M') putI(x + i, y + j, fill); })); }
 function shadowFlatSm(x, y, w, h) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if ((i + j) & 1) putI(i, j, P.void); }
@@ -453,4 +454,57 @@ function drawInspectLive(bg, o, t) {
   if (SML.rsbg) ctx.drawImage(SML.rsbg, 0, 0); else { ctx.fillStyle = EB_PAL[P.void]; ctx.fillRect(0, 0, RS_W, RS_H); }
   ctx.drawImage(inspectWindow(t, o), ix, iy); usePal(PAL_BASE);
   return { canvas: c, hits: [{ x: ix + iw - 15, y: iy + 4, w: 10, h: 10, act: 'inspectClose', arg: '', tip: '' }, { x: ix + 104, y: iy + ih - 22, w: 104, h: 14, act: 'inspectDrink', arg: '', tip: '' }, { x: ix + 214, y: iy + ih - 22, w: 70, h: 14, act: 'inspectClose', arg: '', tip: '' }] };
+}
+
+// a coach mark over the frame (transparent), with the game's words (o: { title, text }); the callout's rectangle and its
+// close box come back as hits (the rest lets the pointer through to the thing it points at)
+function drawCoachLive(id, o, t) {
+  const c = smCanvas('coach', 640, 360), ctx = c.getContext('2d'); ctx.clearRect(0, 0, 640, 360);
+  const page = COACHES[id]; COACHES[id] = { ...page, title: o.title, text: o.text };
+  const [x, y, w, h] = drawCoach(ctx, id, t); COACHES[id] = page; usePal(PAL_BASE);
+  return { canvas: c, hits: [{ x: x + w - 14, y: y + 4, w: 10, h: 10, act: 'coachClose', arg: '', tip: '' }, { x, y, w, h, act: '', arg: '', tip: '' }] };
+}
+// tooltips next to the pointer (frame px), in the look of where the pointer is (grid doc 7k): 'desk' the desk's glass
+// (a name and its key, + and - lines, a count), 'pc' Windows 98's yellow, 'her' her PC-98 paper. tip: { style, title,
+// key, lines: [[sign, text]], note }. Drawn only when it changes.
+let TIP_KEY = '';
+function drawTipLive(tip, px, py) {
+  const c = smCanvas('tip', 640, 360), key = JSON.stringify(tip) + '|' + px + ',' + py;
+  if (key === TIP_KEY) return c;
+  TIP_KEY = key;
+  const ctx = c.getContext('2d'); ctx.clearRect(0, 0, 640, 360);
+  const lines = tip.lines || [], st = tip.style;
+  if (st === 'pc') {   // Windows' own: pale yellow, a black line, black Tiny5
+    const ws = lines.flatMap(([, s2]) => wrapTiny(s2, 170)), w = Math.max(...ws.map((l) => measure(l, 'tiny'))) + 8, h = ws.length * 8 + 5;
+    const x = Math.max(2, Math.min(638 - w, px + 2)), y = py + 16 + h > 358 ? py - h - 4 : py + 16;
+    const L = smLayer(640, 360, () => { rectI(x, y, w, h, P.pale); frameI(x, y, w, h, P.void); ws.forEach((l, k) => text(l, x + 4, y + 3 + k * 8, 'tiny', P.void)); });
+    ctx.drawImage(L, 0, 0);
+  } else if (st === 'her') {   // her paper: the name in plum, the line in brown
+    const w = 132, body = lines.flatMap(([, s2]) => wrapTiny(s2, w - 12)), h = (tip.title ? 9 : 0) + body.length * 8 + 12;
+    const x = Math.max(2, Math.min(638 - w, px + 10)), y = Math.max(2, Math.min(356 - h, py + 10));
+    const L = smLayer(640, 360, () => {
+      win9(x, y, w, h); let yy = y + 5;
+      if (tip.title) { text(tip.title, x + 6, yy, 'tiny', C9.plum); yy += 9; }
+      for (const l of body) { text(l, x + 6, yy, 'tiny', C9.brown); yy += 8; }
+    }, PC98_RGB);
+    ctx.drawImage(L, 0, 0);
+  } else {   // the desk's glass
+    const w = 156, mid = [], titleH = tip.title ? 11 : 0;
+    let h = 8 + titleH; for (const [sign, s2] of lines) h += wrapTiny(s2, w - (sign ? 18 : 12)).length * 8 + (sign ? 2 : 0);
+    if (tip.note) h += 9;
+    const x = Math.max(2, Math.min(638 - w, px + 10)), y = py + 14 + h > 358 ? Math.max(2, py - h - 6) : py + 14;
+    const L = smLayer(640, 360, () => {
+      shadowFlatSm(x + 2, y + 3, w, h); smGlass(x, y, w, h);
+      let yy = y + 5;
+      if (tip.title) { text(tip.title, x + 6, yy, 'tiny', P.moon); if (tip.key) text(tip.key, x + w - 6, yy, 'tiny', P.s5, { align: 'r' }); yy += 11; }
+      for (const [sign, s2] of lines) {
+        if (sign) yy = smBullets(x + 6, yy, w - 10, [[sign, s2]]);
+        else { for (const l of wrapTiny(s2, w - 12)) { text(l, x + 6, yy, 'tiny', P.u6); yy += 8; } }
+      }
+      if (tip.note) text(tip.note, x + 6, yy + 1, 'tiny', P.s5);
+    });
+    ctx.drawImage(L, 0, 0);
+  }
+  usePal(PAL_BASE);
+  return c;
 }
