@@ -61,9 +61,9 @@ for (let i = 0; i < 10; i++) updateVisits(1 / 60);
 ok(n.catches === 1 && n.guilt > 0, 'the first catch already brings Guilt');
 
 // Good Boy
-n = fresh(); n.dog.stage = 'up'; n.dog.pet = 0; n.dog.sweetPet = 0; for (let i = 0; i < 400 && n.dog.stage === 'up'; i++) petStroke(10, 100, true);
+n = fresh(); n.dog.stage = 'up'; n.dog.pet = 0; n.dog.sweetPet = 0; for (let i = 0; i < 400 && n.dog.stage === 'up'; i++) petStroke(5, 50, true);
 ok(n.goodDog === T.GOOD_BOY_SEC, 'petted on his favourite spot: Good Boy');
-n = fresh(); n.dog.stage = 'up'; n.dog.pet = 0; n.dog.sweetPet = 0; for (let i = 0; i < 400 && n.dog.stage === 'up'; i++) petStroke(10, 100, false);
+n = fresh(); n.dog.stage = 'up'; n.dog.pet = 0; n.dog.sweetPet = 0; for (let i = 0; i < 400 && n.dog.stage === 'up'; i++) petStroke(5, 50, false);
 ok(n.goodDog === 0, 'petted anywhere else: just a good boy');
 
 // Fast cable fix

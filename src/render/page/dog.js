@@ -250,6 +250,20 @@ function dogView(st, t, o = {}) {
     if (tl % 3 > 0.3 && tl % 3 < 1.3) V.label = { s: 'whine', at: 'mouth' };
     V.rise = 1 + Math.sin(t * 3) * 0.004;
   };
+  if (kind === 'game') {
+    // the game's dog (V6, #71; render/dogView.ts): a scripted moment (jump, done, goodboy, offended, slam), or up and
+    // waiting for you with the game's numbers: how full he is (h), being stroked (pet, on his favourite spot), a flinch
+    const g = o.g;
+    if (g.kind !== 'live') { const V2 = dogView(st, t, { dog: g.kind, dogT: g.T }); if (g.sock && g.kind !== 'goodboy') V2.sock = { on: 'desk', k: 1 }; if (g.kind === 'jump' && g.T >= 0.7) V2.rise = 1; return V2; }
+    const h = g.h; V.h = Math.max(0.1, h); DOG_IN.vis = true;
+    if (g.flinch) { p.eyes = 'squeeze'; p.ear = 1; p.duck = 4; p.mouth = 'pout'; p.tilt = -0.08; V.mark = '!'; V.card = 'gently!'; }
+    else if (g.pet) {
+      const onSweet = g.pet === 'sweet'; p.eyes = onSweet ? 'bliss' : 'happy'; p.mouth = onSweet ? 'blep' : 'smile'; p.ear = 0.35 + 0.6 * h; p.blush = 0.5 + 0.5 * h;
+      p.tilt = onSweet ? 0.2 : Math.max(-0.08, Math.min(0.08, (g.hx2 - DOG_X) * 0.004)); V.hearts = onSweet ? 2 : 1; if (onSweet) V.sparkle = [DOG_X + 6, DOG_Y + 20];
+    } else { waitPose(g.T); p.ear = 0.2 * h; p.blush = 0.3 + 0.4 * h; if (g.card) V.card = g.card; }
+    if (g.sock) V.sock = { on: 'desk', k: 1 };
+    return finishView(V, t);
+  }
   if (kind === 'live') {
     // the Dog row's Waits: he jumps up and waits for you as long as it takes; stroke him with the mouse
     if (DOG_IN.t0 == null || t < DOG_IN.t0) DOG_IN.t0 = t;

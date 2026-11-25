@@ -70,7 +70,7 @@ function bump() {
   const kinds = shuffle([...PLUGS.keys()]).slice(0, CABLE_COUNT);
   const colors = shuffle([...CABLE_COLORS.keys()]).slice(0, CABLE_COUNT);
   const sockets = shuffle([...Array(CABLE_COUNT).keys()]);
-  n.unplugged = { kinds, colors, sockets, plugged: Array(CABLE_COUNT).fill(false), t0: n.threat, flow: n.flow };
+  n.unplugged = { kinds, colors, sockets, plugged: Array(CABLE_COUNT).fill(false), t0: n.threat + T.CABLE_SHOW_SEC, flow: n.flow };   // the fast fix counts once the cables show
   n.monitorOff = 1;
   sfx.sting();
   toast('The dog slams into the desk. The monitor cables are out! Plug them back in.', '#ff8a80');
@@ -86,7 +86,7 @@ export function plugIn(plug: number, slot: number): boolean {
   if (u.plugged.every(Boolean)) {
     const fast = u.t0 !== undefined && n.threat - u.t0 <= T.CABLE_FAST_SEC;
     n.unplugged = null; n.monitorOff = 0; sfx.good();
-    if (fast && u.flow !== undefined) { n.flow = Math.max(n.flow, u.flow); toast(`Signal back in ${Math.round(n.threat - u.t0!)} s. Flow restored.`, '#6fcf7f'); }   // payout: a fast fix
+    if (fast && u.flow !== undefined) { n.flow = Math.max(n.flow, u.flow); toast(`Signal back in ${Math.max(1, Math.round(n.threat - u.t0!))} s. Flow restored.`, '#6fcf7f'); }   // payout: a fast fix
     else toast('Signal back. Good as new.', '#6fcf7f');
   }
   return true;

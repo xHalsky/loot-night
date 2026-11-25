@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { PK } from 'virtual:pagekit';
 import { S, N } from '../core/state';
 import {  type Px } from '../data/heroes';
 import { PIECES } from '../systems/excel';
@@ -34,7 +35,8 @@ export function drawMonitor(c: CanvasRenderingContext2D, live = false) {
   if (!n) { c.fillStyle = '#09070c'; c.fillRect(0, 0, MON_W, MON_H); return; }
   if (n.monitorOff > 0) {
     c.fillStyle = '#000'; c.fillRect(0, 0, MON_W, MON_H);
-    if (n.unplugged) { text(c, 'NO SIGNAL', MON_W / 2, 170, 22, '#6e6280', 'center'); text(c, 'the party fights on, drops are lost', MON_W / 2, 196, 13, '#4a3a5c', 'center'); return; }
+    if (n.unplugged && PK.ready()) { c.drawImage(PK.noSignal(performance.now() / 1000), 0, 0, 474, 232, 0, 0, MON_W, MON_H); return; }   // V6 (#71): the monitor's own message box
+    if (n.unplugged) { text(c, 'NO SIGNAL', MON_W / 2, 170, 22, '#6e6280', 'center'); text(c, 'check the cable', MON_W / 2, 196, 13, '#4a3a5c', 'center'); return; }
     text(c, 'She turned the monitor off.', MON_W / 2, 170, 18, '#6e6280', 'center');
     text(c, `${Math.ceil(n.monitorOff)} s · the party fights on, drops are lost`, MON_W / 2, 196, 13, '#4a3a5c', 'center');
     return;

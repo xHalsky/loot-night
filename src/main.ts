@@ -4,7 +4,6 @@ import { T } from './config/tuning';
 import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
-import { DESK_W } from './ui/layout';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
 import { hover, tooltipHtml, entryIcon, updateWindowDynamics, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
@@ -25,7 +24,8 @@ import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, ans
 import { openMonster, cancelMonster } from './systems/monster';
 import { monsterView, monsterTilt, monsterDown, monsterMove, monsterUp, monsterGrabbing, EB_SCENE } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
-import { drawDeskFx, drawLapFx, lapUiHtml, setDeskScale } from './ui/deskFx';
+import { drawLapFx, lapUiHtml } from './ui/deskFx';
+import { dogStroked, DOG_SPOTS } from './render/dogView';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
 import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
 import { maxHp } from './systems/stats';
@@ -41,7 +41,7 @@ import { herView, herTip } from './render/herView';
 import { herRead, phoneScroll } from './systems/messages';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
-import { triggerDog, triggerUnplug } from './systems/pets';
+import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
 import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans } from './systems/visits';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
@@ -72,7 +72,7 @@ stage.innerHTML = `
         <div id="winLayer"></div>
         <div id="toasts"></div>
       </div>
-      <canvas id="deskFx" width="${DESK_W}" height="720"></canvas>
+      <canvas id="dogOv" width="492" height="360"></canvas>
       <div id="preUi"></div>
       <canvas id="phHand" width="126" height="252"></canvas><button id="phClose" class="mg-close" data-act="closeGame" title="Put the phone down">✕</button>
     </div>
@@ -108,7 +108,6 @@ let stageScale = 1;
 function fit() {
   const dpr = window.devicePixelRatio || 1, k = gridScale(window.innerWidth, window.innerHeight, dpr);
   const s = stageScale = k / dpr / STAGE_K;
-  setDeskScale(s);
   stage.style.transform = `scale(${s})`;
   const vp = el('viewport'), w = GRID_W * k / dpr, h = GRID_H * k / dpr;
   Object.assign(vp.style, { width: `${w}px`, height: `${h}px`, left: `${Math.round((window.innerWidth * dpr - GRID_W * k) / 2) / dpr}px`, top: `${Math.round((window.innerHeight * dpr - GRID_H * k) / 2) / dpr}px` });
@@ -170,6 +169,7 @@ const actions: Record<string, (arg: string) => void> = {
   openPhone: () => openPhone(),
   openMonster: () => openMonster(),
   cancelMonster: () => cancelMonster(),
+  cablesHide: () => { cablesHidden = true; },
   textReply: () => textReply(),
   mom: a => momReply(Number(a)),
   speaker: () => answerSpeaker(),
@@ -532,9 +532,34 @@ function placeCoach() {
 // ---------- The energy break (V5, #70; grid doc 7c): the renderer's window over the dimmed right screen ----------
 const ebCanvas = el('ebArea') as HTMLCanvasElement, ebCtx = ebCanvas.getContext('2d')!;
 let ebHits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] = [], ebOdd = false, ebBgLast = 0, ebWarmDone = '', ebIdle = false;
+// the cable fix (V6, #71; grid doc 7d): its window, like the break's, while the cables are out. The dog's slam plays
+// first (the room behind the monitor bakes meanwhile); when all are in it stays a moment ("Signal back"). Its close box
+// hides it; a click on the dark monitor brings it back.
+let cable: { u: object; at: number; done: number } | null = null, cablesHidden = false, cableShown = false;
+function cableMode(now: number): boolean {
+  const n = S.g.night, u = n?.unplugged;
+  if (u && n && (!cable || cable.u !== u)) {
+    const t0 = u.t0 ?? n.threat;
+    cable = { u, at: now, done: 0 }; cablesHidden = false;
+    PK.cableStart({ kinds: u.kinds, colors: u.colors, sockets: u.sockets, plugged: u.plugged }, (p, s) => plugIn(p, s), () => Math.max(0, N().threat - t0));
+  }
+  if (!u && cable && !cable.done) cable.done = now;
+  if (cable && cable.done && now - cable.done > 1300) cable = null;
+  const show = T.CABLE_SHOW_SEC * 1000;
+  if (cable && !cable.done && now - cable.at <= show) PK.cableWarm(6);
+  return !!cable && !cablesHidden && now - cable.at > show;
+}
 function drawEnergyBreak() {
-  const v = PK.ready() ? monsterView() : null, now = performance.now();
-  ebCanvas.style.display = v ? 'block' : 'none';
+  const now = performance.now(), cab = cableShown = PK.ready() && !!S.g.night && cableMode(now);
+  const v = !cab && PK.ready() ? monsterView() : null;
+  ebCanvas.style.display = v || cab ? 'block' : 'none';
+  if (cab) {
+    ebOdd = !ebOdd; if (!ebOdd) return;
+    const bg = now - ebBgLast > 250 ? rsCanvas : null; if (bg) ebBgLast = now;
+    const r = PK.cables(bg, now / 1000);
+    ebCtx.drawImage(r.canvas, 0, 0); ebHits = r.hits;
+    return;
+  }
   if (!v) {
     ebHits = [];
     // bake the break's scenes ahead in the browser's idle time (what the frames leave over), so opening it never stalls
@@ -560,19 +585,30 @@ ebCanvas.addEventListener('pointerdown', ev => {
   ev.preventDefault();
   const [x, y] = ebXY(ev), h = ebHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h);
   if (h) { actions[h.act]?.(h.arg); return; }
+  if (cableShown) { if (inEbScene(x, y) && PK.cableDown(x - EB_SCENE.x, y - EB_SCENE.y)) { sfx.click(); ebCanvas.style.cursor = PK.ebCursor('grab'); } return; }
   if (inEbScene(x, y)) { monsterDown(x - EB_SCENE.x, y - EB_SCENE.y); ebCanvas.style.cursor = PK.ebCursor(monsterGrabbing() ? 'grab' : 'hand'); }
 });
 ebCanvas.addEventListener('pointermove', ev => {
   const [x, y] = ebXY(ev), p = toStage(ev), h = ebHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h);
+  if (cableShown) {
+    const on = inEbScene(x, y) && PK.cableMove(x - EB_SCENE.x, y - EB_SCENE.y);
+    ebCanvas.style.cursor = h ? 'pointer' : on ? PK.ebCursor(PK.cableDragging() ? 'grab' : 'hand') : 'default';
+    hover.key = h ? 'text:Close it. Click the dark monitor to come back to the cables.' : ''; hover.x = p.x; hover.y = p.y;
+    return;
+  }
   monsterMove(x - EB_SCENE.x, y - EB_SCENE.y);
   ebCanvas.style.cursor = h ? 'pointer' : inEbScene(x, y) && PK.ready() ? PK.ebCursor(monsterGrabbing() ? 'grab' : 'hand') : 'default';
   hover.key = h ? 'text:Stop the energy break. Before the can is open nothing is lost.' : ''; hover.x = p.x; hover.y = p.y;
 });
-document.addEventListener('pointerup', () => { if (S.g.night?.game?.kind === 'monster') { monsterUp(); ebCanvas.style.cursor = PK.ready() ? PK.ebCursor('hand') : 'default'; } });
+document.addEventListener('pointerup', () => { if (cableShown) PK.cableUp(); if (S.g.night?.game?.kind === 'monster') { monsterUp(); ebCanvas.style.cursor = PK.ready() ? PK.ebCursor('hand') : 'default'; } });
 
+(window as unknown as Record<string, unknown>).__lnCables = () => PK.cablePoints();   // for the tests
+el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
 const rsCanvas = el('rsArea') as HTMLCanvasElement, rsCtx = rsCanvas.getContext('2d')!;
 const rsSrc = document.createElement('canvas'); rsSrc.width = 474; rsSrc.height = 232;
+const dogOvCtx = (el('dogOv') as HTMLCanvasElement).getContext('2d')!;
+let deskShake = 0;
 let deskHits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] = [], deskLast = 0, deskPhoneHover = false, deskBuilt = false;
 function drawDesk() {
   const n = S.g.night, on = !!n && PK.ready();
@@ -586,7 +622,11 @@ function drawDesk() {
     if (!free && now - deskLast < 200) return;
     deskBuilt = false;
     const r = PK.desk(rsSrc, null, now / 1000, 2);
-    if (r) { rsCtx.drawImage(r.canvas, 0, 0); deskHitsSet(r.hits); }
+    if (r) {
+      rsCtx.drawImage(r.canvas, 0, 0); deskHitsSet(r.hits);
+      dogOvCtx.clearRect(0, 0, 492, 360); if (r.overlay) dogOvCtx.drawImage(r.overlay, 0, 0);   // the dog's hearts, marks and sounds, over the monitor
+      deskShake = r.shake;
+    }
     return;
   }
   if (now - deskLast < 66 || (!free && now - deskLast < 200)) return;
@@ -615,14 +655,26 @@ rsCanvas.addEventListener('pointerdown', ev => {
   ev.preventDefault();
   actions[h.act]?.(h.arg);
 });
+let strokeAt: { x: number; t: number } | null = null;
 rsCanvas.addEventListener('pointermove', ev => {
   const h = deskHitAt(ev), p = toStage(ev);
+  if (h?.act === 'dogHead') {   // V6 (#71): stroke his head; grid px across it, his favourite spot counts more (systems/pets.ts)
+    const [x, y] = rsXY(ev), [hx, hy] = h.arg.split(',').map(Number), now = performance.now(), sp = DOG_SPOTS[N().dog.sweet] ?? DOG_SPOTS[0];
+    rsCanvas.style.cursor = PK.ebCursor('hand'); hover.key = '';
+    if (strokeAt && !S.g.paused) {
+      const dx = Math.abs(x - strokeAt.x), dt = Math.max(1, now - strokeAt.t) / 1000, sweet = Math.hypot(x - hx - sp[0], y - hy - sp[1]) < 13;
+      if (dx > 0.3) { petStroke(dx, dx / dt, sweet); dogStroked(sweet, x); }
+    }
+    strokeAt = { x, t: now };
+    return;
+  }
+  strokeAt = null;
   rsCanvas.style.cursor = h?.act ? (h.act === 'phone' ? 'grab' : 'pointer') : 'default';
   deskPhoneHover = h?.act === 'phone';
   const tip = h?.tip ? deskTip(h.tip) : '';
   hover.key = tip ? `text:${tip}` : ''; hover.x = p.x; hover.y = p.y;
 });
-rsCanvas.addEventListener('pointerleave', () => { deskPhoneHover = false; });
+rsCanvas.addEventListener('pointerleave', () => { deskPhoneHover = false; strokeAt = null; });
 
 // ---------- The phone in your hand (V8, #73; grid doc 7f): the renderer's phone over the battle area and the desk ----------
 const phCanvas = el('phHand') as HTMLCanvasElement, phCtx = phCanvas.getContext('2d')!;
@@ -672,6 +724,8 @@ function render() {
   }
   drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
   drawEnergyBreak();   // V5 (#70): the energy break over the right screen, drawn by the renderer
+  { const di = el('deskInner'), a = deskShake * 6, tt = performance.now() / 1000;   // the dog's slam: the whole desk jolts (V6)
+    di.style.transform = a > 0.2 ? `translate(${Math.round(Math.sin(tt * 61) * a)}px, ${Math.round(Math.cos(tt * 47) * a * 0.7)}px)` : ''; }
   document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {
@@ -682,7 +736,6 @@ function render() {
     setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : '');   // dark until the renderer's fonts load
     setHtml('toasts', toastsHtml());
     updateWindowDynamics();
-    drawDeskFx();
     drawLapFx();
     setHtml('lapUi', lapUiHtml());
     setHtml('preUi', preBusyHtml());

@@ -55,7 +55,7 @@ export const T = {
   LEAN_CHANCE: 0.25, LEAN_MOOD: -2,      // a visit where she only leans on the frame and looks
   // The dog: pops up for attention; ignored 1-3 times -> bumps the desk, cables out
   DOG_FIRST_SEC: 50, DOG_EVERY_SEC: [70, 120] as [number, number], DOG_AGAIN_SEC: [25, 40] as [number, number], DOG_WAIT_SEC: 12, DOG_WHINE_NOISE: 0.6,
-  DOG_PET_RATE: 0.0032, DOG_SWEET_MULT: 3, DOG_FAST: 2200,
+  DOG_PET_RATE: 0.0064, DOG_SWEET_MULT: 3, DOG_FAST: 1100,  // per grid px stroked across his head; faster than this (grid px/s) and he flinches (V6: was 0.0032 / 2200 in 2x desk px)
   // She leans into your face (only when she is happy): sweet-talk her away
   LAP_CHANCE: 0.4, LAP_MIN_GAP_SEC: 180, LAP_ASK_SEC: 7, LAP_QUESTIONS: 3, LAP_HAPPY_MOOD: -15, LAP_RUDE_MOOD: 6, LAP_SULK_MOOD: 10, LAP_CALM_SEC: 60,
 
@@ -226,6 +226,7 @@ export const T = {
   ECHO_DROWSY_MISS: 0.1,                        // hero hits miss this often at Tired TIRED_SLUGGISH+
   GOOD_BOY_SEC: 60, GOOD_BOY_GOBLIN: 2, GOOD_BOY_SWEET_SHARE: 0.5,   // petted mostly on his favourite spot
   CABLE_FAST_SEC: 6,                            // cables back in this fast: Flow comes back too
+  CABLE_SHOW_SEC: 1.3,                          // the dog's slam plays before the cables show; the fast fix counts from then (V6)
   // Goodwill (docs/design/synergy.md, #29): earned from good moments with her, spent on the Raid pass and Forgiveness.
   GOODWILL_MAX: 100, GOODWILL_CARRY: 0.5,
   GOODWILL_CUDDLE: 20, GOODWILL_LAP: 20, GOODWILL_CHAT: 8, GOODWILL_TEXT: 5, GOODWILL_LEAN: 3, GOODWILL_CATCH: -15,

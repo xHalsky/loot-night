@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.69.0 (2026-11-25)
+
+- **The dog and the cable fix are the redesign's** (V6, #71; grid doc 7d). The renderer's shiba jumps up and rests his
+  head and paws on the desk edge in front of the keyboard; his ears rise in front of the taskbar (an overlay over the
+  screen's bottom edge). The first time, a card says "stroke his head, gently". Over his head the cursor is the pixel
+  hand; stroking gives hearts (on his favourite spot: eyes shut, tongue out), too fast gives "gently!" and ears back.
+  Petted happy he licks your hand and lies down; a Good Boy leaves the lucky sock on the desk while its buff lasts;
+  ignored he lies down offended ("hmph"); the slam jolts the desk with a BONK.
+- **NO SIGNAL and the back of the monitor.** The monitor shows the redesign's NO SIGNAL; after the slam the back of
+  the monitor opens in the energy break's window: the cables, the ports, the legend and the Flow countdown. The fast
+  fix (`CABLE_FAST_SEC`) now counts from the window showing (`CABLE_SHOW_SEC` 1.3 s after the slam), not from the
+  slam. The window's close box hides it; a click on the screen brings it back (the cables stay out until fixed).
+- **Petting in grid pixels.** The old desk canvas measured strokes in 2x pixels; the numbers were converted, not
+  retuned: `DOG_FAST` 2200 → 1100, `DOG_PET_RATE` 0.0032 → 0.0064 (the bots' strokes too). Sims as before: good
+  3 stars, caught 0; idle within its usual spread.
+- The old desk canvas (`#deskFx`) and its dog and cable painter in `ui/deskFx.ts` are gone (the file keeps her lap
+  scene). `test/dog.py` plays the dog and the cable fix with the real mouse next to stills 082 to 091.
+
 ## 0.68.0 (2026-11-25)
 
 - **The energy break is the redesign's** (V5, #70; grid doc 7c). The desk's glass window opens over the right screen,

@@ -145,7 +145,7 @@ while (S.g.screen === 'night' && t < 2000) {
       else if (g.stage === 'chat' && g.app === 'text') textReply();
       else if (g.stage === 'talk' && g.t < g.max - 1.2) { calls[g.app] = (calls[g.app] ?? 0) + (g.beat === 0 ? 1 : 0); talkPick(g.need); }
     }
-    if (n.dog.stage === 'up' && mode === 'good') petStroke(40, 400, false);
+    if (n.dog.stage === 'up' && mode === 'good') petStroke(20, 200, false);
     if (n.unplugged) n.unplugged.sockets.forEach((k, slot) => plugIn(k, slot));
     if (n.lap?.stage === 'ask') lapAnswer(0);
     if (g?.kind === 'monster') {

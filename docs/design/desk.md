@@ -174,18 +174,27 @@ microsleeps; then a `MONSTER_CRASH_SEC` crash (slower, Tiredness +`MONSTER_CRASH
 
 ### The dog and the cables
 
-A shiba stands on the floor; every `DOG_EVERY_SEC` his head, chest and front paws rise over the desk
-edge in front of the keyboard, whining (a little Noise). He keeps to the one-demand rule (the phone above): his
-arrival slides later while something else asks for you, never drops. Pet him on the desk: hold and stroke gently; too fast (`DOG_FAST`) and
-he flinches. One random spot (an ear or the chin) is his favourite (×`DOG_SWEET_MULT`): eyes close,
-tongue out, hearts. His tail wags harder as he gets happier (no bars). Done: he licks your hand and lies
-down. Ignored after `DOG_WAIT_SEC`, he leaves; after 1 to 3 ignores (random each time) he slams into the
-desk and the monitor cables come out.
+A shiba stands on the floor; every `DOG_EVERY_SEC` he jumps up and rests his head and front paws on the desk edge
+in front of the keyboard, whining (a little Noise). He keeps to the one-demand rule (the phone above): his
+arrival slides later while something else asks for you, never drops. The renderer draws him on the desk (grid doc
+7d) and on an overlay over the screen's bottom edge, so his ears rise in front of the taskbar. The first time, a card
+says *stroke his head, gently*.
 
-**Cable fix.** NO SIGNAL (the party fights on, drops are lost; the side panel goes dark with the screen). The
-screen becomes the back of the monitor: 4 cables drawn from 9 plug shapes (HDMI, DisplayPort, figure-8 power, USB-A, USB-C, DVI, VGA,
-Ethernet, 3.5 mm) in random colours from 9, sockets in random order. Drag each plug to the matching
-shape: it clicks in or bounces back.
+Pet him by moving the mouse across his head (no button: the cursor turns into a hand there). Speed is measured in grid
+pixels: faster than `DOG_FAST` and he flinches (*gently!*, ears back, a little petting lost). One random spot (an ear
+or the chin) is his favourite (×`DOG_SWEET_MULT`): eyes close, tongue out, hearts; elsewhere he just leans in. His
+tail wags harder as he gets happier (no bars). Done: he licks your hand and lies down. Petted mostly on his
+favourite spot (`GOOD_BOY_SWEET_SHARE`) he is a Good Boy and leaves a lucky sock on the desk while its buff lasts.
+Ignored for `DOG_WAIT_SEC`, he gives up and lies down offended (*hmph*); after 1 to 3 ignores (random each time) he
+slams into the desk instead: the desk jolts, *BONK*, and the monitor cables come out.
+
+**Cable fix.** NO SIGNAL on the monitor (the party fights on, drops are lost; the side panel goes dark with the
+screen). After the slam (`CABLE_SHOW_SEC`) the back of the monitor opens in a window over the screen, the same frame
+as the Goblin Fuel break: 4 cables drawn from 9 plug shapes (HDMI, DisplayPort, figure-8 power, USB-A, USB-C, DVI,
+VGA, Ethernet, 3.5 mm) in random colours from 9, sockets in random order, the legend at the top. Drag each plug to
+the matching shape: it clicks in or bounces back. Back in within `CABLE_FAST_SEC` of the window showing and Flow
+comes back too (the header counts it down). The window's close box hides it (the cables stay out, NO SIGNAL
+stays); a click on the screen opens it again.
 
 ### Buffs bar
 
@@ -259,6 +268,16 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   early, the drawer moves in bigger steps until its pulls are ready, and the bakes go on between the break's frames.
   The break draws at 30 fps, and the right screen behind it four times a second. Rejected: baking on demand (the drawer
   stalled at every 3 cm); baking every scene at load (seconds at the title).
+- **The dog and the cable fix in the redesign's look** (0.69, V6 #71). The dog is the renderer's shiba on the desk,
+  his rise drawn on a transparent overlay so he comes up in front of the screen's bottom edge; the cable fix is the
+  mockup's back-of-the-monitor scene in the energy break's window. Petting is measured in grid pixels now (the old desk
+  canvas was 2x), so the numbers were converted, not retuned: `DOG_FAST` 2200 → 1100 and `DOG_PET_RATE` 0.0032 →
+  0.0064 per pixel (the bots' strokes too, so the sims did not move). The flinch is held 0.6 s on screen: at the desk's
+  15 fps a 0.4 s flinch could fall between frames. The fast fix counts from the window showing, not from the slam
+  (`CABLE_SHOW_SEC`): the 1.3 s of BONK and NO SIGNAL are the dog's, not the player's. The cable window can be
+  closed, as every interrupt must be escapable; the cables stay out until fixed. Rejected: keeping the DOM dog over
+  the new desk (a different pixel scale in one picture); a stricter `DOG_FAST` (760, tried during the build: a normal
+  quick stroke flinched); counting the fast fix from the slam (the window had not opened yet).
 - **One click picks the can up; Space tilts it anywhere** (0.49.2, #62). Holding the mouse button down while
   tapping Space was easy to miss: one click without holding left the can floating and Space did nothing.
   Rejected: tilting only near his mouth (Space looked broken everywhere else).

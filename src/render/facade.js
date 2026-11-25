@@ -44,6 +44,18 @@ export const PK = {
   ebWarm: (n, ms) => ebWarm(n, ms),
   ebMap: EB_MAP,
   ebCursor: (kind) => ebCursorURL(kind),
+  /** The dog's NO SIGNAL (V6, #71): the monitor's message box drifting on black, 474 x 232. */
+  noSignal: (t) => drawNoSignal(t),
+  /** The cable fix (V6): start it on the game's deal and rule; the pointer in scene px; draw it over the right screen. */
+  cableStart: (deal, plug, elapsed) => { cableGame(deal, plug, elapsed); },
+  cableDown: (x, y) => !!(CABLE.live && CABLE.live.down(x, y)),
+  cableMove: (x, y) => !!(CABLE.live && CABLE.live.move(x, y)),
+  cableUp: () => { if (CABLE.live) CABLE.live.up(); },
+  cableWarm: (ms) => ebBakeStep(cableJob(), ms),
+  /** Where each lying plug's face and each socket are (scene px), for the tests. */
+  cablePoints: () => { const d = CABLE.deal; return { plugs: [0, 1, 2, 3].map((p) => camP(CABLE_CAM, CB.rest[p][0], (PORTS[d.kinds[p]].hh * PS) / 2, CB.rest[p][1] + (PORTS[d.kinds[p]].L * PS) / 2)), slots: CB.slots.map((x) => camP(CABLE_CAM, x, CB.y, CB.back + 4.6)) }; },
+  cableDragging: () => !!(CABLE.live && CABLE.live.drag),
+  cables: (bg, t) => drawCablesLive(bg, t),
   /** The right screen around the game screen (V3, #68): desk, bezel, taskbar, keyboard, phone, cards; 492 x 360.
    *  phase 1 builds the frame and returns null, phase 2 lights it and returns it (two frames' work); 0 does both. */
   desk: (src, st, t, phase = 0) => drawDeskLive(src, st, t, phase),

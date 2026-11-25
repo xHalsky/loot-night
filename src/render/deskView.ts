@@ -6,6 +6,7 @@ import { S, N } from '../core/state';
 import { fmtClock } from '../core/fx';
 import { maxHp } from '../systems/stats';
 import { isAway } from '../systems/autopilot';
+import { dogDesk } from './dogView';
 import { RARITY_COLOR } from '../data/items';
 
 // the feed's colours: the game logs hex, the desk speaks palette slots (grid doc §7: LOOT is its rarity)
@@ -55,6 +56,7 @@ export function deskView(phoneHover = false) {
     cans: g.monsters, hideCans, cansHidden: cansHidden && !hideCans, drinkAct: hideCans ? 'hideCans' : canDrink && !cansHidden ? 'openMonster' : '',
     note: [n.deepest >= n.deepTarget ? 'y' : '!', n.everCaught ? 'x' : 'y', red ? '!' : 'y'], floorGoal: n.deepTarget,
     feed: feedRows(),
+    dog: dogDesk(),   // V6 (#71): the dog on the desk (render/dogView.ts)
     ...ph, hover: phoneHover && ph.phone === 'off' ? true : undefined,
   };
 }

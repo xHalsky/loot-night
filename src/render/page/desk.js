@@ -636,9 +636,13 @@ function drawDeskLive(src, st, t, phase = 0) {
   zoneAura(st, t, lights);
   if (D.led) ledWash(t);
   tonightNote(st);
+  // the dog (V6, #71): drawn into the desk, under the cards; his hearts, marks and sounds float over the monitor
+  const DV = st.dog ? dogView(st, t, { dog: 'game', g: st.dog }) : null, DGV = DV ? drawDog(st, t, set, {}, DV) : null;
   youCard(st, t);
   feedCard(st);
-  DESK_PENDING = { F, lights, src, hits: DESK_HITS }; DESK_HITS = null;
+  if (DGV) dogCard(DGV, t);
+  if (DV && st.dog.kind === 'live' && DV.rise > 0.9) dhit(DV.hx - 40, DV.hy - 52, 80, 82, 'dogHead', DV.hx + ',' + DV.hy, '');
+  DESK_PENDING = { F, lights, src, hits: DESK_HITS, DV, t }; DESK_HITS = null;
   return phase === 1 ? null : deskLight(ctx, set, D);
 }
 function deskLight(ctx, set, D) {
@@ -651,7 +655,15 @@ function deskLight(ctx, set, D) {
   VIEW.strength = ds;
   canIconOverlay(ctx);
   ctx.drawImage(p.src, 0, 0, p.src.width, p.src.height, 9, 8, 474, 232);
-  return { canvas: RS_CANVAS, hits: p.hits };
+  return { canvas: RS_CANVAS, hits: p.hits, overlay: p.DV ? dogOverlayCanvas(p.DV, p.t, set) : null, shake: p.DV ? p.DV.shake : 0 };
+}
+// the dog's overlay on its own transparent canvas: the game lays it over the monitor's live canvases
+let DOG_OV = null;
+function dogOverlayCanvas(V, t, set) {
+  if (!DOG_OV) { DOG_OV = document.createElement('canvas'); DOG_OV.width = RS_W; DOG_OV.height = RS_H; }
+  const g = DOG_OV.getContext('2d', { willReadFrequently: true }); g.clearRect(0, 0, RS_W, RS_H);
+  setRes(RS_W, RS_H); dogOverlay(g, V, t, set);
+  return DOG_OV;
 }
 
 // ---------------------------------------------------------------- Excel (Tab): a Mac OS 8 spreadsheet window with Tetris in it

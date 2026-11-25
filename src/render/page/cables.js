@@ -171,7 +171,8 @@ function cableScene(t) {
   let held = EB_CACHE.get(key);
   if (!held) {
     held = ebBuf(); ebCopy(held, base); for (const p of still) castPlug(held, C, S, p, statics);
-    if (EB_CACHE.size > 160) for (const k of EB_CACHE.keys()) if (k.startsWith('cab')) { EB_CACHE.delete(k); break; }
+    const cab = [...EB_CACHE.keys()].filter((k) => k.startsWith('cab') && !k.startsWith('cables'));   // a few at most (each is a whole scene buffer)
+    if (cab.length > 4) EB_CACHE.delete(cab[0]);
     EB_CACHE.set(key, held);
   }
   const F = EBF.buf; ebCopy(F, held); bind(F);
@@ -287,4 +288,40 @@ function cableLive(seed = Math.floor(Math.random() * 1e6)) {
     else { if (best >= 0) L.flash = { slot: best, ok: false, t: now() }; L.anim.push({ p, from: at, to: lie(p), t: now(), dur: 0.4 }); }
   };
   return L;
+}
+
+// ---------------------------------------------------------------- the game's cable fix (V6, #71)
+// The page's live play bound to the game: its deal ({ kinds, colors, sockets }: the plug that goes in each socket),
+// its rule (plug(p, slot) -> true when it fits; systems/pets.ts plugIn) and its clock (elapsed(): seconds since the slam).
+function cableGame(deal, plug, elapsed) {
+  const L = cableLive(1);
+  CABLE.deal = { kinds: deal.kinds.slice(), colors: deal.colors.slice(), sockets: deal.sockets.slice() };
+  L.slot = deal.plugged.map((on, p) => (on ? deal.sockets.indexOf(p) : -1));
+  const now = () => performance.now() / 1000;
+  L.elapsed = () => (L.doneAt ?? elapsed());
+  L.up = () => {
+    if (!L.drag) return; const p = L.drag.p, at = L.drag.at, d = CABLE.deal; L.drag = null;
+    const lie = [CB.rest[p][0], (PORTS[d.kinds[p]].hh * PS) / 2, CB.rest[p][1]];
+    let best = -1, bd = 2.6; for (let s = 0; s < 4; s++) { if (L.slot.includes(s)) continue; const dd = Math.hypot(at[0] - CB.slots[s], at[1] - CB.y); if (dd < bd) { bd = dd; best = s; } }
+    if (best >= 0 && plug(p, best)) { L.slot[p] = best; L.flash = { slot: best, ok: true, t: now() }; if (L.slot.every((s) => s >= 0)) L.doneAt = elapsed(); }
+    else { if (best >= 0) L.flash = { slot: best, ok: false, t: now() }; L.anim.push({ p, from: at, to: lie, t: now(), dur: 0.4 }); }
+  };
+  CABLE.live = L;
+  return L;
+}
+function cableJob() { const d = CABLE.deal, slotKinds = d.sockets.map((p) => d.kinds[p]); return ['cables' + slotKinds.join(''), CABLE_CAM, () => cableStaticPrims(slotKinds), CABLE_LIGHT, 0.17]; }
+/** The cable fix over the right screen, as the energy break: bg (when the dim is redone) or null. While the room behind
+ *  the monitor is still baking (the dog's slam plays meanwhile) the scene stays dark. */
+function drawCablesLive(bg, t) {
+  if (!EB_OUT) { EB_OUT = document.createElement('canvas'); EB_OUT.width = RS_W; EB_OUT.height = RS_H; }
+  if (bg) ebBackground(bg);
+  const ctx = EB_OUT.getContext('2d'), [wx, wy, ww] = EB_WIN;
+  if (EB_BG) ctx.drawImage(EB_BG, 0, 0); else { ctx.fillStyle = EB_PAL[P.void]; ctx.fillRect(0, 0, RS_W, RS_H); }
+  const ready = ebBakeStep(cableJob(), 8);
+  if (!EBF.buf) { EBF.buf = ebBuf(); EBF.canvas = document.createElement('canvas'); EBF.canvas.width = EBW; EBF.canvas.height = EBH; }
+  if (ready) { setRes(EBW, EBH); CLIP = null; cableScene(t); ebCompose(EBF.buf, EBF.canvas.getContext('2d'), [1, 1, 1]); }
+  EB_WIN_KEY = '';   // the energy break's window shares the buffer: redraw it next time
+  ctx.drawImage(cableWindowCanvas(t), wx, wy);
+  if (ready) ctx.drawImage(EBF.canvas, EB_SC[0], EB_SC[1]); else { ctx.fillStyle = EB_PAL[P.void]; ctx.fillRect(EB_SC[0], EB_SC[1], EBW, EBH); }
+  return { canvas: EB_OUT, hits: [{ x: wx + ww - 15, y: wy + 4, w: 10, h: 10, act: 'cablesHide', arg: '', tip: 'cablesHide' }] };
 }

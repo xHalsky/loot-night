@@ -22,9 +22,11 @@ gameplay steps). This file says how the build gets there and where it stands. It
 - **V8, the phone in your hand, 0.65.0;** **V3, the desk and monitor, 0.66.0:** the whole right screen round the game
   screen is drawn by the renderer from `render/deskView.ts` (desk.js `drawDeskLive`), lit by what the monitor shows;
   the desk's DOM (bezel, taskbar, keyboard, phone, the Tonight note, the YOU and feed cards) is gone (screen.md).
-  Left as DOM for now: the pop-up windows, Excel's content (its step), the dog.
+  Left as DOM for now: the pop-up windows, Excel's content (its step).
 - **V5, the energy break, 0.68.0:** the five scenes ray-cast through their cameras over the dimmed right screen, on the
   game's own physics (desk.md, Goblin Fuel energy break); baked ahead in idle time.
+- **V6, the dog and the cable fix, 0.69.0:** the shiba on the desk and over the screen's edge (an overlay canvas),
+  NO SIGNAL on the monitor, the back of the monitor in the energy break's window (desk.md, the dog and the cables).
 - **V4, her panel and his chair, 0.67.0:** the webcam stays the game's own drawing and is dithered onto the grid every
   webcam frame as the stills were baked; her PC-98 UI from `render/herView.ts`; his gaming chair in `ui/him.ts`
   (screen.md).
@@ -63,3 +65,4 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 11 | V3 (#68): the desk and monitor round the game screen | 0.66.0 |
 | 12 | V4 (#69): her panel and his chair | 0.67.0 |
 | 13 | V5 (#70): the energy break | 0.68.0 |
+| 14 | V6 (#71): the dog and the cable fix | 0.69.0 |

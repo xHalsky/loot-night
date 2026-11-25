@@ -27,6 +27,8 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
   skip (`liveDrewAt`), because a whole desk costs about 7 ms on the CPU. The energy break (`ui/monsterScene.ts` gives
   the view, the renderer's `PK.ebMap` the cameras) goes into `#ebArea` over the whole right screen at 30 fps, its
   scenes baked ahead in `requestIdleCallback` time; under it the battle area and the desk draw four times a second.
+  The dog (`dogView.ts`) is part of the desk's view; the part of him that rises over the screen's edge comes back as
+  a second canvas drawn into `#dogOv` above the game screen. The cable fix uses `#ebArea` the same way as the break.
 
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.
