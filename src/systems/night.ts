@@ -9,6 +9,7 @@ import { maxHp } from './stats';
 import { entryValue, removeEntry, sweepFloorLoot, genItem, itemEntry } from './loot';
 import { initVisits } from './visits';
 import { newQ4Night } from './q4';
+import { newHomeNight } from './home';
 import { startTired } from './tired';
 import { planPhone } from './interrupts';
 import { moodZone } from './meters';
@@ -31,7 +32,7 @@ export function newNight(): Night {
     interrupts: [], game: null,
     q4: newQ4Night(), shopTonight: [],
     taunt: 0, ward: 0, lastStand: 0, smoke: 0, heist: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
-    pre: null, preUses: {}, preMenu: null, towel: false, herReply: null,
+    pre: null, preUses: {}, preMenu: null, seal: false, home: newHomeNight(), herReply: null,
     curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null, goldStart: S.g.gold, coach: null,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,

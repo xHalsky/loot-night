@@ -6,7 +6,7 @@ import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml, preBusyHtml } from './ui/panels';
+import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -16,7 +16,9 @@ import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } f
 import { choosePath, returnToTown, travelToDungeon, catchGoblin, pickStartFloor, debugEndFloor } from './systems/dungeon';
 import { chooseCurio, endCurio } from './systems/curios';
 import { toast } from './core/fx';
-import { startPre, cancelPre, episodeAnswer } from './systems/preemptive';
+import { startPre, cancelPre } from './systems/preemptive';
+import { useDevice, orderTea } from './systems/home';
+import type { DeviceId } from './data/home';
 import type { PreId } from './data/preemptive';
 import { buildCity, openService, servicePick, serviceRun } from './systems/town';
 import { monUiLiveHtml } from './ui/town';
@@ -53,7 +55,7 @@ import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
 import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans } from './systems/visits';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
-import type { VisitKind } from './core/state';
+import type { VisitKind, Room } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
@@ -169,7 +171,6 @@ const actions: Record<string, (arg: string) => void> = {
   pre: a => startPre(a as PreId),
   preMenu: () => { N().preMenu = null; },
   preCancel: () => cancelPre(),
-  episode: a => episodeAnswer(a === '1'),
   curioLeave: () => { toast('The party walks past.', '#a999bd'); endCurio(); },
   toTown: () => returnToTown(),
   goblin: () => catchGoblin(),   // the live battle area's goblin (V2)
@@ -192,7 +193,13 @@ const actions: Record<string, (arg: string) => void> = {
   boss: a => bossPick(Number(a)),
   closeGame: () => closeGame(false),
   // the phone in your hand (V8, #73): its apps and her chat
-  phApp: a => { const n = N(); n.phApp = a as 'home'; n.phScroll = 0; if (a === 'babe') herRead(); sfx.click(); },
+  phApp: a => { const n = N(); n.phApp = a as 'home'; n.phScroll = 0; n.home.pick = ''; if (a === 'babe') herRead(); sfx.click(); },
+  // the Home app (step 6.2, #57): a device's sheet (speaker:kitchen picks the speaker in that room), its room, use it
+  homePick: a => { const h = N().home, [id, room] = a.split(':'); h.pick = id as DeviceId | ''; if (room) h.pickRoom = room as Room; else if (id === 'vacuum') h.pickRoom = 'living'; sfx.click(); },
+  homeRoom: a => { N().home.pickRoom = a as Room; sfx.click(); },
+  homeUse: () => { const h = N().home; if (h.pick && useDevice(h.pick, h.pickRoom)) h.pick = ''; },
+  homeTea: () => { orderTea(); },
+  charge: () => startPre('charge'),
   shopTab: a => { N().shopTab = a as 'you'; sfx.click(); },
   shopBuy: a => { if (shopBuy(a as ShopId)) shopFlashed(a); else sfx.bad(); },
   phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
@@ -759,9 +766,9 @@ function drawSmallPieces() {
   if (!rs) { rsSmallHits = []; return; }
   if (now - rsSmallAt < 33) return; rsSmallAt = now;
   const bg = now - rsSmallBg > 250 ? rsCanvas : null; if (bg) rsSmallBg = now;
-  const what = p?.stage === 'episode' ? 'Watching one episode with her' : p?.outcome === 'kitchen' ? 'Stuck in a kitchen hug' : 'Making her tea';
+  const what = p?.id === 'charge' ? 'Charging your phone' : 'Away from the PC';   // the away card says why (V13)
   const r = rs === 'away'
-    ? PK.away(bg, p!.stage === 'ask' ? { ask: `"Stay for one episode?" +${T.PRE_EPISODE_SEC} s away`, yes: 'Stay', no: 'Back to the PC' } : { what, left: p!.t, total: p!.max }, t)
+    ? PK.away(bg, { what, left: p!.t, total: p!.max }, t)
     : PK.inspect(bg, inspectView(), t);
   rsSmallCtx.drawImage(r.canvas, 0, 0); rsSmallHits = r.hits;
 }
@@ -986,7 +993,6 @@ function render() {
     setHtml('toasts', toastsHtml());
     drawLapFx();
     setHtml('lapUi', lapUiHtml());
-    setHtml('preUi', preBusyHtml());
     el('desk').classList.toggle('yawn', n.yawn > 0);
     el('ui').classList.toggle('off', n.monitor === 'excel' || n.monitorOff > 0 || !!n.switching);   // the side panel is on the screen: it goes with it
   }

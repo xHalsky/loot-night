@@ -77,7 +77,7 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     c.strokeRect(X0 + 14 * k, TOP + 18, (DW - 28) * k, 130); c.strokeRect(X0 + 14 * k, TOP + 168, (DW - 28) * k, 146);
     c.fillStyle = '#9a9aa6'; c.fillRect(X0 + w - 20 * k, stage === 'handle' ? TOP + 164 : TOP + 156, 14 * k + 2, 7);
   }
-  if (n?.towel) {   // a towel blocks the gap: no light, so no toes and no shadows (docs/design/preemptive.md)
+  if (n?.seal) {   // the door seal blocks the gap: no light, so no toes and no shadows (docs/design/desk.md, the Home app)
     c.fillStyle = '#7a8aa8'; c.fillRect(X0 - 10, BOT - 2, DW + 20, 9);
     for (let i = 0; i < DW + 20; i += 14) { c.fillStyle = '#5a6a88'; c.fillRect(X0 - 10 + i, BOT - 2, 6, 9); }
     c.fillStyle = '#9aaac8'; c.fillRect(X0 - 10, BOT - 2, DW + 20, 2);

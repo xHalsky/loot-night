@@ -22,7 +22,7 @@ section in place; never append "round N" notes.
 | [her.md](her.md) | The girlfriend: apartment, visits, the door, peeking, bed phase, the desk visit |
 | [desk.md](desk.md) | The phone and interrupts, Excel and alt-tab, Goblin Fuel, the dog and cables, buffs |
 | [screen.md](screen.md) | Screen layout, the three UI flavours, art direction, audio |
-| [preemptive.md](preemptive.md) | Actions before a visit: the framework, Text her, Make her tea, the towel; the rest planned |
+| [preemptive.md](preemptive.md) | Actions before a visit: the framework, Text her, the Raid pass, Charge; the rest planned (the smart home is desk.md's) |
 | [eye-candy.md](eye-candy.md) | Her moments: built and planned, with tone rules |
 | [redesign-build.md](redesign-build.md) | How the handoff and the visual redesign come into the build, step by step, and where they stand |
 | [handoff-redesign.md](handoff-redesign.md) | Planned, the next build (#52 to #58): real-time RPG, runs, trees and Souls, stars and phone, Q4, the week, the smart home. Where it disagrees with a "Now" section here, it is the plan, not the build |

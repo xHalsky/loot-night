@@ -73,7 +73,7 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   End, the back chevron, the home bar, the grey/red close box outside the top-right corner); leaving counts as
   ignoring. A bubble that would be cut is left out (#45).
 - **The idle phone, picked up** (tap it on the desk): the home screen (the night, the big clock, the apps: Messages
-  with her unread count, and the Shop; Home joins with step 6). **Messages** lists Babe and The Boys (3).
+  with her unread count, and the Shop; from Thursday the battery widget instead of the clock, and Home, below). **Messages** lists Babe and The Boys (3).
   **Her chat is kept for good** (`S.g.herThread`, `systems/messages.ts`): her texts, your answers, Text her and her
   replies, across the nights, with a grey separator per sitting (the day, "Today 23:12", the time after a gap); the
   wheel scrolls it a bubble at a time, a chip goes back to the newest; Text her at the bottom (dim, with a lock and
@@ -81,8 +81,8 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   until the next, with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
   message into the chat (hands busy), then Delivered.
 - **The Shop** (step 4.6, #55; grid doc 7i and 7f; `systems/shop.ts`, `data/shop.ts`): real-life things for złoty,
-  the money Q4 pays. The header has the back chevron, "Shop" and the wallet; two tabs, **For you** and **For her**
-  (Home joins with step 6). Each row: an icon, the name, what it does, and the price as a button (gold when you can
+  the money Q4 pays. The header has the back chevron, "Shop" and the wallet; tabs **For you**, **For her** and, from
+  Thursday, **Home** (the smart home's devices). Each row: an icon, the name, what it does, and the price as a button (gold when you can
   pay, dim when you can't) or its state: *owned*, *tonight* (one use, bought tonight), *full*, *soon*. Buying is
   instant, with a coin and a line in the feed; the phone is in your hand (hands busy) the whole time.
 
@@ -93,13 +93,44 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   | Silent keys | 249 | Q4 makes half the Noise (kept) |
   | Mini fridge | 599 | The energy break starts at the cold can on the desk, the drawer and the grab done (kept) |
   | Ergo chair | 899 | Tiredness builds at `SHOP_CHAIR_TIRED` (15% slower) (kept) |
-  | New phone | 2,999 | *soon*: the battery comes with step 6 |
+  | New phone | 2,999 | The battery drains at `NEW_PHONE_DRAIN` (40% slower) (kept) |
   | Flowers (For her) | 49 | +`SHOP_FLOWERS_GOODWILL` (20) Goodwill at once; once a night |
+  | Robot vacuum, Speakers, TV cast, Door seal (Home) | 899, 199, 149, 39 | Installed for the Home app (below) (kept) |
+  | Bubble tea (Home) | 25 | Listed as *Home*: it is ordered in the Home app |
 
   What you keep is saved (`S.g.owned`); the one-use things reset each night. A thing is listed from the night its
   thing comes in (the week): Silent keys and Flowers Monday, the Ergo chair Tuesday, the Goblin Fuel, the Mini fridge,
-  the Dog chew and the New phone Thursday. For her ends on "More for her soon."
+  the Dog chew, the New phone and the Home tab Thursday. For her ends on "More for her soon."
   (the gifts she wears come with #59). The Goblin Fuel inspect window says where more cans come from.
+- **The battery** (step 6.1, #57; grid doc 7j; `systems/home.ts`; FNAF's power), from Thursday: 100% at the start of
+  every night. Every call or text you answer takes `BATTERY_ANSWER` (2%), each device use its own (below); the New phone
+  makes everything `NEW_PHONE_DRAIN` (x0.6). It shows in the status bar (crimson from 20%), on the home screen's
+  widget (the glyph, the %, "Phone" or "Low", "+40%" and the gold **Charge · 15 s away**, dim and "Full" at 100%), in
+  the Home app's header and on the desk phone's lock screen. At 20% and 10% the desk phone wakes with a crimson block
+  (`LOW_SHOW_SEC`). **Charge** takes you away from the PC for `CHARGE_SEC` (15 s; the empty chair, "Charging your
+  phone" on the away card, preemptive.md) for +`CHARGE_ADD` (40%). **Dead at 0%:** black in your hand ("Dead. No
+  calls, no texts, no Home app.", only **Charge it**), black on the desk (the empty battery as it dies). Nothing
+  reaches it: what is due counts as ignored, so Mom calls your girlfriend, the boys ring Discord on the PC (Noise),
+  the courier and the boss give up, her texts don't come (she keeps waking). Text her and Raid night? can't be sent.
+- **The Home app** (step 6.2): the header (back, "Home", the battery, "Tap a device to use it."); the flat as room
+  tiles from the build's plan (`ui/plan.ts`: Bedroom, Bath, Kitchen, Hallway, Living, You in gold), the installed
+  devices on it as discs (a gold ring blinking: ready; a grey sweep and its time: resting; moss: on or running, the
+  vacuum moving round its room). **It never shows where she is.** Under it the bubble tea card. Tap a device: its sheet
+  rises (what it does with its condition, never whether it is met; a note; the vacuum's room chips; the battery before
+  and after; one gold button with the cost, or why not now: resting, not enough battery, dead; Cancel).
+
+  | Device | Battery (`HOME_BATT`) | Does | Rest |
+  |---|---|---|---|
+  | Robot vacuum | 20% | Runs `VACUUM_RUN_SEC` in the room you pick. If she is in that room or next door (`ROOM_NEXT`) she goes to stop it: her next visit `VACUUM_CALM` (45) s later | `VACUUM_REST` 3 min |
+  | Speakers (a pair: kitchen, bath; tap the one you want) | 10% | A timer rings: she goes to check it, next visit `SPEAKER_CALM` (30) s later. From the 3rd in a night, Mood +5 | `SPEAKER_REST` 60 s, the pair together |
+  | TV cast | 8% | While her show's credits roll (its end cue): Next episode, she stays on the couch for one more. Any other time nothing happens. Twice a night; the 3rd time she notices: Mood +10, she comes to your door | `TV_REST` 90 s |
+  | Door seal | 4% a toggle | The towel's effect and downside: your Noise `SEAL_NOISE` (40%) quieter, her routine 30% slower, her steps half as loud; no light under your door; every visit "Why is your door sealed?" Mood +5 | none |
+  | Bubble tea (an order) | 6%, 25 zł | The doorbell `TEA_DELAY_SEC` (120 s) later, sliding later while real life isn't free: she takes it to the couch, no visits for `TEA_CALM` (120 s). Asleep: it wakes her a bit (+30). Twice a night | |
+
+  A device she has to walk to works while she is up: asleep she sleeps through it, the shower is hers. She walks to
+  the room and stays there `CHECK_SEC`, then back to her own things. `npx tsx test/home.ts` checks every rule;
+  `python3 test/home.py` the screens next to stills 103 and 113 to 120, 133 and 134. The sim's `HOME=1` bot installs
+  everything and uses it where it works.
 
 Sluggish (Tired 70+) shortens every call timer to `SLUGGISH_TIMER_MULT`. F1 has a button for each call (it skips the
 one-demand rule). `npx tsx test/phone.ts` checks the script, the spacing, each event, speaker and Do Not Disturb.
@@ -314,10 +345,21 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   causes a catch, it only decides how long she stays. Rejected: keeping Tetris beside Q4 (two jobs on one sheet);
   Hustle on the macros (it would punish leaving Excel, the opposite of the RPG loop); a promotion dialog over the RPG
   (it waits for Excel, where it means something).
+- **The smart home as the grid doc has it** (0.79, step 6, #57; decided 2026-11-20 with Paweł's approval of the
+  mockups): the doubled battery costs, the speaker pair, the TV cast always tappable, Charge dim at 100%. It comes in
+  on Thursday (the week doc; the handoff said Wednesday). My readings, for Paweł to check: the speakers rest 60 s and
+  the TV cast 90 s (the page shows both resting; the handoff gives no rest); asleep or in the shower she ignores the
+  devices; the doorbell wakes her a bit if she is asleep; a dead phone makes what is due count as ignored (the boys
+  then ring the PC); the Home app draws the build's flat until the plan change goes in with lean in (#77). Measured
+  with the `HOME=1` bot (every device, used where it works; Thursday to Sunday, 8 seeds a night): vacuum 1.1 to 1.4,
+  speakers 2 to 2.5, TV cast 1.8 to 2, bubble tea 1, 0.1 to 0.6 charges, never dead, 3 stars, caught 0. The grid
+  doc's typical night charges once; the bot uses the vacuum less (its 3 min rest). Rejected: lighting the TV cast
+  only at the credits (it would tell a headset player where she is); the approved plan in the Home app now (it would
+  disagree with the plan on the wall).
 - **The Shop as the grid doc has it** (0.76, step 4, #55). Prices and effects are grid doc 7i's (Flowers 49, lowered
   from the handoff's 89 so the first night's Q4 at one click a second pays for them). Only Flowers is in For her:
   the gifts she wears (socks, tee, pajamas, hoodie) and their trade-offs come with fan service (#59), and the Home tab
-  and the new phone's battery with step 6. The free top-up to `MONSTER_PER_NIGHT` cans each night stays, from
+  and the new phone's battery with step 6 (0.79). The free top-up to `MONSTER_PER_NIGHT` cans each night stays, from
   Thursday when the drink comes in (0.77); the Shop's pack is on top of it, so cans are never scarce yet.
   The chew is once a night so one purchase cannot push the dog off a whole night. Rejected: the shop in the morning
   (campaign.md's first plan: buying with the phone in your hand costs hands busy, which is the point); showing the

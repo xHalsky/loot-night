@@ -41,7 +41,10 @@ import { hideCans, takePlate, chatAnswer, cuddleAnswer } from '../src/systems/vi
 import { cuddleDot, cuddlePointer } from '../src/systems/cuddle';
 import { skipDrop } from '../src/systems/loot';
 import { chooseCurio, curioBlocked } from '../src/systems/curios';
-import { startPre, preBlocked, episodeAnswer } from '../src/systems/preemptive';
+import { startPre, preBlocked } from '../src/systems/preemptive';
+import { battOn, battery, deviceBlocked, useDevice, orderTea, phoneDead } from '../src/systems/home';
+import type { DeviceId } from '../src/data/home';
+import type { Room } from '../src/core/state';
 import { CURIO_BY_ID } from '../src/data/curios';
 import { T } from '../src/config/tuning';
 import { endNight } from '../src/systems/night';
@@ -94,6 +97,7 @@ function cityRound(): string[] {
 }
 void salvageYield;
 S.g = initialState();
+if (process.env.HOME) S.g.owned.push('vacuum', 'speaker', 'tv', 'seal');   // HOME=1 (#57): every device installed
 S.g.day = Number(process.env.DAY ?? 0);   // the week (#56): DAY=n starts on that night (0 = Monday); the save's day carries over with NIGHTS
 for (let night = 1; night <= NIGHTS; night++) {
 let built: string[] = [];
@@ -116,6 +120,7 @@ const kinds: Record<string, number> = {}; const outcomes: Record<string, number>
 const lvlAt: number[] = []; let lastFloor = 1;
 const curioPicks: Record<string, number> = {};
 const preUsed: Record<string, number> = {};
+const homeUsed: Record<string, number> = {};   // HOME=1: the devices used, charges, whether it died
 const calls: Record<string, number> = {};
 const wipeAt: number[] = [];
 let demands = 0, t01 = 0;   // the week (#56): what real life asked of you before 01:00 (her visits, the phone, the dog) and when 01:00 came
@@ -128,9 +133,9 @@ while (S.g.screen === 'night' && t < 2000) {
     const k = n.visit.kind;   // a perfect listener knows the visit type from the hallway cue
     const coming = v === 'far' || v === 'hall' || v === 'handle' || v === 'in';
     const a0 = n.apt;
-    const preTea = !!process.env.PRE && v === 'idle' && !a0.asleep && a0.moving <= 0 && a0.calm <= 0 && n.location === 'dungeon'
-      && (a0.room === 'living' || a0.room === 'bedroom') && (n.preUses.tea ?? 0) < 2;
-    const wantExcel = (coming && (k === 'peek' || k === 'chat')) || preTea || !!n.pre?.away;   // PRE: Excel up before going away
+    // HOME=1 (#57): before charging (15 s away) the bot puts Excel up, as before any time away
+    const goCharge = !!process.env.HOME && battOn() && v === 'idle' && battery() <= 25 && !n.pre && !n.game && !preBlocked('charge');
+    const wantExcel = (coming && (k === 'peek' || k === 'chat')) || goCharge || !!n.pre?.away;
     if (coming && k === 'snack' && !n.game) hideCans();
     if (v === 'in' && n.visit.result === 'offer') takePlate();
     if (v === 'in' && n.visit.result === 'chat') chatAnswer(0);
@@ -175,13 +180,21 @@ while (S.g.screen === 'night' && t < 2000) {
     }
     if ((gearBot || mode === 'good') && n.phase === 'walk' && Math.floor(t * 2) !== Math.floor((t - dt) * 2)) tryEquip();   // the good bot gears up on the walk (#49): twice a second
     // Abilities when ready.
-    // PRE=1: a bot that knows where she is and uses pre-emptive actions where they work (an upper bound):
-    // tea when she is in the living room or bedroom (Excel up first, above), else a text while she is busy; 2 of each.
+    // PRE=1: a bot that texts her while she is busy, twice a night (an upper bound: it knows where she is)
     if (process.env.PRE && v === 'idle' && !n.pre && !n.switching && n.apt.calm <= 0) {
-      if (preTea && n.monitor === 'excel' && !preBlocked('tea')) { startPre('tea'); preUsed.tea = (preUsed.tea ?? 0) + 1; }
-      else if (!preTea && !n.apt.asleep && n.apt.moving <= 0 && n.apt.activity !== 'shower' && (n.preUses.text ?? 0) < 2 && !preBlocked('text')) { startPre('text'); preUsed.text = (preUsed.text ?? 0) + 1; }
+      if (!n.apt.asleep && n.apt.moving <= 0 && n.apt.activity !== 'shower' && (n.preUses.text ?? 0) < 2 && !preBlocked('text')) { startPre('text'); preUsed.text = (preUsed.text ?? 0) + 1; }
     }
-    if (n.pre?.stage === 'ask') episodeAnswer(process.env.PRE !== 'decline');
+    // HOME=1 (#57): every device installed; the bot uses them where they work (an upper bound: it knows where she is):
+    // the TV cast at the credits, the vacuum in her room, the speakers when she is up, bubble tea, the seal while she
+    // sleeps; it charges at 25% or under (Excel up first, above)
+    if (process.env.HOME && battOn() && v === 'idle' && !n.pre && !n.switching && !n.game) {
+      const a1 = n.apt, up = !a1.asleep && a1.activity !== 'shower' && a1.moving <= 0, use = (id: DeviceId, room?: Room) => { if (!deviceBlocked(id) && useDevice(id, room)) homeUsed[id] = (homeUsed[id] ?? 0) + 1; };
+      if (goCharge && n.monitor === 'excel') { startPre('charge'); homeUsed.charge = (homeUsed.charge ?? 0) + 1; }
+      else if (a1.activity === 'tv' && a1.cued && up && (n.home.uses.tv ?? 0) < T.TV_MAX) use('tv');
+      else if (up && a1.calm <= 0 && battery() > 35) { if (!deviceBlocked('vacuum')) use('vacuum', a1.room); else if (!deviceBlocked('speaker')) use('speaker', 'kitchen'); else if (!deviceBlocked('tea') && !n.home.bells.length) { orderTea(); homeUsed.tea = (homeUsed.tea ?? 0) + 1; } }
+      else if (a1.asleep !== n.seal && !deviceBlocked('seal')) use('seal');
+      if (phoneDead()) homeUsed.dead = 1;
+    }
     // curios: the first choice (usually the quiet one), else the second; a curio counts how often each was taken
     if (n.phase === 'curio' && n.curio?.stage === 'ask' && n.monitor === 'rpg' && !n.switching) {
       const ch = process.env.CURIO === 'loud' ? CURIO_BY_ID[n.curio.id].reckless : CURIO_BY_ID[n.curio.id].choices.map(c => c.id).find(c => !curioBlocked(c));
@@ -213,5 +226,5 @@ const r = S.g.results!; const N0tired = lastTired;
 const gear = S.g.heroes.map(h => { const st = heroStats(h), b = heroBaseStats(h); return { atk: (st.atk - b.atk) / st.atk, hp: (st.hp - b.hp) / st.hp, slots: Object.values(h.gear).filter(Boolean).length, ilvl: Object.values(h.gear).reduce((a, it: any) => a + (it?.ilvl ?? 0), 0) }; });
 const gearStats = { equips, skipped, swapped, gearAtk: +(gear.reduce((a, x) => a + x.atk, 0) / gear.length).toFixed(2), gearHp: +(gear.reduce((a, x) => a + x.hp, 0) / gear.length).toFixed(2),
   slots: gear.reduce((a, x) => a + x.slots, 0), gearIlvl: +(gear.reduce((a, x) => a + x.ilvl, 0) / Math.max(1, gear.reduce((a, x) => a + x.slots, 0))).toFixed(1), wipeAt };
-console.log(JSON.stringify({ mode, night, day: dayName(r.day), demands, secApart: demands ? Math.round(t01 / demands) : null, q4: S.g.results?.q4 ?? 0, zl: Math.floor(S.g.zl), q4title: S.g.q4.rank, ...gearStats, built, bagValue, city: { ...S.g.furniture }, goldAfterCity, nextCost: next ? [next.gold, next.mats] : null, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, mats: S.g.mats, sell: S.g.bag.map(e => e.kind === 'item' ? Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)) : 15), bagRar: S.g.bag.map(e => e.kind === 'item' ? ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity) : -1), salvage: S.g.bag.reduce((a, e) => a + (e.kind === 'item' ? T.SALVAGE_YIELD[['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity)] : 0), 0), bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), party: S.g.heroes.map(h => h.id).join(','), lineFixes, nodesBought, trees: S.g.heroes.map(h => (S.g.trees?.[h.id] ?? []).length).join(','), runEnds, firstLegend, lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses, runs, banked, pace: { ...PACE, combat: Math.round(PACE.combat), encounter: +(PACE.encounterSum / Math.max(1, PACE.encounters)).toFixed(1), floor: +(PACE.floorSum / Math.max(1, PACE.floors)).toFixed(1) } }));
+console.log(JSON.stringify({ mode, night, day: dayName(r.day), home: homeUsed, battEnd: battOn() ? battery() : null, demands, secApart: demands ? Math.round(t01 / demands) : null, q4: S.g.results?.q4 ?? 0, zl: Math.floor(S.g.zl), q4title: S.g.q4.rank, ...gearStats, built, bagValue, city: { ...S.g.furniture }, goldAfterCity, nextCost: next ? [next.gold, next.mats] : null, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, mats: S.g.mats, sell: S.g.bag.map(e => e.kind === 'item' ? Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)) : 15), bagRar: S.g.bag.map(e => e.kind === 'item' ? ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity) : -1), salvage: S.g.bag.reduce((a, e) => a + (e.kind === 'item' ? T.SALVAGE_YIELD[['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity)] : 0), 0), bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), party: S.g.heroes.map(h => h.id).join(','), lineFixes, nodesBought, trees: S.g.heroes.map(h => (S.g.trees?.[h.id] ?? []).length).join(','), runEnds, firstLegend, lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses, runs, banked, pace: { ...PACE, combat: Math.round(PACE.combat), encounter: +(PACE.encounterSum / Math.max(1, PACE.encounters)).toFixed(1), floor: +(PACE.floorSum / Math.max(1, PACE.floors)).toFixed(1) } }));
 }

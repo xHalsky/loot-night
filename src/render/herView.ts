@@ -1,12 +1,9 @@
 // Her panel's view (V4, #69; grid doc 7b): what the renderer's her.js drawHerLive needs, read from the game. No rules
-import { on } from '../systems/week';
 // here, only reading; the texts are the ones her DOM panel had (docs/design/her.md, screen.md).
 import { S, N } from '../core/state';
 import { T } from '../config/tuning';
 import { moodZone } from '../systems/meters';
 import { hasLife } from '../systems/affixes';
-import { preBlocked, nextMult } from '../systems/preemptive';
-import { PRE_ACTIONS } from '../data/preemptive';
 import { END_HINT } from '../data/tips';
 import { CHAT_QS, VISIT_CUE } from '../data/content';
 import { ROOM_NAME } from '../data/apartment';
@@ -71,19 +68,6 @@ function middle(hover: string) {
   return { note: { label: up(label), body, tone } };
 }
 
-/** The two things you can do at the door before she comes (pre-emptive, #19): pink buttons, why not on a dim one. */
-function buttons() {
-  const n = N();
-  const pre = PRE_ACTIONS.filter(a => a.where === 'door' && on(a.id));   // tea and the towel: Thursday (#56), until step 6's devices
-  if (n.visit.stage !== 'idle' || !pre.length) return null;
-  return pre.map(d => {
-    const why = preBlocked(d.id), used = n.preUses[d.id] ?? 0;
-    const name = d.id === 'towel' ? (n.towel ? 'Towel out' : 'Towel under door') : d.name;
-    const cost = d.id === 'tea' ? `${T.PRE_TEA_SEC} s away` : d.id === 'towel' ? `${T.PRE_TOWEL_SEC} s` : '';
-    const m = !d.toggle && !d.goodwill && used ? nextMult(d.id) : 1;
-    return { name, sub: why || (m === 0 ? 'suspicious next' : m < 1 ? `${cost} · half` : cost), subCol: !why && m === 0 ? 'crimson' : undefined, off: !!why, act: 'pre', arg: d.id, tip: `pre:${d.id}` };
-  });
-}
 
 export function herView(hover = '') {
   const n = N(), zone = moodZone(n.mood);
@@ -91,7 +75,7 @@ export function herView(hover = '') {
     mood: n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'annoyed' : 'furious',
     heard: heard(),
     ...middle(hover),
-    buttons: buttons(),
+    buttons: null,   // Make her tea and the towel went with step 6 (#57): bubble tea and the door seal are in the Home app
     hover,
     stats: {
       patience: Math.ceil((100 - n.mood) / 20), caught: n.catches, goodwill: Math.floor(S.g.goodwill), noise: Math.round(n.noise),

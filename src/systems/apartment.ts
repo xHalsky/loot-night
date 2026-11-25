@@ -9,7 +9,8 @@ const toast = toastAs('HER');   // feed tag (#49)
 import { sfx, setHeadset, ambienceFor } from '../ui/audio';
 import { spawnInterrupt } from './interrupts';
 import { hasLife } from './affixes';
-import { towelNoise, towelPace, towelSteps } from './preemptive';
+import { sealNoise, sealPace, sealSteps } from './home';
+import { ROOM_ACTIVITY } from '../data/home';
 import { addGoodwill } from './goodwill';
 import { tip } from './tips';
 
@@ -68,7 +69,7 @@ function pickActivity() {
 export function hearing(): number {
   const a = N().apt;
   const room = a.moving > 0 ? 'hallway' : a.room;
-  return T.HEAR_DISTANCE[ROOM_DISTANCE[room]] * (a.moving > 0 ? 1 : T.HEAR_MASK[a.activity] ?? 1) * towelNoise();
+  return T.HEAR_DISTANCE[ROOM_DISTANCE[room]] * (a.moving > 0 ? 1 : T.HEAR_MASK[a.activity] ?? 1) * sealNoise();
 }
 export const heardNoise = () => N().noise * hearing();
 
@@ -95,7 +96,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.moving > 0) {
     a.moving -= dt;
     a.soundT -= dt;
-    if (a.soundT <= 0) { a.soundT = 0.5; sfx.step(0.15 * towelSteps()); hear('hallway', 'STEPS', hearsHallway()); }
+    if (a.soundT <= 0) { a.soundT = 0.5; sfx.step(0.15 * sealSteps()); hear('hallway', 'STEPS', hearsHallway()); }
     if (a.moving <= 0) { a.soundT = 0.3; sfx.aptStart(a.activity, a.room); }
     return null;
   }
@@ -109,8 +110,8 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.asleep) return updateSleep(dt);
 
   // High Noise makes her wrap up whatever she is doing (except the shower).
-  // the towel: she gets up less often; the week's visits (#56): she gets through her things faster (not the shower)
-  a.t -= dt * (heardNoise() > T.NOISE_HURRY ? 2 : 1) * towelPace() * (a.activity === 'shower' ? 1 : rules().visits);
+  // the door seal: she gets up less often; the week's visits (#56): she gets through her things faster (not the shower)
+  a.t -= dt * (heardNoise() > T.NOISE_HURRY ? 2 : 1) * sealPace() * (a.activity === 'shower' ? 1 : rules().visits);
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
     a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end); if (!n.headset) tip('endcue');
   }
@@ -136,7 +137,7 @@ function updateSleep(dt: number): 'wake' | null {
   const n = N();
   const a = n.apt;
   const owl = hasLife('owl') ? 1 - T.AFFIX_OWL : 1;   // of Slumber
-  a.wake = clamp(a.wake + Math.max(0, n.noise * towelNoise() - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
+  a.wake = clamp(a.wake + Math.max(0, n.noise * sealNoise() - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
   if (a.wake >= T.WAKE_TEXT && !a.textSent) {
     if (spawnInterrupt('text')) {
       a.textSent = true;
@@ -165,6 +166,13 @@ export function replyText(ok: boolean) {
     a.textSent = false;
     toast('You left her on read. She is wide awake now.', '#ff8a80'); sfx.bad();
   }
+}
+
+/** A device sent her (the Home app, #57): she walks to that room, sees to it for a moment, then back to her things. */
+export function sendHerTo(room: Room, what: string, sec = T.CHECK_SEC) {
+  const a = N().apt;
+  a.room = room; a.activity = ROOM_ACTIVITY[room]; a.t = sec + T.APT_MOVE_SEC; a.moving = T.APT_MOVE_SEC; a.cued = false; a.soundT = 0.3;
+  hear(room, what);
 }
 
 /** Mom's failed call: she gets a call and heads your way soon. */

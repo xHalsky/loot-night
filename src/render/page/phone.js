@@ -422,15 +422,15 @@ function homeScreen(t, o = {}) {
   tx(b + '%', 37, 26, low ? P.crimson : P.moon, { f: 'tinyL' });
   tx(low ? 'Low' : 'Phone', 99, 25, low ? P.crimson : P.s5, { align: 'r' }); tx('+40%', 99, 33, P.s4, { align: 'r' });
   const tap = o.tapCharge && (t % 3) > 1.6;
-  rrI(11, 46, 90, 11, 5, P.copper); rrI(11, 45, 90, 11, 5, tap ? P.copper : P.gold);
-  tx('Charge · 15 s away', 56, 48, P.void, { align: 'c' });
+  if (o.chargeOff) { rrI(11, 45, 90, 11, 5, P.s2); tx(o.chargeOff, 56, 48, P.s5, { align: 'c' }); }   // the game's: dim at 100% (decided 2026-11-20)
+  else { rrI(11, 46, 90, 11, 5, P.copper); rrI(11, 45, 90, 11, 5, tap ? P.copper : P.gold); tx(o.chargeLabel || 'Charge · 15 s away', 56, 48, P.void, { align: 'c' }); }
   if (o.tapCharge) { const on = Math.floor(t * 6) & 1; for (let k = 0; k < 96; k++) if (((k >> 1) + on) & 1) { px(8 + k, 42, P.gold); px(8 + k, 59, P.gold); } for (let k = 0; k < 18; k++) if (((k >> 1) + on) & 1) { px(8, 42 + k, P.gold); px(103, 42 + k, P.gold); } }
   const tapShop = o.tapShop && (t % 4) > 2.4 ? (t % 4) : 0, tapHome = o.tapHome && (t % 4) > 2.4 ? (t % 4) : 0;
   const tapMsg = o.tapMsg && (t % 4) > 2.4 ? (t % 4) : 0;
   appIcon('messages', 8, 72, P.g4, P.moon, 'Messages', { hi: P.g5, tap: tapMsg });
   if (o.unread) { disc(35, 73, 4.5, P.d6); tx(String(o.unread), 35, 71, P.void, { align: 'c' }); }   // her unread, in her pink
   appIcon('shop', 42, 72, P.copper, P.pale, 'Shop', { hi: P.gold, tap: tapShop });
-  appIcon('home', 76, 72, P.steel, P.moon, 'Home', { hi: P.s6, tap: tapHome, sub: '4 devices' });
+  appIcon('home', 76, 72, P.steel, P.moon, 'Home', { hi: P.s6, tap: tapHome, sub: o.devices ?? '4 devices' });
   homeBar(P.s5);
 }
 PHONE_SCREENS.home = (t, o) => homeScreen(t, { tapShop: true, ...o });
@@ -546,30 +546,45 @@ const HROOM = (u, v) => {   // the build's plan in its 200 x 200 units: which ro
 };
 const HP0 = [6, 50], hux = (u) => HP0[0] + Math.round(u * 0.5), huy = (v) => HP0[1] + Math.round(v * 0.5);
 const HDEV = { vacuum: [100, 160], speakerK: [176, 52], speakerB: [58, 88], tv: [12, 140], seal: [154, 96] };
+// the layout the Home app draws: the plan as approved (the page's), or the build's plan until the plan change goes in
+// with lean in (#77): the bathroom between the bedroom and the kitchen, the living room an L under the hallway
+const HROOM_BUILD = (u, v) => {
+  if (u < 0 || v < 0 || u > 200 || v > 200) return null;
+  if (u >= 140 && v >= 84) return 'you';
+  if (v < 84) return u < 70 ? 'bedroom' : u < 110 ? 'bath' : 'kitchen';
+  if (u < 70) return v < 96 ? 'bedroom' : 'living';
+  return v < 108 ? 'hallway' : 'living';
+};
+const HL_APPROVED = { room: HROOM, dev: HDEV, labels: [['Bedroom', 2, 2], ['Bath', 2, 58], ['Kitchen', 110, 2], ['Hallway', 70, 84], ['Living', 2, 104]],
+  paths: { kitchen: [[130, 30], [180, 60], [150, 70], [125, 50]], living: [[50, 122], [112, 124], [108, 140], [52, 140]] } };
+const HL_BUILD = { room: HROOM_BUILD, dev: { vacuum: [112, 184], speakerK: [176, 52], speakerB: [90, 46], tv: [12, 140], seal: [150, 96] },
+  labels: [['Bedroom', 2, 2], ['Bath', 72, 2], ['Kitchen', 112, 2], ['Hallway', 72, 86], ['Living', 2, 100]],
+  paths: { living: [[16, 108], [60, 112], [118, 184], [30, 186]], kitchen: [[120, 30], [170, 60], [150, 76], [118, 60]], bath: [[78, 58], [102, 60], [102, 78], [78, 78]],
+    bedroom: [[12, 66], [60, 66], [60, 90], [12, 90]], hallway: [[76, 92], [134, 92], [134, 102], [76, 102]] } };
+let HL = HL_APPROVED;
 function homePlan(t, st) {
   rrI(HP0[0] - 3, HP0[1] - 3, 106, 106, 6, P.void);
   for (let j = 0; j < 101; j++) for (let i = 0; i < 101; i++) {
-    const r = HROOM((i + 0.5) * 2, (j + 0.5) * 2); if (!r) continue;
-    const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => HROOM((i + a + 0.5) * 2, (j + b + 0.5) * 2) !== r);
+    const r = HL.room((i + 0.5) * 2, (j + 0.5) * 2); if (!r) continue;
+    const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => HL.room((i + a + 0.5) * 2, (j + b + 0.5) * 2) !== r);
     const sel = st.room && r === st.room;
     px(HP0[0] + i, HP0[1] + j, nb || i === 0 || j === 0 || i === 100 || j === 100 ? P.void : sel ? P.s3 : r === 'you' ? P.s2 : P.s1);
   }
   const lab = (s, u, v, c = P.s5) => tx(s, hux(u) + 3, huy(v) + 3, c);
-  lab('Bedroom', 2, 2); lab('Bath', 2, 58); lab('Kitchen', 110, 2); lab('Hallway', 70, 84); lab('Living', 2, 104); lab('You', 146, 150, P.gold);
-  // the devices
-  const sd = st.dev || {};
-  devIcon('vacuum', ...HDEV.vacuum, sd.vacuum || 'ready', t, st);
-  devIcon('speaker', ...HDEV.speakerK, sd.speaker || 'ready', t, st);
-  devIcon('speaker', ...HDEV.speakerB, sd.speaker || 'ready', t, st);
-  devIcon('tv', ...HDEV.tv, sd.tv || 'ready', t, st);
-  devIcon('seal', ...HDEV.seal, sd.seal || 'ready', t, st);
+  for (const [s0, u, v] of HL.labels) lab(s0, u, v); lab('You', 146, 150, P.gold);
+  // the devices (the game's: only those installed)
+  const sd = st.dev || {}, has = (k) => !st.owned || st.owned.includes(k);
+  if (has('vacuum')) devIcon('vacuum', ...HL.dev.vacuum, sd.vacuum || 'ready', t, st);
+  if (has('speaker')) { devIcon('speaker', ...HL.dev.speakerK, sd.speaker || 'ready', t, st); devIcon('speaker', ...HL.dev.speakerB, sd.speaker || 'ready', t, st); }
+  if (has('tv')) devIcon('tv', ...HL.dev.tv, sd.tv || 'ready', t, st);
+  if (has('seal')) devIcon('seal', ...HL.dev.seal, sd.seal || 'ready', t, st);
 }
 // a device on the plan: a disc with its glyph. Ready: a gold ring (tap it now). Cooling: a sweep and the time left.
 // On (the seal) or running (the vacuum): moss. Picked (its sheet is open): a marching gold ring.
 function devIcon(kind, u, v, state, t, st) {
   let cx = hux(u), cy = huy(v);
-  if (kind === 'vacuum' && state === 'running') { const r = st.runRoom || 'kitchen', path = { kitchen: [[130, 30], [180, 60], [150, 70], [125, 50]], living: [[50, 122], [112, 124], [108, 140], [52, 140]] }[r]; const k = (t * 0.25) % 1, n = path.length, s = Math.floor(k * n), f = k * n - s, a = path[s], b = path[(s + 1) % n]; cx = hux(a[0] + (b[0] - a[0]) * f); cy = huy(a[1] + (b[1] - a[1]) * f); }
-  const on = state === 'on' || state === 'running', cool = typeof state === 'number', picked = st.pick === kind;
+  if (kind === 'vacuum' && state === 'running') { const r = st.runRoom || 'kitchen', path = HL.paths[r] || HL.paths.living || HL.paths.kitchen; const k = (t * 0.25) % 1, n = path.length, s = Math.floor(k * n), f = k * n - s, a = path[s], b = path[(s + 1) % n]; cx = hux(a[0] + (b[0] - a[0]) * f); cy = huy(a[1] + (b[1] - a[1]) * f); }
+  const on = state === 'on' || state === 'running', cool = typeof state === 'number', picked = st.pick === kind && (kind !== 'speaker' || !st.pickAt || st.pickAt === (u >= 110 ? 'kitchen' : 'bathroom'));
   disc(cx, cy + 1, 6, P.void); disc(cx, cy, 6, on ? P.g3 : cool ? P.s1 : P.s2);
   gl(DEV_G[kind], cx - 3, cy - 3, on ? P.g6 : cool ? P.s4 : P.moon);
   const ring = (idx, n = 64, dash = 0, f = 1) => { for (let a = 0; a < n; a++) { if (a / n > f) break; if (dash && ((a >> 1) + Math.floor(t * 6)) & 1) continue; const an = (a / n) * 6.283 - 1.571; px(Math.round(cx - 0.5 + Math.cos(an) * 7.5), Math.round(cy - 0.5 + Math.sin(an) * 7.5), idx); } };
@@ -594,8 +609,9 @@ function teaCard(t, st) {
   rrI(6, y, 100, 24, 6, P.s1); rrI(10, y, 92, 1, 0, P.s3);
   rrI(10, y + 4, 15, 15, 4, P.u3); gl(DEV_G.tea, 14, y + 8, P.pale);
   tx('Bubble tea', 29, y + 4, P.moon);
-  if (st.tea) { tx('1 of 2', 101, y + 4, P.s4, { align: 'r' }); tx('Doorbell in ' + st.tea, 29, y + 13, P.g5); return; }
-  const w = zlP('25', 29, y + 13, P.s5); tx('· ' + HOME_COST.tea + '%', 29 + w + 2, y + 13, P.s5);
+  if (st.tea) { tx(st.teaOf || '1 of 2', 101, y + 4, P.s4, { align: 'r' }); tx('Doorbell in ' + st.tea, 29, y + 13, P.g5); return; }
+  const w = zlP(String(st.teaZl ?? 25), 29, y + 13, P.s5); tx('· ' + (st.teaCost ?? HOME_COST.tea) + '%', 29 + w + 2, y + 13, P.s5);
+  if (st.teaWhy) { rrI(66, y + 7, 36, 10, 5, P.s2); tx(fitT(st.teaWhy, 34), 84, y + 9, P.s5, { align: 'c' }); return; }
   rrI(78, y + 8, 24, 10, 5, P.copper); rrI(78, y + 7, 24, 10, 5, P.gold); tx('Order', 90, y + 9, P.void, { align: 'c' });
 }
 function homeApp(t, st) {
@@ -620,7 +636,7 @@ function homeSheet(t, st, d) {
   if (d.rooms) {
     y += 4; tx('Where', 7, y, P.s5); y += 9;
     let x = 7;
-    for (const r of d.rooms) { const w = measure(r, 'tiny') + 7; if (x + w > PH.sw - 6) { x = 7; y += 11; } const on = r === d.room; rrI(x, y, w, 9, 4, on ? P.moon : P.s2); tx(r, x + w / 2, y + 2, on ? P.void : P.s5, { align: 'c' }); x += w + 3; }
+    for (const r of d.rooms) { const w = measure(r, 'tiny') + 7; if (x + w > PH.sw - 6) { x = 7; y += 11; } const on = r === d.room; rrI(x, y, w, 9, 4, on ? P.moon : P.s2); tx(r, x + w / 2, y + 2, on ? P.void : P.s5, { align: 'c' }); (d.chips || []).push([x, y, w, r]); x += w + 3; }
     y += 13;
   } else y += 4;
   // the battery it takes
@@ -630,10 +646,11 @@ function homeSheet(t, st, d) {
   if (after <= 20) tx('low', PH.sw - 7, y, P.crimson, { align: 'r' });
   y += 13;
   const press = st.press && (t % 3) > 2.2;
-  rrI(7, y + 1, PH.sw - 14, 13, 6, P.copper); rrI(7, y, PH.sw - 14, 13, 6, press ? P.copper : P.gold);
-  tx(d.go + ' · ' + d.cost + '%', 56, y + 3, P.void, { align: 'c' });
+  if (d.why) { rrI(7, y, PH.sw - 14, 13, 6, P.s2); tx(d.why, 56, y + 3, P.s5, { align: 'c' }); }   // the game's: why not now (never where she is)
+  else { rrI(7, y + 1, PH.sw - 14, 13, 6, P.copper); rrI(7, y, PH.sw - 14, 13, 6, press ? P.copper : P.gold); tx(d.go + ' · ' + d.cost + '%', 56, y + 3, P.void, { align: 'c' }); }
   tx('Cancel', 56, y + 19, P.s5, { align: 'c' });
   homeBar();
+  return { goY: y, cancelY: y + 16 };
 }
 const HOME_BASE = { batt: 64, dev: { vacuum: 0.35 }, coolText: { vacuum: '1:03' } };
 PHONE_SCREENS.homeapp = (t, o) => homeApp(t, { ...HOME_BASE, ...o });
@@ -1052,9 +1069,9 @@ const LIVE = {
     gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 15, P.moon, { f: 'tinyL' }); backHit('phApp', 'home');
     zlP(String(v.wallet), PH.sw - 6, 19, P.g5, 'r');
     rrI(6, 33, PH.sw - 12, 11, 5, P.s2);
-    const TABS = [['you', 'For you', P.s4], ['her', 'For her', P.d4]], hw = (PH.sw - 14) / 2;
+    const TABS = [['you', 'For you', P.s4], ['her', 'For her', P.d4], ['home', 'Home', P.steel]].filter(([id]) => (v.tabs || ['you', 'her']).includes(id)), hw = (PH.sw - 14) / TABS.length;   // Home from step 6 (#57)
     TABS.forEach(([id, lab, fill], k) => { const on = id === v.tab; if (on) rrI(Math.round(7 + k * hw), 34, Math.round(hw), 9, 4, fill); tx(lab, Math.round(7 + hw * (k + 0.5)), 36, on ? P.moon : P.s5, { align: 'c' }); hit(Math.round(7 + k * hw), 32, Math.round(hw), 13, 'shopTab', id); });
-    const col = (g) => (SHOP.you.concat(SHOP.her).find((it) => it.g === g) || { c: [P.s3, P.moon] }).c;
+    const col = (g) => (SHOP.you.concat(SHOP.her, SHOP.home).find((it) => it.g === g) || { c: [P.s3, P.moon] }).c;
     v.items.forEach((it, k) => {
       const y = 50 + k * 30, c = col(it.g);
       if (k) rrI(26, y - 2, PH.sw - 30, 1, 0, P.s1);
@@ -1066,6 +1083,7 @@ const LIVE = {
       if (st === 'buy') { rrI(pxx, py + 1, pw, 9, 4, P.copper); rrI(pxx, py, pw, 9, 4, P.gold); zlP(String(it.zl), pxx + pw / 2, py + 2, P.void, 'c'); hit(pxx - 2, py - 2, pw + 4, 13, 'shopBuy', it.id); }
       else if (st === 'dear') { rrI(pxx, py, pw, 9, 4, P.s2); zlP(String(it.zl), pxx + pw / 2, py + 2, P.s4, 'c'); }
       else if (st === 'soon') { rrI(pxx, py, pw, 9, 4, P.s1); tx('soon', pxx + pw / 2, py + 2, P.s4, { align: 'c' }); }
+      else if (st === 'inhome') { rrI(pxx, py, pw, 9, 4, P.s2); tx('Home', pxx + pw / 2, py + 2, P.s5, { align: 'c' }); }
       else { const s2 = st === 'owned' ? 'owned' : st === 'full' ? 'full' : 'tonight', w2 = measure(s2, 'tiny') + 6; rrI(PH.sw - w2 - 4, py, w2, 9, 4, st === 'full' ? P.s2 : P.g3); tx(s2, PH.sw - 4 - w2 / 2, py + 2, st === 'full' ? P.s5 : P.g6, { align: 'c' }); }
     });
     if (v.tab === 'her') tx('More for her soon.', 56, 50 + v.items.length * 30 + 4, P.s4, { align: 'c' });
@@ -1087,6 +1105,37 @@ const LIVE = {
     });
     tx('Tap a chat to open it.', 56, 120, P.s4, { align: 'c' });
     homeBar(); homeHit('preMenu');
+  },
+  // the home screen from step 6 (#57): the battery widget (Charge, away 15 s), Messages, Shop, Home
+  home6(t, v) {
+    homeScreen(t, { batt: v.batt, unread: v.unread, chargeOff: v.chargeOff, chargeLabel: v.chargeLabel, devices: v.devices });
+    if (!v.chargeOff) hit(10, 44, 92, 14, 'charge', '');
+    hit(6, 70, 32, 44, 'phApp', 'messages'); hit(40, 70, 32, 44, 'phApp', 'shop'); hit(74, 70, 32, 44, 'phApp', 'homeapp');
+    homeHit('preMenu');
+  },
+  // dead: only Charge it
+  dead(t, v) { PHONE_SCREENS.dead(t, {}); if (!v.chargeOff) hit(10, 206, PH.sw - 20, 16, 'charge', ''); homeHit('preMenu'); },
+  // the Home app (step 6.2, #57): the build's plan with what is installed, the bubble tea, a device's sheet
+  homeapp(t, v) {
+    HL = HL_BUILD;
+    homeApp(t, { batt: v.batt, owned: v.owned, dev: v.dev, coolText: v.coolText, runRoom: v.runRoom, pick: v.sheet ? v.sheet.kind : null, pickAt: v.sheet ? v.sheet.at : null,
+      tea: v.tea, teaOf: v.teaOf, teaWhy: v.teaWhy, teaZl: v.teaZl, teaCost: v.teaCost, sub: v.sub, foot: v.foot });
+    backHit('phApp', 'home');
+    if (!v.sheet) {
+      const at = (k) => [hux(HL.dev[k][0]), huy(HL.dev[k][1])], spot = (k, act, arg) => { const [cx, cy] = at(k); hit(cx - 8, cy - 8, 16, 16, act, arg); };
+      if (v.owned.includes('vacuum')) spot('vacuum', 'homePick', 'vacuum');
+      if (v.owned.includes('speaker')) { spot('speakerK', 'homePick', 'speaker:kitchen'); spot('speakerB', 'homePick', 'speaker:bathroom'); }
+      if (v.owned.includes('tv')) spot('tv', 'homePick', 'tv');
+      if (v.owned.includes('seal')) spot('seal', 'homePick', 'seal');
+      if (!v.tea && !v.teaWhy) hit(76, 165, 28, 14, 'homeTea', '');
+    } else {
+      const d = { ...v.sheet, chips: [] }, r = homeSheet(t, { batt: v.batt }, d);
+      d.chips.forEach(([x, y, w, room]) => hit(x - 1, y - 2, w + 2, 13, 'homeRoom', v.sheet.roomIds[v.sheet.rooms.indexOf(room)]));
+      if (!d.why) hit(7, r.goY - 1, PH.sw - 14, 15, 'homeUse', '');
+      hit(20, r.cancelY - 1, PH.sw - 40, 12, 'homePick', '');
+    }
+    HL = HL_APPROVED;
+    homeHit('preMenu');
   },
   // Danny's 20:00 voice note (the week, #56): the night waits; Got it (or the home bar, Esc, Enter) starts it
   voice(t, v) { PHONE_SCREENS.voicenote(t, { lines: v.lines, date: v.date, tt: v.tt, live: true }); },
@@ -1122,7 +1171,7 @@ const LIVE = {
     tx(sent ? 'sent. back to the game' : 'typing: hands busy', 56, 229, sent ? P.g5 : P.s4, { align: 'c' });
   },
 };
-PHONE_SCREENS.live = (t, o) => (LIVE[o.v.screen] || LIVE.home)(t, o.v);
+PHONE_SCREENS.live = (t, o) => { PH_BATT = o.v.batt ?? 100; return (LIVE[o.v.screen] || LIVE.home)(t, o.v); };   // the status bar's battery is the game's (#57)
 /** The phone in your hand from the game's view model: its canvas (126 x 252) and the hit regions in its pixels. */
 function livePhone(v, t) {
   PH_HITS = [];

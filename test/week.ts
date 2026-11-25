@@ -29,7 +29,7 @@ ok(['peek', 'snack', 'q4', 'shop'].every(f => has(0, f)) && !['chat', 'headset',
   'Monday: her, peek and snack, Q4, the Shop; nothing else');
 ok(['chat', 'headset', 'rogue', 'tired', 'onDesk'].every(f => has(1, f) && !has(0, f)), 'Tuesday adds chat visits, the headset, Garrote, Tiredness, her on the desk');
 ok(['phone', 'messages'].every(f => has(2, f) && !has(1, f)), 'Wednesday: the phone rings, Messages');
-ok(['dog', 'cuddle', 'friends', 'fuel', 'tea', 'towel'].every(f => has(3, f) && !has(2, f)), 'Thursday: the dog, cuddles, the boys, the Goblin Fuel, tea and the towel');
+ok(['dog', 'cuddle', 'friends', 'fuel', 'home'].every(f => has(3, f) && !has(2, f)), 'Thursday: the dog, cuddles, the boys, the Goblin Fuel, the smart home and the battery');
 ok(['bed', 'witching'].every(f => has(4, f) && !has(3, f)), 'Friday: she goes to bed, the Witching Hour');
 ok([1, 2, 3, 4, 5, 6].every(d => rulesFor(d - 1).on.every(f => has(d, f))), 'what came in stays on');
 const vis = [0, 1, 2, 3, 4, 5, 6].map(d => rulesFor(d).visits).join(' ');

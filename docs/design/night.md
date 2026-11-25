@@ -16,14 +16,13 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
 | Monday | Her routine; peeks and snack runs (a plate: no cans to find yet); Q4; picking up the phone: the Shop (Silent keys, Flowers), her chat | x1 | stays up | 01:00, as a Sleep (no Tiredness yet) |
 | Tuesday | Chat visits; the headset (Zone); her leaning into your face after a pass; Garrote; Tiredness, and the night runs past 01:00; the Ergo chair | x1.2 | stays up | dawn |
 | Wednesday | The phone rings: the courier, Mom, the boss; Messages: Text her and Raid night? | x1.2 | stays up | dawn |
-| Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); Make her tea and the towel | x1.2 | stays up | dawn |
+| Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); the smart home: the battery, Charge, the Home app and its devices ([desk.md](desk.md)) | x1.2 | stays up | dawn |
 | Friday | She goes to bed: the waking meter, her texts, the good-night walk-by; the Witching Hour after 01:00 | x1.2 | 00:00 | dawn |
 | Saturday | The weekend: she's off and wants you (her moments, #59) | x1.4 | 01:00 | dawn |
 | Sunday | The weekend, more | x1.6 | 01:00 | dawn |
 
 In the schedule already, so they come in on their night once built: lean in and the hall mirror (Tuesday; #77, #59),
-the Home app, the devices and the battery (Thursday; step 6, #57; the New phone stays "soon"), the sheet mask, "come to
-bed" with "Coming, babe" and her selfies (Friday; #59), the tease visit, the lap sit, "Babe, towel!", the bath and its
+the sheet mask, "come to bed" with "Coming, babe" and her selfies (Friday; #59), the tease visit, the lap sit, "Babe, towel!", the bath and its
 wine (Saturday; #59).
 - **Visits x** scales her odds at each activity's end, the shortest and longest gap between visits
   (`DOOR_MIN_GAP_SEC`, `DOOR_MAX_GAP_SEC` divided by it) and how fast she gets through her things (not the shower).
@@ -191,8 +190,8 @@ happening.
   the summary without dropping the near misses); the page's day and night names now.
 - **The week, with what the build has** (0.77, #56). The schedule is the week doc's, as data, so it can be edited
   without code. My calls, for Paweł to check: Make her tea and the towel (the handoff's Tuesday door moves, which the
-  week doc dropped for lean in) come in on Thursday, standing in for the smart home's bubble tea and Door seal that
-  replace them there in step 6; "her on the desk after a pass" (Tuesday) is the build's lean into your face, the lap
+  week doc dropped for lean in) came in on Thursday in 0.77 and 0.78, standing in for the smart home's bubble tea and
+  door seal, which replaced them there in 0.79; "her on the desk after a pass" (Tuesday) is the build's lean into your face, the lap
   sit is #59's Saturday; Monday's 01:00 is a Sleep, not a forced end, so a rule nobody told you can't cost you a run;
   new games start with no cans; week two keeps everything on as a placeholder. The visit multiplier also speeds her
   routine: with Noise her odds were already near certain at each activity's end, so gaps and odds alone gave Sunday

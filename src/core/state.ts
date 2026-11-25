@@ -144,7 +144,7 @@ export interface Q4Night {
 
 /** A pre-emptive action in progress. stage: doing it; ask = her "stay for one episode?"; episode = staying.
  *  away: you are not at the desk. withHer: her apartment routine pauses (she is with you). */
-export interface PreState { id: string; stage: 'doing' | 'ask' | 'episode'; t: number; max: number; away: boolean; withHer: boolean; mult: number; outcome: string }
+export interface PreState { id: string; stage: 'doing'; t: number; max: number; away: boolean; withHer: boolean; mult: number; outcome: string }
 export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
@@ -202,8 +202,10 @@ export interface Night {
   q4: Q4Night;
   shopTonight: string[]; dogChew?: boolean;   // the Shop's one-use things bought tonight; a chew waiting for the dog's next visit (#55)
   pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
-  phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop'; shopTab?: 'you' | 'her'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
-  towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
+  phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop' | 'homeapp'; shopTab?: 'you' | 'her' | 'home'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
+  seal: boolean;   // the door seal is on (the Home app, #57; it was the towel)
+  home: import('../systems/home').HomeNight;   // the battery and the devices tonight (#57)
+  herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used

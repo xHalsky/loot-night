@@ -51,7 +51,7 @@ async def main():
         check(await ev("g.monsters") == 8 and not await tap('shopBuy', 'fuel'), f'Goblin Fuel up to the drawer\'s 8 ({cans} -> {await ev("g.monsters")}), then full')
         nxt = await ev("n.dog.next"); await tap('shopBuy', 'chew')
         check(await ev("n.dog.next") >= nxt + 119, 'the chew: his next visit 2 min later')
-        check(not await tap('shopBuy', 'phone'), 'the new phone: soon')
+        check(not await tap('shopBuy', 'phone') and await ev("!g.owned.includes('phone')"), 'the new phone: more than you have left')
         await shot('4_bought')
         check(await tap('phApp', 'home'), 'Back to the home screen')
         await go('closeGame'); await pg.wait_for_timeout(300); await ev("n.preMenu=null; n.phApp='home'; 0"); await pg.wait_for_timeout(300)

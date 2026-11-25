@@ -25,12 +25,13 @@ export const T = {
   // null = no dog), friends (the boys' calls tonight), first (in week one: her first visit is this type, early and safe:
   // a catch on it is let go, the night's new visit taught by happening; 2b in the week doc). After Sunday the week starts again with everything on (week
   // two is TBD: systems/week.ts). Ids not built yet sit in the list so they come in on their night once they are:
-  // lean, mirror (#77, #59), home (step 6, #57), mask, comeToBed, selfies, tease, lapSit, towelReq, bath, wine (#59).
+  // lean, mirror (#77, #59), mask, comeToBed, selfies, tease, lapSit, towelReq, bath, wine (#59). home: the Home app, the
+  // devices and the battery (step 6, #57).
   NIGHT_SCHEDULE: [
     { day: 'Monday', adds: ['her', 'peek', 'snack', 'q4', 'shop'], visits: 1, bed: 0, end: 25 * 60, dog: null, friends: 0 },
     { day: 'Tuesday', adds: ['chat', 'headset', 'onDesk', 'rogue', 'tired', 'lean', 'mirror'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0, first: 'chat' },
     { day: 'Wednesday', adds: ['phone', 'messages'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0 },
-    { day: 'Thursday', adds: ['dog', 'cuddle', 'friends', 'fuel', 'home', 'tea', 'towel'], visits: 1.2, bed: 0, end: 0, dog: [90, 120, 180], friends: 1, first: 'snack' },
+    { day: 'Thursday', adds: ['dog', 'cuddle', 'friends', 'fuel', 'home'], visits: 1.2, bed: 0, end: 0, dog: [90, 120, 180], friends: 1, first: 'snack' },
     { day: 'Friday', adds: ['bed', 'witching', 'mask', 'comeToBed', 'selfies'], visits: 1.2, bed: 24 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
     { day: 'Saturday', adds: ['tease', 'lapSit', 'towelReq', 'bath', 'wine'], visits: 1.4, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
     { day: 'Sunday', adds: [], visits: 1.6, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
@@ -237,11 +238,21 @@ export const T = {
   PRE_SUSPICIOUS_MOOD: 5,
   PRE_TEXT_SEC: 3, PRE_TEXT_CALM: 40, PRE_TEXT_MOOD: -5, PRE_TEXT_SOON: 10, PRE_TEXT_WAKE: 25,
   PRE_REPLY_SEC: [2, 4] as [number, number], PRE_REPLY_SHOW: 7,   // her reply lights the phone (the tell)
-  PRE_TEA_SEC: 15, PRE_TEA_MOOD: -15, PRE_TEA_CALM: 60,
-  PRE_EPISODE_ASK_SEC: 8, PRE_EPISODE_SEC: 60, PRE_EPISODE_CALM: 120, PRE_EPISODE_DECLINE_MOOD: 10,
   PRE_CALM_BREAK_NOISE: 70,       // heard Noise above this ends a calm: she comes to check
-  PRE_TEA_HUG_SEC: 12, PRE_TEA_HUG_MOOD: -5, PRE_TEA_COLD_MOOD: -5,
-  PRE_TOWEL_SEC: 2, PRE_TOWEL_NOISE: 0.4, PRE_TOWEL_SLOW: 0.3, PRE_TOWEL_STEPS: 0.5, PRE_TOWEL_SEEN_MOOD: 5,
+  // --- The smart home and the battery (step 6, #57; grid doc 7j; docs/design/desk.md, the Home app). Thursday on ---
+  BATTERY_ANSWER: 2,              // % for each call or text you answer (doubled 2026-11-20, like the devices)
+  CHARGE_SEC: 15, CHARGE_ADD: 40, // Charge: this long away from the PC (the empty chair), then +this %
+  NEW_PHONE_DRAIN: 0.6,           // the New phone (Shop): everything drains at this rate
+  BATTERY_LOW: [20, 10] as number[], LOW_SHOW_SEC: 3,   // the desk phone wakes with a crimson block at these %
+  HOME_BATT: { vacuum: 20, speaker: 10, tv: 8, seal: 4, tea: 6 } as Record<string, number>,   // % a use (a seal toggle, a tea order)
+  VACUUM_RUN_SEC: 20,             // it runs this long in the picked room (she stops it sooner if she goes)
+  VACUUM_CALM: 45, VACUUM_REST: 180,   // she is in that room or next door: she goes to stop it, her next visit 45 s later
+  SPEAKER_CALM: 30, SPEAKER_REST: 60,  // a timer rings: she goes to check it, next visit 30 s later (the rest is ours: start)
+  SPEAKER_MOOD_FROM: 3, SPEAKER_MOOD: 5,   // from the 3rd timer in a night, Mood +5 each time
+  TV_MAX: 2, TV_NOTICE_MOOD: 10, TV_REST: 90,   // Next episode twice a night; the 3rd she notices (Mood, your door)
+  TEA_DELAY_SEC: 120, TEA_CALM: 120, TEA_MAX: 2, TEA_WAKE: 30,   // bubble tea: the doorbell later; asleep, it wakes her a bit
+  CHECK_SEC: 6,                   // she spends this long at a device she went to (then back to her own things)
+  SEAL_NOISE: 0.4, SEAL_SLOW: 0.3, SEAL_STEPS: 0.5, SEAL_SEEN_MOOD: 5,   // the door seal: the towel's effect and downside
   // Cross-layer echoes and payouts (docs/design/synergy.md, #29).
   ECHO_YELL_NOISE: 15, ECHO_YELL_HEADSET: 5,   // a legendary drop: he yells (into the mic with the headset on)
   ECHO_SLAM_NOISE: 10,                          // a wipe: he slams the desk, the dog comes over
@@ -410,7 +421,7 @@ export const T = {
   Q4_BUSY_SEC: 2, Q4_IDLE_SEC: 3, Q4_BUSY_MULT: 1.5,   // looking busy while she is in: acted in the last 2 s, her visit runs x1.5; idle 3 s, it waits
 
   // --- The Shop app (step 4.6, #55; prices from grid doc 7i, to be tuned in playtests) ---
-  SHOP_ZL: { fuel: 29, chew: 29, keys: 249, fridge: 599, chair: 899, phone: 2999, flowers: 49 } as Record<string, number>,
+  SHOP_ZL: { fuel: 29, chew: 29, keys: 249, fridge: 599, chair: 899, phone: 2999, flowers: 49, vacuum: 899, speaker: 199, tv: 149, seal: 39, tea: 25 } as Record<string, number>,
   SHOP_FUEL_CANS: 4,              // Goblin Fuel: a pack of four for the drawer (MONSTER_DRAWER holds 8)
   SHOP_CHEW_SEC: 120,             // the dog chew: his next visit comes this much later
   SHOP_CHAIR_TIRED: 0.85,         // the ergo chair: Tiredness builds at this rate

@@ -17,7 +17,6 @@ import { specialText } from '../systems/affixes';
 import {  COACH } from '../data/tips';
 import { cityOutlook } from '../systems/town';
 import {  PRE_BY_ID, type PreId } from '../data/preemptive';
-import { phoneAction } from '../systems/interrupts';
 import { RARITY_COLOR, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { heroStats, itemPower, heroPower } from '../systems/stats';
 import {  abilityUnlocked } from '../systems/battle';
@@ -33,35 +32,14 @@ const btn = (act: string, label: string, arg = '', cls = '') => `<button class="
 
 
 export function preText(s: string): string {
-  return s.replace('{text}', String(T.PRE_TEXT_SEC)).replace('{textCalm}', String(T.PRE_TEXT_CALM)).replace('{textMood}', String(T.PRE_TEXT_MOOD))
-    .replace('{tea}', String(T.PRE_TEA_SEC)).replace('{teaMood}', String(T.PRE_TEA_MOOD)).replace('{teaCalm}', String(T.PRE_TEA_CALM))
-    .replace(/\{raidCost\}/g, String(T.GOODWILL_RAID)).replace('{raidSec}', String(T.RAID_CALM_SEC))
-    .replace('{raidSec}', String(T.RAID_CALM_SEC)).replace('{teaCalm}', String(T.PRE_TEA_CALM)).replace('{textCalm}', String(T.PRE_TEXT_CALM))
-    .replace('{towel}', String(T.PRE_TOWEL_SEC)).replace('{towelNoise}', String(Math.round(T.PRE_TOWEL_NOISE * 100))).replace('{towelSlow}', String(Math.round(T.PRE_TOWEL_SLOW * 100)));
+  return s.replace(/\{text\}/g, String(T.PRE_TEXT_SEC)).replace(/\{textCalm\}/g, String(T.PRE_TEXT_CALM)).replace('{textMood}', String(T.PRE_TEXT_MOOD))
+    .replace(/\{raidCost\}/g, String(T.GOODWILL_RAID)).replace(/\{raidSec\}/g, String(T.RAID_CALM_SEC))
+    .replace(/\{charge\}/g, String(T.CHARGE_SEC)).replace(/\{chargeAdd\}/g, String(T.CHARGE_ADD));
 }
 function preTip(id: PreId): string {
   const d = PRE_BY_ID[id];
   return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs ${preText(d.cost)}</div><div>${preText(d.tip)}</div>`;
 }
-/** Your desk chair, nobody in it (placeholder art until #26). */
-/** Busy with an action at the desk: a small card (away from the desk is the renderer's, main.ts drawSmallPieces). */
-export function preBusyHtml(): string {
-  const n = N();
-  const p = n.pre;
-  if (!p || phoneAction() || p.away) return '';   // phone actions play out in the phone itself (#63); away is the renderer's (V11)
-  const d = PRE_BY_ID[p.id as PreId];
-  const pct = Math.round((1 - p.t / p.max) * 100);
-  const what = p.id === 'text' ? 'Typing...' : p.id === 'towel' ? (n.towel ? 'Pulling the towel away...' : 'Pushing a towel under the door...')
-    : p.stage === 'ask' ? '"Stay for one episode?"' : p.stage === 'episode' ? 'Watching one episode with her...' : p.outcome === 'kitchen' ? 'Stuck in a kitchen hug...' : 'Making her tea...';
-  const btns = p.stage === 'ask'
-    ? `<div class="pa-btns"><button class="her-btn big" data-act="episode" data-arg="1">Stay (+${T.PRE_EPISODE_SEC} s away, a long calm)</button><button class="her-btn" data-act="episode" data-arg="0">Back to the PC</button></div>` : '';
-  const card = `<div class="pre-card"><button class="mg-close" data-act="preCancel" title="${p.stage === 'ask' ? 'Back to the PC' : 'Stop and go back'}" style="right:-9px;top:-9px;width:22px;height:22px;font-size:12px">\u2715</button>
-    <small>${d.name}</small><b>${what}</b><span>${Math.ceil(p.t)} s${p.away ? ' · the party is on autopilot' : ''}</span>${btns}<div class="pa-bar"><i style="width:${pct}%"></i></div></div>`;
-  return `<div class="busy-wrap">${card}</div>`;
-}
-
-
-
 
 const PHONE_NOTE: Record<string, [string, string]> = {
   mom: ['MOM', 'calling...'], boss: ['BOSS', '"you there?"'], text: ['BABE', 'coming to bed?'], courier: ['COURIER', 'calling...'], friends: ['THE BOYS', 'group call'],

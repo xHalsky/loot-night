@@ -3,6 +3,27 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.79.0 (2026-11-25)
+
+- **The phone battery** (step 6, #57; grid doc 7j), from Thursday: 100% every night; each call or text you answer
+  takes 2%, each device its own. The home screen's battery widget has **Charge · 15 s away** (the empty chair, +40%;
+  dim at 100%). At 20% and 10% the desk phone wakes crimson; at 0% it's dead: black in your hand with only Charge
+  it, nothing reaches it, so Mom calls your girlfriend and the boys ring Discord on the PC. The New phone (2,999 zł)
+  now sells: everything drains 40% slower.
+- **The Home app:** your flat as room tiles with the devices you installed (never her), a sheet per device with its
+  battery before and after: the **Robot vacuum** (20%; in her room or next door she goes to stop it, next visit 45 s
+  later; rests 3 min), the **Speakers** in the kitchen and the bath (10%; a timer, next visit 30 s later; the 3rd a
+  night annoys her), the **TV cast** (8%; at her show's credits, one more episode; the 3rd time she notices), the
+  **Door seal** (4% a toggle; the towel's effect and downside), and **Bubble tea** (25 zł, 6%; the doorbell 2 min
+  later, then no visits for 2 min; twice a night). The Shop has a **Home** tab for the devices.
+- **Make her tea and the towel are gone:** bubble tea and the door seal replace them, so her panel has no buttons.
+- My readings where the spec is silent: the speakers rest 60 s and the TV cast 90 s; asleep or in the shower she
+  ignores the devices; a doorbell wakes her a bit if she's asleep; the Home app shows the build's flat until lean in.
+- `test/home.ts`, `test/home.py` (next to stills 103, 113 to 120, 133, 134); the sim's `HOME=1` bot installs every
+  device: Thursday to Sunday it uses the vacuum 1.1 to 1.4 times, the speakers 2 to 2.5, the TV cast about 2, one bubble
+  tea, charges 0.1 to 0.6 times and never dies; 3 stars, caught 0. Without devices the sims are as 0.78 (good: 3
+  stars, caught 0 every night).
+
 ## 0.78.0 (2026-11-25)
 
 - **Danny's 20:00 voice note** (step 5, #56; V13, #78; grid doc 7m): every night of week one the phone comes into your

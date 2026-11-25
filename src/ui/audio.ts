@@ -246,6 +246,10 @@ export const sfx = {
   // ----- the desk -----
   ring() { for (let i = 0; i < 4; i++) { tone(880, 0.08, 'sine', 0.2, i * 0.16); tone(660, 0.08, 'sine', 0.2, i * 0.16 + 0.08); } },
   ping() { tone(1320, 0.08, 'sine', 0.25); tone(1760, 0.12, 'sine', 0.2, 0.08); },
+  // the smart home (#57): synthesised until they get files
+  doorbell() { tone(784, 0.45, 'sine', 0.16, 0, undefined, 'apt'); tone(622, 0.7, 'sine', 0.16, 0.42, undefined, 'apt'); },
+  timer() { for (let k = 0; k < 3; k++) tone(2093, 0.07, 'square', 0.05, k * 0.18, undefined, 'apt'); },
+  vacuum() { noise(1.6, 0.05, 900, 0, 'apt'); tone(118, 1.6, 'sawtooth', 0.025, 0, 126, 'apt'); },
   vibCall() { if (!play('buzz')) for (let i = 0; i < 14; i++) tone(148 + (i % 2) * 9, 0.05, 'sawtooth', 0.09, i * 0.05); },
   vibMsg() { if (!play('buzzmsg')) for (const w of [0, 0.22]) for (let i = 0; i < 3; i++) tone(162, 0.045, 'sawtooth', 0.09, w + i * 0.045); },
   key() { play('key', { jitter: 0.06 }) || tone(1200 + Math.random() * 200, 0.03, 'square', 0.05); },

@@ -1,5 +1,6 @@
 // The right screen around the monitor (V3, #68; grid doc §7) as a view model for the renderer's live desk
 import { on } from '../systems/week';
+import { battOn, battery } from '../systems/home';
 import { isWitching } from '../systems/affixes';
 // (desk.js drawDeskLive): the taskbar, the Tonight note, the keyboard's lights, the phone lying on the desk, the YOU
 // card and the feed. Rules stay in systems/; this only reads them.
@@ -31,7 +32,13 @@ function feedRows(): [string, string, string, string?][] {
 
 /** What the phone lying on the desk shows (phone.js deskScreen): a call, banners, face down, or in your hand. */
 function deskPhone() {
-  const n = N(), it = n.interrupts[0];
+  const n = N(), it = n.interrupts[0], h = n.home;
+  const batt = battOn() ? { batt: battery() } : {};   // the battery on its lock screen (#57)
+  return { ...deskPhone0(n, it, h), ...batt };
+}
+function deskPhone0(n: ReturnType<typeof N>, it: ReturnType<typeof N>['interrupts'][number] | undefined, h: ReturnType<typeof N>['home']) {
+  if (battOn() && h.deadShow > 0 && !(S.g.voice && S.g.howto) && n.game?.kind !== 'phone' && n.preMenu !== 'phone') return { phone: 'dead' };   // it died: the empty battery for a moment
+  if (battOn() && h.lowShow > 0 && !it && n.preMenu !== 'phone' && n.game?.kind !== 'phone') return { phone: 'lowbat' };   // 20% and 10%: a crimson block
   if ((S.g.voice && S.g.howto) || n.game?.kind === 'phone' || n.preMenu === 'phone' || (n.pre && (n.pre.id === 'text' || n.pre.id === 'raid'))) return { phone: 'hand' };   // Danny's voice note too (#56)
   if (n.phoneDown > 0) return it ? { phone: 'downGlow', glowKind: CALLS.has(it.kind) ? 'call' : 'msg' } : { phone: 'down' };
   if (it && CALLS.has(it.kind)) return { phone: 'call', caller: CALLER[it.kind], ringLeft: it.t };

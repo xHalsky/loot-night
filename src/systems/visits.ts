@@ -13,7 +13,7 @@ import { maxHp } from './stats';
 import { updateApartment, afterVisit, sendHerSoon, hearsApartment, hearsHallway, initApartment, aptAmbience } from './apartment';
 import { hasLife } from './affixes';
 import { startCuddle } from './cuddle';
-import { towelSteps } from './preemptive';
+import { sealSteps } from './home';
 import { addBuff } from './curios';
 import { addGoodwill, tryForgive } from './goodwill';
 import { tip } from './tips';
@@ -87,7 +87,7 @@ function telegraphSounds(dt: number) {
   if (stepTimer <= 0) {
     stepTimer = slow ? 0.8 : 0.45;
     const loud = (v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35) * (slow ? 0.6 : 1);
-    sfx.step(loud * towelSteps());   // a towel under the door muffles her steps too
+    sfx.step(loud * sealSteps());   // the door seal muffles her steps too
     if (n.headset && hasLife('earplugs')) sfx.stepClear(loud);   // Earplugs of Peace: the steps come through the headset
     if (hearsHallway()) { n.apt.heard = 'hallway'; n.apt.heardWhat = 'STEPS'; n.apt.heardAt = n.threat; }
   }
@@ -137,7 +137,7 @@ function updateIn(dt: number) {
   const v = n.visit;
   if (!v.checked) {
     v.checked = true;
-    if (n.towel) { addMood(T.PRE_TOWEL_SEEN_MOOD); toast(`"Why is there a towel under the door?" Mood +${T.PRE_TOWEL_SEEN_MOOD}.`, '#ffb07a'); }
+    if (n.seal) { addMood(T.SEAL_SEEN_MOOD); toast(`"Why is your door sealed? What are you doing in there?" Mood +${T.SEAL_SEEN_MOOD}.`, '#ffb07a'); }
     if (n.pre?.away) { emptyChair(); return; }
     if (v.lean) lookOnly();
     else if (v.kind === 'snack') snackArrive();

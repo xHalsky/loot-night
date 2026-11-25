@@ -54,9 +54,9 @@ async def main():
         await ev("n.headset=true; 0"); await shot('headset')
         await ev("n.headset=false; n.clock=24*60+40; n.apt.asleep=true; n.apt.wake=35; n.noise=22; n.apt.heardWhat='ZZZ'; n.apt.heard='bedroom'; n.apt.heardAt=n.threat; 0"); await shot('asleep')
         await ev("n.apt.asleep=false; n.apt.wake=0; n.clock=21*60; 0")
-        # a real click on Make her tea: away from the PC, the chair stands empty
-        await click_hit('pre', 'tea'); await pg.wait_for_timeout(300)
-        away = await ev("!!(n.pre && n.pre.away)"); assert away, 'Make her tea did not start'
+        # away from the PC (charging the phone, #57): the chair stands empty
+        await ev("n.home.batt = 30; 0"); await go('charge'); await pg.wait_for_timeout(300)
+        away = await ev("!!(n.pre && n.pre.away)"); assert away, 'Charge did not start'
         await shot('away', 300)
         print('errors:', errs or 'none'); await b.close()
     stills = {'kettle': '028__her__panel__kettle-peeking.png', 'steps': '029__her__panel__footsteps.png', 'shower': '030__her__panel__shower.png'}

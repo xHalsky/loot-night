@@ -15,6 +15,7 @@ import { addBuff } from './curios';
 import { coach } from './coach';
 import { realLifeFree } from './reallife';
 import { herSay, boysLog, herRead } from './messages';
+import { phoneDead, drain } from './home';
 
 export const BOSS_MSGS = ['you there?', 'quick question', 'need the Q4 totals for the deck', 'asap pls', 'hello??'];
 export const HER_MSGS = ['are you coming to bed?', 'babe', 'its really late', 'hello??'];
@@ -45,6 +46,7 @@ const timerMult = () => (N().tired >= T.TIRED_SLUGGISH ? T.SLUGGISH_TIMER_MULT :
  *  other one waits for real life to be free too. */
 export function spawnInterrupt(k: InterruptKind, force = false) {
   const n = N();
+  if (phoneDead()) return false;   // nothing reaches a dead phone (#57)
   if (phoneBusy() || (k !== 'text' && !force && !realLifeFree())) return false;
   const base = { mom: T.MOM_TIMER, boss: T.TEXT_DEADLINE_SEC, text: T.TEXT_DEADLINE_SEC, courier: T.COURIER_TIMER, friends: T.FRIENDS_TIMER }[k];
   const max = base * (isCall(k) ? timerMult() : 1);
@@ -62,6 +64,13 @@ export function spawnInterrupt(k: InterruptKind, force = false) {
 
 export function updateInterrupts(dt: number) {
   const n = N();
+  if (phoneDead()) {   // dead (#57): what was on it and what comes due counts as ignored; the boys call Discord, Mom calls Babe
+    for (const i of n.interrupts.splice(0)) fail(i.kind, 'ignored');
+    const late = n.threat >= T.PHONE_FIRST_SEC ? n.phoneScript.find(s => !s.done && n.clock >= s.at) : undefined;
+    if (late) { late.done = true; fail(late.kind, 'ignored'); }
+    else if (friendsDue()) { n.friendsLeft--; n.friendsFloor = n.floor; fail('friends', 'ignored'); }
+    else if (n.momCallback && n.threat >= n.momCallback) { n.momCallback = 0; fail('mom', 'ignored'); }
+  }
   // the script: the first event due whose time has come; it slides later until real life is free
   const due = n.threat >= T.PHONE_FIRST_SEC ? n.phoneScript.find(s => !s.done && n.clock >= s.at) : undefined;
   if (due && spawnInterrupt(due.kind)) due.done = true;
@@ -112,6 +121,7 @@ export function openPhone() {
   }
   const it = n.interrupts.shift();
   if (!it) return;
+  drain(T.BATTERY_ANSWER);   // every call or text you answer (#57)
   n.action = 'miniGame';   // picked up: hands busy (speaker gives them back)
   n.phUp = performance.now();
   sfx.click();

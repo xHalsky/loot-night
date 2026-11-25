@@ -34,6 +34,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
   (night.md, the week). **0.78.0:** Danny's 20:00 voice note on the phone (V13, #78), each night's first chance
   early and safe, the snack run's "Made you a plate". V13's other pieces (Eyes busy, She has the mouse, the tease, the
   towel and the wine, come to bed, the lap sit) go with #59.
+- **Step 6 (#57), the smart home and the battery, 0.79.0:** the battery (FNAF's power), Charge, the Home app on the
+  build's flat with the devices and the bubble tea, the Shop's Home tab; Make her tea and the towel are gone (desk.md).
 - **V11, the small pieces, 0.73.0 and 0.74.0:** pause, How to hide, the microsleep's lids, away from the PC (the empty
   chair, the card), the Goblin Fuel inspect window, then coach marks and tooltips in each world's look, all the
   renderer's (night.md, desk.md, preemptive.md, screen.md). Item tooltips keep the DOM card (the side panel's item
@@ -90,4 +92,5 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 17 | V10 (#75): the morning | 0.72.0 |
 | 19 | #55: Q4, the Excel clicker; the Shop app | 0.75.0: Q4; 0.76.0: the Shop |
 | 20 | #56: the week | 0.77.0: the schedule, the replay; 0.78.0: Danny's voice note, the first chances |
+| 21 | #57: the smart home and the battery | 0.79.0 |
 | 18 | V11 (#76): the small pieces | 0.73.0: pause, How to hide, microsleep, away, the inspect window; 0.74.0: coach marks, tooltips |

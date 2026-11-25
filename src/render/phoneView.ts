@@ -1,5 +1,8 @@
 // The phone in your hand (V8, #73; grid doc 7f) as a view model for the renderer's live phone (phone.js, LIVE).
 import { on, dayName } from '../systems/week';
+import { battOn, battery, phoneDead, battCost, deviceState, deviceBlocked, teaDue } from '../systems/home';
+import { DEVICES, DEVICE_BY_ID, HOME_ROOMS, type DeviceId } from '../data/home';
+import { owns } from '../systems/shop';
 // The rules stay in systems/interrupts.ts, preemptive.ts and messages.ts; this only reads them.
 import { SHOP_ITEMS } from '../data/shop';
 import { shopState } from '../systems/shop';
@@ -75,7 +78,7 @@ let voiceOf: unknown = null, voiceAt = 0;
 
 export function phoneView() {
   const n = N(), g = S.g;
-  const base = { time: fmtClock(n.clock), date: `${dayName()} night` };
+  const base = { time: fmtClock(n.clock), date: `${dayName()} night`, batt: battOn() ? battery() : undefined };
   if (voiceUp()) {   // its time played runs from when it came up
     if (voiceOf !== g.voice) { voiceOf = g.voice; voiceAt = performance.now(); n.phUp = voiceAt; }   // it rises into your hand
     return { ...base, screen: 'voice', lines: g.voice!.lines, date: g.voice!.date, tt: (performance.now() - voiceAt) / 1000 };
@@ -97,10 +100,39 @@ export function phoneView() {
   }
   if (app === 'babe') return { ...base, screen: 'babe', items: chatItems(g.herThread ?? []), scroll: n.phScroll ?? 0, action: chatAction('text') };
   if (app === 'boys') return { ...base, screen: 'boys', items: chatItems(g.boysThread ?? []), action: chatAction('raid') };
+  if (!n.game && phoneDead()) return { ...base, screen: 'dead', chargeOff: preBlocked('charge') ? 'x' : '' };   // dead (#57): only Charge it
+  if (app === 'homeapp') return { ...base, ...homeAppView() };
   if (app === 'shop') {   // the Shop app (step 4.6, #55)
     const tab = n.shopTab ?? 'you';
-    return { ...base, screen: 'shop', tab, wallet: Math.floor(g.zl), flash: shopFlash && performance.now() - shopFlash.at < 900 ? shopFlash.id : '',
+    return { ...base, screen: 'shop', tab, tabs: on('home') ? ['you', 'her', 'home'] : ['you', 'her'], wallet: Math.floor(g.zl), flash: shopFlash && performance.now() - shopFlash.at < 900 ? shopFlash.id : '',
       items: SHOP_ITEMS.filter(i => i.tab === tab && (!i.needs || on(i.needs))).map(i => ({ id: i.id, g: i.g, name: i.name, zl: T.SHOP_ZL[i.id], fx: i.fx, state: shopState(i.id) })) };
   }
+  if (battOn()) {   // from Thursday (#57): the battery widget and the Home app
+    const why = preBlocked('charge'), owned = DEVICES.filter(d => owns(d.id)).length;
+    return { ...base, screen: 'home6', unread: herUnread(), chargeOff: why ? (battery() >= 100 ? 'Full' : why) : '', chargeLabel: `Charge · ${T.CHARGE_SEC} s away`,
+      devices: owned ? `${owned} device${owned > 1 ? 's' : ''}` : 'Shop: Home' };
+  }
   return { ...base, screen: 'home', unread: herUnread() };
+}
+
+const mmss = (s: number) => { const c = Math.ceil(s); return `${Math.floor(c / 60)}:${String(c % 60).padStart(2, '0')}`; };
+/** The Home app (step 6.2, #57): the plan with what is installed and its state, the bubble tea card, a device's sheet. */
+function homeAppView() {
+  const n = N(), h = n.home, owned = DEVICES.filter(d => owns(d.id)).map(d => d.id as string);
+  const dev: Record<string, unknown> = {}, coolText: Record<string, string> = {};
+  for (const id of owned) { const st = deviceState(id as DeviceId); dev[id] = st; if (typeof st === 'number') coolText[id] = mmss(h.rest[id]); }
+  const due = teaDue(), teaUses = h.uses.tea ?? 0, teaWhy = due ? '' : deviceBlocked('tea');
+  let sheet: Record<string, unknown> | null = null;
+  if (h.pick) {
+    const d = DEVICE_BY_ID[h.pick], why = deviceBlocked(h.pick);
+    const rooms = h.pick === 'vacuum' ? HOME_ROOMS : null;
+    sheet = { kind: h.pick, at: h.pick === 'speaker' ? h.pickRoom : null, name: h.pick === 'speaker' ? `Speaker: ${h.pickRoom === 'kitchen' ? 'kitchen' : 'bath'}` : d.name,
+      what: d.what, note: d.note(h.uses[h.pick] ?? 0), rooms: rooms ? rooms.map(r => r[1]) : undefined, roomIds: rooms ? rooms.map(r => r[0]) : undefined,
+      room: rooms ? (rooms.find(r => r[0] === h.pickRoom) ?? rooms[0])[1] : undefined, cost: battCost(T.HOME_BATT[h.pick]),
+      go: h.pick === 'seal' && n.seal ? 'Unseal the door' : d.go, why: why === 'Resting' ? `Resting ${mmss(h.rest[h.pick] ?? 0)}` : why,
+      y0: h.pick === 'vacuum' ? 84 : h.pick === 'seal' ? 102 : 108 };
+  }
+  return { screen: 'homeapp', owned, dev, coolText, runRoom: h.vac ? ({ living: 'living', kitchen: 'kitchen', bathroom: 'bath', bedroom: 'bedroom', hallway: 'hallway' } as Record<string, string>)[h.vac.room] : undefined,
+    tea: due ? mmss(due) : null, teaOf: `${teaUses} of ${T.TEA_MAX}`, teaWhy, teaZl: T.SHOP_ZL.tea, teaCost: battCost(T.HOME_BATT.tea),
+    sub: owned.length ? 'Tap a device to use it.' : 'Nothing installed yet: the Shop, Home.', foot: n.seal ? 'Sealed: quieter, no light under it.' : 'Gold ring: ready to use.', sheet };
 }

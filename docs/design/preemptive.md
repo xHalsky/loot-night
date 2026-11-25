@@ -12,30 +12,31 @@ and give the map a job between visits.
 ## Now
 
 **Framework.** Verbs used **before** a visit to shape it. An action can push her next visit (a *calm*: no
-visit roll while it runs), set the next visit's type, change Mood, or change a rule (the towel). By the week
-([night.md](night.md)): Text her and Raid night? from Wednesday (Messages), Make her tea and the towel from Thursday
-(stand-ins for step 6's bubble tea and Door seal).
+visit roll while it runs), set the next visit's type or change Mood. By the week ([night.md](night.md)): Text her
+and Raid night? from Wednesday (Messages), Charge from Thursday (with the battery). Make her tea and the towel under
+the door were removed in 0.79 (step 6): the Home app's bubble tea and door seal replace them ([desk.md](desk.md), the
+Home app).
 
 - **Costs.** Every action costs at least one of:
-  - *Hands busy* at the desk (Text her 3 s, the towel 2 s). Skills say "Hands busy", alt-tab is blocked, the
-    party is on the reckless autopilot.
-  - *Time away from the PC* (Make her tea). Everything above, plus no input at all but the card: the right screen
-    dims (it is what she would see), your gaming chair stands empty in front of the desk, its back to you, and in
-    the webcam view, its front to the camera; a glass card over the monitor says what you are doing, the seconds
-    left and that the party is on autopilot, with a moss bar (✕ = come back early, no effect). Her "Stay for one
-    episode?" is on the card, with Stay and Back to the PC (grid doc 7k). If a visit lands while you are away she sees
-    whatever is on screen: Excel = pass, the game = caught.
+  - *Hands busy* at the desk (Text her 3 s). Skills say "Hands busy", alt-tab is blocked, the party is on the
+    reckless autopilot.
+  - *Time away from the PC* (Charge, `CHARGE_SEC` 15 s). Everything above, plus no input at all but the card: the
+    right screen dims (it is what she would see), your gaming chair stands empty in front of the desk, its back to
+    you, and in the webcam view, its front to the camera; a glass card over the monitor says why you are away
+    ("Charging your phone"), the seconds left and that the party is on autopilot, with a moss bar (✕ = come back
+    early, no effect) (grid doc 7k). If a visit lands while you are away she sees whatever is on screen: Excel = pass,
+    the game = caught.
   - *A condition on where she is.* Read when you start (you text her now, you walk over now). The tooltip is
-    the cost and one sentence on what it does, with the condition when there is one (tea: only while she is
-    in the living room or bedroom); the game never says whether it is met. Wrong = that action's backfire.
+    the cost and one sentence on what it does, with the condition when there is one (Text her: while she is busy
+    with something); the game never says whether it is met. Wrong = that action's backfire.
 - **Diminishing returns per night.** The 2nd use of the same action does `PRE_SECOND_MULT` (half). From
   the `PRE_SUSPICIOUS_AT` (3rd) use she gets suspicious ("why are you being so nice? what did you do?"):
-  no effect, Mood +5, and her next visit is a Peek. Toggles (the towel) are exempt. The button shows
+  no effect, Mood +5, and her next visit is a Peek. Charge and the Raid pass are exempt. The button shows
   "next: half" or "suspicious next".
 - **Calm.** No visit roll while it runs, even past the guaranteed-visit gap. Heard Noise above
   `PRE_CALM_BREAK_NOISE` (70) ends it and she comes to check, so a calm does not make loud play free.
-- **Where they live.** Door actions in a "before" row under her note (hidden while she is at the door). Phone actions:
-  they live **in the phone**. Tap the phone while nothing is on it (its label says "tap: text her"): it comes into
+- **Where they live.** In the phone. Charge is on the home screen's battery widget (from Thursday). Text her and
+  Raid night? live **in Messages**. Tap the phone while nothing is on it (its label says "tap: text her"): it comes into
   your hand (the same phone window as calls) at **Messages**, two chats: **Babe** (Text her) and **The Boys (3)**
   (Raid night?), each with its cost or why it's blocked. Tap a chat: the message types itself into that chat
   (`PRE_TEXT_SEC`, hands busy), "Delivered", then the phone goes down; her reply lights the desk phone later. No
@@ -49,9 +50,8 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
 | Action | Cost | Works when she is | Effect | Backfire |
 |---|---|---|---|---|
 | Text her (phone) | 3 s hands busy | Busy with something (TV, kitchen, bedroom, bathroom) | Next visit +`PRE_TEXT_CALM` (40) s (adds up), Mood -5. 2 to 4 s later her reply lights the phone with what she is doing (the tell) | Walking somewhere: a Chat visit within 10 s ("omw to you"). Shower: Chat right after. Asleep: the buzz wakes her a bit (+25) |
-| Make her tea (door) | 15 s away | Living room or bedroom | Mood -15, calm `PRE_TEA_CALM` (60 s); she waits with you (her routine pauses). Watching TV: "Stay for one episode?" Stay = 60 s more away, then calm `PRE_EPISODE_CALM` (120 s); no = Mood +10, half the calm | Kitchen: a long hug, +12 s away, Mood -5, no calm. Hallway: she glances at your screen now (game = caught). Bathroom: the tea goes cold, Mood -5. Asleep: you drink it |
 | Raid night? (phone, Goodwill) | 40 Goodwill, 3 s hands busy | Awake, before midnight | No visits for 150 s; Noise does not end this calm. No diminishing returns, no suspicion | Below 40 Goodwill the button is blocked |
-| Towel under the door (door, toggle) | 2 s hands busy | Always | Your Noise reaches her 40% quieter (awake and asleep); her routine runs 30% slower, so she gets up less often | The light gap is gone: no toes, no passing shadows; her steps are half as loud. Every visit: "Why is there a towel under the door?" Mood +5 |
+| Charge (home screen) | 15 s away from the PC | Always (dim at 100%) | Phone battery +`CHARGE_ADD` (40)% | If she comes meanwhile, she sees whatever is on the monitor |
 
 ## Decisions
 
@@ -67,8 +67,10 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
 - **The condition is read when you start**, not when the effect lands: you decide on what you heard.
 - **Kitchen backfire is a hug, not the cuddle minigame**: the cuddle is a visit; outside a visit it would
   need its own flow for one backfire. The cost (more time away) is the same.
-- **The towel has no diminishing returns**: halving a toggle means nothing, and suspicion about a towel is
-  covered by "she notices it on every visit".
+- **Make her tea and the towel are gone** (0.79, step 6, #57): the handoff replaced them with the smart home, the
+  door seal (the towel's effect and downside, 4% battery a toggle) and bubble tea (an order, no visits for 120 s), so
+  "prevent" has one home, the phone, and costs battery. Their numbers and backfires (tea's hug and its "Stay for one
+  episode?") went with them. Rejected: keeping tea beside bubble tea (two ways to buy the same calm).
 - **Raid pass** built in 0.30 with Goodwill ([synergy.md](synergy.md)).
 
 ## Planned: the rest of the list (#20)
@@ -95,5 +97,6 @@ Decided 2026-11-16 (option A): Goodwill pays only for the Raid pass. Rejected: G
 action (snowballs, and turns "do I know where she is?" into "can I afford it?"); a separate Raid pass button
 outside the action menu (two places for one kind of decision). Forgiveness stays automatic and is not an action.
 
-Built: Text her, Make her tea, Towel under the door (rows above are the original ideas; the built versions
-are described under Now). Every other row is still a plan.
+Built: Text her, the Raid pass, Charge (rows above are the original ideas; the built versions are described under
+Now). Make her tea and the towel were built (0.27) and removed (0.79). The TV cast (the "Queue next episode" row) is
+the Home app's ([desk.md](desk.md)). Every other row is still a plan.

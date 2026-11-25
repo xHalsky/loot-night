@@ -1,6 +1,6 @@
 # The small pieces (V11, #76; grid doc 7k), the full-frame and right-screen ones, with the real mouse and keys:
 # How to hide at the night's start (Got it), pause (Esc, Resume, How to hide from it), the microsleep (closing, shut,
-# a click wakes you), away from the PC (making her tea; her "Stay for one episode?"; the close box comes back early)
+# a click wakes you), away from the PC (charging the phone; the close box comes back early)
 # and the Goblin Fuel inspect window (once, when you first get tired; G drinks; never again). Screenshots
 # test/shots/small_*.png and a sheet test/shots/small_sheet.png next to stills 062 to 065, 075 and 076.
 import asyncio, os
@@ -64,22 +64,16 @@ async def main():
         await ev("g.timeScale=1; 0"); await pg.mouse.click(700, 300); await pg.wait_for_timeout(300)
         check(await ev("n.blink.state") == 'open' and await disp(pg, 'microArea') == 'none', 'a click wakes you')
 
-        # away from the PC: making her tea; her question; back early with the close box
-        await ev("n.apt.activity='tv'; n.apt.room='living'; 0"); await go('pre', 'tea'); await pg.wait_for_timeout(400)
-        check(await ev("!!n.pre && n.pre.away") and await disp(pg, 'rsSmall') == 'block', 'making her tea: away from the PC')
+        # away from the PC: charging the phone (#57; the card says why, V13); back early with the close box
+        await ev("n.home.batt = 30; 0"); await go('charge'); await pg.wait_for_timeout(400)
+        check(await ev("!!n.pre && n.pre.away && n.pre.id === 'charge'") and await disp(pg, 'rsSmall') == 'block', 'charging the phone: away from the PC')
         await shot('5_away')
-        await ev("n.pre.stage='ask'; n.pre.t=8; 0"); await shot('6_away_ask', 300)
-        btn = await find('rsSmall', 492, 360, x0=250, x1=330, y0=126, y1=144, step=3)
-        check(btn is not None, 'her question has Back to the PC')
-        if btn: await pg.mouse.click(*btn); await pg.wait_for_timeout(300)
-        check(not await ev("!!n.pre"), 'Back to the PC ends it')
-        await go('pre', 'tea'); await pg.wait_for_timeout(400)
         btn = await find('rsSmall', 492, 360, x0=318, x1=336, y0=98, y1=112, step=2)
         if btn: await pg.mouse.click(*btn); await pg.wait_for_timeout(300)
         check(btn is not None and not await ev("!!n.pre"), 'the close box: back early')
 
         # the Goblin Fuel inspect window: once, the first time you get tired; G drinks
-        await pg.wait_for_timeout(16000)   # the one-demand gap after the tea
+        await pg.wait_for_timeout(16000)   # the one-demand gap after being away
         await ev("n.tired=34; 0"); await pg.wait_for_timeout(600)
         check(await disp(pg, 'rsSmall') == 'block', 'tired: the inspect window opens by itself'); await shot('7_inspect')
         await pg.keyboard.press('g'); await pg.wait_for_timeout(400)
