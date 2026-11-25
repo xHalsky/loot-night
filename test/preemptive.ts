@@ -2,6 +2,7 @@
 // Run: npx tsx test/preemptive.ts
 (globalThis as any).localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 (globalThis as any).performance ??= { now: () => Date.now() };
+import { rules } from '../src/systems/week';
 import { T } from '../src/config/tuning';
 import { S, N, initialState, type ActivityId } from '../src/core/state';
 import { startNight } from '../src/systems/night';
@@ -13,7 +14,7 @@ import { updateVisits, startVisit } from '../src/systems/visits';
 let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + msg); if (!c) fails++; };
 const fresh = (act: ActivityId, moving = false) => {
-  S.g = initialState(); startNight();
+  S.g = initialState(); S.g.day = 4; startNight();   // Friday: Messages, tea and the towel are on (#56)
   const n = N(); n.phoneScript = []; n.friendsLeft = 0; n.dog.next = 1e9;
   n.apt.activity = act; n.apt.room = moving ? 'hallway' : ACT_BY_ID[act].room; n.apt.moving = moving ? 1 : 0; n.apt.t = 999;
   return n;
@@ -51,7 +52,7 @@ ok(n.visit.result === 'pass', `away, Excel up: she finds the empty chair and Exc
 // Towel
 n = fresh('tv'); const h0 = hearing(); startPre('towel'); run(T.PRE_TOWEL_SEC + 0.1);
 ok(n.towel && Math.abs(hearing() / h0 - (1 - T.PRE_TOWEL_NOISE)) < 1e-9, `towel: your Noise reaches her ${Math.round(hearing() / h0 * 100)}%`);
-n.apt.t = 10; for (let i = 0; i < 60; i++) updateApartment(1 / 60); ok(Math.abs(n.apt.t - (10 - (1 - T.PRE_TOWEL_SLOW))) < 0.02, 'towel: her routine runs 30% slower');
+n.apt.t = 10; for (let i = 0; i < 60; i++) updateApartment(1 / 60); ok(Math.abs(n.apt.t - (10 - (1 - T.PRE_TOWEL_SLOW) * rules().visits)) < 0.02, 'towel: her routine runs 30% slower');   // x the week's pace (#56)
 ok(nextMult('towel') === 1, 'towel is a toggle: no diminishing returns');
 
 // Calm blocks the door roll

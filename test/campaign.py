@@ -1,4 +1,5 @@
 # Several nights in a row (#2): does the city give an upgrade every night? Runs bots with NIGHTS=n in parallel.
+# The week (#56): night 1 is Monday; NIGHTS=7 plays week one.
 # Run: python3 test/campaign.py [runs=8] [nights=4] [1500 gear]   (extra args go to sim.ts: 'gear' equips upgrades during the night)
 import json, os, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
@@ -16,7 +17,7 @@ for k in range(NIGHTS):
     if not ns: break
     avg = lambda f: sum(f(n) for n in ns) / len(ns)
     builds = [len(n['built']) for n in ns]
-    print(f"night {k + 1}: depth {avg(lambda n: n['depth']):.1f} | caught {avg(lambda n: n['caught']):.2f} | wipes {avg(lambda n: n['wipes']):.2f}"
+    print(f"night {k + 1} ({ns[0].get('day', '?')}): stars {avg(lambda n: n['stars']):.2f} | depth {avg(lambda n: n['depth']):.1f} | caught {avg(lambda n: n['caught']):.2f} | wipes {avg(lambda n: n['wipes']):.2f}"
           f" | built before it {avg(lambda n: len(n['built'])):.1f} (none in {sum(b == 0 for b in builds)}/{len(ns)}, 2+ in {sum(b >= 2 for b in builds)}/{len(ns)})"
           f" | bag worth {avg(lambda n: n['bagValue']):.0f} g, gold after the city {avg(lambda n: n['goldAfterCity']):.0f}")
     print('   built:', [' '.join(n['built']) or '-' for n in ns])

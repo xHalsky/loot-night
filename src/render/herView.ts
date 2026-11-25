@@ -1,4 +1,5 @@
 // Her panel's view (V4, #69; grid doc 7b): what the renderer's her.js drawHerLive needs, read from the game. No rules
+import { on } from '../systems/week';
 // here, only reading; the texts are the ones her DOM panel had (docs/design/her.md, screen.md).
 import { S, N } from '../core/state';
 import { T } from '../config/tuning';
@@ -38,9 +39,9 @@ function middle(hover: string) {
     return { win: { label: 'ASLEEP', labelCol: 'purple' as Col, right: n.apt.wake >= T.WAKE_TEXT ? 'stirring' : 'shh', bar: Math.min(1, n.apt.wake / 100), barCol: 'lilac' as Col,
       marks: [T.WAKE_TEXT / 100], barLabels: [[T.WAKE_TEXT / 100, 'texts you'], [1, 'gets up']] as [number, string][], barTip: 'wake' } };
   }
-  if (v.stage === 'idle' && S.g.nightsPlayed === 0 && n.apt.cued && !n.headset && END_HINT[n.apt.activity]) { label = 'listen'; body = END_HINT[n.apt.activity]; tone = 'warn'; }   // first night: name the tell
+  if (v.stage === 'idle' && S.g.day === 0 && n.apt.cued && !n.headset && END_HINT[n.apt.activity]) { label = 'listen'; body = END_HINT[n.apt.activity]; tone = 'warn'; }   // first night: name the tell
   if (v.stage === 'far' && !n.headset) { label = 'footsteps'; body = 'Footsteps... is she coming?'; tone = 'warn'; }
-  if (v.stage === 'hall') { label = 'at the door'; body = S.g.nightsPlayed === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; tone = 'alarm'; }
+  if (v.stage === 'hall') { label = 'at the door'; body = S.g.day === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; tone = 'alarm'; }
   if (v.stage === 'handle') { label = 'door'; body = 'The handle is turning!'; tone = 'alarm'; }
   if (v.stage === 'passing') { label = 'footsteps'; body = 'She walked past. Phew.'; tone = 'warn'; }
   if (v.stage === 'in') {
@@ -73,8 +74,9 @@ function middle(hover: string) {
 /** The two things you can do at the door before she comes (pre-emptive, #19): pink buttons, why not on a dim one. */
 function buttons() {
   const n = N();
-  if (n.visit.stage !== 'idle') return null;
-  return PRE_ACTIONS.filter(a => a.where === 'door').map(d => {
+  const pre = PRE_ACTIONS.filter(a => a.where === 'door' && on(a.id));   // tea and the towel: Thursday (#56), until step 6's devices
+  if (n.visit.stage !== 'idle' || !pre.length) return null;
+  return pre.map(d => {
     const why = preBlocked(d.id), used = n.preUses[d.id] ?? 0;
     const name = d.id === 'towel' ? (n.towel ? 'Towel out' : 'Towel under door') : d.name;
     const cost = d.id === 'tea' ? `${T.PRE_TEA_SEC} s away` : d.id === 'towel' ? `${T.PRE_TOWEL_SEC} s` : '';

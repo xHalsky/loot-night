@@ -1,4 +1,5 @@
 import { chewDelay } from './shop';
+import { rules, on } from './week';
 import { T } from '../config/tuning';
 import { N } from '../core/state';
 import { rand, randi } from '../core/rng';
@@ -19,7 +20,9 @@ export const CABLE_COUNT = 4;
 export function updateDog(dt: number) {
   const n = N();
   const d = n.dog;
-  if (n.lap || n.game?.kind === 'cuddle') return;
+  const plan = rules().dog;
+  if (!plan || !on('dog') || n.lap || n.game?.kind === 'cuddle') return;   // the dog comes in on Thursday (#56)
+  const every = () => rand(plan[1], plan[2]);
   if (n.unplugged) n.monitorOff = Math.max(n.monitorOff, 0.5);
   d.flinch = Math.max(0, d.flinch - dt);
   if (d.stage === 'away') {
@@ -28,7 +31,7 @@ export function updateDog(dt: number) {
       d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweetPet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); tip('dog'); }
     return;
   }
-  if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC) + chewDelay(); } return; }
+  if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = every() + chewDelay(); } return; }
   // up: whining, waiting for you
   d.t -= dt;
   n.noise = Math.min(100, n.noise + T.DOG_WHINE_NOISE * dt);
@@ -37,7 +40,7 @@ export function updateDog(dt: number) {
     d.ignores++;
     if (d.ignores >= d.limit) {
       d.ignores = 0; d.limit = randi(1, 3);
-      d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC) + chewDelay();
+      d.stage = 'away'; d.next = every() + chewDelay();
       bump();
     } else {
       d.stage = 'away'; d.next = rand(...T.DOG_AGAIN_SEC) + chewDelay();

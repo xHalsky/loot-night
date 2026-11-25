@@ -26,7 +26,7 @@ async def main():
             h = next((h for h in hs if h['act'] == act and (arg is None or h['arg'] == arg)), None)
             if not h: return False
             await pg.mouse.click(h['x'], h['y']); await pg.wait_for_timeout(250); return True
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog','inspect:fuel'); n.phoneScript=[]; n.friendsLeft=0; n.visit.nextAt=1e9; n.apt.lastVisitEnd=1e9; n.dog.nextAt=1e9; g.timeScale=0.2; 0")
         await go('portal'); await pg.wait_for_timeout(700)

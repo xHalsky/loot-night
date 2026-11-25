@@ -25,7 +25,7 @@ async def main():
         pg = await b.new_page(viewport={'width': 1280, 'height': 720})
         errs = []; pg.on('pageerror', lambda e: errs.append((e.stack or str(e))[:500]))
         go = lambda a, arg=None: pg.evaluate(GO, [a, arg]); ev = lambda js: pg.evaluate(EV, js)
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         for k, (scene, js, act, nxt) in enumerate(ENDS):
             await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map'); n.phoneScript=[]; n.visit.nextAt=1e9; 0")

@@ -41,7 +41,7 @@ async def main():
                 q = await ev("n.game && n.game.kind === 'cuddle' ? 1 - n.game.t / n.game.max : 2")
                 if q >= until_p: return q
                 x, y = dot(min(1, q + lead)); await pg.mouse.move(*win(x, y)); await pg.wait_for_timeout(30)
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog','caught','cuddle'); n.phoneScript=[]; n.friendsLeft=0; n.dog.nextAt=1e9; 0")
         await go('portal'); await pg.wait_for_timeout(800)

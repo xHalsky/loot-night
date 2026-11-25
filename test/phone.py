@@ -25,7 +25,7 @@ async def main():
         async def tap(act, arg=None):   # a real click on the hit region with this act (and arg)
             r = await pg.evaluate("""([act,arg])=>{const c=document.getElementById('phHand'), r=c.getBoundingClientRect(); return {r:[r.x,r.y,r.width/c.width], ok:true}}""", [act, arg])
             return r
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog'); n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.visit.nextAt=1e9; 0")
         # her chat across nights (the thread is kept for good)

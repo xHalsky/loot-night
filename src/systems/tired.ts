@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { on } from './week';
 import { hasLife } from './affixes';
 import { S, N } from '../core/state';
 import { rand } from '../core/rng';
@@ -10,10 +11,11 @@ import { tip } from './tips';
 // 30+: yawns blur the desk. 50+: microsleeps (eyelids drift shut, any click or key snaps them open).
 // 70+: phone timers 15% shorter, Flow builds 25% slower. 90+: she comes to check on you more often.
 
-export const startTired = () => Math.min(100, T.TIRED_BASE + S.g.sleepDebt * T.TIRED_PER_DEBT);
+export const startTired = () => on('tired') ? Math.min(100, T.TIRED_BASE + S.g.sleepDebt * T.TIRED_PER_DEBT) : 0;   // Tiredness from Tuesday (#56)
 
 export function updateTired(dt: number, clockDelta: number) {
   const n = N();
+  if (!on('tired')) return;
   if (n.clock > T.TIRED_FROM && clockDelta > 0) n.tired = Math.min(100, n.tired + clockDelta * T.TIRED_PER_GAME_MIN * (hasLife('fiveMore') ? 1 - T.AFFIX_TIRED : 1) * (S.g.owned.includes('chair') ? T.SHOP_CHAIR_TIRED : 1));   // the ergo chair (Shop, #55)
 
   // Monster boost, then the crash.

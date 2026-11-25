@@ -30,15 +30,16 @@ async def main():
                     await pg.mouse.move(box[0] + x * box[2], box[1] + y * box[2])
                     if await pg.evaluate(f"()=>document.getElementById('{cid}').style.cursor") == want: return (box[0] + x * box[2], box[1] + y * box[2])
             return None
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 1'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(600)
 
         # How to hide at the start of the night: the night waits; Got it
-        check(await ev("g.howto") and await disp(pg, 'modalArea') == 'block', 'How to hide opens the first night')
+        check(await ev("g.howto") and await disp(pg, 'modalArea') == 'block', 'How to hide opens on Tuesday (the headset is new)')
         await shot('1_howto', 300)
         btn = await find('modalArea', 640, 360, x0=250, x1=390, y0=250, y1=330)
         check(btn is not None, 'its Got it button'); await pg.mouse.click(*btn); await pg.wait_for_timeout(200)
         check(not await ev("g.howto") and await disp(pg, 'modalArea') == 'none', 'Got it closes it')
+        await go('dbgDay', '4'); await pg.wait_for_timeout(300)   # the rest on Friday: everything the build has is on (#56)
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog'); n.phoneScript=[]; n.friendsLeft=0; n.visit.nextAt=1e9; n.apt.lastVisitEnd=1e9; n.dog.nextAt=1e9; 0")
         await go('portal'); await pg.wait_for_timeout(800)
 

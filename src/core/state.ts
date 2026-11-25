@@ -149,7 +149,7 @@ export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
 /** A timed party buff or debuff (curios, the friends' raid buff). floor: lasts until the next floor instead of t. */
 /** A line in a phone chat: hers or theirs (l), yours (r), a grey note (sys); when it was sent. */
-export interface ChatLine { s: 'l' | 'r' | 'sys'; text: string; night: number; clock: number }
+export interface ChatLine { s: 'l' | 'r' | 'sys'; text: string; night: number; clock: number; day?: number }   // night: the sitting (nightsPlayed); day: the week's day (#56)
 export interface PartyBuff { name: string; dmg: number; speed: number; t: number; max: number; icon: string; floor?: boolean; crit?: number; fights?: number; cd?: number; night?: boolean; untilBoss?: boolean }   // fights: lasts this many battles instead of t; night: until dawn; untilBoss: until a boss fight ends; cd: cooldowns down
 
 export interface Night {
@@ -175,7 +175,7 @@ export interface Night {
   paths: PathCard[] | null; safest: number; mapAway: number;   // the route choice at a floor's end (#52, 1.5)
   feature: FeatureId | null; cond: ConditionId | null; featureMet?: boolean;   // this floor's feature and condition; the feature's curio has stood
   runCard: (RunState & { banked: boolean; t: number }) | null;   // the run end card
-  runWarned?: { dawn?: boolean; plug?: boolean };                  // the warnings before a forced end loses the run
+  runWarned?: { dawn?: boolean; plug?: boolean; bed?: boolean };                // the warnings before a forced end loses the run
   visit: VisitState;
   apt: Apartment;
   headset: boolean;
@@ -231,6 +231,8 @@ export interface RunState { startFloor: number; deepest: number; gold: number; i
 
 export interface Results {
   ending: 'sleep' | 'dawn' | 'unplugged';
+  bedtime?: boolean;               // the night ended at its set time (Monday, 01:00), as a Sleep
+  day: number;                     // the day just played (#56); unplugged: it is played again
   endClock: number; stars: number; depth: number; prevRecord: number;
   debtBefore: number; debtAfter: number; mood: number; caught: boolean;
   q4?: number;                     // zl Q4 paid that night (#55)
@@ -251,6 +253,7 @@ export interface GameState {
   q4: Q4Save;           // Q4: lifetime zl and the macros (#55)
   owned: string[];      // the Shop's lasting things you bought (#55, 4.6)
   bestStars: number; record: number; nightsPlayed: number;
+  day: number;          // the week (#56): the night being played, 0 = the first Monday; an unplugged night is played again
   mapPath: (string | null)[];    // the dungeon map (#48): what each floor was the last time you entered it, by floor number
   tipsSeen: string[];   // first-time tips already shown (#28)
   howto: boolean;       // the how-to-hide card is open (the night waits)
@@ -285,7 +288,7 @@ export function initialState(): GameState {
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },
-    sleepDebt: 0, monsters: 3, q4: { life: 0, rank: 0, macros: {} }, owned: [], bestStars: 0, record: 0, nightsPlayed: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0, floorCans: [],
+    sleepDebt: 0, monsters: 0, q4: { life: 0, rank: 0, macros: {} }, owned: [], bestStars: 0, record: 0, nightsPlayed: 0, day: 0, mapPath: [], tipsSeen: [], howto: false, seen: [], curiosSeen: [], goodwill: 0, floorCans: [],
     pendingListings: [], pity: 0, uid: 1, checkpoints: [1], startFloor: 1, drops: 0, legendaryFound: false,
     night: null, screen: 'title', paused: false, debug: false, timeScale: 1, realLifeOff: false,
     results: null, morning: null,

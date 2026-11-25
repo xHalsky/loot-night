@@ -30,7 +30,8 @@ The bot sims (good + idle) still run every round, but these four criteria come f
       the dog and the cable fix 0.69 (V6, #71), caught 0.70 (V7, #72), her windows 0.71 (V9, #74), the morning 0.72
       (V10, #75), the small pieces 0.73 and 0.74 (V11, #76): real life is in the new look.
    4. #55 Q4, the Excel clicker (0.75), and the Shop app (0.76): done. Next, step 5 (#56).
-   5. #56 The week (FNAF's nights).
+   5. #56 The week (FNAF's nights): the schedule and the replay in 0.77; Danny's voice note and each night's
+      teaching (with V13, #78) next.
    6. #57 The smart home and the phone battery.
    7. #58 Before the playtest.
 2. **Paweł's 15-minute RPG session** (real life off, F1), moved here from before step 3 (2026-11-24): the RPG

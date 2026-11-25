@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { on } from './week';
 import { S, N, type CanPose } from '../core/state';
 import { toastAs } from '../core/fx';
 const toast = toastAs('YOU');   // feed tag (#49)
@@ -13,7 +14,7 @@ import { DROPPED } from './fuelPhysics';
 
 export function openMonster() {
   const n = N();
-  if (n.game) return;
+  if (n.game || !on('fuel')) return;   // the Goblin Fuel comes in on Thursday (#56)
   if (S.g.monsters <= 0) { toast('No cans left in the drawer. The Shop on your phone has more.', '#a999bd'); sfx.bad(); return; }
   n.action = 'miniGame';
   // the mini fridge (Shop, #55): a cold can already waits on the desk, so the break starts at the can

@@ -41,7 +41,7 @@ async def main():
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
         pg = await b.new_page(viewport={'width': 1280, 'height': 720}, device_scale_factor=2)
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await act(pg, '[data-act=newGame]'); await pg.wait_for_timeout(300); await act(pg, '[data-act=howtoClose]')
         await ev(pg, "n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.apt.lastVisitEnd=1e9; n.tired=10; n.apt.t=999; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset');")
         await dbg(pg, 'dbgEpic'); await pg.wait_for_timeout(300)   # in town the drop goes straight to the bag

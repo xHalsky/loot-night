@@ -25,7 +25,7 @@ async def main():
             return False
         async def shot(name, wait=250):
             await pg.wait_for_timeout(wait); path = f'test/shots/eb_{name}.png'; await pg.screenshot(path=path, clip=RS); shots.append(path)
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog','inspect:fuel'); n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.visit.nextAt=1e9; g.monsters=3; g.floorCans=[{x:300,y:263.5,a:0},{x:400,y:263.5,a:0},{x:560,y:263.5,a:3.14}]; 0")
         await go('portal'); await pg.wait_for_timeout(4000)   # the scenes bake ahead in the background

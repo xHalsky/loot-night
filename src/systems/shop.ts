@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { on } from './week';
 import { S, N } from '../core/state';
 import { SHOP_ITEMS, type ShopId } from '../data/shop';
 import { addGoodwill } from './goodwill';
@@ -13,6 +14,7 @@ export type ShopState = 'buy' | 'dear' | 'owned' | 'tonight' | 'soon' | 'full';
 export const owns = (id: string) => S.g.owned.includes(id);
 export function shopState(id: ShopId): ShopState {
   const it = SHOP_ITEMS.find(i => i.id === id)!, n = N();
+  if (it.needs && !on(it.needs)) return 'soon';   // not in yet (#56): the view leaves it out
   if (it.kind === 'soon') return 'soon';
   if (it.kind === 'own' && owns(id)) return 'owned';
   if (it.kind === 'night' && n.shopTonight.includes(id)) return 'tonight';

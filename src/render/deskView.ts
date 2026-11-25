@@ -1,4 +1,6 @@
 // The right screen around the monitor (V3, #68; grid doc §7) as a view model for the renderer's live desk
+import { on } from '../systems/week';
+import { isWitching } from '../systems/affixes';
 // (desk.js drawDeskLive): the taskbar, the Tonight note, the keyboard's lights, the phone lying on the desk, the YOU
 // card and the feed. Rules stay in systems/; this only reads them.
 import { T } from '../config/tuning';
@@ -44,14 +46,15 @@ export function deskView(phoneHover = false) {
   const flash = n.monitor !== 'rpg' && isAway() && (g.heroes.some(h => h.downed) || hp < T.AUTOPILOT_FLASH_HP);
   // the Drink button: drink, or hide the cans while her footsteps come (#62)
   const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing' && n.visit.stage !== 'in';
-  const hideCans = coming && g.monsters > 0 && !n.cansHidden;
+  const fuel = on('fuel'), hideCans = fuel && coming && g.monsters > 0 && !n.cansHidden;
   const cansHidden = n.cansHidden && n.visit.stage !== 'idle';
-  const canDrink = g.monsters > 0 && !n.game && !n.pre;
+  const canDrink = fuel && g.monsters > 0 && !n.game && !n.pre;
   const red = n.mood >= T.MOOD_RED;
   const ph = deskPhone();
   return {
     screen: n.monitor === 'excel' ? 'excel' : 'rpg',
-    clock: fmtClock(n.clock), zl: Math.floor(g.zl), witching: n.clock >= T.BEDTIME, sleepOk: n.clock >= T.EARLIEST_SLEEP, flash,
+    clock: fmtClock(n.clock), zl: Math.floor(g.zl), witching: isWitching(), sleepOk: n.clock >= T.EARLIEST_SLEEP, flash,
+    you: { tired: on('tired'), zone: on('headset'), fuel },   // the YOU card shows what is in tonight (#56)
     tired: Math.round(n.tired), yawn: T.TIRED_YAWN, zone: n.headset ? Math.round(n.zone * 30) : 0, headset: n.headset,
     cans: g.monsters, hideCans, cansHidden: cansHidden && !hideCans, drinkAct: hideCans ? 'hideCans' : canDrink && !cansHidden ? 'openMonster' : '',
     note: [n.deepest >= n.deepTarget ? 'y' : '!', n.everCaught ? 'x' : 'y', red ? '!' : 'y'], floorGoal: n.deepTarget,

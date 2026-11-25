@@ -1,4 +1,5 @@
 import './style.css';
+import { on, rules, dayName, howtoTiles } from './systems/week';
 import './ios.css';
 import { T } from './config/tuning';
 import {  S, N, initialState } from './core/state';
@@ -126,7 +127,7 @@ window.addEventListener('resize', fit); fit();
 
 // ---------- Actions ----------
 const actions: Record<string, (arg: string) => void> = {
-  newGame: () => { wipeSave(); S.g = initialState(); startNight(); },
+  newGame: () => { wipeSave(); S.g = initialState(); S.g.day = (window as unknown as { __lnDay?: number }).__lnDay ?? 0; startNight(); },   // __lnDay: the tests start on a later night (test only)
   continue: () => { load(); startNight(); },
   startNight: () => startNight(),
   morning: () => toMorning(),
@@ -136,7 +137,7 @@ const actions: Record<string, (arg: string) => void> = {
   altTab: () => { if (S.g.night) altTab(); },
   showRpg: () => { if (S.g.night && N().monitor !== 'rpg') altTab(); },
   showExcel: () => { if (S.g.night && N().monitor !== 'excel') altTab(); },
-  headset: () => toggleHeadset(),
+  headset: () => { if (on('headset')) toggleHeadset(); },   // Tuesday on (#56)
   ability: a => { const [h, s] = a.split(',').map(Number); queueAbility(h, s); },
   bag: id => clickBagSlot(id),
   closeSel: () => closeSelection(),
@@ -217,7 +218,8 @@ const actions: Record<string, (arg: string) => void> = {
   dbgMood: () => addMood(20),
   dbgClock: () => { N().clock += 60; },
   dbgFloor: () => debugEndFloor(),
-  dbgRogue: () => { if (!S.g.heroes.some(h => h.id === 'rogue')) { S.g.nightsPlayed = Math.max(1, S.g.nightsPlayed); ensureParty(); S.g.heroes.forEach(h => { h.hp = maxHp(h); }); } },   // #52, 1.7
+  dbgDay: a => { S.g.day = Number(a); startNight(); S.g.howto = false; },   // the week (#56): play this night (0 = Monday) from 20:00
+  dbgRogue: () => { if (!S.g.heroes.some(h => h.id === 'rogue')) { S.g.day = Math.max(1, S.g.day); ensureParty(); S.g.heroes.forEach(h => { h.hp = maxHp(h); }); } },   // #52, 1.7
   dbgHook: () => hookLine(),
   dbgShove: () => shoveLine(),
   lapAns: a => lapAnswer(Number(a)),
@@ -500,7 +502,7 @@ window.addEventListener('keydown', ev => {
   if (ev.key === 'Tab') { ev.preventDefault(); altTab(); return; }
   const k = ev.key.toLowerCase();
   const handsFree = !n.game || (n.game.kind === 'phone' && !!n.game.speaker);   // a call on speaker keeps your hands free
-  if (k === 'h' && handsFree) { toggleHeadset(); return; }
+  if (k === 'h' && handsFree && on('headset')) { toggleHeadset(); return; }
   if (k === 'g' && !n.game) { monsterKey(); return; }   // Goblin Fuel: the Drink button on the YOU card, its G keycap (V3)
   if (k === 'l' && hover.key) { const [kind, a, b] = hover.key.split(':'); const id = kind === 'bag' ? a : S.g.heroes[Number(a)]?.gear[b as 'weapon']?.id; if (id) toggleLock(id); return; }
   // The phone is touch only (#54, 3.2): no keys answer it. A call on speaker leaves your hands free, so the skill
@@ -524,6 +526,7 @@ void sfx;
 /** M: drink a Monster; while her footsteps are on and the cans are out, hide them instead. */
 function monsterKey() {
   const n = N();
+  if (!on('fuel')) return;   // Thursday on (#56)
   const coming = n.visit.stage !== 'idle' && n.visit.stage !== 'passing' && n.visit.stage !== 'in';
   if (coming && S.g.monsters > 0 && !n.cansHidden) hideCans();
   else if (!n.pre) drinkOrInspect();
@@ -579,7 +582,7 @@ function drawEnergyBreak() {
   if (!v) {
     ebHits = [];
     // bake the break's scenes ahead in the browser's idle time (what the frames leave over), so opening it never stalls
-    const n = S.g.night, key = n && S.g.monsters > 0 ? String(Math.min(3, S.g.monsters)) : '';
+    const n = S.g.night, key = n && on('fuel') && S.g.monsters > 0 ? String(Math.min(3, S.g.monsters)) : '';
     if (key && ebWarmDone !== key && PK.ready() && !ebIdle) {
       ebIdle = true;
       const rIC = (window as unknown as { requestIdleCallback?: (f: (d: { timeRemaining(): number }) => void, o?: { timeout: number }) => void }).requestIdleCallback;
@@ -692,16 +695,24 @@ const microCanvas = el('microArea') as HTMLCanvasElement, microCtx = microCanvas
 const rsSmallCanvas = el('rsSmall') as HTMLCanvasElement, rsSmallCtx = rsSmallCanvas.getContext('2d')!;
 type SmHit = { x: number; y: number; w: number; h: number; act: string; arg: string };
 let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt = 0, rsSmallAt = 0, rsSmallBg = 0, microAt = 0, inspectOpen = false;
-const HOWTO_GAME = {
-  ids: ['listen', 'tab', 'answer', 'headset'], isNew: [] as string[], head: 'Monday, 20:00',
-  tiles: {
-    listen: ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.'],
-    tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle.'],
-    answer: ['Answer her', 'Each visit wants something else. Plates clinking: hide your cans. Humming: talk to her. Slow steps: a cuddle.'],
-    headset: ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.'],
-  },
-  foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.',
+// How to hide (grid doc 7k): tonight's tiles (the week, #56: systems/week.ts howtoTiles), the new ones framed gold
+const HOWTO_ANSWER = {
+  mon: 'Each visit wants something else. Plates clinking: a snack run.',
+  tue: 'Each visit wants something else. Plates clinking: a snack run. Humming: she wants to talk.',
+  thu: 'Each visit wants something else. Plates clinking: hide your cans. Humming: talk to her. Slow steps: a cuddle.',
 };
+function howtoGame() {
+  const k = howtoTiles();
+  return { ids: k.ids, isNew: k.isNew, head: `${dayName()}, 20:00`,
+    tiles: {
+      listen: ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.'],
+      tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle.'],
+      answer: ['Answer her', HOWTO_ANSWER[k.answer]],
+      headset: ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.'],
+    },
+    foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.',
+  };
+}
 function inspectView() {
   const pct = (v: number) => Math.round(Math.abs(v) * 100);
   return {
@@ -709,20 +720,20 @@ function inspectView() {
     bullets: [['+', `Party ${pct(T.MONSTER_SPEED)}% faster for ${T.MONSTER_BOOST_SEC} s.`], ['+', `Tiredness ${T.MONSTER_TIRED}.`],
       ['-', `Then a sugar crash: ${pct(T.MONSTER_CRASH_SPEED)}% slower for ${T.MONSTER_CRASH_SEC} s, Tiredness +${T.MONSTER_CRASH_TIRED}.`]],
     pour: `Pour it well: ${pct(T.MONSTER_DRINK_FULL)}% down for the full boost, ${pct(T.MONSTER_DRINK_HALF)}% for half.`,
-    shop: { zl: T.SHOP_ZL.fuel, cans: ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][T.SHOP_FUEL_CANS] ?? String(T.SHOP_FUEL_CANS) }, tag: S.g.nightsPlayed === 0 ? 'New tonight' : '',
+    shop: { zl: T.SHOP_ZL.fuel, cans: ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][T.SHOP_FUEL_CANS] ?? String(T.SHOP_FUEL_CANS) }, tag: rules().isNew.includes('fuel') ? 'New tonight' : '',
   };
 }
 function drawSmallPieces() {
   const g = S.g, n = g.night, now = performance.now(), t = now / 1000, ready = PK.ready() && !!n && g.screen === 'night';
   // the inspect window opens by itself the first time the drink matters: tired enough to yawn (the Drink button lights)
-  if (ready && !inspectOpen && g.monsters > 0 && !g.tipsSeen.includes('inspect:fuel') && !g.paused && !g.howto && n.tired >= T.TIRED_YAWN && !demandActive() && !n.switching && n.monitor === 'rpg') { g.tipsSeen.push('inspect:fuel'); inspectOpen = true; }
+  if (ready && !inspectOpen && on('fuel') && g.monsters > 0 && !g.tipsSeen.includes('inspect:fuel') && !g.paused && !g.howto && n.tired >= T.TIRED_YAWN && !demandActive() && !n.switching && n.monitor === 'rpg') { g.tipsSeen.push('inspect:fuel'); inspectOpen = true; }
   if (inspectOpen && (!ready || n.game || n.pre || n.switching)) inspectOpen = false;
   // pause, How to hide
   const modal = !ready ? '' : g.paused ? 'pause' : g.howto ? 'howto' : '';
   if (modal !== modalWas) { modalWas = modal; modalCanvas.style.display = modal ? 'block' : 'none'; modalAt = 0; if (!modal) modalHits = []; }
   if (modal && now - modalAt >= 66) {
     const first = modalAt === 0; modalAt = now;
-    const r = modal === 'pause' ? PK.pause(t) : PK.howto(first ? composeFrame() : null, HOWTO_GAME, t, false);
+    const r = modal === 'pause' ? PK.pause(t) : PK.howto(first ? composeFrame() : null, howtoGame(), t, false);
     modalCtx.drawImage(r.canvas, 0, 0); modalHits = r.hits;
   }
   // the microsleep: the lids close over the frame; shut, zzz

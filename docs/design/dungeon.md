@@ -2,9 +2,9 @@
 
 ## Now
 
-**Party.** Three heroes on night 1, four from night 2, persistent across nights (data: `src/data/heroes.ts`,
+**Party.** Three heroes on Monday, four from Tuesday (the week, [night.md](night.md)), persistent across nights (data: `src/data/heroes.ts`,
 `HERO_NAME`): Knightenstein (Knight, tank, in front, carries the torch: you), Magoo (Mage) and Healero (Healer), the
-characters of your friends Danny and Mike, and from night `ROGUE_JOINS_NIGHT` (2) **Garrote** (Rogue, #52 1.7), who
+characters of your friends Danny and Mike, and from Tuesday (`NIGHT_SCHEDULE` 'rogue') **Garrote** (Rogue, #52 1.7), who
 joins second in line at the party's lowest level with a feed line. From then on he is the looter (the Knight's role
 line drops "picks up loot"). Party and guild chat use the character names, as an MMO would; the friends' phone calls
 use their real names. Garrote's colour is ember (`#c16229`); Z, X and C light up ember on the desk keyboard.
@@ -92,7 +92,7 @@ crit 12, luck 5. Pickpocket is not in the kit: Heist covers its ground (decision
 
 **Marching order** (#52, 1.6; grid doc §5d; rules `src/systems/ranks.ts`). The party walks and fights in one line,
 rank 1 at the front (right in the picture, left in the skill bar); a hero's rank is his place in the party. Defaults:
-night 1 Knight, Healer, Mage; from night 2 Knight, Garrote, Mage, Healer. An old save gets the default once
+Monday Knight, Healer, Mage; from Tuesday Knight, Garrote, Mage, Healer. An old save gets the default once
 (`orderSet`); after that the order is the player's and carries over from night to night.
 - **Home ranks** (`HOME_RANKS`, data per hero so tree nodes can change them): Knight 1 to 2, Garrote 1 to 3, Mage 3 to
   4, Healer 2 to 4. Outside them a hero deals and heals `OUT_OF_RANK_MULT` (x0.7); a crimson "x0.7" tab sits on his

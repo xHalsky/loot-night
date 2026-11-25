@@ -123,7 +123,8 @@ listening, so her sounds are the most important ones in the game.
 - `python3 test/sound.py` (Chrome): every file decodes, loop points, loops following her, the headset.
 
 **Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`, a two-line pitch and "turn the sound
-on". The first night opens with the how-to-hide card ([night.md](night.md), Onboarding).
+on", and Continue with the night you are on ("Continue · Tuesday", from the save). How to hide opens before the
+first Monday and any night with a new tile ([night.md](night.md), Onboarding).
 
 **Her panel is drawn by the renderer** (V4, #69; grid doc 7b): `drawHerLive` in `src/render/page/her.js`, from the
 view in `src/render/herView.ts`. The webcam view is the game's own drawing, unchanged in design: `src/ui/door.ts`

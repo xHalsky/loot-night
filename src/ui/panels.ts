@@ -1,4 +1,5 @@
 import { VERSION } from '../config/version';
+import { dayName } from '../systems/week';
 // HTML renderers for the DOM parts of the screen. Every clickable element carries
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
@@ -23,7 +24,7 @@ import {  abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, cap } from '../systems/loot';
 import { icon } from './icons';
 import { fmtClock } from '../core/fx';
-import { hasSave } from '../systems/save';
+import { hasSave, savedDay } from '../systems/save';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const btn = (act: string, label: string, arg = '', cls = '') => `<button class="btn ${cls}" data-act="${act}" data-arg="${esc(arg)}">${label}</button>`;
@@ -237,7 +238,7 @@ export function screenHtml(): string {
       <h1>Loot Night</h1>
       <p>Raid night. Your guild needs you, the loot is dropping, and your girlfriend thinks you are doing spreadsheets.</p>
       <p class="dim">The RPG plays itself. Your job: listen, hide, and keep her, your mom, your boss and the dog happy until dawn.</p>
-      <div class="row">${hasSave() ? btn('continue', `Continue · night ${g.nightsPlayed + 1}`, '', 'wide gold') + btn('newGame', 'New game', '', 'wide') : btn('newGame', 'Start Monday night', '', 'wide gold')}</div>
+      <div class="row">${hasSave() ? btn('continue', `Continue · ${dayName(savedDay())}${savedDay() >= 7 ? `, week ${Math.floor(savedDay() / 7) + 1}` : ''}`, '', 'wide gold') + btn('newGame', 'New game', '', 'wide') : btn('newGame', 'Start Monday night', '', 'wide gold')}</div>
       <p class="dim">Turn the sound on: her footsteps are your early warning. <kbd>Esc</kbd> pause.</p>
     </div></div>`;
   }
@@ -245,9 +246,9 @@ export function screenHtml(): string {
     const r = g.results;
     const STAR: [keyof typeof r.goals, string, string][] = [['deep', 'Deep', `floor ${r.goals.target}`], ['unseen', 'Unseen', 'never caught'], ['sweet', 'Sweet', 'she ended happy']];
     const stars = STAR.map(([k, name, why]) => `<span class="star-n ${r.goals[k] ? 'on' : ''}"><span class="star">★</span><b>${name}</b><small>${why}</small></span>`).join('');
-    const endTxt = r.ending === 'sleep' ? `Logged off at ${fmtClock(r.endClock)}` : r.ending === 'dawn' ? 'Dawn. The sun is up and so are you.' : 'Unplugged. She pulled the plug. Half the bag is gone.';
+    const endTxt = r.ending === 'sleep' ? (r.bedtime ? `${fmtClock(r.endClock)}: bedtime. You log off.` : `Logged off at ${fmtClock(r.endClock)}`) : r.ending === 'dawn' ? 'Dawn. The sun is up and so are you.' : `Unplugged. She pulled the plug. Half the bag is gone. ${dayName(r.day)}, again.`;
     return `<div class="screen"><div class="card">
-      <div class="kicker">MONDAY · RESULTS</div>
+      <div class="kicker">${dayName(r.day ?? 0).toUpperCase()} · RESULTS</div>
       <div class="stars">${stars}</div>
       <h2>${endTxt}</h2>
       <div class="grid2">
@@ -274,7 +275,7 @@ export function debugHtml(): string {
     ${n ? `<div class="dim">${pacingLine()}${liveMs() ? ` · render ${liveMs().toFixed(1)} ms` : ''}</div>` : ''}
     ${n ? (() => { const c = cityOutlook(); return `<div class="dim">income tonight ${S.g.gold - n.goldStart >= 0 ? '+' : ''}${S.g.gold - n.goldStart} g · bag ${c.bagGold} g / ${c.bagScraps} scraps · next ${c.next ? `${c.next.name} ${c.next.gold} g + ${c.next.mats}` : 'none'} ${c.now ? '(now)' : c.withBag ? '(with the bag)' : '(short)'}</div>`; })() : ''}
     ${n ? `<div class="dim">threat ${n.threat.toFixed(1)}s · visit ${n.visit.stage} ${n.visit.t.toFixed(1)} · phone ${n.phoneScript.filter(x => !x.done).map(x => x.kind + ' ' + fmtClock(x.at)).join(', ') || 'done'}${n.friendsLeft ? ` · boys ${n.friendsLeft}` : ''} · gap ${Math.max(0, T.REAL_LIFE_GAP_SEC - (n.threat - n.lastDemand)).toFixed(0)}s · phase ${n.phase}</div>` : ''}
-    <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')}</div>
+    <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')} · night: ${['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d, i) => btn('dbgDay', d, String(i), (g.day ?? 0) % 7 === i ? 'sm gold' : 'sm')).join('')}</div>
     <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgCall', 'Courier', 'courier', 'sm')}${btn('dbgCall', 'Boys', 'friends', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
     <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgRogue', 'Garrote', '', 'sm')}${btn('dbgHook', 'Hook', '', 'sm')}${btn('dbgShove', 'Shove', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>

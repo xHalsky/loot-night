@@ -1,6 +1,9 @@
 // Every tunable number lives here (docs/design/README.md, rules for builders).
 // Times: night clock in minutes after midnight of the evening (20:00 = 1200, 01:00 = 1500).
 
+/** One night of the week (NIGHT_SCHEDULE). */
+export interface NightPlan { day: string; adds: string[]; visits: number; bed: number; end: number; dog: [number, number, number] | null; friends: number }
+
 export const T = {
   // --- Night clock ---
   NIGHT_START: 20 * 60,
@@ -14,6 +17,25 @@ export const T = {
   COST_FURNITURE_MIN: 15,
   COST_LIST_MIN: 5,
   COST_TRAVEL_MIN: 15,
+
+  // --- The week (#56; docs/design/night.md, the week; claude/loot-night-week-one.md, approved for now 2026-11-24) ---
+  // One entry a night, Monday first. adds: what comes in that night; everything from earlier nights stays on. The
+  // numbers are that night's own: visits (how often she comes, x), bed (she goes to bed at this clock; 0 = she stays
+  // up), end (the night ends at this clock: Monday, no Tiredness yet), dog ([first visit s, then every min, max s];
+  // null = no dog), friends (the boys' calls tonight). After Sunday the week starts again with everything on (week
+  // two is TBD: systems/week.ts). Ids not built yet sit in the list so they come in on their night once they are:
+  // lean, mirror (#77, #59), home (step 6, #57), mask, comeToBed, selfies, tease, lapSit, towelReq, bath, wine (#59).
+  NIGHT_SCHEDULE: [
+    { day: 'Monday', adds: ['her', 'peek', 'snack', 'q4', 'shop'], visits: 1, bed: 0, end: 25 * 60, dog: null, friends: 0 },
+    { day: 'Tuesday', adds: ['chat', 'headset', 'onDesk', 'rogue', 'tired', 'lean', 'mirror'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0 },
+    { day: 'Wednesday', adds: ['phone', 'messages'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0 },
+    { day: 'Thursday', adds: ['dog', 'cuddle', 'friends', 'fuel', 'home', 'tea', 'towel'], visits: 1.2, bed: 0, end: 0, dog: [90, 120, 180], friends: 1 },
+    { day: 'Friday', adds: ['bed', 'witching', 'mask', 'comeToBed', 'selfies'], visits: 1.2, bed: 24 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
+    { day: 'Saturday', adds: ['tease', 'lapSit', 'towelReq', 'bath', 'wine'], visits: 1.4, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
+    { day: 'Sunday', adds: [], visits: 1.6, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
+  ] as NightPlan[],
+  WEEK_TWO_BED: 24 * 60,          // after the first week she goes to bed every night: this on weeknights, the weekend's own on Sat and Sun
+  BEDTIME_WARN_MIN: 15,           // a night that ends at a set time (Monday) warns this long before
 
   // --- Sleep debt ---
   SLEEP_DEBT_STEP_MIN: 15,
@@ -30,7 +52,7 @@ export const T = {
   SLUGGISH_TIMER_MULT: 0.85, SLUGGISH_FLOW_MULT: 0.75,
 
   // --- Monster ---
-  MONSTER_PER_NIGHT: 3,           // topped up to this at night start (until the week, #56, decides); the Shop sells more
+  MONSTER_PER_NIGHT: 3,           // topped up to this at night start once the Goblin Fuel is in (Thursday on); the Shop sells more
   MONSTER_DRAWER: 8,              // the drawer holds this many (the inspect window shows the slots; the Shop, #55, fills them)
   MONSTER_TIRED: -35,
   MONSTER_BOOST_SEC: 60, MONSTER_SPEED: 0.30,   // party acts 30% faster
@@ -55,7 +77,8 @@ export const T = {
   PEEK_CAUGHT_MOOD: 8,
   LEAN_CHANCE: 0.25, LEAN_MOOD: -2,      // a visit where she only leans on the frame and looks
   // The dog: pops up for attention; ignored 1-3 times -> bumps the desk, cables out
-  DOG_FIRST_SEC: 50, DOG_EVERY_SEC: [70, 120] as [number, number], DOG_AGAIN_SEC: [25, 40] as [number, number], DOG_WAIT_SEC: 12, DOG_WHINE_NOISE: 0.6,
+  // when he comes is the week's (NIGHT_SCHEDULE dog: first at 90 s, then every 120 to 180 s; the build's 50 and 70 to 120 before #56)
+  DOG_AGAIN_SEC: [25, 40] as [number, number], DOG_WAIT_SEC: 12, DOG_WHINE_NOISE: 0.6,
   DOG_PET_RATE: 0.0064, DOG_SWEET_MULT: 3, DOG_FAST: 1100,  // per grid px stroked across his head; faster than this (grid px/s) and he flinches (V6: was 0.0032 / 2200 in 2x desk px)
   // She leans into your face (only when she is happy): sweet-talk her away
   LAP_CHANCE: 0.4, LAP_MIN_GAP_SEC: 180, LAP_ASK_SEC: 7, LAP_QUESTIONS: 3, LAP_HAPPY_MOOD: -15, LAP_RUDE_MOOD: 6, LAP_SULK_MOOD: 10, LAP_CALM_SEC: 60,
@@ -120,8 +143,7 @@ export const T = {
   MARK_SEC: 6,                    // how long a mark stays on an enemy (Taunted lasts as long as the taunt)
   MARK_STAGGER_FIRE: 2,           // Fire on a Staggered enemy (Bash marks it)
   MARK_STAGGER_BACKSTAB: 2,       // Backstab on a Staggered enemy
-  // Garrote, the fourth hero (#52, 1.7): joins on night 2
-  ROGUE_JOINS_NIGHT: 2,           // the night he joins (nightsPlayed + 1); the week (#56) may move it
+  // Garrote, the fourth hero (#52, 1.7): joins on Tuesday (NIGHT_SCHEDULE 'rogue')
   SMOKE_SEC: 4, SMOKE_MISS: 0.5,  // Smoke Bomb: enemies miss this share of their attacks
   HEIST_SEC: 8,                   // Heist (ultimate): every kill drops an item for this long
   // Marching order (#52, 1.6; docs/design/dungeon.md): rank 1 is the front
@@ -322,8 +344,7 @@ export const T = {
   SCARE_SEC: 0.8,
   CAUGHT_HOLD_SEC: 3.2,           // after the scare her screen stays this long so the cost can be read; a click or a key ends it (V7)
 
-  // --- After midnight: she goes to bed ---
-  BED_FROM: 24 * 60,
+  // --- She goes to bed (when: NIGHT_SCHEDULE bed, Friday on) ---
   WAKE_NOISE_FLOOR: 30,           // Noise above this wakes her
   WAKE_RATE: 0.15,                 // wake per second per point of Noise above the floor
   WAKE_DECAY: 0.5,
@@ -334,9 +355,9 @@ export const T = {
 
   // --- The phone (#54, 3.2): fewer events, each worth taking ---
   // A night script instead of a random timer: each kind's window in clock minutes (a time is picked in it at 20:00).
-  // The boys call 1 or 2 times, during the floor before a boss floor. The first event waits PHONE_FIRST_SEC.
+  // The boys call during the floor before a boss floor (how often: NIGHT_SCHEDULE friends). The first event waits PHONE_FIRST_SEC.
   PHONE_SCRIPT: { courier: [20 * 60 + 30, 21 * 60 + 30], mom: [20 * 60 + 45, 21 * 60 + 15], boss: [21 * 60 + 45, 22 * 60 + 15] } as Record<string, [number, number]>,
-  PHONE_FIRST_SEC: 45, FRIENDS_PER_NIGHT: [1, 2] as [number, number],
+  PHONE_FIRST_SEC: 45,
   // One demand at a time from real life (phone, dog): this far apart, and never while she is coming, at the door, in
   // the room or in the shower, during a boss wind-up or a calm you earned. Scripted events slide later, never drop.
   REAL_LIFE_GAP_SEC: 15,

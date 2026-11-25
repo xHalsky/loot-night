@@ -4,7 +4,54 @@
 
 **Flow of a night.** Title → 20:00 in the city (`startNight`) → dungeon floors, trips back to the city
 any time between battles → the night ends → results screen → morning screen → next night.
-The prototype always plays Monday.
+
+**The week** (#56; `T.NIGHT_SCHEDULE`, `systems/week.ts`; spec `claude/loot-night-week-one.md`, approved for now
+2026-11-24, numbers to tune after the playtests). Nights are weekdays. `S.g.day` is the night you are on (0 = the first
+Monday, saved): any ending but the plug moves on to the next; **unplugged, you play the same night again** ("Tuesday,
+again"), RPG progress kept; `nightsPlayed` counts every night played. Each night brings its things and everything from
+earlier nights stays on. What is not in yet does not happen and is not shown: no hint before its night (`on('dog')`).
+
+| Night | Comes in | Visits | She goes to bed | The night ends |
+|---|---|---|---|---|
+| Monday | Her routine; peeks and snack runs (a plate: no cans to find yet); Q4; picking up the phone: the Shop (Silent keys, Flowers), her chat | x1 | stays up | 01:00, as a Sleep (no Tiredness yet) |
+| Tuesday | Chat visits; the headset (Zone); her leaning into your face after a pass; Garrote; Tiredness, and the night runs past 01:00; the Ergo chair | x1.2 | stays up | dawn |
+| Wednesday | The phone rings: the courier, Mom, the boss; Messages: Text her and Raid night? | x1.2 | stays up | dawn |
+| Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); Make her tea and the towel | x1.2 | stays up | dawn |
+| Friday | She goes to bed: the waking meter, her texts, the good-night walk-by; the Witching Hour after 01:00 | x1.2 | 00:00 | dawn |
+| Saturday | The weekend: she's off and wants you (her moments, #59) | x1.4 | 01:00 | dawn |
+| Sunday | The weekend, more | x1.6 | 01:00 | dawn |
+
+In the schedule already, so they come in on their night once built: lean in and the hall mirror (Tuesday; #77, #59),
+the Home app, the devices and the battery (Thursday; step 6, #57; the New phone stays "soon"), the sheet mask, "come to
+bed" with "Coming, babe" and her selfies (Friday; #59), the tease visit, the lap sit, "Babe, towel!", the bath and its
+wine (Saturday; #59).
+- **Visits x** scales her odds at each activity's end, the shortest and longest gap between visits
+  (`DOOR_MIN_GAP_SEC`, `DOOR_MAX_GAP_SEC` divided by it) and how fast she gets through her things (not the shower).
+- **Monday's 01:00** ends the night as a Sleep (the run banked, no sleep debt), mid-battle too; the feed warns
+  `BEDTIME_WARN_MIN` (15) before. Sleep still opens at 23:00.
+- **After Sunday** (week two is TBD, Paweł): the week starts again with everything on and nothing new tonight; each
+  weekday keeps its own visits, dog and boys; she goes to bed every night (`WEEK_TWO_BED` 00:00 on weeknights, 01:00 on
+  the weekend); Monday runs to dawn.
+- **The night's name** is everywhere: the feed's 20:00 line, How to hide, the phone's date and her chat's separators,
+  the results ("TUESDAY · RESULTS"), the morning ("Tue 07:40", "Start Tuesday night"; after the plug UNPLUGGED, what
+  it cost and "Tuesday, again"), the title ("Continue · Tuesday", read from the save).
+- **F1** has a button per night (it restarts the night at 20:00 with that night's rules).
+
+**Measured** (`DAY=n npx tsx test/sim.ts good`, 16 seeds a night; demands = the visits she came in on, phone events and
+the dog before 01:00, as the week doc's model counts them):
+
+| | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
+|---|---|---|---|---|---|---|---|
+| Demands before 01:00 | 3.6 | 3.9 | 7.4 | 8.9 | 11.7 | 9.5 | 10.4 |
+| Seconds apart (the model) | 101 (97) | 91 (81) | 57 (48) | 43 (34) | 33 (38) | 42 (27) | 38 (24) |
+| Good bot, one night: stars, caught | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 |
+| Good bot, the week in a row (`campaign.py 8 7`): stars | 3.00 | 2.88 | 3.00 | 2.75 | 2.62 | 2.75 | 2.62 |
+| Idle bot: caught, unplugged of 8 | 2.3, 1 | 4.0, 8 | 3.8, 8 | 1.9, 1 | 1.6, 0 | 1.5, 0 | 1.5, 2 |
+
+Monday to Wednesday sit within 20% of the model; Thursday is 26% light and the weekend is the model's tease visits
+and bath requests short (#59). The good bot always answers her sweetly, and each sweet pass can buy 60 s of calm (her
+lean), which takes the edge off the weekend: without it Saturday and Sunday run x1.29 and x1.45 Monday's visits.
+Tests: `npx tsx test/week.ts`, `python3 test/week.py` (screens `test/shots/week_*.png`).
 
 **Two clocks.**
 
@@ -75,10 +122,13 @@ happening.
 - **Title:** two lines (raid night, your girlfriend thinks you are doing spreadsheets; the RPG plays itself,
   your job is to listen, hide and keep everyone happy) and "turn the sound on".
 - **How-to-hide card** (the renderer's glass card over the dimmed frame, grid doc 7k; `HOWTO_GAME` in `main.ts`):
-  opens when the first night starts and the night waits until "Got it" (or Esc / Enter). "Monday, 20:00", "Hide the
-  game before she sees it.", four tiles, each with a small picture, its number, its name and what to do: 1 Listen (the sounds, the last-heard line, hold the door to
-  peek), 2 Tab to Excel (footsteps: switch now, never wait for the handle), 3 Answer her (each visit wants
-  something else), 4 Headset (the Zone, but you are deaf to her). The pause menu reopens it.
+  opens before the first Monday and before any night with a new tile (the week), and the night waits until "Got it"
+  (or Esc / Enter). "Monday, 20:00", "Hide the game before she sees it.", one tile per thing that is on tonight, each
+  with a small picture, its number, its name and what to do, filling the card (104 wide for four, 82 for five):
+  1 Listen (the sounds, the last-heard line, hold the door to peek), 2 Tab to Excel (footsteps: switch now, never wait
+  for the handle), 3 Answer her (each visit wants something else: Monday snack runs, Tuesday humming too, from Thursday
+  hide your cans and a cuddle), 4 Headset from Tuesday (the Zone, but you are deaf to her). Tonight's new ones are
+  framed gold with "new tonight": the headset on Tuesday, Answer her on Thursday. The pause menu reopens it.
 - **Tonight, a sticky note** (#42; drawn on the desk since 0.66, `tonightNote` in `render/page/desk.js`): stuck on
   the monitor's bottom edge over the middle of the taskbar (#49), always visible in the game and in Excel. Three handwritten lines, the night's goals, with a live mark each and no star ladder: "floor N"
   (! until a run reaches it, then ✓ for good), "don't get caught" (✓, ✗ once caught), "keep her happy" (✓ green or
@@ -128,6 +178,17 @@ happening.
   the redesign has no results screen, and its numbers (depth against the record, near misses, the appraiser's
   waiting items) have no place on the morning's summary. Rejected: folding the results into the morning (no room in
   the summary without dropping the near misses); the page's day and night names now.
+- **The week, with what the build has** (0.77, #56). The schedule is the week doc's, as data, so it can be edited
+  without code. My calls, for Paweł to check: Make her tea and the towel (the handoff's Tuesday door moves, which the
+  week doc dropped for lean in) come in on Thursday, standing in for the smart home's bubble tea and Door seal that
+  replace them there in step 6; "her on the desk after a pass" (Tuesday) is the build's lean into your face, the lap
+  sit is #59's Saturday; Monday's 01:00 is a Sleep, not a forced end, so a rule nobody told you can't cost you a run;
+  new games start with no cans; week two keeps everything on as a placeholder. The visit multiplier also speeds her
+  routine: with Noise her odds were already near certain at each activity's end, so gaps and odds alone gave Sunday
+  +25% instead of +60%. Rejected: tea and the towel on Tuesday (the week doc gives it to lean in) or dropped now
+  (Thursday would have nothing to prevent with until step 6); replaying week one's rules in week two (easy with a
+  week of RPG growth); one `SATURDAY_VISIT_MULT` (the handoff's: the week doc wants a ramp). Danny's 20:00 voice
+  note and teaching each night's new thing come next (0.78).
 - **Coach marks and tooltips in the redesign's look** (0.74, V11 #76). Coach marks are the game talking, so one look
   everywhere; their targets are the renderer's own rectangles (the DOM stand-ins they used to anchor on stay only for
   the tests). Tooltips follow the pointer's world; the RPG's card is drawn inside the battle area and the panel because
@@ -136,9 +197,7 @@ happening.
   (the grid doc's rule: real life is glass, the PC is Windows 98, hers are hers).
 - **Pause, How to hide and the microsleep in the redesign's look** (0.73, V11 #76, grid doc 7k). Pause blacks out the
   whole frame (so it can't be used to peek) under a glass card with Resume (Esc) and How to hide. The How-to card's
-  tiles are tonight's: the build's four until the week (#56) brings Tuesday's five with lean in and the "new tonight"
-  frame, and its third tile keeps the build's "hide your cans" and "a cuddle", which are on from the first night here.
-  The lids draw over a picture of the frame: closing at 20 fps (a per-pixel pass over the whole frame), shut only when
+  tiles are tonight's (the week, 0.77). The lids draw over a picture of the frame: closing at 20 fps (a per-pixel pass over the whole frame), shut only when
   the zzz changes. Rejected: the page's Tuesday card now (lean in isn't in the game yet).
 - **Stars that reward greed** (0.63, #54; Paweł's brief from testing v0.48): the old ladder (survive, then Mood, then
   not caught) paid nothing for going deep, so the safe night and the greedy night scored the same. Now the RPG has
@@ -154,6 +213,6 @@ happening.
 
 ## Planned
 
-- Nights 2 to 7 with their own dungeon and rule, per-night 3rd-star challenges, star gates: [campaign.md](campaign.md), #3.
-- Witching Hour after 01:00 as a reward side of staying up: [synergy.md](synergy.md).
+- Week one's teaching (0.78): Danny's 20:00 voice note, each new thing's first chance early and safe, its coach mark.
+- Week two and the endgame: TBD (Paweł).
 - Save between nights exists for progress only (party, bag, city, debt); a night in progress is not saved.

@@ -103,8 +103,9 @@ screenshots every row (`test/peek_sheet.png`).
 **Visit types** (`src/systems/visits.ts`). Each type asks for a different answer, so the player has to
 read the cue, not just alt-tab every time. The type depends on what she was doing (`VISIT_BIAS`, table
 below); `VISIT_RANDOM` (25%) of the time it is drawn from `VISIT_FLAT` instead (Peek 2, Snack, Chat, Cuddle),
-so the activity is a good bet and never a promise. Cuddle is only drawn while she is happy (green). Woken
-visits are always Peeks. On the first night the her-note names the hallway cue (`VISIT_CUE`) and the cue that
+so the activity is a good bet and never a promise. Only the types that are in tonight are drawn (the week: peeks and
+snack runs from Monday, chat from Tuesday, cuddle from Thursday; one that is out falls back to a Peek). Cuddle is only
+drawn while she is happy (green). Woken visits are always Peeks. On the first Monday the her-note names the hallway cue (`VISIT_CUE`) and the cue that
 ends each activity (`END_HINT`); later nights rely on the sound. Onboarding: [night.md](night.md).
 
 **What she was doing predicts the visit** (`test/predict.ts` prints the odds):
@@ -159,7 +160,8 @@ The night runs on under it, as it does while the monitor is off.
 **Lean visit.** `LEAN_CHANCE` (25%) of non-fake visits while Mood is green: no check. She leans on the
 door frame, barefoot, one foot rubbing against her other calf, smiling. Mood `LEAN_MOOD`.
 
-**Bed phase.** From `BED_FROM` (24:00), at the end of her current activity she goes to bed. No patrols,
+**Bed phase.** From Friday (the week, [night.md](night.md)): from the night's bedtime (`NIGHT_SCHEDULE` bed: 00:00 on
+Friday, 01:00 on the weekend; Monday to Thursday she stays up), at the end of her current activity she goes to bed. No patrols,
 Mom stops calling (the boss still pings). Noise above `WAKE_NOISE_FLOOR` raises a Waking meter. At
 `WAKE_TEXT` she texts "are you coming to bed?" ([desk.md](desk.md)); a reply lowers Waking, ignoring
 raises it. At `WAKE_UP` she gets up and comes to your door (never a fake-out), then goes back to bed.
@@ -235,7 +237,7 @@ visits and when she leans in. A small reaction bubble (?, !, heart, ...) over he
   the note colour and the sounds.
 - **Tone:** tasteful pin-up. Clothed adults, flattering poses, bare-feet moments.
   Nothing explicit.
-- The visit type is labelled only on the first night; afterwards the sound is the only tell.
+- The visit type is labelled only on the first Monday; afterwards the sound is the only tell.
 
 ## Planned
 

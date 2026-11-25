@@ -305,7 +305,9 @@ function canIconOverlay(ctx) {
   if (!cans) { ctx.fillStyle = '#d23c5a'; for (let k = 0; k <= 13; k++) ctx.fillRect(Math.round(x - 1 + k * 8 / 13), y + 13 - k, 1, 1); }   // struck out
 }
 function youCard(st, t) {
-  const [x, y, w, h] = RSZ.you;
+  const [x, y, w, h] = RSZ.you, on = st.you || { tired: true, zone: true, fuel: true };   // the week (#56): what is in tonight
+  YOU_CAN = null;
+  if (!on.tired && !on.zone && !on.fuel) return;   // Monday: nothing of yours to show yet
   glassCard(x, y, w, h);
   const bar = (yy, label, v, max, fill, mark) => {
     text(label, x + 5, yy, 'tiny', P.u5);
@@ -315,9 +317,9 @@ function youCard(st, t) {
     text(String(v), x + 86, yy, 'tiny', P.moon, { align: 'r' });
   };
   const yawn = st.yawn ?? 30;   // where yawning starts (the game passes TIRED_YAWN)
-  bar(y + 5, 'TIRED', st.tired, 100, P.arcane, yawn);
-  bar(y + 15, 'ZONE', st.zone, 30, P.s6, 0);
-  dhit(x, y, 88, 13, '', '', 'tired'); dhit(x, y + 13, 88, 13, '', '', 'zone');
+  if (on.tired) { bar(y + 5, 'TIRED', st.tired, 100, P.arcane, yawn); dhit(x, y, 88, 13, '', '', 'tired'); }
+  if (on.zone) { bar(y + (on.tired ? 15 : 5), 'ZONE', st.zone, 30, P.s6, 0); dhit(x, y + (on.tired ? 13 : 0), 88, 13, '', '', 'zone'); }
+  if (!on.fuel) return;
   // the Monster button: glows gold (the next action) from the yawn mark while a can is left
   const bx = x + 90, by = y + 3, bw = 40, bh = 20, glow = (st.tired >= yawn && st.cans > 0) || st.hideCans, pulse = 0.5 + 0.5 * Math.sin(t * (st.hideCans ? 8 : 4));
   if (glow) for (let j = -2; j < bh + 2; j++) for (let i = -2; i < bw + 2; i++) { const e = i < 0 || j < 0 || i >= bw || j >= bh; if (e && (i + j) % 2 === (pulse > 0.5 ? 0 : 1)) putI(bx + i, by + j, P.copper); }

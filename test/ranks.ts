@@ -15,13 +15,13 @@ let fail = 0;
 const ok = (c: boolean, what: string) => { console.log((c ? 'ok   ' : 'FAIL ') + what); if (!c) fail++; };
 const order = () => S.g.heroes.map(h => h.id).join(',');
 const H = (id: string) => heroById(id as any)!;
-function night(n: number) { S.g = initialState(); S.g.nightsPlayed = n - 1; S.g.realLifeOff = true; S.g.trees = { knight: ['g1', 'g2', 's2'], rogue: ['g1', 'g2', 's2'], mage: ['g1', 'g2', 's2'], healer: ['g1', 'g2', 's2'] }; startNight(); S.g.howto = false; }
+function night(n: number) { S.g = initialState(); S.g.day = n - 1; S.g.realLifeOff = true; S.g.trees = { knight: ['g1', 'g2', 's2'], rogue: ['g1', 'g2', 's2'], mage: ['g1', 'g2', 's2'], healer: ['g1', 'g2', 's2'] }; startNight(); S.g.howto = false; }
 function fight(floor = 3) { travelToDungeon(); const n = N(); n.floor = floor; spawnBattle(floor, false, false); n.phase = 'battle'; }
 function tick(sec: number, dt = 1 / 30) { for (let t = 0; t < sec; t += dt) { updateMeters(dt); updateBattle(dt); } }
 
-// default orders, Garrote joins on night 2
+// default orders, Garrote joins on Tuesday (#56)
 night(1); ok(order() === 'knight,healer,mage', `night 1: ${order()}`);
-night(T.ROGUE_JOINS_NIGHT); ok(order() === 'knight,rogue,mage,healer' && H('rogue').level >= 1, `night ${T.ROGUE_JOINS_NIGHT}: ${order()}, Garrote level ${H('rogue').level}`);
+night(2); ok(order() === 'knight,rogue,mage,healer' && H('rogue').level >= 1, `Tuesday: ${order()}, Garrote level ${H('rogue').level}`);
 ok(N().log.some(l => l.text.startsWith('Garrote joined')), 'a feed line says Garrote joined');
 S.g = initialState(); S.g.heroes = [S.g.heroes[0], S.g.heroes[2], S.g.heroes[1]]; delete S.g.orderSet; ensureParty();   // an old save: knight, mage, healer
 ok(order() === 'knight,healer,mage', `an old save gets the default order once: ${order()}`);

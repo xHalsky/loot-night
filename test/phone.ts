@@ -2,6 +2,7 @@
 // and what each event pays or costs. Run: npx tsx test/phone.ts
 (globalThis as any).localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 (globalThis as any).performance ??= { now: () => Date.now() };
+import { rules } from '../src/systems/week';
 import { T } from '../src/config/tuning';
 import { S, N, initialState } from '../src/core/state';
 import { startNight } from '../src/systems/night';
@@ -12,7 +13,7 @@ import { battleEnded, partyCdMult } from '../src/systems/curios';
 let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + msg); if (!c) fails++; };
 const fresh = () => {
-  S.g = initialState(); startNight(); S.g.howto = false;
+  S.g = initialState(); S.g.day = 4; startNight(); S.g.howto = false;   // Friday: the phone and the boys are on (#56)
   const n = N(); n.noise = 0; n.dog.next = 1e9; n.threat = 100; n.lastDemand = 0;
   return n;
 };
@@ -23,7 +24,7 @@ const hhmm = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, 
 let n = fresh();
 ok(n.phoneScript.length === 3, `tonight's script: ${n.phoneScript.map(s => `${s.kind} ${hhmm(s.at)}`).join(', ')}`);
 ok(n.phoneScript.every(s => s.at >= T.PHONE_SCRIPT[s.kind][0] && s.at <= T.PHONE_SCRIPT[s.kind][1]), 'each event in its window');
-ok(n.friendsLeft >= T.FRIENDS_PER_NIGHT[0] && n.friendsLeft <= T.FRIENDS_PER_NIGHT[1], `the boys: ${n.friendsLeft} call(s) tonight`);
+ok(n.friendsLeft === rules().friends, `the boys: ${n.friendsLeft} call(s) tonight`);
 n = fresh(); n.threat = 10; n.clock = 23 * 60; tick(1); ok(!n.interrupts.length, `nothing before ${T.PHONE_FIRST_SEC} s into the night`);
 n = fresh(); n.clock = n.phoneScript[0].at; tick(0.1); ok(n.interrupts[0]?.kind === n.phoneScript[0].kind && n.phoneScript[0].done, 'the first event arrives at its time');
 

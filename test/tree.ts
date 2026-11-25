@@ -15,7 +15,7 @@ import type { NodeId } from '../src/data/trees';
 let fail = 0;
 const ok = (c: boolean, what: string) => { console.log((c ? 'ok   ' : 'FAIL ') + what); if (!c) fail++; };
 const H = (id: HeroId) => heroById(id)!;
-function party(souls = 5000) { S.g = initialState(); S.g.nightsPlayed = 1; S.g.realLifeOff = true; startNight(); S.g.howto = false; ensureParty(); S.g.mats = souls; for (const h of S.g.heroes) h.level = 6; }
+function party(souls = 5000) { S.g = initialState(); S.g.day = 1; S.g.realLifeOff = true; startNight(); S.g.howto = false; ensureParty(); S.g.mats = souls; for (const h of S.g.heroes) h.level = 6; }
 const buy = (h: HeroId, ...ids: NodeId[]) => ids.forEach(id => buyNode(h, id));
 function fight(floor = 3) { travelToDungeon(); const n = N(); n.floor = floor; spawnBattle(floor, false, false); n.phase = 'battle'; n.enemies.forEach(e => { e.hp = e.maxHp = 1e9; e.atk = 0; e.armor = 0; }); n.tired = 0; return n; }
 

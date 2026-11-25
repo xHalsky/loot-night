@@ -6,7 +6,7 @@ async def main():
         pg = await b.new_page(viewport={'width':1280,'height':720})
         errs=[]
         pg.on('pageerror', lambda e: errs.append(str(e)))
-        await pg.goto('file:///home/claude/loot-night/dist/index.html')
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html')
         await pg.wait_for_timeout(300)
         await pg.evaluate("document.querySelector('[data-act=newGame]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}))"); await pg.evaluate("()=>{window.__lootnight.S.g.howto=false}")
         await pg.evaluate("document.querySelector('[data-act=gate]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}))")

@@ -3,6 +3,33 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.77.0 (2026-11-25)
+
+- **The week** (step 5, #56; `NIGHT_SCHEDULE` in tuning, `systems/week.ts`; the week doc approved for now). Nights
+  are weekdays, and each brings its things: **Monday** her routine, peeks and snack runs, Q4 and the Shop, and it
+  ends at 01:00 as a Sleep (no Tiredness yet); **Tuesday** chat visits, the headset, Garrote, her leaning into your
+  face after a pass, Tiredness and the night past 01:00; **Wednesday** the phone rings, Text her and Raid night?;
+  **Thursday** the dog, cuddles, the boys' call, the Goblin Fuel, tea and the towel; **Friday** she goes to bed at
+  00:00, the Witching Hour; **Saturday and Sunday** she's off (to bed at 01:00) and comes more often (x1.4, x1.6;
+  her #59 moments come here). Before its night nothing hints at a thing: no YOU card on Monday, no Drink button
+  before Thursday, the Shop lists what is in.
+- **Unplugged, you play the same night again** ("Tuesday, again"): the renderer's replay morning says what the plug
+  cost. Any other ending moves on. After Sunday the week starts again with everything on (week two is TBD).
+- **The night's name everywhere:** the 20:00 line, How to hide, the phone, the results, the morning ("Tue 07:40",
+  "Start Tuesday night"), the title ("Continue · Tuesday", now read from the save: it said "night 1" after a reload).
+- **How to hide** opens on the first Monday and on a night with a new tile, with tonight's tiles: three on Monday
+  (filling the card), the headset new on Tuesday, Answer her new on Thursday (the cans and the cuddle).
+- How often she comes scales with the night: her odds, the gaps between visits and her pace.
+- F1 has a button per night. `test/week.ts`, `test/week.py`; the tests start on Friday (`window.__lnDay`), where
+  everything the build has is on. Sims now play Monday unless `DAY=n`, and report demands and seconds apart.
+- Sims (16 seeds a night; demands before 01:00 and seconds apart, the week doc's model in brackets): Monday 3.6, 101 s
+  (97); Tuesday 3.9, 91 (81); Wednesday 7.4, 57 (48); Thursday 8.9, 43 (34); Friday 11.7, 33 (38); Saturday 9.5, 42
+  (27); Sunday 10.4, 38 (24): the weekend waits for #59's tease visits and bath. Good bot 3 stars and caught 0 every
+  night alone; the week in a row 3.00, 2.88, 3.00, 2.75, 2.62, 2.75, 2.62 stars. Before (everything on, every night
+  Monday): good 3 stars, caught 0. Idle bot unplugged on every Tuesday and Wednesday, 1 in 8 on Monday (peeks only),
+  mostly reaching dawn from Thursday as before.
+- Danny's 20:00 voice note and teaching each night's new thing come next (0.78).
+
 ## 0.76.0 (2026-11-25)
 
 - **The Shop app** (step 4.6, #55; grid doc 7i and 7f): the phone's home screen has the Shop next to Messages. Spend

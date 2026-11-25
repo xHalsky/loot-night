@@ -76,7 +76,7 @@ pre-emptive action (decided 2026-11-16, see preemptive.md).
 
 ## Witching Hour (built 0.31, numbers `WITCHING_*`)
 
-From 01:00 (bedtime) to dawn: the taskbar clock turns crimson ("witching hour" beside it), the dungeon fog violet, and a
+From Friday (the week, [night.md](night.md)), from 01:00 (bedtime) to dawn: the taskbar clock turns crimson ("witching hour" beside it), the dungeon fog violet, and a
 toast announces it. Every drop has `WITCHING_UPGRADE` (35%) to shift up one rarity (stacks with a Cursed
 Floor; the drop line says so). Insomniac affixes, cross-system, roll only then (half of the cross-system
 rolls after 01:00):

@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { on, bedAt } from './week';
 import { addGoodwill } from './goodwill';
 import { N } from '../core/state';
 import { chance } from '../core/rng';
@@ -31,7 +32,7 @@ const guild = () => { const [who, msg] = GUILD[Math.floor(Math.random() * GUILD.
 /** Called when a visit passes. Returns true if she decides to lean in instead of leaving. */
 export function maybeLap(): boolean {
   const n = N();
-  if (n.lap || n.clock >= T.BED_FROM || moodZone(n.mood) !== 'green') return false;
+  if (!on('onDesk') || n.lap || n.clock >= bedAt() || moodZone(n.mood) !== 'green') return false;   // from Tuesday (#56)
   if (n.threat - lastLap < T.LAP_MIN_GAP_SEC || !chance(T.LAP_CHANCE)) return false;
   startLap();
   return true;

@@ -1,4 +1,5 @@
 // The phone in your hand (V8, #73; grid doc 7f) as a view model for the renderer's live phone (phone.js, LIVE).
+import { on, dayName } from '../systems/week';
 // The rules stay in systems/interrupts.ts, preemptive.ts and messages.ts; this only reads them.
 import { SHOP_ITEMS } from '../data/shop';
 import { shopState } from '../systems/shop';
@@ -9,7 +10,6 @@ import { phoneAction } from '../systems/interrupts';
 import { preBlocked } from '../systems/preemptive';
 import { herUnread } from '../systems/messages';
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const unquote = (s: string) => s.replace(/"/g, '');
 
 /** The phone is up in your hand: a call or a text, the idle phone's apps, or a message typing itself. */
@@ -25,7 +25,7 @@ export function chatItems(lines: ChatLine[], extra: Item[] = []): Item[] {
   const out: Item[] = [];
   let prev: ChatLine | null = null;
   for (const l of lines) {
-    if (!prev || prev.night !== l.night) out.push(['date', l.night === S.g.nightsPlayed ? `Today ${fmtClock(l.clock)}` : DAYS[((l.night % 7) + 7) % 7]]);
+    if (!prev || prev.night !== l.night) out.push(['date', l.night === S.g.nightsPlayed ? `Today ${fmtClock(l.clock)}` : dayName(l.day ?? l.night)]);
     else if (l.clock - prev.clock >= 30) out.push(['date', fmtClock(l.clock)]);
     out.push([l.s, l.text]);
     prev = l;
@@ -58,6 +58,7 @@ function gameView(g: PhoneGame, base: Record<string, unknown>) {
 
 /** A pre-emptive action from a chat: ready (gold) or why not (dim, with a lock). */
 function chatAction(id: 'text' | 'raid') {
+  if (!on('messages')) return null;   // Text her and Raid night? come in on Wednesday (#56)
   const why = preBlocked(id);
   return id === 'text'
     ? { ok: !why, label: 'Text her', act: 'pre', arg: 'text', sub: `${T.PRE_TEXT_SEC} s, hands busy`, why }
@@ -70,7 +71,7 @@ export function shopFlashed(id: string) { shopFlash = { id, at: performance.now(
 
 export function phoneView() {
   const n = N(), g = S.g;
-  const base = { time: fmtClock(n.clock), date: `${DAYS[((g.nightsPlayed % 7) + 7) % 7]} night` };
+  const base = { time: fmtClock(n.clock), date: `${dayName()} night` };
   if (n.game?.kind === 'phone') return gameView(n.game, base);
   const p = n.pre;
   if (p && phoneAction()) {   // a message typing itself into the chat
@@ -91,7 +92,7 @@ export function phoneView() {
   if (app === 'shop') {   // the Shop app (step 4.6, #55)
     const tab = n.shopTab ?? 'you';
     return { ...base, screen: 'shop', tab, wallet: Math.floor(g.zl), flash: shopFlash && performance.now() - shopFlash.at < 900 ? shopFlash.id : '',
-      items: SHOP_ITEMS.filter(i => i.tab === tab).map(i => ({ id: i.id, g: i.g, name: i.name, zl: T.SHOP_ZL[i.id], fx: i.fx, state: shopState(i.id) })) };
+      items: SHOP_ITEMS.filter(i => i.tab === tab && (!i.needs || on(i.needs))).map(i => ({ id: i.id, g: i.g, name: i.name, zl: T.SHOP_ZL[i.id], fx: i.fx, state: shopState(i.id) })) };
   }
   return { ...base, screen: 'home', unread: herUnread() };
 }

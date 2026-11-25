@@ -23,7 +23,7 @@ async def main():
             hs = await hits(); h = next((h for h in hs if h['act'] == act and (arg is None or h['arg'] == str(arg))), None)
             assert h, f'no {act}:{arg} on her panel: {[x["act"] + ":" + x["arg"] for x in hs if x["act"]]}'
             await pg.mouse.click(h['x'] * 2 + h['w'], h['y'] * 2 + h['h'])
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog'); n.phoneScript=[]; n.friendsLeft=0; n.dog.next=1e9; n.visit.nextAt=1e9; g.nightsPlayed=1; 0")
         await go('portal'); await pg.wait_for_timeout(800)

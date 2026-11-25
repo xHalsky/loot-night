@@ -11,7 +11,7 @@ import { INSOMNIAC_AFFIXES } from '../src/data/affixes';
 
 let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + msg); if (!c) fails++; };
-S.g = initialState(); startNight(); const n = N();
+S.g = initialState(); S.g.day = 4; startNight(); const n = N();   // Friday: the Witching Hour is on (#56)
 const ins = new Set(INSOMNIAC_AFFIXES.map(a => a.id));
 const roll = (k: number) => { let w = 0, ii = 0, nonLeg = 0; for (let i = 0; i < k; i++) { const it = genItem(8); if (it.witched) w++; if (it.special && ins.has(it.special)) ii++; if (it.rarity !== 'legendary' || it.witched) nonLeg++; } return { w, ii, nonLeg }; };
 n.clock = T.WITCHING_FROM - 10; let r = roll(4000);

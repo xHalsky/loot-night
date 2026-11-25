@@ -12,7 +12,9 @@ and give the map a job between visits.
 ## Now
 
 **Framework.** Verbs used **before** a visit to shape it. An action can push her next visit (a *calm*: no
-visit roll while it runs), set the next visit's type, change Mood, or change a rule (the towel).
+visit roll while it runs), set the next visit's type, change Mood, or change a rule (the towel). By the week
+([night.md](night.md)): Text her and Raid night? from Wednesday (Messages), Make her tea and the towel from Thursday
+(stand-ins for step 6's bubble tea and Door seal).
 
 - **Costs.** Every action costs at least one of:
   - *Hands busy* at the desk (Text her 3 s, the towel 2 s). Skills say "Hands busy", alt-tab is blocked, the

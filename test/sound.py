@@ -11,7 +11,7 @@ async def main():
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox', '--autoplay-policy=no-user-gesture-required'])
         pg = await b.new_page(viewport={'width': 1280, 'height': 720})
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await pg.mouse.click(640, 360)
         await act(pg, '[data-act=newGame]'); await act(pg, '[data-act=howtoClose]')
         await pg.wait_for_timeout(2500)

@@ -24,7 +24,7 @@ async def main():
             return (box[0] + x * box[2], box[1] + y * box[3])
         async def shot(name, wait=150):
             await pg.wait_for_timeout(wait); path = f'test/shots/q4_{name}.png'; await pg.screenshot(path=path, clip={'x': 296, 'y': 0, 'width': 984, 'height': 720}); shots.append((name, path))
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog','inspect:fuel'); n.phoneScript=[]; n.friendsLeft=0; n.visit.nextAt=1e9; n.apt.lastVisitEnd=1e9; n.dog.nextAt=1e9; 0")
         await go('portal'); await pg.wait_for_timeout(600)

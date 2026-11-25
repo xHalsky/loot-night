@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { rules, on, bedAt } from './week';
 import { S, N, isCall, type InterruptKind, type PhoneGame } from '../core/state';
 import { rand, randi, pick } from '../core/rng';
 import { addMood } from './meters';
@@ -27,8 +28,8 @@ export const HER_MSGS = ['are you coming to bed?', 'babe', 'its really late', 'h
 /** Tonight's script, made at 20:00: a minute in each kind's window. */
 export function planPhone() {
   const n = N();
-  n.phoneScript = Object.entries(T.PHONE_SCRIPT).map(([kind, [a, b]]) => ({ kind: kind as InterruptKind, at: Math.round(rand(a, b)), done: false })).sort((x, y) => x.at - y.at);
-  n.friendsLeft = randi(...T.FRIENDS_PER_NIGHT); n.friendsFloor = 0;
+  n.phoneScript = !on('phone') ? [] : Object.entries(T.PHONE_SCRIPT).map(([kind, [a, b]]) => ({ kind: kind as InterruptKind, at: Math.round(rand(a, b)), done: false })).sort((x, y) => x.at - y.at);
+  n.friendsLeft = on('friends') ? rules().friends : 0; n.friendsFloor = 0;   // the week (#56): the phone rings from Wednesday, the boys from Thursday
   n.lastDemand = 0;
 }
 /** The boys call during the floor before a boss floor, once a floor. */
@@ -65,7 +66,7 @@ export function updateInterrupts(dt: number) {
   const due = n.threat >= T.PHONE_FIRST_SEC ? n.phoneScript.find(s => !s.done && n.clock >= s.at) : undefined;
   if (due && spawnInterrupt(due.kind)) due.done = true;
   else if (friendsDue() && spawnInterrupt('friends')) { n.friendsLeft--; n.friendsFloor = n.floor; }
-  else if (n.momCallback && n.threat >= n.momCallback && n.clock < T.BED_FROM && spawnInterrupt('mom')) n.momCallback = 0;
+  else if (n.momCallback && n.threat >= n.momCallback && n.clock < bedAt() && spawnInterrupt('mom')) n.momCallback = 0;
   for (const i of n.interrupts) i.t -= dt;
   const expired = n.interrupts.filter(i => i.t <= 0);
   n.interrupts = n.interrupts.filter(i => i.t > 0);

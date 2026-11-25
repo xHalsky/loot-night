@@ -14,7 +14,7 @@ section in place; never append "round N" notes.
 
 | File | System |
 |---|---|
-| [night.md](night.md) | The night: clocks, endings, stars, sleep debt, Tiredness |
+| [night.md](night.md) | The night and the week: Monday to Sunday, clocks, endings, the replay, stars, sleep debt, Tiredness |
 | [dungeon.md](dungeon.md) | Party, battle, skills, floors and maps, death, the cave diorama |
 | [loot.md](loot.md) | Drops, rarity, items, the bag, lock and auto-salvage |
 | [trees.md](trees.md) | Skill trees, Souls and autocast (#53) |
@@ -26,7 +26,7 @@ section in place; never append "round N" notes.
 | [eye-candy.md](eye-candy.md) | Her moments: built and planned, with tone rules |
 | [redesign-build.md](redesign-build.md) | How the handoff and the visual redesign come into the build, step by step, and where they stand |
 | [handoff-redesign.md](handoff-redesign.md) | Planned, the next build (#52 to #58): real-time RPG, runs, trees and Souls, stars and phone, Q4, the week, the smart home. Where it disagrees with a "Now" section here, it is the plan, not the build |
-| [campaign.md](campaign.md) | Planned: 7 nights, star gates, desk shop, milestones, ending (largely replaced by handoff-redesign.md steps 3 to 5) |
+| [campaign.md](campaign.md) | Planned: 7 nights, star gates, desk shop, milestones, ending (replaced by the stars, the Shop and the week: night.md, desk.md) |
 | [synergy.md](synergy.md) | Planned: the synergy pass, audit of what feeds what, slice vs. arc split |
 | [tech.md](tech.md) | Stack, architecture, save, tests |
 

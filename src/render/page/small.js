@@ -161,14 +161,15 @@ const HOWTO_IDS = ['listen', 'tab', 'answer', 'headset', 'lean'], HOWTO_NEW = ['
 const HOWTO_PAGE = { ids: HOWTO_IDS, isNew: HOWTO_NEW, tiles: HOWTO_TILES, head: 'Tuesday, 20:00',
   foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.' };
 const HOWTO_TH = (tw, o = HOWTO_PAGE) => 70 + Math.max(...o.ids.map((id) => wrapTiny(o.tiles[id][1], tw - 12).length)) * 8 + 4;
-function howtoH(o = HOWTO_PAGE) { const tw = o.ids.length > 4 ? 82 : 104; return 42 + HOWTO_TH(tw, o) + 8 + wrapTiny(o.foot, 452 - 24).length * 8 + 6 + 24; }
+const howtoTW = (o) => Math.floor((452 - 24 - 4 * (o.ids.length - 1)) / o.ids.length);   // 104 for four, 82 for five; three (Monday) fill the card
+function howtoH(o = HOWTO_PAGE) { const tw = howtoTW(o); return 42 + HOWTO_TH(tw, o) + 8 + wrapTiny(o.foot, 452 - 24).length * 8 + 6 + 24; }
 function howtoCard(t, o = HOWTO_PAGE) {
   const w = 452, h = howtoH(o);
   return smLayer(w, h, () => {
     smGlass(0, 0, w, h);
     text(o.head, 12, 9, 'tiny', P.s5); text('How to hide', 12 + measure(o.head, 'tiny') + 8, 9, 'tiny', P.gold);
     text('Hide the game before she sees it.', 12, 22, 'tinyL', P.moon);
-    const ids = o.ids, tw = ids.length > 4 ? 82 : 104, th = HOWTO_TH(tw, o);
+    const ids = o.ids, tw = howtoTW(o), th = HOWTO_TH(tw, o);
     ids.forEach((id, k) => {
       const x = 12 + k * (tw + 4), y = 42, isNew = o.isNew.includes(id);
       rectI(x, y, tw, th, P.s2); rectI(x, y, tw, 1, P.s3);

@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { rules, bedAt } from './week';
 import { S, N, type ActivityId, type Room } from '../core/state';
 import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE } from '../data/apartment';
 import { rand, weighted, chance, clamp } from '../core/rng';
@@ -26,7 +27,7 @@ export function initApartment() {
 export function afterVisit() {
   const a = N().apt;
   a.lastVisitEnd = N().threat;
-  if (N().clock >= T.BED_FROM) { goToBed(T.WAKE_AFTER_VISIT); return; }
+  if (N().clock >= bedAt()) { goToBed(T.WAKE_AFTER_VISIT); return; }
   pickActivity();
 }
 
@@ -54,7 +55,7 @@ function pickActivity() {
   const n = N();
   const a = n.apt;
   let id: ActivityId;
-  if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < T.BED_FROM && chance(T.SHOWER_CHANCE)) { id = 'shower'; a.showerUsed = true; if (!n.headset) tip('shower'); }
+  if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < bedAt() && chance(T.SHOWER_CHANCE)) { id = 'shower'; a.showerUsed = true; if (!n.headset) tip('shower'); }
   else {
     const pool = ACTIVITIES.filter(x => x.weight > 0 && x.id !== a.activity);
     id = pool[weighted(pool.map(x => x.weight))].id;
@@ -108,21 +109,23 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.asleep) return updateSleep(dt);
 
   // High Noise makes her wrap up whatever she is doing (except the shower).
-  a.t -= dt * (heardNoise() > T.NOISE_HURRY ? 2 : 1) * towelPace();   // the towel: she gets up less often
+  // the towel: she gets up less often; the week's visits (#56): she gets through her things faster (not the shower)
+  a.t -= dt * (heardNoise() > T.NOISE_HURRY ? 2 : 1) * towelPace() * (a.activity === 'shower' ? 1 : rules().visits);
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
     a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end); if (!n.headset) tip('endcue');
   }
-  const gap = n.threat - a.lastVisitEnd;
-  if (a.t > 0 && !(a.forceDoor && gap >= T.DOOR_MIN_GAP_SEC)) return null;
-  if (n.clock >= T.BED_FROM) {
+  // how often she comes is the week's (#56): x1 Monday to x1.6 Sunday; the gaps shrink and her odds grow with it
+  const gap = n.threat - a.lastVisitEnd, vm = rules().visits, minGap = T.DOOR_MIN_GAP_SEC / vm, maxGap = T.DOOR_MAX_GAP_SEC / vm;
+  if (a.t > 0 && !(a.forceDoor && gap >= minGap)) return null;
+  if (n.clock >= bedAt()) {
     if (!n.walkby && moodZone(n.mood) === 'green') { n.walkby = true; a.forceKind = 'night'; a.room = 'hallway'; return 'door'; }   // good night, in your hoodie
     goToBed(); return null;
   }
   if (a.calm > 0 && !a.forceDoor) { pickActivity(); return null; }   // a pre-emptive action bought some quiet
-  let p = T.DOOR_BASE_CHANCE + Math.min(100, heardNoise()) * T.DOOR_NOISE_CHANCE + (moodZone(n.mood) === 'red' ? T.DOOR_RED_CHANCE : 0);
+  let p = (T.DOOR_BASE_CHANCE + Math.min(100, heardNoise()) * T.DOOR_NOISE_CHANCE + (moodZone(n.mood) === 'red' ? T.DOOR_RED_CHANCE : 0)) * vm;
   if (n.tired >= T.TIRED_WRECKED) p += 0.15;
-  if (gap > T.DOOR_MAX_GAP_SEC || a.forceDoor) p = 1;
-  if (gap < T.DOOR_MIN_GAP_SEC) p = 0;          // even a forced visit waits for the minimum gap
+  if (gap > maxGap || a.forceDoor) p = 1;
+  if (gap < minGap) p = 0;          // even a forced visit waits for the minimum gap
   if (chance(p)) { a.forceDoor = false; a.room = 'hallway'; return 'door'; }
   pickActivity();
   return null;

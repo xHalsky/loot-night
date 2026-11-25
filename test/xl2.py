@@ -4,7 +4,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
         pg = await b.new_page(viewport={'width':1280,'height':720})
-        await pg.goto('file:///home/claude/loot-night/dist/index.html')
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html')
         await pg.wait_for_timeout(300)
         for s in ['newGame','gate']:
             await pg.evaluate(f"document.querySelector('[data-act={s}]').dispatchEvent(new PointerEvent('pointerdown',{{bubbles:true}}))")

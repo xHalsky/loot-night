@@ -8,7 +8,8 @@ ignoring the interrupt. While a minigame has your hands, skills are paused and F
 
 ### The YOU card (desk, bottom right; #49)
 
-Tired and Zone as bars, and the Goblin Fuel button (see Goblin Fuel energy break). Noise is a row in her panel, under
+Tired and Zone as bars, and the Goblin Fuel button (see Goblin Fuel energy break), each from its night (the week,
+[night.md](night.md)): none on Monday (no card), Tired and Zone from Tuesday, the button from Thursday. Noise is a row in her panel, under
 Goodwill ([screen.md](screen.md)).
 
 | Meter | Rises from | Falls | Matters |
@@ -19,7 +20,8 @@ Goodwill ([screen.md](screen.md)).
 ### The phone
 
 One iPhone on the desk (iPhone proportions, Dynamic Island, left of the keyboard), one thing at a time. The screen
-stays off until something arrives. **Fewer events, each worth taking** (#54, 3.2; `systems/interrupts.ts`): a night
+stays off until something arrives; it rings from Wednesday (the week; Monday and Tuesday you only pick it up for the
+Shop and her chat). **Fewer events, each worth taking** (#54, 3.2; `systems/interrupts.ts`): a night
 has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 
 **The night script** (`PHONE_SCRIPT`, made at 20:00 by `planPhone`; F1 shows what is left):
@@ -29,8 +31,8 @@ has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 | 20:30 to 21:30, once | Courier (call) | Two steps of his line and three replies, get the parcel left with a neighbour; one wrong reply and he leaves (`COURIER_TALK_SEC`). **Your new gaming mouse: skill cooldowns -`COURIER_MOUSE_CD` (10%) until dawn** | No parcel | No parcel ("he leaves a note") |
 | about 21:00, once (+1 callback) | Mom (call) | `MOM_BEATS` (2) lines; her line's ending (… ? !) tells the reply (mhm / really?! / wow), tapped while a marker sweeps through a zone; `MOM_MAX_MISSES` (3). **Party fully healed, the fallen get up** | Mood +`MOM_FAIL_MOOD` and she calls your girlfriend (next visit soon) | Mood +`MOM_DECLINE_MOOD`, she calls back once in 40 to 60 s |
 | about 22:00, once | Boss (texts, with an optional follow-up) | One row of sums (`BOSS_ROWS`), `BOSS_WINDOW_SEC`; wrong total -2 s. **Overtime pay +`BOSS_ZL` (50) zł** | Nothing ("The boss gave up. No overtime tonight.") | (texts can't be declined) |
-| 1 or 2 a night (`FRIENDS_PER_NIGHT`), on the floor before a boss floor, once a floor | The Boys (group call) | Two steps of declining politely; a rude reply = Noise +8 on speaker and a miss, `FRIENDS_MAX_MISSES` misses = fail. **Raid buff: +20% damage, +10% speed until that boss fight ends** | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
-| when she wakes (after midnight) | Her (text) | Tap "Five more minutes, love": waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | (texts can't be declined) |
+| from Thursday, once a night (`NIGHT_SCHEDULE` friends), on the floor before a boss floor | The Boys (group call) | Two steps of declining politely; a rude reply = Noise +8 on speaker and a miss, `FRIENDS_MAX_MISSES` misses = fail. **Raid buff: +20% damage, +10% speed until that boss fight ends** | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
+| when she wakes (from Friday, in bed) | Her (text) | Tap "Five more minutes, love": waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | (texts can't be declined) |
 
 Each time is picked in its window at 20:00; nothing comes before `PHONE_FIRST_SEC` (45 s) into the night. Money rule:
 real life pays in zł or buffs, never RPG loot or gold (the courier's parcel was an item; the boss paid gold).
@@ -93,7 +95,9 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   | New phone | 2,999 | *soon*: the battery comes with step 6 |
   | Flowers (For her) | 49 | +`SHOP_FLOWERS_GOODWILL` (20) Goodwill at once; once a night |
 
-  What you keep is saved (`S.g.owned`); the one-use things reset each night. For her ends on "More for her soon."
+  What you keep is saved (`S.g.owned`); the one-use things reset each night. A thing is listed from the night its
+  thing comes in (the week): Silent keys and Flowers Monday, the Ergo chair Tuesday, the Goblin Fuel, the Mini fridge,
+  the Dog chew and the New phone Thursday. For her ends on "More for her soon."
   (the gifts she wears come with #59). The Goblin Fuel inspect window says where more cans come from.
 
 Sluggish (Tired 70+) shortens every call timer to `SLUGGISH_TIMER_MULT`. F1 has a button for each call (it skips the
@@ -157,7 +161,7 @@ A Win9x hourglass cursor throughout; a relay click at the start, mode change and
 Once per save, the first time the drink matters (grid doc 7k): when you first get tired enough to yawn (`TIRED_YAWN`,
 the Drink button lights) with cans in the drawer and nothing else asking for you, or when you first reach for it (G or
 the Drink button), whichever comes first. A glass window over the dimmed right screen: "In your drawer" (and "New
-tonight" on the first night), the can at full size on an acid glow, bobbing; "Goblin Fuel", "100% greed. Tastes like a
+tonight" the night the drink comes in, Thursday), the can at full size on an acid glow, bobbing; "Goblin Fuel", "100% greed. Tastes like a
 loot drop."; what it does as + and - lines and how to pour it, from the tuning; the cans you have as eight slots
 (`MONSTER_DRAWER`), the empty ones dark; "More in the Shop: 29 zł for four." (from the tuning);
 Drink (G) goes on to the energy break, Later, the close box, Esc or Enter shut it. After that G and Drink go straight
@@ -172,7 +176,7 @@ she leaves).
 
 Click the button; the desk's glass window opens over the right screen, which dims behind it (V5, #70; grid doc 7c):
 "Energy break", "Hands busy: abilities paused", a close box, five step pills (done moss, now gold, to come dim), the
-step's line, and the scene, 392 x 258 on the grid. `MONSTER_PER_NIGHT` (3) cans per night. Real life, so the desk's
+step's line, and the scene, 392 x 258 on the grid. `MONSTER_PER_NIGHT` (3) cans per night from Thursday (a new game has none). Real life, so the desk's
 world: Graphite lit by the monitor, the can in its own print colours, Tiny5. **One camera per scene**: every scene is
 ray-cast through a pinhole camera in centimetres, so the desk, the drawer, the cans and the room share one
 perspective (`render/page/ebreak.js`). The cursor does the handling (the game's pixel hand, open and grabbing, as a
@@ -227,7 +231,7 @@ microsleeps; then a `MONSTER_CRASH_SEC` crash (slower, Tiredness +`MONSTER_CRASH
 
 ### The dog and the cables
 
-A shiba stands on the floor; every `DOG_EVERY_SEC` he jumps up and rests his head and front paws on the desk edge
+A shiba stands on the floor; from Thursday (the week: first at 90 s, then every 120 to 180 s) he jumps up and rests his head and front paws on the desk edge
 in front of the keyboard, whining (a little Noise). He keeps to the one-demand rule (the phone above): his
 arrival slides later while something else asks for you, never drops. The renderer draws him on the desk (grid doc
 7d) and on an overlay over the screen's bottom edge, so his ears rise in front of the taskbar. The first time, a card
@@ -312,8 +316,8 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 - **The Shop as the grid doc has it** (0.76, step 4, #55). Prices and effects are grid doc 7i's (Flowers 49, lowered
   from the handoff's 89 so the first night's Q4 at one click a second pays for them). Only Flowers is in For her:
   the gifts she wears (socks, tee, pajamas, hoodie) and their trade-offs come with fan service (#59), and the Home tab
-  and the new phone's battery with step 6. The free top-up to `MONSTER_PER_NIGHT` cans each night stays until the
-  week (#56) decides which night the drink comes in; the Shop's pack is on top of it, so cans are never scarce yet.
+  and the new phone's battery with step 6. The free top-up to `MONSTER_PER_NIGHT` cans each night stays, from
+  Thursday when the drink comes in (0.77); the Shop's pack is on top of it, so cans are never scarce yet.
   The chew is once a night so one purchase cannot push the dog off a whole night. Rejected: the shop in the morning
   (campaign.md's first plan: buying with the phone in your hand costs hands busy, which is the point); showing the
   her gifts dimmed as "soon" (a wall of things you can't buy on the first night); a Goblin Fuel price per can (four

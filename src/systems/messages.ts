@@ -5,7 +5,7 @@ import { S, N, type ChatLine } from '../core/state';
 // goes between sittings when the chat is drawn (render/phoneView.ts).
 const HER_MAX = 40;
 
-const now = (): { night: number; clock: number } => ({ night: S.g.nightsPlayed, clock: Math.floor(S.g.night?.clock ?? 0) });
+const now = (): { night: number; day: number; clock: number } => ({ night: S.g.nightsPlayed, day: S.g.day ?? S.g.nightsPlayed, clock: Math.floor(S.g.night?.clock ?? 0) });
 
 /** She texts you (l), you text her (r), or a grey note (sys). */
 export function herSay(s: ChatLine['s'], text: string) {

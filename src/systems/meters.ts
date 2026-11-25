@@ -1,4 +1,5 @@
 import { updateRanks } from './ranks';
+import { isWitching } from './affixes';
 import { T } from '../config/tuning';
 import { S, N } from '../core/state';
 import { clamp } from '../core/rng';
@@ -38,7 +39,7 @@ export function updateMeters(dt: number) {
   else n.flow -= rate * T.FLOW_DECAY_MULT * dt;
   n.flow = clamp(n.flow, T.FLOW_MIN, T.FLOW_MAX);
 
-  if (!n.witchingSaid && n.clock >= T.WITCHING_FROM) {   // the Witching Hour (docs/design/synergy.md)
+  if (!n.witchingSaid && isWitching()) {   // the Witching Hour (docs/design/synergy.md)
     n.witchingSaid = true;
     toast('01:00. The Witching Hour: drops can shift up a rarity, and insomniac affixes are out. Bed can wait?', '#c77dff');
   }

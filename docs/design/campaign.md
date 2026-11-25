@@ -1,10 +1,9 @@
 # Campaign (planned, not built)
 
 **Superseded 2026-11-19.** The birthday ending is dropped (the goal is now a Steam release), and the week in
-[handoff-redesign.md](handoff-redesign.md) step 5 (#56) replaces this night plan; the stars are Deep, Unseen and
+[handoff-redesign.md](handoff-redesign.md) step 5 (#56) replaces this night plan (built 0.77: [night.md](night.md), the week); the stars are Deep, Unseen and
 Sweet (step 3, #54). #3 is closed. What follows is kept for its ideas (a dungeon per night, her behaviour per night).
 
-The prototype plays Monday only. Tracked in #3 unless noted.
 
 **Decided 2026-11-16:** Monday first, as a slice that is good on its own (`ROADMAP.md`). Then an arc whose
 length follows the content (3 to 7 nights, "seven" is not fixed), ending with the birthday screen, then

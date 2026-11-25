@@ -17,6 +17,7 @@ import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx, setHeadset, stopAmbience } from '../ui/audio';
 import { cityOutlook } from './town';
+import { rules, on, dayName, howtoOpens } from './week';
 
 export function newNight(): Night {
   return {
@@ -26,7 +27,7 @@ export function newNight(): Night {
     monitor: 'rpg', action: 'none', dropQueue: [], floorLoot: [], fresh: [], lootFly: [], dropPopup: null, reserve: [], run: null, runCard: null, paths: null, safest: 0, mapAway: 0, feature: null, cond: null,
     visit: { stage: 'idle', t: 0, nextAt: 0, fake: false, checked: false, result: '', kind: 'peek' },
     apt: { room: 'living', activity: 'tv', t: 0, moving: 0, soundT: 0, heard: null, heardWhat: '', heardAt: 0, showerUsed: false, lastVisitEnd: 0, forceDoor: false, asleep: false, wake: 0, textSent: false, cued: false, calm: 0, forceKind: null },
-    headset: false, scare: 0, zone: 0, tired: 0, blink: { state: 'open', lid: 0, nextIn: 40 }, boost: 0, crash: 0, cans: 0, bin: [], log: [], peeking: false, peek: 0, peekSus: 0, phoneDown: 0, flipFx: 0, momCallback: 0, switching: null, dog: { stage: 'away', t: 0, next: T.DOG_FIRST_SEC, ignores: 0, limit: 2, pet: 0, sweet: 0, flinch: 0 }, unplugged: null, lap: null, cansHidden: false,
+    headset: false, scare: 0, zone: 0, tired: 0, blink: { state: 'open', lid: 0, nextIn: 40 }, boost: 0, crash: 0, cans: 0, bin: [], log: [], peeking: false, peek: 0, peekSus: 0, phoneDown: 0, flipFx: 0, momCallback: 0, switching: null, dog: { stage: 'away', t: 0, next: rules().dog?.[0] ?? Infinity, ignores: 0, limit: 2, pet: 0, sweet: 0, flinch: 0 }, unplugged: null, lap: null, cansHidden: false,
     interrupts: [], game: null,
     q4: newQ4Night(), shopTonight: [],
     taunt: 0, ward: 0, lastStand: 0, smoke: 0, heist: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
@@ -49,13 +50,13 @@ export function startNight() {
   // last morning's rewards (#54, 3.1): Trust's Goodwill on top of what carried over; a chest that found the bag full
   if (S.g.carry) { addGoodwill(S.g.carry.goodwill, 'Trust: she never caught you last night'); S.g.night.dropQueue.push(...S.g.carry.drops); S.g.carry = undefined; }
   S.g.night.tired = startTired();
-  S.g.monsters = Math.max(S.g.monsters ?? 0, T.MONSTER_PER_NIGHT);
+  if (on('fuel')) S.g.monsters = Math.max(S.g.monsters ?? 0, T.MONSTER_PER_NIGHT);   // the Goblin Fuel comes in on Thursday (#56)
   setHeadset(false); stopAmbience();
   planPhone();   // tonight's phone events (#54, 3.2)
   S.g.screen = 'night';
   S.g.paused = false;
-  S.g.howto = S.g.nightsPlayed === 0;   // the first night opens with the how-to-hide card (#28)
-  toast('Monday, 20:00. Town is quiet. Hit the Dungeon Gate.', '#8fb3ff');
+  S.g.howto = howtoOpens();   // How to hide before the night: the first Monday, and a night with a new tile (#28, #56)
+  toast(`${dayName()}, 20:00. Town is quiet. Hit the Dungeon Gate.`, '#8fb3ff');
 }
 
 /** Checks the three ways a night ends (docs/design/night.md). */
@@ -63,12 +64,15 @@ export function checkNightEnd() {
   const n = N();
   warnRun();
   if (n.mood >= T.MOOD_MAX) endNight('unplugged');
+  else if (rules().end && n.clock >= rules().end) endNight('sleep', true);   // Monday: bedtime ends the night, as a Sleep (#56)
   else if (n.clock >= T.DAWN) endNight('dawn');
 }
 
 /** A forced end (dawn, unplugged) loses the run, so the feed warns once of each while a run is going. */
 function warnRun() {
   const n = N(), w = (n.runWarned ??= {});
+  const end = rules().end;
+  if (end && !w.bed && n.clock >= end - T.BEDTIME_WARN_MIN) { w.bed = true; toast(`Bedtime at ${String(Math.floor(end / 60) % 24).padStart(2, '0')}:00 tonight: the night ends then, your run banked.`, '#8fb3ff'); }
   if (!n.run) return;
   if (!w.dawn && n.clock >= T.DAWN - T.RUN_WARN_DAWN_MIN) { w.dawn = true; toast(`Dawn in ${T.RUN_WARN_DAWN_MIN} minutes. Take the portal, or the run is lost.`, '#ff8a80'); }
   if (!w.plug && n.mood >= T.MOOD_RED) { w.plug = true; toast("She's close to pulling the plug. This run isn't banked.", '#ff8a80'); }
@@ -76,10 +80,10 @@ function warnRun() {
 
 export function canSleep() { const n = N(); return n.clock >= T.EARLIEST_SLEEP && (n.location === 'town' || n.phase !== 'battle'); }
 
-export function endNight(ending: Results['ending']) {
+export function endNight(ending: Results['ending'], bedtime = false) {
   stopAmbience();
   const n = N();
-  if (ending === 'sleep' && !canSleep()) { toast(n.clock < T.EARLIEST_SLEEP ? 'Too early to sleep. Play until at least 23:00.' : 'Finish the battle first.', '#a999bd'); return; }
+  if (ending === 'sleep' && !bedtime && !canSleep()) { toast(n.clock < T.EARLIEST_SLEEP ? 'Too early to sleep. Play until at least 23:00.' : 'Finish the battle first.', '#a999bd'); return; }
   // A run still going: Sleep (your choice) banks it; a forced end (dawn, unplugged) loses it like a wipe, Souls
   // kept (#52, 1.4; decided 2026-11-24: going deeper always carries a risk). What lies on the floor goes with it.
   const bank = ending === 'sleep';
@@ -127,7 +131,9 @@ export function endNight(ending: Results['ending']) {
   S.g.record = Math.max(S.g.record, depth);
   S.g.bestStars = Math.max(S.g.bestStars, stars);
   S.g.nightsPlayed++;
-  S.g.results = { ending, endClock, stars, depth, prevRecord, debtBefore, debtAfter: S.g.sleepDebt, mood: Math.round(n.mood), caught: n.everCaught, unidentified, nearMisses: near, goals, q4: Math.round(n.q4.tonight) };
+  const day = S.g.day ?? 0;
+  if (ending !== 'unplugged') S.g.day = day + 1;   // the week (#56): unplugged, you play the same night again
+  S.g.results = { ending, bedtime: bedtime || undefined, day, endClock, stars, depth, prevRecord, debtBefore, debtAfter: S.g.sleepDebt, mood: Math.round(n.mood), caught: n.everCaught, unidentified, nearMisses: near, goals, q4: Math.round(n.q4.tonight) };
   S.g.screen = 'results';
   sfx.level();
   save();

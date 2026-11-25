@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { on, bedAt } from './week';
 import { S, N } from '../core/state';
 import { PRE_BY_ID, HER_REPLIES, SUSPICIOUS_LINES, type PreId } from '../data/preemptive';
 import { pick, rand, clamp } from '../core/rng';
@@ -17,12 +18,13 @@ import { herSay, boysLog } from './messages';
 /** Why an action can't start right now ('' = it can). These are about you, never about where she is. */
 export function preBlocked(id: PreId): string {
   const n = N();
+  if (!on(id === 'raid' || id === 'text' ? 'messages' : id)) return 'Not tonight';   // the week (#56): the views leave it out
   if (n.pre) return 'Busy';
   if (n.visit.stage !== 'idle' && n.visit.stage !== 'passing') return 'Too late, she is coming';
   if (n.game || n.lap || n.unplugged || n.switching) return 'Hands full';
   if ((id === 'text' || id === 'raid') && n.phoneDown > 0) return 'The phone is face-down';
   if (id === 'raid' && S.g.goodwill < T.GOODWILL_RAID) return `Needs ${T.GOODWILL_RAID} Goodwill (${Math.floor(S.g.goodwill)})`;
-  if (id === 'raid' && (n.clock >= T.BED_FROM || n.apt.asleep)) return 'She is in bed';
+  if (id === 'raid' && (n.clock >= bedAt() || n.apt.asleep)) return 'She is in bed';
   return '';
 }
 

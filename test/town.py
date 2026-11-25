@@ -13,7 +13,7 @@ async def main():
         b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
         pg = await b.new_page(viewport={'width': 1280, 'height': 720})
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e) + (e.stack or '')[:300]))
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await pg.evaluate(GO, 'newGame'); await pg.wait_for_timeout(200); await pg.evaluate(GO, 'howtoClose')
         await pg.evaluate("()=>{const g=window.__lootnight.S.g; g.realLifeOff=true; g.gold=700; g.mats=40; g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map')}")
         await pg.evaluate(ITEMS); await pg.wait_for_timeout(1200)

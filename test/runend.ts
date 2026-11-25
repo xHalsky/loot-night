@@ -11,7 +11,7 @@ let fail = 0;
 const ok = (c: boolean, what: string) => { console.log((c ? 'ok   ' : 'FAIL ') + what); if (!c) fail++; };
 /** A night in the dungeon at 23:30 with 3 banked items, 4 unbanked, 200 unbanked gold and 30 Souls earned. */
 function setup() {
-  S.g = initialState(); S.g.realLifeOff = true; startNight(); S.g.howto = false;
+  S.g = initialState(); S.g.day = 4; S.g.realLifeOff = true; startNight();   // Friday: the night runs to dawn (#56) S.g.howto = false;
   for (let i = 0; i < 3; i++) S.g.bag.push(itemEntry(genItem(3, 1)));
   travelToDungeon();
   const n = N(); n.clock = 23.5 * 60; n.phase = 'walk';

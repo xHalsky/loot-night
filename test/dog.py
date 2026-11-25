@@ -29,7 +29,7 @@ async def main():
         async def stroke(hx, hy, dy, n=6, step=6, wait=22, sweep=34):
             for _ in range(n):
                 for k in range(-sweep // step, sweep // step + 1): await pg.mouse.move(*rs(hx + k * step, hy + dy)); await pg.wait_for_timeout(wait)
-        await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        await pg.add_init_script('window.__lnDay = 4'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await go('howtoClose')
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog'); n.phoneScript=[]; n.friendsLeft=0; n.visit.nextAt=1e9; n.apt.lastVisitEnd=1e9; n.lastDemand=-100; n.apt.calm=0; 0")
         await go('portal'); await pg.wait_for_timeout(800)

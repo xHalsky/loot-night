@@ -1,4 +1,5 @@
 import { q4Look, q4Up } from './q4';
+import { rules, on } from './week';
 import { T } from '../config/tuning';
 import { S, N, type VisitKind } from '../core/state';
 import { chance, pick, weighted } from '../core/rng';
@@ -33,7 +34,7 @@ export function initVisits() {
   const v = N().visit;
   v.stage = 'idle'; v.checked = false; v.result = ''; v.kind = 'peek'; v.chat = null;
   initApartment();
-  N().apt.lastVisitEnd = -(T.DOOR_MAX_GAP_SEC - T.VISIT_FIRST_DELAY_SEC);
+  N().apt.lastVisitEnd = -(T.DOOR_MAX_GAP_SEC / rules().visits - T.VISIT_FIRST_DELAY_SEC);   // her first visit comes VISIT_FIRST_DELAY_SEC in at the latest
 }
 
 function endVisit() {
@@ -42,7 +43,7 @@ function endVisit() {
   if (v.stage === 'in') sfx.doorClose();      // she pulls the door shut behind her
   const passed = v.stage === 'in' && v.result !== 'caught';
   v.stage = 'idle'; v.checked = false; v.chat = null;
-  if (passed && !S.g.tipsSeen.includes('headset')) coach('headset');   // you can listen now: time to learn what the headset costs (#49)
+  if (passed && on('headset') && !S.g.tipsSeen.includes('headset')) coach('headset');   // you can listen now: time to learn what the headset costs (#49)
   n.cansHidden = false;                       // you pull the cans back out
   afterVisit();
 }
@@ -53,7 +54,7 @@ function endVisit() {
 export function pickKind(from: string, woken = false, green = moodZone(N().mood) === 'green', roll = Math.random()): VisitKind {
   if (woken) return 'peek';
   const table = roll < T.VISIT_RANDOM || !T.VISIT_BIAS[from] ? T.VISIT_FLAT : T.VISIT_BIAS[from];
-  const kinds = Object.keys(table).filter(k => k !== 'cuddle' || green) as VisitKind[];
+  const kinds = Object.keys(table).filter(k => on(k) && (k !== 'cuddle' || green)) as VisitKind[];   // the week (#56): chat from Tuesday, cuddle Thursday
   if (!kinds.length) return 'peek';
   return kinds[weighted(kinds.map(k => table[k]))];
 }
@@ -68,7 +69,7 @@ export function startVisit(woken = false, kind?: VisitKind) {
   if (!kind) N().apt.forceKind = null;
   if (v.kind === 'night') v.from = 'night';   // the hoodie outfit
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
-  if (v.kind === 'snack' && !v.fake && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
+  if (v.kind === 'snack' && !v.fake && on('fuel') && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
 }
 export const visitSooner = () => sendHerSoon();
 export const triggerVisitNow = (kind?: VisitKind) => startVisit(false, kind);
@@ -216,7 +217,7 @@ function check() {
 }
 
 // ---------- Snack run ----------
-export const cansInSight = () => { const n = N(); return n.game?.kind === 'monster' || (S.g.monsters > 0 && !n.cansHidden); };
+export const cansInSight = () => { const n = N(); return n.game?.kind === 'monster' || (on('fuel') && S.g.monsters > 0 && !n.cansHidden); };   // before Thursday (#56) there are no cans to find
 
 function snackArrive() {
   const n = N();
