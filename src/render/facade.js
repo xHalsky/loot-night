@@ -46,6 +46,12 @@ export const PK = {
   ebCursor: (kind) => ebCursorURL(kind),
   /** The dog's NO SIGNAL (V6, #71): the monitor's message box drifting on black, 474 x 232. */
   noSignal: (t) => drawNoSignal(t),
+  /** The cuddle break (V9, #74; grid doc 7g) over the right screen, 492 x 360: bg (the right screen, four times a second,
+   *  or null), st { p, warmth, jerk, near, mx, my (window px, null off it), secs }, and the close box's hit. */
+  cuddle: (bg, st, t) => drawCuddleLive(bg, st, t),
+  /** The plan (V9, #74; grid doc 7g) over the whole frame, 640 x 360: frame (what is behind, or null to keep it), the
+   *  game's layout (ui/plan.ts); hits: the close box, then the sheet. */
+  plan: (frame, layout, t) => drawPlanLive(frame, layout, t),
   /** Caught (V7, #72; grid doc 7e): the full-frame scare, 640 x 360. rung 1 to 3, T seconds since the catch, cost the line. */
   caught: (rung, T, cost) => drawCaughtLive(rung, T, cost),
   /** The cable fix (V6): start it on the game's deal and rule; the pointer in scene px; draw it over the right screen. */

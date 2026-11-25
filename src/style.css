@@ -31,8 +31,6 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 #desk.yawn #deskInner{ filter: blur(3px); transition: filter .3s; }
 #deskInner{ position: absolute; inset: 0; transition: filter .6s; }
 #monitor{ position: absolute; left: 32px; top: 26px; width: 616px; height: 352px; }
-#winLayer{ position: absolute; left: 32px; top: 26px; width: 616px; height: 352px; pointer-events: none; }
-#winLayer > *{ pointer-events: auto; }
 .tab2{ height: 24px; padding: 0 10px; display: inline-flex; align-items: center; font-size: 12px; background: #14101a; border: 2px solid #3a2f47; color: #a999bd; }
 .tab2.on{ background: #3a2a52; border-color: #f2b84b; color: #f2e9d8; }
 .headset{ position: absolute; left: 128px; top: 472px; width: 52px; height: 40px; border: 6px solid #2d2838; border-bottom: none; border-radius: 26px 26px 0 0; }
@@ -230,7 +228,6 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 .pile{ position: absolute; left: 380px; bottom: 26px; width: 60px; height: 40px; }
 .pile i{ position: absolute; bottom: 0; width: 12px; height: 26px; border-radius: 3px; background: #3a3d42; box-shadow: inset 0 -3px 0 #8f98a5; }
 .pile span{ position: absolute; left: -10px; bottom: -18px; width: 80px; text-align: center; font-size: 10px; color: #f2e9d8; } @keyframes hl { 50% { transform: translateX(-26px); } } @keyframes hr { 50% { transform: translateX(26px); } } @keyframes hu { 50% { transform: translateY(-18px); } } @keyframes ht { to { transform: scale(1.15); } }
-#winLayer{ z-index: 6; } #toasts{ z-index: 3; }
 .fc{ bottom: 8px; }
 /* door hinges on the left now; handle on the right edge, pulled toward the open desk */
 
@@ -240,12 +237,6 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 .her-btn{ font-family: 'Patrick Hand', sans-serif; font-size: 15px; line-height: 1; padding: 3px 7px; border-radius: 8px; border: 1.5px solid #c9708a; background: #fff; color: #5a2d3c; cursor: pointer; }
 .her-btn:hover{ background: #ffe1ea; }
 .her-btn.big{ background: #e8657f; color: #fff; border-color: #b84562; }
-.cuddle-win{ position: absolute; left: 98px; top: 8px; background: radial-gradient(ellipse at 50% 40%, #5a2c4a, #2a1428 70%); border-radius: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,180,210,.25); color: #ffe6ef; font-family: 'Patrick Hand', sans-serif; cursor: none; overflow: hidden; }
-.cd-head{ padding: 8px 14px 0; font-size: 22px; } .cd-head small{ font-size: 15px; opacity: .75; margin-left: 8px; }
-.cd-foot{ display: flex; align-items: center; gap: 8px; padding: 0 14px 10px; font-size: 16px; }
-.cd-bar{ position: relative; flex: 1; height: 10px; border-radius: 5px; background: rgba(255,255,255,.12); overflow: hidden; }
-.cd-bar i{ position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; transition: width .1s; }
-.cd-bar em{ position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; }
 @keyframes hidePulse { 50% { filter: drop-shadow(0 0 6px #ffb07a); } }
 @keyframes herAlarm { to { transform: rotate(.8deg) scale(1.02); box-shadow: 0 0 0 3px #e75480; } }
 
@@ -274,8 +265,8 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 
 /* ===== Desk layout v3: centered keyboard + mouse, objects placed like a real desk ===== */
 
-#monitor, #monUi, #winLayer { z-index: 4; }
-#monUi{ z-index: 5; } #winLayer{ z-index: 6; }
+#monitor, #monUi { z-index: 4; }
+#monUi{ z-index: 5; }
 /* ===== Left column v2: taller door, square blueprint ===== */
 
 #doorCanvas{ top: 112px !important; }
@@ -365,17 +356,6 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 
 /* Webcam view (#36): the camera on top of his monitor */
 
-/* The plan taken off the wall (#35) */
-#planUi{ position: absolute; inset: 0; z-index: 40; pointer-events: none; }
-#planUi .plan-back{ position: absolute; inset: 0; pointer-events: auto; background: rgba(10,6,14,.35); }
-#planUi .plan-sheet{ position: absolute; left: 30px; top: 110px; width: 364px; padding: 10px 12px 10px; background: #1d4f91; border-radius: 6px; transform: rotate(-1deg);
-  box-shadow: 0 10px 40px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.15); font-family: 'Patrick Hand', sans-serif; color: #eaf3ff; }
-#planUi .plan-sheet::before, #planUi .plan-sheet::after{ content: ''; position: absolute; top: -8px; width: 54px; height: 16px; background: rgba(240,230,200,.75); }
-#planUi .plan-sheet::before{ left: 18px; transform: rotate(-6deg); } #planUi .plan-sheet::after{ right: 18px; transform: rotate(5deg); }
-#planUi .plan-title{ font-size: 22px; margin-bottom: 4px; } #planUi .plan-title small{ font-size: 14px; opacity: .75; margin-left: 6px; }
-#planUi svg{ display: block; margin: 0 auto; }
-#planUi .plan-foot{ font-size: 15px; line-height: 1.15; margin-top: 6px; color: #cfe2ff; }
-#planUi .mg-close{ right: -10px; top: -10px; }
 
 /* First-night onboarding (#28): the pinned tip in the feed, the how-to-hide card */
 .fl.tip{ font-size: 12px; padding: 3px 6px; margin: 2px 5px 0; background: rgba(126,224,138,.10); border-left: 3px solid currentColor; animation: tipIn .4s ease-out; }
@@ -420,7 +400,6 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 #rpgBar{ position: absolute; left: 0; top: 412px; width: 668px; height: 52px; pointer-events: none; }   /* where the skill bar is: coach marks point at it */
 #monitor{ left: 0 !important; top: 0 !important; width: 948px !important; height: 464px !important; }
 #monUi{ left: 0 !important; top: 0 !important; width: 668px !important; height: 464px !important; }
-#winLayer{ left: 0 !important; top: 0 !important; width: 948px !important; height: 464px !important; z-index: 7 !important; }
 #toasts{ left: 24px !important; top: 60px !important; z-index: 6 !important; }
 @keyframes zoneC { 50% { box-shadow: 0 0 60px 16px rgba(79,209,232,.7); } }
 
@@ -452,7 +431,6 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 
 /* windows over the battle area */
 
-.cuddle-win{ left: 124px !important; top: 80px !important; }
 /* her panel fixed slots (#46), tightened so four stat rows plus Noise fit after midnight (#49):
    heard 18, note 60, pre-emptive row 30, then up to four rows of 17 */
 
@@ -524,5 +502,6 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 /* the energy break (V5, #70): the renderer's window over the dimmed right screen, above everything on it */
 #ebArea{ position: absolute; left: 0; top: 0; width: 984px; height: 720px; z-index: 20; image-rendering: pixelated; display: none; touch-action: none; }
 /* the dog's hearts, marks and sounds (V6, #71): over the monitor's live canvases, under the windows */
+#planArea { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 30; image-rendering: pixelated; display: none; }
 #caughtArea { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 40; image-rendering: pixelated; display: none; cursor: pointer; }
 #dogOv { position: absolute; left: 0; top: 0; width: 984px; height: 720px; z-index: 6; image-rendering: pixelated; pointer-events: none; }

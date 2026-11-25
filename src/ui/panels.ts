@@ -17,9 +17,7 @@ import {  COACH } from '../data/tips';
 import { cityOutlook } from '../systems/town';
 import {  PRE_BY_ID, type PreId } from '../data/preemptive';
 import { phoneAction } from '../systems/interrupts';
-import { planSvg } from './plan';
 import { RARITY_COLOR, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
-import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
 import { heroStats, itemPower, heroPower } from '../systems/stats';
 import {  abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, cap } from '../systems/loot';
@@ -64,14 +62,6 @@ export function preBusyHtml(): string {
 }
 
 
-export function planHtml(): string {
-  return `<div class="plan-back"><div class="plan-sheet"><button class="mg-close" title="Back (Esc)">\u2715</button>
-    <div class="plan-title">The plan <small>who hears you, what the crack shows</small></div>
-    ${planSvg(340)}
-    <div class="plan-foot">Your room is at the end of the hallway. Next to it: the kitchen and the living room (through the
-    walls) and the hallway. She hears you best there. The bathroom is further down, the bedroom at the far end.
-    Through the crack: 1 the kitchen, 2 the bathroom door, 3 the far end only when the door is wide.</div></div></div>`;
-}
 
 
 const PHONE_NOTE: Record<string, [string, string]> = {
@@ -96,42 +86,6 @@ const MORNING_CAPTION: Record<MorningScene, string> = {
 
 
 
-
-export function windowHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  if (!n.game) return '';   // the phone in your hand is the renderer's (V8, #73: render/phoneView.ts, main.ts drawPhone)
-  // grey circle with a red X just outside the top-right corner: always a way out
-  // windows sit over the battle area (#49), each with the close button just outside its top-right corner
-  if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:532px;top:66px">\u2715</button>';
-  return '';   // the phone and the energy break are the renderer's (V8, V5: main.ts drawPhone, drawEnergyBreak)
-}
-
-/** Cuddle window: follow her slow breathing (the dot). Static frame; the dot and warmth move in updateWindowDynamics. */
-function cuddleHtml(): string {
-  const pts = Array.from({ length: 61 }, (_, i) => cuddleDot(i / 60).map(v => v.toFixed(1)).join(',')).join(' ');
-  return `<div class="cuddle-win" id="cuddleBox" style="width:${CUDDLE_W}px">
-    <div class="cd-head">Cuddle break <small>stay on her breathing, slowly</small></div>
-    <svg width="${CUDDLE_W}" height="${CUDDLE_H}" viewBox="0 0 ${CUDDLE_W} ${CUDDLE_H}"><polyline points="${pts}" fill="none" stroke="rgba(255,170,200,.35)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle id="cdDot" r="${T.CUDDLE_RADIUS}" fill="rgba(255,140,180,.18)" stroke="rgba(255,190,215,.7)" stroke-width="2"/><circle id="cdCore" r="7" fill="#ffd2e2"/></svg>
-    <div class="cd-foot"><span>warmth</span><div class="cd-bar"><i id="cdWarm"></i><em style="left:${T.CUDDLE_PASS * 100}%"></em></div><span id="cdTime"></span></div>
-  </div>`;
-}
-
-/** Per-frame updates inside the open window (drag positions, hold rings, markers), without re-rendering. */
-export function updateWindowDynamics() {
-  const n = S.g.night;
-  if (!n || !n.game) return;
-  const g = n.game;
-  if (g.kind === 'cuddle') {
-    const [x, y] = cuddleDot(1 - g.t / g.max);
-    for (const id of ['cdDot', 'cdCore']) { const e = document.getElementById(id); if (e) { e.setAttribute('cx', x.toFixed(1)); e.setAttribute('cy', y.toFixed(1)); } }
-    const w = document.getElementById('cdWarm'); if (w) { w.style.width = `${g.warmth * 100}%`; w.style.background = g.jerk > 0 ? '#e0524a' : g.warmth >= T.CUDDLE_PASS ? '#ff8ab0' : '#c9a0b4'; }
-    const tt = document.getElementById('cdTime'); if (tt) tt.textContent = g.jerk > 0 ? 'too fast!' : `${Math.ceil(g.t)} s`;
-    return;
-  }
-  // the phone in your hand is the renderer's now (V8): nothing to move here
-}
 
 // ---------------- UI panel ----------------
 export function entryIcon(e: BagEntry, size: number): string {

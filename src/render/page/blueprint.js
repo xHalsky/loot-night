@@ -25,8 +25,8 @@ const PLAN_WINDOWS = [[2, 22, 2, 62], [78, 2, 102, 2], [152, 2, 188, 2], [2, 120
 const PLAN_NOTE = 'Your room is at the end of the hallway. Next to it: the kitchen and the living room (through the walls) and the hallway. She hears you best there. The bedroom is further down, the bathroom at the far end. Through the crack: 1 the kitchen, 2 the bathroom straight down the hallway, 3 the living room through its open corner.';
 const pu = (u) => Math.round(u * PLAN_S);
 // what the crack can show: every direction through the gap at your door's latch (140, 88.4), cast against the walls
-function planFan() {
-  const o = [140, 88.4], walls = PLAN_WALLS9.filter((w) => w[0] !== 140 || w[2] !== 140), pts = [o];
+function planFan(L = PLAN_PAGE) {
+  const o = L.latch, walls = L.walls.filter((w) => w[0] !== o[0] || w[2] !== o[0]), pts = [o];
   for (let a = -47; a <= 51; a += 0.5) {
     const r = a * Math.PI / 180, d = [-Math.cos(r), Math.sin(r)]; let best = 400;
     for (const [x0, y0, x1, y1] of walls) { const ex = x1 - x0, ey = y1 - y0, den = d[0] * ey - d[1] * ex; if (Math.abs(den) < 1e-9) continue; const t = ((x0 - o[0]) * ey - (y0 - o[1]) * ex) / den, u = ((x0 - o[0]) * d[1] - (y0 - o[1]) * d[0]) / den; if (t > 1e-6 && u >= 0 && u <= 1 && t < best) best = t; }
@@ -54,10 +54,35 @@ function planArc(cx, cy, r, a0, a1, c) {   // degrees, 0 = +x, 90 = +y (down)
   for (let a = a0; a <= a1; a += 0.5) putI(Math.round(X + R * Math.cos((a * Math.PI) / 180)), Math.round(Y + R * Math.sin((a * Math.PI) / 180)), c);
 }
 const ux = (u) => PLAN_O[0] + pu(u), uy = (u) => PLAN_O[1] + pu(u);
-function planSheet(t) {
+// the page's layout: the plan as approved for the lean (grid doc 7l); the game passes its own (planLayout, below)
+const PLAN_PAGE = {
+  walls: PLAN_WALLS9, windows: PLAN_WINDOWS, note: PLAN_NOTE, latch: [140, 88.4],
+  stops: [[116, 68], [46, 90], [26, 125]], digits: [['1', 114, 64], ['2', 40, 89], ['3', 20, 128]],
+  labels: [['BEDROOM', 30, 54], ['BATH', 36, 82], ['KITCHEN', 154, 80], ['HALLWAY', 106, 105], ['LIVING', 66, 176], ['YOU', 152, 141, true]],
+  under() {
+    // furniture (pencil, 1 px)
+    const P_ = PL.pencil;
+    planRect(8, 8, 40, 42, P_); planRect(11, 11, 15, 9, P_); planRect(30, 11, 15, 9, P_); planLine(ux(8), uy(26), ux(48), uy(26), P_);
+    planRect(52, 8, 12, 12, P_); planRect(84, 6, 22, 14, P_); planRect(70, 60, 6, 18, P_);                        // bed, nightstand, wardrobe, her dresser
+    planRect(14, 88, 32, 11, P_, 6); planRect(8, 56, 14, 6, P_); planEllipse(15, 59, 4, 2, P_); planRect(2, 72, 6, 8, P_); planRect(52, 56, 18, 16, P_);   // tub, basin, toilet, shower
+    for (const [a, b, c, d] of [[136, 6, 194, 6], [194, 6, 194, 72], [194, 72, 182, 72], [182, 72, 182, 18], [182, 18, 136, 18], [136, 18, 136, 6]]) planLine(ux(a), uy(b), ux(c), uy(d), P_);
+    planEllipse(188, 30, 3, 3, P_); planEllipse(188, 44, 3, 3, P_); planRect(118, 2, 14, 10, P_); planRect(110, 48, 7, 35, P_); planEllipse(154, 50, 9, 9, P_);
+    for (let j = uy(129); j <= uy(150); j++) { putI(ux(3), j, P_); putI(ux(3) + 1, j, P_); }                      // the TV on the wall
+    planRect(24, 130, 14, 26, P_, 4); planRect(17, 104, 10, 24, P_); planRect(24, 172, 28, 18, P_, 4);              // the couch, her yoga mat
+    planRect(180, 86, 14, 34, P_); for (let j = uy(90); j <= uy(116); j++) { putI(ux(190), j, P_); putI(ux(190) + 1, j, P_); }
+    planEllipse(169, 100, 7, 7, P_); planRect(166, 134, 28, 46, P_); planRect(170, 137, 20, 9, P_); planRect(126, 122, 10, 52, P_);
+    // door swings: the leaf and its quarter circle (pencil)
+    planLine(ux(98), uy(84), ux(98), uy(66), P_); planArc(98, 84, 18, 180, 270, P_);                                // the bedroom's door
+    for (let j = uy(71); j <= uy(85); j++) putI(ux(69), j, P_);                                                       // the bathroom's, slid into its pocket
+    planLine(ux(70), uy(108), ux(96), uy(108), P_, 2);                                                                // the arch's header
+    planLine(ux(140), uy(104), ux(156), uy(104), P_); planArc(140, 104, 16, 270, 360, P_);
+  },
+  over() { for (let i = ux(98); i <= ux(121); i++) putI(i, uy(108) - 1, C9.cyan); },   // the hall mirror
+};
+function planSheet(t, L = PLAN_PAGE) {
   const W = PLAN_AT.w;
   // the note wraps to the sheet; its height sets the sheet's
-  const noteW = W - 14, words = PLAN_NOTE.split(' '), note = []; let cur = '';
+  const noteW = W - 14, words = L.note.split(' '), note = []; let cur = '';
   for (const w of words) { const n = cur ? cur + ' ' + w : w; if (measure(n, 'tiny') > noteW && cur) { note.push(cur); cur = w; } else cur = n; }
   if (cur) note.push(cur);
   const H = PLAN_O[1] + pu(200) + 8 + note.length * 9 + 6;
@@ -79,48 +104,33 @@ function planSheet(t) {
   rectI(ux(0) - 2, uy(0) - 2, pu(200) + 5, pu(200) + 5, PL.paper);
   for (let j = uy(0) - 2; j <= uy(200) + 2; j++) for (let i = ux(0) - 2; i <= ux(200) + 2; i++) if ((i - ux(0)) % 8 === 0 && (j - uy(0)) % 8 === 0) putI(i, j, PL.grid);
   // what the crack shows: the wedge from your door down the hallway, a lighter checker
-  const fan = planFan().map(([a, b]) => [ux(a), uy(b)]);
+  const fan = planFan(L).map(([a, b]) => [ux(a), uy(b)]);
   let fx0 = 1e9, fx1 = -1e9, fy0 = 1e9, fy1 = -1e9; for (const [a, b] of fan) { fx0 = Math.min(fx0, a); fx1 = Math.max(fx1, a); fy0 = Math.min(fy0, b); fy1 = Math.max(fy1, b); }
   for (let j = fy0; j <= fy1; j++) for (let i = fx0; i <= fx1; i++) {
     let c = false; for (let k = 0, m = fan.length - 1; k < fan.length; m = k++) { const [xk, yk] = fan[k], [xm, ym] = fan[m]; if ((yk > j) !== (ym > j) && i < (xm - xk) * (j - yk) / (ym - yk) + xk) c = !c; }
     if (c && ((i + j) & 1)) putI(i, j, PL.grid);
   }
-  // furniture (pencil, 1 px)
   const P_ = PL.pencil;
-  planRect(8, 8, 40, 42, P_); planRect(11, 11, 15, 9, P_); planRect(30, 11, 15, 9, P_); planLine(ux(8), uy(26), ux(48), uy(26), P_);
-  planRect(52, 8, 12, 12, P_); planRect(84, 6, 22, 14, P_); planRect(70, 60, 6, 18, P_);                        // bed, nightstand, wardrobe, her dresser
-  planRect(14, 88, 32, 11, P_, 6); planRect(8, 56, 14, 6, P_); planEllipse(15, 59, 4, 2, P_); planRect(2, 72, 6, 8, P_); planRect(52, 56, 18, 16, P_);   // tub, basin, toilet, shower
-  for (const [a, b, c, d] of [[136, 6, 194, 6], [194, 6, 194, 72], [194, 72, 182, 72], [182, 72, 182, 18], [182, 18, 136, 18], [136, 18, 136, 6]]) planLine(ux(a), uy(b), ux(c), uy(d), P_);
-  planEllipse(188, 30, 3, 3, P_); planEllipse(188, 44, 3, 3, P_); planRect(118, 2, 14, 10, P_); planRect(110, 48, 7, 35, P_); planEllipse(154, 50, 9, 9, P_);
-  for (let j = uy(129); j <= uy(150); j++) { putI(ux(3), j, P_); putI(ux(3) + 1, j, P_); }                      // the TV on the wall
-  planRect(24, 130, 14, 26, P_, 4); planRect(17, 104, 10, 24, P_); planRect(24, 172, 28, 18, P_, 4);              // the couch, her yoga mat
-  planRect(180, 86, 14, 34, P_); for (let j = uy(90); j <= uy(116); j++) { putI(ux(190), j, P_); putI(ux(190) + 1, j, P_); }
-  planEllipse(169, 100, 7, 7, P_); planRect(166, 134, 28, 46, P_); planRect(170, 137, 20, 9, P_); planRect(126, 122, 10, 52, P_);
-  // door swings: the leaf and its quarter circle (pencil)
-  planLine(ux(98), uy(84), ux(98), uy(66), P_); planArc(98, 84, 18, 180, 270, P_);                                // the bedroom's door
-  for (let j = uy(71); j <= uy(85); j++) putI(ux(69), j, P_);                                                       // the bathroom's, slid into its pocket
-  planLine(ux(70), uy(108), ux(96), uy(108), P_, 2);                                                                // the arch's header
-  planLine(ux(140), uy(104), ux(156), uy(104), P_); planArc(140, 104, 16, 270, 360, P_);
+  L.under();
   // walls: 2 px chalk, their openings left open
-  for (const [a, b, c, d] of PLAN_WALLS9) {
+  for (const [a, b, c, d] of L.walls) {
     const x0 = ux(a), y0 = uy(b), x1 = ux(c), y1 = uy(d);
     if (y0 === y1) for (let i = Math.min(x0, x1); i <= Math.max(x0, x1) + 1; i++) { putI(i, y0, C9.moon); putI(i, y0 + 1, C9.moon); }
     else for (let j = Math.min(y0, y1); j <= Math.max(y0, y1) + 1; j++) { putI(x0, j, C9.moon); putI(x0 + 1, j, C9.moon); }
   }
   // windows: the outer wall gives way to a thin double line
-  for (const [a, b, c, d] of PLAN_WINDOWS) {
+  for (const [a, b, c, d] of L.windows) {
     const x0 = ux(a), y0 = uy(b), x1 = ux(c), y1 = uy(d);
     if (b === d && b < 100) for (let i = x0; i <= x1; i++) { putI(i, y0, C9.moon); putI(i, y0 + 1, PL.paper); putI(i, uy(5), P_); }       // top wall
     else if (b === d) for (let i = x0; i <= x1; i++) { putI(i, y0 + 1, C9.moon); putI(i, y0, PL.paper); putI(i, uy(195), P_); }       // bottom wall
     else for (let j = y0; j <= y1; j++) { putI(x0, j, C9.moon); putI(x0 + 1, j, PL.paper); putI(ux(5), j, P_); }                      // left wall
   }
+  L.over();
   // the line of sight from your door, dashed in her pink, and its 1 2 3
-  for (let i = ux(98); i <= ux(121); i++) putI(i, uy(108) - 1, C9.cyan);                                           // the hall mirror
-  for (const [x, y] of [[116, 68], [46, 90], [26, 125]]) planLine(ux(140), uy(88), ux(x), uy(y), C9.rose, 2);
-  for (const [n, x, y] of [['1', 114, 64], ['2', 40, 89], ['3', 20, 128]]) text(n, ux(x), uy(y) - 3, 'tiny', C9.rose, { align: 'c', outline: PL.paper });
+  for (const [x, y] of L.stops) planLine(ux(L.latch[0]), uy(Math.round(L.latch[1])), ux(x), uy(y), C9.rose, 2);
+  for (const [n, x, y] of L.digits) text(n, ux(x), uy(y) - 3, 'tiny', C9.rose, { align: 'c', outline: PL.paper });
   // room names (chalk), YOU in gold
-  const lab = (s, x, y, c = C9.moon) => text(s, ux(x), uy(y) - 6, 'tiny', c, { align: 'c', outline: PL.paper });
-  lab('BEDROOM', 30, 54); lab('BATH', 36, 82); lab('KITCHEN', 154, 80); lab('HALLWAY', 106, 105); lab('LIVING', 66, 176); lab('YOU', 152, 141, C9.gold);
+  for (const [s2, x, y, gold] of L.labels) text(s2, ux(x), uy(y) - 6, 'tiny', gold ? C9.gold : C9.moon, { align: 'c', outline: PL.paper });
   PLAN_O[1] -= oy;
   // the note, the digits in her pink
   let ny = oy + PLAN_O[1] + pu(200) + 8;
@@ -169,4 +179,59 @@ function drawPlan(ctx, t) {
   }
   ctx.putImageData(img, 0, 0);
   ctx.drawImage(sh, X, Y);
+}
+
+// ---------------------------------------------------------------- live (V9, #74): the game's plan
+// The game passes its apartment as data (ui/plan.ts): walls, windows, furniture as simple shapes in sheet units, door
+// swings, the crack's stops and their digits, the room names and the note. Until the plan change (V12) it is the
+// build's layout, drawn in the page's look.
+function planLayout(G) {
+  const P_ = PL.pencil;
+  return {
+    walls: G.walls, windows: G.windows, note: G.note, latch: G.latch, stops: G.stops, digits: G.digits, labels: G.labels,
+    under() {
+      for (const f of G.furniture) {
+        const [k, ...a] = f;
+        if (k === 'r') planRect(a[0], a[1], a[2], a[3], P_, a[4] || 0);
+        else if (k === 'e') planEllipse(a[0], a[1], a[2], a[3], P_);
+        else if (k === 'l') planLine(ux(a[0]), uy(a[1]), ux(a[2]), uy(a[3]), P_);
+        else if (k === 'p') for (let i = 0; i + 3 < a.length; i += 2) planLine(ux(a[i]), uy(a[i + 1]), ux(a[i + 2]), uy(a[i + 3]), P_);
+        else if (k === 'v') for (let j = uy(a[1]); j <= uy(a[2]); j++) { putI(ux(a[0]), j, P_); putI(ux(a[0]) + 1, j, P_); }   // 2 px, on a wall (a TV, a monitor)
+      }
+      for (const [x0, y0, x1, y1, cx, cy, r, a0, a1] of G.swings) { planLine(ux(x0), uy(y0), ux(x1), uy(y1), P_); planArc(cx, cy, r, a0, a1, P_); }
+    },
+    over() {},
+  };
+}
+let PLAN_LIVE = null, PLAN_LIVE_G = null, PLAN_OUT = null, PLAN_K = null;
+// the dim behind the sheet: per pixel, the 42% (softer in the shadow round the sheet) and the ordered dither's offset,
+// worked out once for where the sheet sits
+function planDimTable(SW, SH) {
+  const X = PLAN_AT.x, Y = PLAN_AT.y - 4, K = new Float32Array(640 * 360), TH = new Float32Array(640 * 360);
+  for (let j = 0; j < 360; j++) for (let i = 0; i < 640; i++) {
+    const ex = Math.max(X + 2 - i - 0.5, i + 0.5 - (X + SW + 2), 0), ey = Math.max(Y + 4 - j - 0.5, j + 0.5 - (Y + SH + 4), 0), d = Math.hypot(ex, ey);
+    K[j * 640 + i] = 0.42 * (d < 8 ? 0.55 + 0.45 * (d / 8) : 1); TH[j * 640 + i] = (BAYER8[((j & 7) << 3) | (i & 7)] - 0.5) * 16;
+  }
+  return { K, TH, SW, SH };
+}
+// frame: the 640 x 360 picture behind (her panel and the right screen), or null to keep the last; G: the game's layout
+function drawPlanLive(frame, G, t) {
+  if (PLAN_LIVE_G !== G) { PLAN_LIVE_G = G; const c = planSheet(t, planLayout(G)); PLAN_LIVE = document.createElement('canvas'); PLAN_LIVE.width = c.width; PLAN_LIVE.height = c.height; PLAN_LIVE.getContext('2d').drawImage(c, 0, 0); }
+  const SW = PLAN_LIVE.width, SH = PLAN_LIVE.height, X = PLAN_AT.x, Y = PLAN_AT.y - 4;
+  if (!PLAN_OUT) { PLAN_OUT = document.createElement('canvas'); PLAN_OUT.width = 640; PLAN_OUT.height = 360; }
+  if (!PLAN_K || PLAN_K.SW !== SW || PLAN_K.SH !== SH) PLAN_K = planDimTable(SW, SH);
+  const ctx = PLAN_OUT.getContext('2d', { willReadFrequently: true });
+  if (frame) {
+    ctx.drawImage(frame, 0, 0);
+    const img = ctx.getImageData(0, 0, 640, 360), D = img.data, { K, TH } = PLAN_K;
+    for (let p = 0, o = 0; p < 640 * 360; p++, o += 4) {
+      const k = K[p], th = TH[p];
+      const c = dimNearest(Math.max(0, Math.min(255, (D[o] * k + th + 0.5) | 0)), Math.max(0, Math.min(255, (D[o + 1] * k + th + 0.5) | 0)), Math.max(0, Math.min(255, (D[o + 2] * k + th + 0.5) | 0)));
+      D[o] = c[0]; D[o + 1] = c[1]; D[o + 2] = c[2];
+    }
+    ctx.putImageData(img, 0, 0);
+    ctx.drawImage(PLAN_LIVE, X, Y);
+  }
+  // the close box (the sheet's top right), and the sheet itself (a click on it does nothing; anywhere else closes)
+  return { canvas: PLAN_OUT, hits: [{ x: X + PLAN_AT.w - 17, y: Y + 4 + 8, w: 12, h: 12, act: 'planClose', arg: '', tip: '' }, { x: X, y: Y, w: PLAN_AT.w, h: SH - 10 + 4, act: '', arg: '', tip: '' }] };
 }

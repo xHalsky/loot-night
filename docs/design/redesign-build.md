@@ -25,6 +25,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
   Left as DOM for now: the pop-up windows, Excel's content (its step).
 - **V5, the energy break, 0.68.0:** the five scenes ray-cast through their cameras over the dimmed right screen, on the
   game's own physics (desk.md, Goblin Fuel energy break); baked ahead in idle time.
+- **V9, her windows, 0.71.0:** the cuddle break in her PC-98 window over the dimmed right screen, the plan as the
+  page's pixel blueprint, from the game's current layout until V12 brings the new one (her.md).
 - **V7, caught, 0.70.0:** her PC-98 portrait in the doorway over the whole frame, the text window with what the catch
   cost, the 0.8 s scare, then held until a click or a key (her.md, the caught screen).
 - **V6, the dog and the cable fix, 0.69.0:** the shiba on the desk and over the screen's edge (an overlay canvas),
@@ -69,3 +71,4 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 13 | V5 (#70): the energy break | 0.68.0 |
 | 14 | V6 (#71): the dog and the cable fix | 0.69.0 |
 | 15 | V7 (#72): caught | 0.70.0 |
+| 16 | V9 (#74): her windows (the cuddle break, the plan) | 0.71.0 |

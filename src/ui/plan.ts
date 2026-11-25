@@ -1,5 +1,5 @@
 // The apartment plan (docs/design/her.md, "The plan"): the blue sheet taped to his wall. One layout for the big
-// sheet (planSvg) and the corner in the webcam view (door.ts), drawn to match the hallway seen through the crack.
+// sheet (PLAN, drawn by the renderer) and the corner in the webcam view (door.ts), drawn to match the hallway seen through the crack.
 // Your door is at the hallway's end, so the crack looks straight down it: on the right wall the kitchen's open
 // doorway first, then the bathroom door; at the far end the living room's opening (left) and the bedroom door (right).
 // Who hears what (ROOM_DISTANCE): the kitchen and the living room share your walls and the hallway starts at your
@@ -19,27 +19,24 @@ export const PLAN_WALLS: [number, number, number, number][] = [
 /** Your room's centre (the gold YOU). */
 export const PLAN_YOU: [number, number] = [152, 140];
 
-export function planSvg(size: number): string {
-  const W = 'stroke="#eaf3ff" stroke-width="2.2" fill="none" stroke-linecap="square"', F = 'stroke="#cfe2ff" stroke-width="1" fill="none" opacity=".8"';
-  const walls = PLAN_WALLS.map(([a, b, c, d]) => `M${a} ${b}L${c} ${d}`).join('');
-  const sight = '#ff9aa8';
-  return `<svg viewBox="0 0 200 200" width="${size}" height="${size}">
-    <defs><pattern id="bpGrid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="rgba(255,255,255,.08)" stroke-width=".6"/></pattern></defs>
-    <rect width="200" height="200" fill="#1d4f91"/><rect width="200" height="200" fill="url(#bpGrid)"/>
-    <path d="M140 96 L70 87 M140 96 L70 106" fill="none" stroke="${sight}" stroke-width="1" stroke-dasharray="3 3" opacity=".6"/>
-    <path d="${walls}" ${W}/>
-    <path d="M80 84 V66 A18 18 0 0 1 98 84 M70 86 H61 A9 9 0 0 0 70 95 M140 104 H156 A16 16 0 0 0 140 88" ${F}/>
-    <path d="M2 22 V62 M5 22 V62 M78 2 H102 M78 5 H102 M152 2 H188 M152 5 H188 M2 120 V176 M5 120 V176 M22 198 H90 M22 195 H90 M150 198 H188 M150 195 H188" stroke="#eaf3ff" stroke-width="1"/>
-    <rect x="8" y="8" width="40" height="52" ${F}/><rect x="11" y="11" width="15" height="9" ${F}/><rect x="30" y="11" width="15" height="9" ${F}/><path d="M8 28 H48" ${F}/>
-    <rect x="52" y="8" width="12" height="12" ${F}/><rect x="52" y="26" width="14" height="30" ${F}/>
-    <rect x="74" y="6" width="22" height="46" rx="6" ${F}/><rect x="99" y="6" width="9" height="14" ${F}/><ellipse cx="103" cy="38" rx="5" ry="7" ${F}/>
-    <path d="M136 6 H194 V72 H182 V18 H136 Z" ${F}/><circle cx="188" cy="30" r="3" ${F}/><circle cx="188" cy="44" r="3" ${F}/><rect x="114" y="6" width="16" height="20" ${F}/><circle cx="154" cy="50" r="9" ${F}/>
-    <path d="M8 116 V160" stroke="#cfe2ff" stroke-width="2.4"/><rect x="30" y="126" width="24" height="26" ${F}/><rect x="72" y="116" width="20" height="52" rx="4" ${F}/><rect x="24" y="172" width="28" height="18" rx="4" ${F}/>
-    <rect x="180" y="86" width="14" height="34" ${F}/><path d="M190 90 V116" stroke="#cfe2ff" stroke-width="2"/><circle cx="169" cy="100" r="7" ${F}/><rect x="166" y="134" width="28" height="46" ${F}/><rect x="170" y="137" width="20" height="9" ${F}/><rect x="126" y="122" width="10" height="52" ${F}/>
-    <g font-family="Patrick Hand, sans-serif" font-size="11" fill="#eaf3ff" letter-spacing=".8" text-anchor="middle">
-      <text x="30" y="82">BEDROOM</text><text x="89" y="62" font-size="9">BATH</text><text x="154" y="78" font-size="9">KITCHEN</text>
-      <text x="106" y="105" font-size="8">HALLWAY</text><text x="46" y="112" font-size="10">LIVING</text>
-      <text x="${PLAN_YOU[0]}" y="${PLAN_YOU[1]}" fill="#ffd27a">YOU</text></g>
-    <g font-family="Patrick Hand, sans-serif" font-size="9" fill="${sight}" text-anchor="middle"><text x="124" y="94">1</text><text x="89" y="94">2</text><text x="76" y="100">3</text></g>
-  </svg>`;
-}
+/** The whole plan as data for the renderer's blueprint (V9, #74; grid doc 7g), in the same 200 x 200 sheet units.
+ *  Furniture: ['r', x, y, w, h, round?] a box, ['e', cx, cy, rx, ry] an ellipse, ['l', x0, y0, x1, y1] a line,
+ *  ['p', x, y, x, y, ...] a polyline, ['v', x, y0, y1] a thick line on a wall. Swings: the leaf (x0 y0 to x1 y1) and its
+ *  arc (centre, radius, degrees from +x, clockwise). Stops: where the crack's sight lines go, 1 2 3. */
+export const PLAN = {
+  walls: PLAN_WALLS,
+  windows: [[2, 22, 2, 62], [78, 2, 102, 2], [152, 2, 188, 2], [2, 120, 2, 176], [22, 198, 90, 198], [150, 198, 188, 198]],
+  furniture: [
+    ['r', 8, 8, 40, 52], ['r', 11, 11, 15, 9], ['r', 30, 11, 15, 9], ['l', 8, 28, 48, 28], ['r', 52, 8, 12, 12], ['r', 52, 26, 14, 30],   // her bed, the nightstand, the wardrobe
+    ['r', 74, 6, 22, 46, 6], ['r', 99, 6, 9, 14], ['e', 103, 38, 5, 7],                                                                   // the bathtub, the basin, the toilet
+    ['p', 136, 6, 194, 6, 194, 72, 182, 72, 182, 18, 136, 18, 136, 6], ['e', 188, 30, 3, 3], ['e', 188, 44, 3, 3], ['r', 114, 6, 16, 20], ['e', 154, 50, 9, 9],   // the kitchen
+    ['v', 8, 116, 160], ['r', 30, 126, 24, 26], ['r', 72, 116, 20, 52, 4], ['r', 24, 172, 28, 18, 4],                                  // the TV, the coffee table, the sofa, the pouf
+    ['r', 180, 86, 14, 34], ['v', 190, 90, 116], ['e', 169, 100, 7, 7], ['r', 166, 134, 28, 46], ['r', 170, 137, 20, 9], ['r', 126, 122, 10, 52],   // your desk, monitor, chair, bed, the shelf
+  ],
+  swings: [[80, 84, 80, 66, 80, 84, 18, 270, 360], [70, 86, 61, 86, 70, 86, 9, 90, 180], [140, 104, 156, 104, 140, 104, 16, 270, 360]],
+  latch: [140, 88.4],
+  stops: [[116, 68], [89, 85], [62, 101]],
+  digits: [['1', 114, 64], ['2', 89, 94], ['3', 62, 110]],
+  labels: [['BEDROOM', 30, 82], ['BATH', 89, 62], ['KITCHEN', 154, 78], ['HALLWAY', 112, 105], ['LIVING', 46, 166], ['YOU', 152, 140, true]],
+  note: 'Your room is at the end of the hallway. Next to it: the kitchen and the living room (through the walls) and the hallway. She hears you best there. The bathroom is further down, the bedroom at the far end. Through the crack: 1 the kitchen, 2 the bathroom door, 3 the far end only when the door is wide.',
+};

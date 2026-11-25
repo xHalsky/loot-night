@@ -34,13 +34,14 @@ async def main():
         await ev("g.tipsSeen.push('coach:loot','coach:steps','coach:door','coach:phone','coach:windup','coach:headset','map','phone','dog'); n.phoneScript=[]; n.friendsLeft=0; n.visit.nextAt=1e9; n.apt.lastVisitEnd=1e9; n.lastDemand=-100; n.apt.calm=0; 0")
         await go('portal'); await pg.wait_for_timeout(800)
         # 1 he jumps up; 2 he waits (the first time: the card)
-        await ev("n.dog.sweet=2; n.lastDemand=-100; n.apt.activity='tv'; 0"); await go("dbgDog"); await pg.wait_for_timeout(250); await shot('1_jump', 0)
+        await ev("n.lastDemand=-100; n.apt.activity='tv'; 0"); await go("dbgDog"); await ev("n.dog.sweet=2; 0")   # his favourite spot: the chin (the jump picks one at random)
+        await pg.wait_for_timeout(250); await shot('1_jump', 0)
         await shot('2_wait', 1200)
         hx, hy = await head()
         # 3 petting, slowly, over his crown
         await stroke(hx, hy, -30, n=1); await shot('3_petting', 0, move=False)
         # 5 too fast: a quick swipe
-        await pg.mouse.move(700, 60); await pg.mouse.move(*rs(hx - 36, hy - 30)); await pg.mouse.move(*rs(hx + 36, hy - 30), steps=3)   # one quick flick (about 1400 grid px/s)
+        await pg.mouse.move(700, 60); await pg.mouse.move(*rs(hx - 36, hy - 30)); await pg.mouse.move(*rs(hx + 36, hy - 30))   # one quick flick: 72 grid px in one event (well over DOG_FAST)
         fl = await ev("n.dog.flinch > 0 && n.dog.stage === 'up'")
         await shot('5_too_fast', 60, move=False)
         # 4 his favourite spot (the chin, sweet 2), then 7 good boy and the lucky sock (mostly on the spot: start him over)

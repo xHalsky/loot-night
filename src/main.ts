@@ -5,7 +5,7 @@ import {  S, N, initialState } from './core/state';
 import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { hover, tooltipHtml, entryIcon, updateWindowDynamics, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, preBusyHtml, morningScene, planHtml, coachHtml } from './ui/panels';
+import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, preBusyHtml, morningScene, coachHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -25,6 +25,8 @@ import { openMonster, cancelMonster } from './systems/monster';
 import { monsterView, monsterTilt, monsterDown, monsterMove, monsterUp, monsterGrabbing, EB_SCENE } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawLapFx, lapUiHtml } from './ui/deskFx';
+import { cuddleView, winToCuddle, CUD_WIN } from './render/herWinView';
+import { PLAN } from './ui/plan';
 import { caughtTick, caughtT, caughtEnd, caughtShot } from './render/caughtView';
 import { dogStroked, DOG_SPOTS } from './render/dogView';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
@@ -70,7 +72,6 @@ stage.innerHTML = `
         <canvas id="spArea" width="140" height="232"></canvas><div id="spBag" aria-hidden="true"></div>
         <div id="monUi"></div>
         <div id="ui"></div>
-        <div id="winLayer"></div>
         <div id="toasts"></div>
       </div>
       <canvas id="dogOv" width="492" height="360"></canvas>
@@ -82,7 +83,7 @@ stage.innerHTML = `
   <div id="lapUi"></div>
   <div id="screens"></div>
   <div id="pause"></div>
-  <div id="planUi"></div>
+  <canvas id="planArea" width="640" height="360"></canvas>
   <div id="coachUi"></div>
   <canvas id="pkFrame" width="${GRID_W}" height="${GRID_H}"></canvas>
   <div id="debug"></div>
@@ -283,8 +284,11 @@ document.addEventListener('pointerdown', ev => {
   if (t.id === 'rsArea' && deskHitAt(ev)?.act === 'phone') { ev.preventDefault(); ev.stopImmediatePropagation(); pswipe = { x0: ev.clientX, dx: 0, moved: false }; sfx.click(); }   // the phone lying on the desk (V3)
 }, true);
 document.addEventListener('pointermove', ev => {
-  const box = document.getElementById('cuddleBox');
-  if (box && S.g.night?.game?.kind === 'cuddle') { const r = box.getBoundingClientRect(); cuddlePointer((ev.clientX - r.left) / stageScale, (ev.clientY - r.top - 34 * stageScale) / stageScale); }
+  if (S.g.night?.game?.kind === 'cuddle') {   // V9 (#74): her heart follows the mouse anywhere, the hand only over her window
+    const [x, y] = ebXY(ev), wx = x - CUD_WIN.x, wy = y - CUD_WIN.y;
+    cuddlePointer(...winToCuddle(wx, wy));
+    cudMouse = wx >= 0 && wy >= 0 && wx < CUD_WIN.w && wy < CUD_WIN.h ? [wx, wy] : null;
+  }
   if (!pswipe) return;
   pswipe.dx = (ev.clientX - pswipe.x0) / stageScale;
   if (Math.abs(pswipe.dx) > 6) pswipe.moved = true;
@@ -401,9 +405,6 @@ herCanvas.addEventListener('pointermove', ev => {
   hover.key = tip || ''; hover.x = p.x; hover.y = p.y;
 });
 herCanvas.addEventListener('pointerleave', () => { if (herHover) herDirty = true; herHover = ''; hover.key = ''; });
-el('planUi').addEventListener('pointerdown', ev => {   // a click outside the sheet closes it
-  if (!(ev.target as HTMLElement).closest('.plan-sheet') || (ev.target as HTMLElement).closest('.mg-close')) { ev.preventDefault(); ev.stopPropagation(); planOpen = false; }
-});
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
 document.addEventListener('keyup', ev => { if (ev.key === ' ' || ev.code === 'Space') { monsterTilt(false); if (S.g.night?.game?.kind === 'monster') ev.preventDefault(); } });
 window.addEventListener('blur', () => monsterTilt(false));
@@ -533,6 +534,7 @@ function placeCoach() {
 
 // ---------- The energy break (V5, #70; grid doc 7c): the renderer's window over the dimmed right screen ----------
 const ebCanvas = el('ebArea') as HTMLCanvasElement, ebCtx = ebCanvas.getContext('2d')!;
+let cudMouse: [number, number] | null = null;   // the cursor over her cuddle window (window px), or off it
 let ebHits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] = [], ebOdd = false, ebBgLast = 0, ebWarmDone = '', ebIdle = false;
 // the cable fix (V6, #71; grid doc 7d): its window, like the break's, while the cables are out. The dog's slam plays
 // first (the room behind the monitor bakes meanwhile); when all are in it stays a moment ("Signal back"). Its close box
@@ -553,8 +555,16 @@ function cableMode(now: number): boolean {
 }
 function drawEnergyBreak() {
   const now = performance.now(), cab = cableShown = PK.ready() && !!S.g.night && cableMode(now);
-  const v = !cab && PK.ready() ? monsterView() : null;
-  ebCanvas.style.display = v || cab ? 'block' : 'none';
+  const v = !cab && PK.ready() ? monsterView() : null, cud = !cab && PK.ready() && S.g.night?.game?.kind === 'cuddle';
+  ebCanvas.style.display = v || cab || cud ? 'block' : 'none';
+  if (cud) {   // V9 (#74): the cuddle break in her window over the dimmed right screen, 30 fps
+    ebOdd = !ebOdd; if (!ebOdd) return;
+    const bg = now - ebBgLast > 250 ? rsCanvas : null; if (bg) ebBgLast = now;
+    const r = PK.cuddle(bg, cuddleView(cudMouse), now / 1000);
+    ebCtx.drawImage(r.canvas, 0, 0); ebHits = r.hits;
+    return;
+  }
+  cudMouse = null;
   if (cab) {
     ebOdd = !ebOdd; if (!ebOdd) return;
     const bg = now - ebBgLast > 250 ? rsCanvas : null; if (bg) ebBgLast = now;
@@ -592,6 +602,11 @@ ebCanvas.addEventListener('pointerdown', ev => {
 });
 ebCanvas.addEventListener('pointermove', ev => {
   const [x, y] = ebXY(ev), p = toStage(ev), h = ebHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h);
+  if (S.g.night?.game?.kind === 'cuddle') {   // your hand is the cursor over her window (drawn by the renderer)
+    ebCanvas.style.cursor = h ? 'pointer' : cudMouse ? 'none' : 'default';
+    hover.key = h ? `text:Pull away, back to the game. She won't like it (Mood +${T.CUDDLE_REFUSE_MOOD}).` : ''; hover.x = p.x; hover.y = p.y;
+    return;
+  }
   if (cableShown) {
     const on = inEbScene(x, y) && PK.cableMove(x - EB_SCENE.x, y - EB_SCENE.y);
     ebCanvas.style.cursor = h ? 'pointer' : on ? PK.ebCursor(PK.cableDragging() ? 'grab' : 'hand') : 'default';
@@ -623,6 +638,29 @@ window.addEventListener('pointerdown', ev => {
   if (caughtT(now) < 0 || (ev.target as HTMLElement).closest('#debug')) return;
   ev.preventDefault(); ev.stopImmediatePropagation(); caughtEnd(now);
 }, true);
+// The plan (V9, #74): the renderer's blueprint off the wall over her panel; everything behind it dims. The sheet is
+// drawn once; what is behind, four times a second (it is dimmed, and the plan is read, not played over).
+const planCanvas = el('planArea') as HTMLCanvasElement, planCtx = planCanvas.getContext('2d')!;
+const planFrame = document.createElement('canvas'); planFrame.width = 640; planFrame.height = 360;
+let planHits: { x: number; y: number; w: number; h: number; act: string }[] = [], planAt = 0, planWas = false;
+function drawPlanScreen() {
+  const on = planOpen && PK.ready() && !!S.g.night && S.g.screen === 'night';
+  if (on !== planWas) { planWas = on; planCanvas.style.display = on ? 'block' : 'none'; planAt = 0; if (!on) planHits = []; }
+  if (!on) return;
+  const now = performance.now(); if (now - planAt < 250) return; planAt = now;
+  const f = planFrame.getContext('2d')!; f.drawImage(herCanvas, 0, 0); f.drawImage(rsCanvas, 148, 0);   // her panel and the right screen (the game screen is in it)
+  const r = PK.plan(planFrame, PLAN, now / 1000);
+  planCtx.drawImage(r.canvas, 0, 0); planHits = r.hits;
+}
+const planXY = (ev: PointerEvent) => { const r = planCanvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 640, ((ev.clientY - r.top) / r.height) * 360] as const; };
+const planHitAt = (ev: PointerEvent) => { const [x, y] = planXY(ev); return planHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h) ?? null; };
+planCanvas.addEventListener('pointerdown', ev => {   // the ✕ or a click outside the sheet closes it; a click on the sheet does nothing
+  ev.preventDefault(); ev.stopPropagation();
+  const h = planHitAt(ev);
+  if (!h || h.act === 'planClose') { planOpen = false; sfx.click(); }
+});
+planCanvas.addEventListener('pointermove', ev => { const h = planHitAt(ev); planCanvas.style.cursor = !h || h.act === 'planClose' ? 'pointer' : 'default'; hover.key = ''; });
+
 (window as unknown as Record<string, unknown>).__lnCaught = () => ({ t: caughtT(performance.now()), ...caughtShot() });   // for the tests
 el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
@@ -737,7 +775,7 @@ function render() {
   const tNow = performance.now(), covered = PK.ready() && caughtT(tNow) >= 0;   // her caught screen covers the whole frame (V7): nothing under it draws
   if (!covered && (herDirty || (tNow - herLast >= 62 && (tNow - liveDrewAt() >= 8 || tNow - herLast >= 150)))) { herLast = tNow; herDirty = false; drawDoor(doorCtx); drawHerPanel(); }
   // under the energy break the right screen is dimmed behind its window: drawn four times a second, for the dim
-  const behind = !(n?.game?.kind === 'monster' && PK.ready()) || performance.now() - ebBgLast > 200;
+  const behind = !((n?.game?.kind === 'monster' || n?.game?.kind === 'cuddle') && PK.ready()) || performance.now() - ebBgLast > 200;
   if (behind && !covered) {
     drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
     drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
@@ -752,11 +790,9 @@ function render() {
   if (n) {
     setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
     setHtml('monUi', monUiLiveHtml());   // the run end card over the town; the rest of the RPG is the renderer's
-    setHtml('winLayer', windowHtml());
     el('ui').classList.toggle('cv', livePanelShown());   // the panel is drawn by the renderer: the DOM keeps only its item windows
     setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : '');   // dark until the renderer's fonts load
     setHtml('toasts', toastsHtml());
-    updateWindowDynamics();
     drawLapFx();
     setHtml('lapUi', lapUiHtml());
     setHtml('preUi', preBusyHtml());
@@ -773,7 +809,7 @@ function render() {
   const ma = document.getElementById('morningArt') as HTMLCanvasElement | null;
   if (ma) drawHerBed(ma.getContext('2d')!, performance.now() / 1000, morningScene());
   if (!g.night || g.screen !== 'night') planOpen = false;
-  setHtml('planUi', planOpen ? planHtml() : '');
+  drawPlanScreen();   // V9 (#74): the plan off the wall, drawn by the renderer
   setHtml('coachUi', g.screen === 'night' && !g.paused && !g.howto && !(g.night?.scare) && caughtT(performance.now()) < 0 ? coachHtml() : '');   // never over the caught screen
   placeCoach();
   setHtml('pause', pauseHtml());

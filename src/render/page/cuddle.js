@@ -164,3 +164,19 @@ function cuddleStep(st, dt, mx, my) {
   st.done = st.p >= 1;
   return st;
 }
+
+// ---------------------------------------------------------------- live (V9, #74): the game's cuddle
+// The rules stay the game's (systems/cuddle.ts, in the build's units, twice the grid's); the view comes in window px.
+// bg: the right screen to dim behind the window (four times a second, as under the energy break), or null to keep it.
+let CUD_BG = null, CUD_OUT = null;
+function drawCuddleLive(bg, st, t) {
+  if (!CUD_OUT) { CUD_OUT = document.createElement('canvas'); CUD_OUT.width = RS_W; CUD_OUT.height = RS_H; }
+  if (bg) {
+    if (!CUD_BG) { CUD_BG = document.createElement('canvas'); CUD_BG.width = RS_W; CUD_BG.height = RS_H; }
+    const b = CUD_BG.getContext('2d', { willReadFrequently: true }); b.drawImage(bg, 0, 0); dimRS(b, CUD.x, CUD.y, CUD.w, CUD.h + 9);
+  }
+  const ctx = CUD_OUT.getContext('2d');
+  if (CUD_BG) ctx.drawImage(CUD_BG, 0, 0); else { ctx.fillStyle = EB_PAL[P.void]; ctx.fillRect(0, 0, RS_W, RS_H); }
+  ctx.drawImage(cuddleWindow(st, t), CUD.x, CUD.y - 9);
+  return { canvas: CUD_OUT, hits: [{ x: CUD.x + CUD.w - 17, y: CUD.y + 5, w: 12, h: 12, act: 'cuddleQuit', arg: '', tip: 'cuddleQuit' }] };
+}

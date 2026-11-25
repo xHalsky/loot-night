@@ -3,6 +3,23 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.71.0 (2026-11-25)
+
+- **The cuddle break is the redesign's** (V9, #74; grid doc 7g). Her window, night plum with her name on a pink tab,
+  over the dimmed right screen. Her breath is a small heart in a ring that breathes with her, going once round a big
+  heart: its line is stitches ahead of her and fills pink behind. On her breath the ring goes solid and hearts float
+  up; too fast turns it crimson with "too fast!". Warmth fills the big heart (a cold checker, purple, then pink past
+  60%) and the bar, whose 60% mark wears a little heart that lights once you pass it. Your hand is the cursor.
+- **Same rules, same numbers.** The rules stay in `systems/cuddle.ts` in the old window's units; the new window draws
+  the heart at exactly half size, so the ring (17 px) and "too fast" (450 px/s) are the old 34 and 900.
+- **The plan is a pixel blueprint** over her panel, everything behind it dimmed: chalk walls, door swings, pencil
+  furniture, the crack's wedge, 1 2 3 in her pink, YOU in gold, masking tape and a curled corner. It shows the game's
+  apartment as it is now; the page's new layout (bathroom at the far end) comes with V12 (#77), with the hearing
+  and the crack that go with it. The layout is now data in `ui/plan.ts`. ✕, Esc or a click off it close it.
+- The DOM cuddle window, the plan's SVG sheet, `#winLayer` and their CSS are gone. `test/herwin.py` plays both with the
+  real mouse next to stills 034 to 039; `test/visits.py` (broken since V4, covered by `her.py` and `herwin.py`) is
+  deleted; `test/dog.py` no longer depends on which favourite spot the dice pick. UI only: sims as before.
+
 ## 0.70.0 (2026-11-25)
 
 - **Caught is the redesign's** (V7, #72; grid doc 7e). The generic pixel face is gone: she stands in your doorway,

@@ -46,6 +46,14 @@ has no front door: nothing in the game uses it, and the crack doesn't show one. 
 room beside the hallway and the front door at its end, but the crack's one vanishing point means you look down
 the hallway's length; before that the sheet still showed the layout from before the crack view.)
 
+Taken off the wall (grid doc 7g), the sheet is the renderer's pixel blueprint over her panel and the monitor's left
+edge, everything behind it dimmed: paper, grid, pencil and edge blues on top of her 16 colours, chalk walls with
+their doorways open, windows as a thin double line, door swings, pencil furniture, room names, YOU in gold, what the
+crack can see as a lighter wedge cast from your door's latch, dashed sight lines in her pink to 1 2 3, the note under
+it; masking tape on the top corners and a curled corner. It closes with its ✕, Esc or a click anywhere off it. The
+layout comes from `ui/plan.ts` as data (walls, windows, furniture shapes, swings, stops), the same walls the webcam's
+corner draws.
+
 **Last heard** (one line under the webcam view, above the her-note, `heardHtml()`; hidden while she stands in
 the doorway): what you last heard of her, where,
 and how long ago: "♫ KETTLE · kitchen · 12 s ago", "♫ STEPS · hallway · now", "♫ ZZZ · bedroom". After
@@ -121,8 +129,12 @@ The activity's loop stops when its cue starts. Sounds and files: [screen.md](scr
 | Cuddle (green only) | Slow, soft slipper steps | Nothing | "Come here" or "One sec, babe" (`CUDDLE_ASK_SEC`; no answer = one sec) | Cuddle minigame below. One sec: Mood +`CUDDLE_REFUSE_MOOD` |
 | Good night (green at bedtime, once) | Soft, sleepy steps | Nothing | Nothing to do | She stops at the door in your gaming hoodie, sleeves over her hands: "Night, babe." Mood `WALKBY_MOOD`, then she goes to bed ([eye-candy.md](eye-candy.md)) |
 
-**The cuddle minigame.** A window over the monitor: a dot drifts once around a heart over `CUDDLE_SEC`; keep
-the cursor within `CUDDLE_RADIUS` of it. Warmth builds near the dot, drains when far, and drops fast when
+**The cuddle minigame.** Her window over the battle area (grid doc 7g: night plum, her name on a pink tab, the right
+screen dimmed behind it). Her breath, a small heart in a ring that breathes with her, goes once round a big heart
+over `CUDDLE_SEC`; the heart's line is stitches ahead of her and fills pink behind, so it shows the time left. Keep
+your hand (the cursor, drawn over her window) inside the ring (`CUDDLE_RADIUS`): on it the ring goes solid and
+hearts float up. Warmth fills the big heart, a cold checker, then purple, then pink once past `CUDDLE_PASS`, and the
+bar at the foot with the pass mark's little heart. Warmth builds near the dot, drains when far, and drops fast when
 the mouse moves faster than `CUDDLE_JERK` ("too fast!"). Warmth ≥ `CUDDLE_PASS` at the end: Mood
 `CUDDLE_PASS_MOOD`; below: +`CUDDLE_FAIL_MOOD`. The close X means pulling away for the game (refuse
 penalty). While cuddling, the party keeps the safe autopilot, Flow is frozen, and the phone and dog wait.
@@ -175,6 +187,16 @@ visits and when she leans in. A small reaction bubble (?, !, heart, ...) over he
   sitting on the desk over the battle area only, with the side panel left usable (#49): it read as a window on
   the PC, not her getting in your face.
 
+- **Her windows in the redesign's look** (0.71, V9 #74). The cuddle's rules stay as they were, in the old window's
+  units: the renderer draws the same heart at half that size round its own centre, so the ring and "too fast" mean
+  exactly what they did (34 and 900 there, 17 and 450 on the grid) and no number moved. The plan is drawn in the
+  page's blueprint look but from the game's own apartment: the page drew the layout approved for lean in (the bathroom
+  at the far end, the bedroom off the hallway, an arch, the hall mirror), which the game gets with V12 (#77) together
+  with who hears you from where (`ROOM_DISTANCE`) and the crack's new view. A plan showing rooms the game doesn't have
+  yet would teach the wrong hearing and the wrong crack. The layout is data in `ui/plan.ts`, so V12 changes data, not
+  drawing. What is behind the plan is dimmed four times a second and the sheet drawn once (the page redrew both every
+  frame, 15 to 25 ms). Rejected: the page's layout now (wrong until V12); a frozen picture behind the plan (the night
+  goes on under it).
 - **The caught screen in the redesign's look** (0.70, V7 #72). The portraits are the handoff's baked ones and keep
   her glasses (the redesign's 2026-11-20 decision: all character art is a stand-in until Paweł draws it). The cost
   line comes from the game's rules and numbers, not the page's three fixed lines: those left Guilt off the 1st and
