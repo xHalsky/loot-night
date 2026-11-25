@@ -12,117 +12,29 @@ import { legendOn, setPieces } from '../systems/gear';
 import { pacingLine } from '../systems/pacing';
 import { liveMs } from '../render/liveRpg';
 import { markText } from '../data/marks';
-import { specialText, hasLife } from '../systems/affixes';
-import { END_HINT, COACH } from '../data/tips';
+import { specialText } from '../systems/affixes';
+import {  COACH } from '../data/tips';
 import { cityOutlook } from '../systems/town';
-import { PRE_ACTIONS, PRE_BY_ID, type PreId } from '../data/preemptive';
-import { preBlocked, nextMult } from '../systems/preemptive';
+import {  PRE_BY_ID, type PreId } from '../data/preemptive';
 import { phoneAction } from '../systems/interrupts';
 import { planSvg } from './plan';
 import { RARITY_COLOR, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
 import { SW, SH } from './monsterScene';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
-import { CHAT_QS, VISIT_CUE } from '../data/content';
 import { heroStats, itemPower, heroPower } from '../systems/stats';
 import {  abilityUnlocked } from '../systems/battle';
 import { entryName, entryColor, cap } from '../systems/loot';
 import { icon } from './icons';
-import { moodZone } from '../systems/meters';
 import { fmtClock } from '../core/fx';
 import type { MorningScene } from './her';
 import { hasSave } from '../systems/save';
-import {  ROOM_NAME } from '../data/apartment';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const btn = (act: string, label: string, arg = '', cls = '') => `<button class="btn ${cls}" data-act="${act}" data-arg="${esc(arg)}">${label}</button>`;
 
-// ---------------- Girlfriend panel (her world: warm, handwritten, hearts) ----------------
-export function herHeadHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  const zone = moodZone(n.mood);
-  const word = n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'a bit annoyed' : 'furious';
-  return `<span class="her-name">&#9829; Babe</span><span class="her-mood m-${zone}">${word}</span>`;
-}
 
-function hearts(patience: number): string {
-  const full = Math.ceil(patience / 20);
-  return Array.from({ length: 5 }, (_, i) => `<span class="heart ${i < full ? 'on' : ''}">&#9829;</span>`).join('');
-}
 
-export function doorInfoHtml(): string {
-  const n = S.g.night;
-  if (!n) return '';
-  const v = n.visit;
-  let kicker = 'her', txt = n.headset ? 'In the zone. She could be anywhere.' : 'She is busy with her own thing.', cls = 'calm';
-  if (v.stage === 'idle' && n.apt.asleep) { kicker = 'bedroom'; txt = 'She is asleep. Shh, keep it quiet.'; }
-  if (v.stage === 'idle' && S.g.nightsPlayed === 0 && n.apt.cued && !n.headset && END_HINT[n.apt.activity]) { kicker = 'listen'; txt = END_HINT[n.apt.activity]; cls = 'warn'; }   // first night: name the tell
-  if (v.stage === 'far' && !n.headset) { kicker = 'footsteps'; txt = 'Footsteps... is she coming?'; cls = 'warn'; }
-  if (v.stage === 'hall') { kicker = 'at the door'; txt = S.g.nightsPlayed === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; cls = 'alarm'; }
-  if (v.stage === 'handle') { kicker = 'door'; txt = 'The handle is turning!'; cls = 'alarm'; }
-  if (v.stage === 'passing') { kicker = 'footsteps'; txt = 'She walked past. Phew.'; cls = 'warn'; }
-  if (v.stage === 'in') { kicker = 'she is in'; txt = v.result === 'caught' ? 'Caught.' : v.result === 'look' ? '"Nothing. Just looking at you."' : v.checked ? 'She bought it.' : '"Still working, babe?"'; cls = v.result === 'caught' ? 'alarm' : 'warn';
-    const btn = (act: string, arg: string | number, label: string, extra = '') => `<button class="her-btn ${extra}" data-act="${act}" data-arg="${arg}">${label}</button>`;
-    if (v.result === 'offer') { kicker = 'snack'; txt = `"I made you a sandwich."<div class="her-btns">${btn('takePlate', 0, 'Take the plate', 'big')}</div>`; cls = 'warn'; }
-    if (v.result === 'snackFail') { kicker = 'snack'; txt = '"Another one?!" She takes a can.'; cls = 'alarm'; }
-    if (v.result === 'snackOk') { kicker = 'snack'; txt = 'Sandwich. She ruffles your hair.'; cls = 'calm'; }
-    if (v.result === 'deaf') { kicker = 'chat'; txt = '"Are you even listening?" (headset)'; cls = 'alarm'; }
-    if (v.result === 'chat' && v.chat) {
-      const q = CHAT_QS[v.chat.order[v.chat.asked]];
-      const shuffle = [0, 1, 2].sort((a, b) => ((v.chat!.order[0] * 7 + a * 5 + v.chat!.asked) % 3) - ((v.chat!.order[0] * 7 + b * 5 + v.chat!.asked) % 3));
-      kicker = `chat ${v.chat.asked + 1}/${T.CHAT_QUESTIONS} · keep Excel up`; cls = 'warn';
-      txt = `${v.chat.line}<div class="her-btns">${shuffle.map(k => btn('chatAnswer', k, q.a[k])).join('')}</div>`;
-    }
-    if (v.result === 'chatGood') { kicker = 'chat'; txt = '"Okay, back to your spreadsheets, cutie."'; cls = 'calm'; }
-    if (v.result === 'chatBad') { kicker = 'chat'; txt = '"Wow. Okay."'; cls = 'alarm'; }
-    if (v.result === 'chatMeh') { kicker = 'chat'; txt = '"Mhm. Talk later."'; }
-    if (v.result === 'ask') { kicker = 'cuddle'; txt = `"Come cuddle for a bit?"<div class="her-btns">${btn('cuddle', 1, 'Come here', 'big')}${btn('cuddle', 0, 'One sec, babe')}</div>`; cls = 'warn'; }
-    if (v.result === 'cuddling') { kicker = 'cuddle'; txt = 'Warm. The party fights on without you.'; cls = 'calm'; }
-    if (v.result === 'cuddleGood') { kicker = 'cuddle'; txt = '"Okay, go play. Love you."'; cls = 'calm'; }
-    if (v.result === 'cuddleMeh') { kicker = 'cuddle'; txt = '"You are so restless."'; }
-    if (v.result === 'refused') { kicker = 'cuddle'; txt = 'She sighs and leaves.'; cls = 'alarm'; }
-    if (v.result === 'night') { kicker = 'good night'; txt = '"Night, babe." Your hoodie, sleeves past her hands.'; cls = 'calm'; }
-    if (v.result === 'forgiven') { kicker = 'forgiven'; txt = '"I know, I know. Raid night." She lets it go.'; cls = 'warn'; }
-  }
-  const patience = 100 - n.mood;
-  const tired = n.tired;
-  const caught = [0, 1, 2].map(i => `<span class="bheart ${i < n.catches ? 'on' : ''}">&#9829;</span>`).join('');
-  const tiredFx = [tired >= T.TIRED_YAWN && 'yawning', tired >= T.TIRED_MICROSLEEP && (n.boost > 0 ? 'Goblin Fuel holds you up' : 'eyes closing'), tired >= T.TIRED_SLUGGISH && 'sluggish'].filter(Boolean).join(' · ');
-  const wakeRow = n.clock >= T.BED_FROM
-    ? `<div class="her-row"><span>Waking up</span><div class="pill"><i style="width:${n.apt.asleep ? n.apt.wake : 100}%;background:#b58bd9"></i><em style="left:${T.WAKE_TEXT}%"></em></div><b>${n.apt.asleep ? Math.round(n.apt.wake) : 'awake'}</b></div>` : '';
-  void tiredFx; void tired;
-  // Fixed slots (#46): the last-heard line, her note, the pre-emptive row and the stats never move. A slot that has
-  // nothing to show keeps its space; a tall note (a chat question with replies) grows into the empty pre-row slot.
-  const idle = v.stage === 'idle';
-  return `<div class="di-heard">${heardHtml()}</div>
-  <div class="di-note ${idle ? '' : 'wide'}"><div class="her-note ${cls}"><small>${kicker}</small><div>${txt}</div></div></div>
-  <div class="di-pre">${idle ? preRowHtml() : ''}</div>
-  <div class="her-stats">
-    <div class="her-row pc" title="Patience ${Math.round(patience)} · caught ${n.catches}/3"><span>Patience</span><div class="hearts">${hearts(patience)}</div><span class="sm">Caught</span><div class="bhearts">${caught}</div></div>
-    <div class="her-row gw" title="Goodwill: earned with her. ${T.GOODWILL_RAID} buys a Raid night, ${T.GOODWILL_FORGIVE} forgives a catch."><span>Goodwill</span><div class="gwbar"><i style="width:${S.g.goodwill}%"></i><em style="left:${T.GOODWILL_RAID}%"></em><em style="left:${T.GOODWILL_FORGIVE}%"></em></div><b>${Math.floor(S.g.goodwill)}</b></div>
-    <div class="her-row nz" title="Your Noise.${n.apt.asleep ? ` Above ${T.WAKE_NOISE_FLOOR} it wakes her.` : ' How much reaches her depends on where she is.'}"><span>Noise</span><div class="pill nzbar"><i style="width:${Math.round(n.noise)}%"></i>${n.apt.asleep ? `<em style="left:${T.WAKE_NOISE_FLOOR}%"></em>` : ''}</div><b>${Math.round(n.noise)}</b></div>
-    ${wakeRow}
-  </div>`;
-}
 
-// ---------------- Pre-emptive actions (#19) ----------------
-/** Button text: cost, and how strong the next use is (2nd = half, 3rd = she gets suspicious). */
-function preUseNote(id: PreId): string {
-  const used = N().preUses[id] ?? 0;
-  if (PRE_BY_ID[id].toggle || PRE_BY_ID[id].goodwill || !used) return '';
-  const m = nextMult(id);
-  return m === 0 ? '<em class="sus">suspicious next</em>' : '<em>next: half</em>';
-}
-function preBtn(id: PreId, cls = ''): string {
-  const d = PRE_BY_ID[id], why = preBlocked(id);
-  const name = id === 'towel' ? (N().towel ? 'Towel out' : 'Towel under door') : d.name;
-  return `<button class="pre-btn ${cls} ${why ? 'off' : ''}" data-act="pre" data-arg="${id}" data-tip="pre:${id}"><b>${name}</b><span>${why || preText(d.cost)}</span>${preUseNote(id)}</button>`;
-}
-function preRowHtml(): string {
-  const n = N();
-  void n;
-  return `<div class="pre-row"><div class="pre-btns">${PRE_ACTIONS.filter(a => a.where === 'door').map(a => preBtn(a.id)).join('')}</div></div>`;
-}
 export function preText(s: string): string {
   return s.replace('{text}', String(T.PRE_TEXT_SEC)).replace('{textCalm}', String(T.PRE_TEXT_CALM)).replace('{textMood}', String(T.PRE_TEXT_MOOD))
     .replace('{tea}', String(T.PRE_TEA_SEC)).replace('{teaMood}', String(T.PRE_TEA_MOOD)).replace('{teaCalm}', String(T.PRE_TEA_CALM))
@@ -152,21 +64,6 @@ export function preBusyHtml(): string {
   return p.away ? `<div class="away-layer">${EMPTY_CHAIR}${card}</div>` : `<div class="busy-wrap">${card}</div>`;
 }
 
-/** The last sound you heard of her: what, where, how long ago. Never where she is now (docs/design/her.md). */
-export function heardHtml(): string {
-  const n = N();
-  const a = n.apt;
-  if (n.visit.stage === 'in') return '';   // she is in the doorway: you see her, the last sound does not matter
-  const ago = n.threat - a.heardAt;
-  const earplugs = n.headset && a.heardWhat === 'STEPS' && ago < 3 && hasLife('earplugs');
-  if (n.headset && !earplugs) return '<div class="heard muffled">Headset on. You hear nothing. (H)</div>';
-  const when = a.heardWhat === 'ZZZ' ? '' : ` · ${ago < 1.5 ? 'now' : `${Math.floor(ago)} s ago`}`;
-  if (!a.heard) return '<div class="heard stale"><b>?</b> Nothing yet. Listen.</div>';
-  const what = `${esc(a.heardWhat)} · ${ROOM_NAME[a.heard].toLowerCase()}${when}`;
-  return ago > T.APT_STALE_SEC && a.heardWhat !== 'ZZZ'
-    ? `<div class="heard stale"><b>?</b> ${what}</div>`
-    : `<div class="heard"><i>&#9835;</i> ${what}</div>`;
-}
 
 export function planHtml(): string {
   return `<div class="plan-back"><div class="plan-sheet"><button class="mg-close" title="Back (Esc)">\u2715</button>

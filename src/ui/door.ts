@@ -1,6 +1,6 @@
 import { S } from '../core/state';
 import { drawHer, drawHerFrosted, drawHerBack, drawShowerPanel, OUTFIT_BY_ACTIVITY, type Face } from './her';
-import { drawHim } from './him';
+import { drawHim, drawChair, drawChairWrap } from './him';
 import { hisLook } from '../systems/him';
 import { T } from '../config/tuning';
 import { ACT_BY_ID } from '../data/apartment';
@@ -69,8 +69,8 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     if (gap > 0.5) drawHallway(c, X0 + DW - gap, TOP, gap, H, t);
     // the door panel swings toward you: narrower and darker as it opens
     const w = DW - gap;
-    const g = Math.round(44 - p * 14);   // a dark grey door, darker as it swings toward you
-    c.fillStyle = `rgb(${g},${g},${g + 6})`;
+    const g = Math.round(p * 12);   // a dark grey door (the desk's s2, so it dithers flat), darker as it swings toward you
+    c.fillStyle = `rgb(${36 - g},${39 - g},${46 - g})`;
     c.beginPath(); c.moveTo(X0, TOP); c.lineTo(X0 + w, TOP - p * 6); c.lineTo(X0 + w, BOT + p * 6); c.lineTo(X0, BOT); c.fill();
     c.strokeStyle = '#202026'; c.lineWidth = 3;
     const k = w / DW;
@@ -110,8 +110,18 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     c.fillStyle = `rgba(224,82,74,${Math.min(0.9, n.peekSus)})`; c.fillRect(X0, TOP - 14, DW * Math.min(1, n.peekSus), 5);
   }
   drawHeadsetIcon(c);
-  if (n && n.peek <= 0 && stage === 'idle' && !daydreaming()) { c.fillStyle = 'rgba(220,220,230,.3)'; c.font = '14px "Patrick Hand", sans-serif'; c.textAlign = 'center'; c.fillText('hold the door to peek', X0 + DW / 2, BOT - 12); }
   c.restore();
+}
+
+/** Her side of the webcam picture, in this canvas's px, for the dither (V4): the open doorway or the crack, the strip
+ *  under the door, the daydream bubble. Everything else is his room. */
+export function webcamSide(): { door: number[] | null; strip: number[]; bubbles: number[][] | null } {
+  const n = S.g.night;
+  const stage = n?.visit.stage ?? 'idle', gap = (n?.peek ?? 0) * DW * T.PEEK_CRACK_MAX;
+  const door = stage === 'in' ? [OFF + X0, OFF + X0 + DW, TOP, BOT] : gap > 0.5 ? [OFF + X0 + DW - gap, OFF + X0 + DW, TOP, BOT] : null;
+  let bubbles: number[][] | null = null;
+  if (daydreaming()) { const bob = Math.sin(performance.now() / 1000 * 1.6) * 2; bubbles = [[OFF + 132, 196 + bob, 70], [OFF + 180, 382 + bob, 5], [OFF + 188, 350 + bob, 7], [OFF + 180, 300 + bob, 10]]; }
+  return { door, strip: [OFF + X0 - 10, OFF + X0 + DW + 10, BOT, BOT + 7], bubbles };
 }
 
 /** A small headset icon beside his head (#49): grey when off, cyan when on. His head is the button (#headHit). */
@@ -119,7 +129,7 @@ const HEADSET_ICON = new Path2D('M4 13 V10 C4 5 16 5 16 10 V13 M2.5 11 h4 v6 h-4
 function drawHeadsetIcon(c: CanvasRenderingContext2D) {
   const n = S.g.night;
   if (!n) return;
-  c.save(); c.translate(HIM_X + 50, HIM_Y + 4); c.scale(0.95, 0.95);
+  c.save(); c.translate(HIM_X + 60, HIM_Y + 4); c.scale(0.95, 0.95);   // 5 grid px right of where it was: the chair is wider (V4)
   c.strokeStyle = n.headset ? '#4fd1e8' : '#8a8a96'; c.lineWidth = 1.8; c.lineJoin = 'round'; c.lineCap = 'round';
   c.stroke(HEADSET_ICON);
   c.restore();
@@ -150,9 +160,15 @@ function room(c: CanvasRenderingContext2D, t: number) {
   const back = c.createRadialGradient(HIM_X, HIM_Y + 40, 20, HIM_X, HIM_Y + 40, 120);   // backlight: his silhouette against the room
   back.addColorStop(0, 'rgba(120,122,140,.22)'); back.addColorStop(1, 'rgba(120,122,140,0)');
   c.fillStyle = back; c.fillRect(-OFF, BOT + 6, DOOR_W, DOOR_H - BOT - 6);
-  const glow = n.monitor === 'excel' ? 'rgba(214,255,226,' : 'rgba(222,232,255,';   // the lenses take the screen's colour
-  drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking, look: me.look, headset: n.headset, jitter: me.jitter, glow });
-  if (me.face === 'asleep') { c.fillStyle = '#c8cad8'; c.font = '16px "Patrick Hand", sans-serif'; c.textAlign = 'left'; c.fillText('z', HIM_X + 38, HIM_Y + 6 - (t * 8 % 12)); c.fillText('z', HIM_X + 48, HIM_Y - 8 - (t * 8 % 12)); }
+  const excel = n.monitor === 'excel', glow = excel ? 'rgba(214,255,226,' : 'rgba(222,232,255,';   // the lenses take the screen's colour
+  // his gaming chair, and him in it (V4); away from the PC (making her tea) the chair stands empty
+  drawChair(c, HIM_X, HIM_Y);
+  const away = !!n.pre?.away;
+  if (!away) {
+    drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking, look: me.look, headset: n.headset, jitter: me.jitter, glow, lens: excel ? '#b3bdb2' : undefined });   // under Excel his glasses go grey-green
+    drawChairWrap(c, HIM_X, HIM_Y);
+  }
+  if (!away && me.face === 'asleep') { c.fillStyle = '#c8cad8'; c.font = '16px "Patrick Hand", sans-serif'; c.textAlign = 'left'; c.fillText('z', HIM_X + 38, HIM_Y + 6 - (t * 8 % 12)); c.fillText('z', HIM_X + 48, HIM_Y - 8 - (t * 8 % 12)); }
   // monitor light on his face from the front, a webcam's soft vignette
   const v = c.createRadialGradient(VW / 2, DOOR_H * 0.45, DOOR_H * 0.35, VW / 2, DOOR_H * 0.45, DOOR_H * 0.75);
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)');

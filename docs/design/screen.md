@@ -9,7 +9,7 @@ even) while they move onto the grid; the redesign's renderer (`src/render/`, tec
 
 | Zone | Where | Shows |
 |---|---|---|
-| Left: webcam and her | 0 to 296, full height | The webcam view (296 × 532): his dark room, him at the bottom, your door behind him (hold it to peek), the plan on the wall. His head is the headset button. Under it: the last-heard line, her note, the pre-emptive buttons, her stats (Patience and Caught, Goodwill, Noise, Waking up after midnight) |
+| Left: webcam and her | 0 to 296, full height | Her panel, one picture drawn by the renderer (148 × 360 on the grid, V4 below): the webcam view (his dark room, him in his gaming chair at the bottom, your door behind him (hold it to peek), the plan on the wall; his head is the headset button), and her PC-98 UI under it: the last-heard line, her note, the two pre-emptive buttons, her stats (Patience and Caught, Goodwill, Noise) |
 | Monitor | the right screen's top: a thin bezel with the webcam module on its top edge | The game screen (948 × 464, 474 × 232 on the grid) and, under it, the Win98 taskbar. All of the right screen round the game screen is one picture drawn by the renderer (V3, below) |
 | · Battle area | the game screen's left 668 px (334 × 232 on the grid) | In the dungeon, drawn by the redesign's renderer (V2, [dungeon.md](dungeon.md)): the band (64) with the curio card, the picture (142), the skill bar (26), the corner, the portal, the buffs. The city and the floor map are still the old drawing (668 × 464, see [city.md](city.md)) with their DOM overlays. Item windows and minigame windows stay on top |
 | · Side panel | the game screen's right 280 px, full height | Dungeon: party cards, the selected hero's gear and stats, the bag with its Treasury row, gold, scraps and record. City: the build list, the "Enter the dungeon" button, the bag (the services are the buildings on the map) |
@@ -75,8 +75,8 @@ while you are away. Buffs: top right of the battle area.
 
 | World | Where | Look |
 |---|---|---|
-| Her | Webcam view, her note, her stats | Warm plum night, Patrick Hand handwriting, cream note cards, the blueprint as a taped sheet. Warnings turn amber, alarms red and shaking. |
-| Real life | Desk, phone, Excel, taskbar, YOU card, feed | Inter, flat panels, iOS and Windows conventions |
+| Her | Her panel: the webcam view, her note, her stats | PC-98: beige paper windows with plum and purple bevels, pink buttons, Tiny5, the blueprint as a taped sheet. Warnings get an amber dotted line, alarms a crimson one that blinks. |
+| Real life | Desk, phone, Excel, taskbar, YOU card, feed | The desk's Graphite, lit by the screen, in Tiny5; the phone's night-mode pixel OS; Windows 98 on the PC. Pop-up windows not yet redrawn keep Inter and flat panels |
 | RPG | The game screen: battle, overlays, side panel | Pixelify Sans, gold-trimmed headers, stone, parchment and leather |
 
 **Art direction.** Placeholder art drawn in code, aiming at pixel anime (references: ZATO). Characters
@@ -125,6 +125,16 @@ listening, so her sounds are the most important ones in the game.
 **Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`, a two-line pitch and "turn the sound
 on". The first night opens with the how-to-hide card ([night.md](night.md), Onboarding).
 
+**Her panel is drawn by the renderer** (V4, #69; grid doc 7b): `drawHerLive` in `src/render/page/her.js`, from the
+view in `src/render/herView.ts`. The webcam view is the game's own drawing, unchanged in design: `src/ui/door.ts`
+draws it on a 296 × 532 canvas (exactly 2x the grid) that stays hidden, and every webcam frame comes down 2x in
+linear light and is ordered-dithered as the redesign's stills were baked (`bake_her.py`): his room to the desk's
+Graphite with a light dither, her side (the open doorway or the crack, the strip under the door, the daydream
+bubble; `webcamSide()` says where) to the PC-98 set plus the desk's darks with a stronger one, the light under the
+door a gold bar with a pale top row. It runs at 15 fps, a webcam's own rate, on the frames the battle skips; a click
+or a hover on the panel shows at once. Clicks and tooltips come from the picture's hit regions; the door, the plan
+and his head work as before, and a DOM stand-in over her note anchors its coach mark.
+
 **The webcam view** (`src/ui/door.ts`, him in `src/ui/him.ts`; #36, #40). Laid out for 280 px and centred in the
 296 px column; the walls and floor run on to the edges. The left panel is what the webcam on
 top of his monitor sees (a small webcam sits on the monitor bezel so the framing reads). His room is dark:
@@ -160,21 +170,35 @@ front, below her: both read at once.
   | Headset worn | On his head, a cyan strip on each cup (the Zone's colour) | Gear |
 
   Art: one head pose; the emotes and the glasses as layers on the silhouette; gear as separate layers, so a
-  real-life upgrade (#4) is one more layer. `python3 test/him.py` shoots every row.
-- **His head is the headset button** (#49): click it (or press H). A small headset icon beside his head is always
-  there, grey when off and cyan when on. Hover: a cyan ring and "Click: headset on (H)" under his head (never over
+  real-life upgrade (#4) is one more layer. `python3 test/him.py` shoots every row. Under Excel his lenses are
+  grey-green (the desk's g6).
+- **His gaming chair** (V4, #69; grid doc 7k; Paweł's reference, no logos): one tall back with a broad arched top and
+  no separate headrest, bolsters whose piping runs from the top corners down and in, outer piping down the lower
+  sides, a seam over the lumbar curving down to the sides. Black leather with a faint dither, grey piping, the top
+  edge catching the screen: as dark as he is, his grey rim keeps him readable. The camera is close and the back
+  reclines toward it, so it widens toward the frame's bottom and runs past it. He sits in it: it is drawn before
+  him, and from his shoulders down the bolsters come forward over his shoulders' outer 4 px. It is drawn in whole
+  grid px, so it survives the dither exactly. Away from the PC (making her tea) the chair stands empty.
+- **His head is the headset button** (#49): click it (or press H). A small headset icon on the wall beside his head is
+  always there, grey when off and cyan when on. Hover: a cyan ring and "Click: headset on (H)" under his head (never over
   the door). A coach mark teaches it after your first passed visit, unless you found the headset first.
 - **The plan on the wall** (#35, #41): only the corner of a blue sheet taped to the wall shows, coming in from the
   left edge of the frame; that corner is the click area. Click it (the cursor
   turns to a magnifier) and it opens large over the panel: the same plan with the dashed line of sight and no
   marker for her, plus a line on which rooms are next to yours. The game keeps running. Close with ✕, Esc or a
   click outside.
-- **Under the view:** fixed slots that never move (#46): the last-heard line (18 px; blank while she stands in
-  the doorway), her note (60 px, two lines), the pre-emptive buttons (30 px; hidden during a visit, when her note
-  may grow into its space for a chat question and its replies) and her stats, 17 px rows: Patience and Caught,
-  Goodwill, Noise (amber; once she is asleep a mark at `WAKE_NOISE_FLOOR`, the Noise that wakes her; no mark
-  before, since what reaches her depends on where she is), and Waking up after midnight. An empty slot keeps its
-  space, so Patience and Goodwill are always in the same place. `python3 test/herpanel.py` checks ten states.
+- **Her UI** (PC-98, grid px): "Babe" in Tiny5 16 px over the wall with a rose heart, her mood in a plum pill
+  (happy moss, a bit annoyed gold, furious crimson, asleep lilac). A plum band from y 266 with fixed slots that never
+  move (#46): the last-heard line (y 270: a note glyph, the sound in rose, the room and when in lilac; "?" when it is
+  stale; cyan "Headset on. You hear nothing."; blank while she stands in the doorway), her note (y 279, a beige paper
+  window 29 tall, two lines; amber dotted line for footsteps, crimson blinking for her at the door), the two pink
+  pre-emptive buttons (y 310, 69 × 17: the name, and the cost or why not; dim purple when they can't; hidden during
+  a visit) and the stats from y 331: Patience (five hearts) and Caught (three), Goodwill (rose, marks at
+  `GOODWILL_RAID` and `GOODWILL_FORGIVE`), Noise (gold; once she is asleep a mark at `WAKE_NOISE_FLOOR`).
+  Her windows grow from there: a chat question from y 270 with your three answers as moon pills (pink when pointed
+  at); the snack run (SNACK RUN, the seconds, Take the plate) and the cuddle ask (CUDDLE, Come here, One sec, babe)
+  as her window with pink answers. Asleep, her window says ASLEEP with the waking meter (lilac, a mark at
+  `WAKE_TEXT` "texts you", "gets up" at its end). `python3 test/her.py` shoots the states next to the stills.
 
 **Tooltips** carry only what you need to decide, because the screen is dense and a tooltip covers part of it:
 what it is, what it does in one line, and a cost, an unlock level or the one comparison that matters (an
@@ -199,6 +223,18 @@ the click panels and the design docs hold the detail. `python3 test/tooltips.py`
   anchors the coach mark. It draws at 15 fps in two halves on the frames the battle skips: a whole desk costs about
   7 ms, which at 20 fps on any frame dropped every third battle frame. Rejected: DOM cards and taskbar over a drawn
   desk (two looks, and the light cannot reach them); the old CSS 3D phone (it could not take the desk's light).
+- **Her panel is the game's webcam, dithered live** (0.67, V4, #69): the redesign decided the webcam stays the
+  prototype's, only dithered, and baked four stills from screenshots. The game does the same bake every webcam frame,
+  so every state (her walking down the hallway, the crack you hold open, her in the doorway, the daydream) keeps its
+  animation in the new look. Rejected: the four baked stills (no animation, and every new state would need a new
+  bake); redrawing the room in the renderer (a second room to keep in step with the first, and the decision was to
+  keep the prototype's). The chair is code, not a bake (decisions 2026-11-20), so it works in every state.
+- **The webcam at 15 fps** (0.67): reading the webcam back and dithering it costs about 3 ms a frame on a slow
+  machine; at 15 fps on the frames the battle skips it costs nothing you can see, and a webcam is choppy anyway.
+  Rejected: 30 fps (dropped frames next to the desk's halves); dithering in sRGB on a downscaled copy (cheaper, but
+  bright edges like his glasses' glow came out darker than the stills).
+- **"Hold the door to peek" moved into the door's tooltip** (0.67): at grid size the handwritten hint on the door
+  was unreadable. The first-night coach mark still teaches peeking.
 - **The drink key is G** (0.66; decisions 2026-11-19): G for Goblin, the keycap is drawn on the Drink button and the
   keyboard's G key lights up. M was for Monster. G was free (F is the Priest's ultimate, H the headset).
 - **HP only on the sprites and the skill-bar portraits** (0.45): one value in one place; the party cards show what

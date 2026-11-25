@@ -6,7 +6,7 @@ import { startLoop } from './core/loop';
 import { drawMonitor, MON_W, MON_H, XL_BUTTONS, XL_BTN_Y, XL_BTN_H } from './ui/monitor';
 import { DESK_W } from './ui/layout';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
-import { herHeadHtml, hover, tooltipHtml, entryIcon, updateWindowDynamics, doorInfoHtml, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml } from './ui/panels';
+import { hover, tooltipHtml, entryIcon, updateWindowDynamics, windowHtml, uiPopHtml, screenHtml, pauseHtml, debugHtml, toastsHtml, scareHtml, preBusyHtml, morningScene, planHtml, coachHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
@@ -37,6 +37,7 @@ import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDrag
 import { PK } from 'virtual:pagekit';
 import { phoneShown, phoneView } from './render/phoneView';
 import { deskView, deskTip } from './render/deskView';
+import { herView, herTip } from './render/herView';
 import { herRead, phoneScroll } from './systems/messages';
 import { drawHerBed } from './ui/her';
 import { answer as lapAnswer, startLap } from './systems/lap';
@@ -51,14 +52,14 @@ import { addMood } from './systems/meters';
 import { closeCoach } from './systems/coach';
 import { COACH } from './data/tips';
 
-(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints } };   // test hook for the Playwright scripts
+(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints }, herView: () => herView() };   // test hook for the Playwright scripts
 
 // ---------- DOM skeleton (#49, monitor-first; docs/design/screen.md) ----------
 // Left: the webcam view and her panel. Right: the desk, with the monitor on top. All RPG UI lives inside the game
 // screen (the battle canvas, its overlay and the side panel); the YOU card and the feed sit on the desk.
 const stage = document.getElementById('stage')!;
 stage.innerHTML = `
-  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"><span class="hh-tip" id="hhTip"></span></div><div id="herHead"></div><div id="doorInfo"></div></div>
+  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><canvas id="herArea" width="148" height="360"></canvas><div id="herNote" aria-hidden="true"></div><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"><span class="hh-tip" id="hhTip"></span></div></div>
   <div id="desk">
     <div id="deskInner">
       <canvas id="rsArea" width="492" height="360"></canvas><div id="deskPhone" aria-hidden="true"></div>
@@ -90,7 +91,7 @@ stage.innerHTML = `
   <div id="eyelids"><div class="lid top"></div><div class="lid bot"></div><div class="lid-txt">zzz... click or press any key</div></div>`;
 
 const el = (id: string) => document.getElementById(id)!;
-const doorCtx = (el('doorCanvas') as HTMLCanvasElement).getContext('2d')!;
+const doorCtx = (el('doorCanvas') as HTMLCanvasElement).getContext('2d', { willReadFrequently: true })!;   // on the CPU: her panel reads it back every frame (V4)
 const monCanvas = el('monitor') as HTMLCanvasElement;
 const monCtx = monCanvas.getContext('2d')!;
 const cache = new Map<string, string>();
@@ -239,7 +240,7 @@ document.addEventListener('pointermove', ev => {
       ghost().classList.toggle('hero', !!h); ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
-  } else if (!['rpgArea', 'spArea', 'rsArea'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases set their own hover (V2, V3)
+  } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases set their own hover (V2, V3)
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
   }
@@ -296,7 +297,7 @@ document.addEventListener('pointerup', () => {
 });
 // The webcam view: hold the door to peek; click the plan on the wall to open it (#35).
 let planOpen = false;
-const camXY = (ev: PointerEvent) => { const r = el('doorCanvas').getBoundingClientRect(); return [(ev.clientX - r.left) / stageScale, (ev.clientY - r.top) / stageScale] as const; };
+const camXY = (ev: PointerEvent) => { const r = el('herArea').getBoundingClientRect(); return [(ev.clientX - r.left) / stageScale, (ev.clientY - r.top) / stageScale] as const; };   // the webcam canvas's px (V4: under her panel, the same size)
 // The live battle area (V2): its hit regions are in grid px; the tooltip keys are the old ones ('skill:h:s', 'text:...').
 const rpgXY = (ev: PointerEvent) => { const r = el('rpgArea').getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 334, ((ev.clientY - r.top) / r.height) * 232] as const; };
 el('rpgArea').addEventListener('pointerdown', ev => {
@@ -364,16 +365,40 @@ el('rpgArea').addEventListener('pointermove', ev => {
 });
 el('rpgArea').addEventListener('pointerleave', () => { hover.key = ''; livePointer(null); });
 
-el('doorCanvas').addEventListener('pointerdown', ev => {
-  if (!S.g.night || S.g.paused) return;
-  const hit = doorHit(...camXY(ev));
+// Her panel (V4, #69): the renderer's canvas over the webcam. Its UI's hit regions first, then the webcam's door and plan.
+const herCanvas = el('herArea') as HTMLCanvasElement, herCtx = herCanvas.getContext('2d')!;
+let herHits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] = [], herHover = '', herLast = 0, herDirty = false;
+function herHitAt(ev: PointerEvent) {
+  const [cx, cy] = camXY(ev), x = cx / 2, y = cy / 2;
+  for (let i = herHits.length - 1; i >= 0; i--) { const h = herHits[i]; if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) return h; }
+  return null;
+}
+function drawHerPanel() {
+  const on = !!S.g.night && PK.ready();
+  herCanvas.style.display = on ? 'block' : 'none';
+  (el('doorCanvas') as HTMLElement).style.visibility = on ? 'hidden' : 'visible';   // still drawn: it is the webcam the panel dithers
+  if (!on) { herHits = []; return; }
+  const r = PK.her(el('doorCanvas') as HTMLCanvasElement, herView(herHover), performance.now() / 1000);
+  herCtx.drawImage(r.canvas, 0, 0);
+  herHits = r.hits; (window as unknown as { __lootnight: { herHits?: unknown } }).__lootnight.herHits = herHits;   // for the tests
+}
+herCanvas.addEventListener('pointerdown', ev => {
+  if (!S.g.night || S.g.paused || ev.button !== 0) return;
+  const h = herHitAt(ev);
+  if (h) { if (h.act) { ev.preventDefault(); actions[h.act]?.(h.arg); herDirty = true; } return; }
+  const hit = camXY(ev)[1] < DOOR_H ? doorHit(...camXY(ev)) : null;
   if (hit === 'plan') { ev.preventDefault(); planOpen = true; sfx.click(); }
-  else if (hit === 'door') { ev.preventDefault(); setPeeking(true); }
+  else if (hit === 'door') { ev.preventDefault(); setPeeking(true); herDirty = true; }
 });
-el('doorCanvas').addEventListener('pointermove', ev => {
-  const hit = S.g.night ? doorHit(...camXY(ev)) : null;
-  el('doorCanvas').style.cursor = hit === 'plan' ? 'zoom-in' : hit === 'door' ? 'grab' : 'default';
+herCanvas.addEventListener('pointermove', ev => {
+  const h = S.g.night ? herHitAt(ev) : null, p = toStage(ev);
+  const hit = !h && S.g.night && camXY(ev)[1] < DOOR_H ? doorHit(...camXY(ev)) : null;
+  herCanvas.style.cursor = h?.act ? 'pointer' : hit === 'plan' ? 'zoom-in' : hit === 'door' ? 'grab' : 'default';
+  const hv = h?.act ? `${h.act}:${h.arg}` : ''; if (hv !== herHover) { herHover = hv; herDirty = true; }
+  const tip = h?.tip ? (h.tip.startsWith('pre:') ? h.tip : herTip(h.tip) && `text:${herTip(h.tip)}`) : hit && !S.g.night?.peeking ? `text:${herTip(hit)}` : '';
+  hover.key = tip || ''; hover.x = p.x; hover.y = p.y;
 });
+herCanvas.addEventListener('pointerleave', () => { if (herHover) herDirty = true; herHover = ''; hover.key = ''; });
 el('planUi').addEventListener('pointerdown', ev => {   // a click outside the sheet closes it
   if (!(ev.target as HTMLElement).closest('.plan-sheet') || (ev.target as HTMLElement).closest('.mg-close')) { ev.preventDefault(); ev.stopPropagation(); planOpen = false; }
 });
@@ -592,7 +617,10 @@ phCanvas.addEventListener('wheel', ev => { if (N()?.phApp === 'babe' && !N().gam
 function render() {
   const g = S.g;
   const n = g.night;
-  drawDoor(doorCtx);
+  // the webcam and her panel (V4, #69): 15 fps, a webcam's own rate (reading the webcam back and dithering it costs a
+  // few ms), on the frames the battle area and the panel skip; a click or a hover on the panel shows at once
+  const tNow = performance.now();
+  if (herDirty || (tNow - herLast >= 62 && (tNow - liveDrewAt() >= 8 || tNow - herLast >= 150))) { herLast = tNow; herDirty = false; drawDoor(doorCtx); drawHerPanel(); }
   drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
   drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
   drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
@@ -600,8 +628,6 @@ function render() {
   document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {
-    setHtml('doorInfo', doorInfoHtml());
-    setHtml('herHead', herHeadHtml());
     setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
     setHtml('monUi', monUiLiveHtml());   // the run end card over the town; the rest of the RPG is the renderer's
     setHtml('winLayer', windowHtml());

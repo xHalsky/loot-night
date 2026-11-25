@@ -3,6 +3,26 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.67.0 (2026-11-25)
+
+- **Her panel is the redesign's** (V4, #69; grid doc 7b). The renderer draws the whole left column as one picture:
+  the webcam view on top, her PC-98 UI under it ("Babe" and her mood pill, the last-heard line, her note, the two pink
+  buttons, Patience, Caught, Goodwill, Noise). Her windows take the same look: a chat question with your three
+  answers, the snack run's plate, the cuddle ask, and ASLEEP with the waking meter.
+- **The webcam is the game's own drawing, dithered live.** Every webcam frame comes down 2x in linear light and is
+  dithered the way the redesign's stills were baked: his room in the desk's Graphite, her side (the doorway, the
+  crack, the light under the door, the daydream) in the PC-98 colours. So every state keeps moving: her walking down
+  the hallway, the crack you hold open, her in the doorway. It runs at 15 fps, a webcam's own rate.
+- **His gaming chair** (Paweł's reference shape, no logos): one tall back with an arched top, bolsters that wrap his
+  shoulders, a seam over the lumbar, black with grey piping. Making her tea, the chair stands empty. Under Excel his
+  glasses go grey-green; the headset icon on the wall moved 5 px right for the wider chair.
+- "Hold the door to peek" moved from the door into the door's tooltip (unreadable at grid size).
+- The DOM panel is gone (`herHeadHtml`, `doorInfoHtml` and their helpers, 103 CSS rules; a selector check over the
+  game's screens found none in use). A DOM stand-in over her note anchors the "she is at your door" coach mark.
+- `test/her.py`: nine states next to stills 028 to 030, with real clicks on her answers, the plate and Make her tea.
+  `test/onboarding.py` reads her note and the feed's pinned tip from the game (they are drawn now); the old DOM panel
+  tests are deleted. UI only: sims as before (good: 3 stars, caught 0; idle: 0 to 3 catches, the same spread as 0.66).
+
 ## 0.66.0 (2026-11-24)
 
 - **The desk and the monitor are the redesign's** (V3, #68; grid doc §7). The renderer draws the whole right screen

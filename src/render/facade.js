@@ -34,6 +34,9 @@ export const PK = {
   panel: pkPanel,
   /** The phone in your hand (V8, #73): a 126 x 252 canvas and its hit regions (its pixels). */
   phone: (vm, t) => livePhone(vm, t),
+  /** Her panel (V4, #69; grid doc 7b): the game's webcam canvas (296 x 532) dithered onto the grid, her PC-98 UI under it;
+   *  148 x 360 and the UI's hit regions. */
+  her: (src, st, t) => drawHerLive(src, st, t),
   /** The right screen around the game screen (V3, #68): desk, bezel, taskbar, keyboard, phone, cards; 492 x 360.
    *  phase 1 builds the frame and returns null, phase 2 lights it and returns it (two frames' work); 0 does both. */
   desk: (src, st, t, phase = 0) => drawDeskLive(src, st, t, phase),

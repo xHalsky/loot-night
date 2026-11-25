@@ -440,3 +440,179 @@ function lapOver(ctx, t, o = {}) {
   }, PC98_RGB);
   ctx.drawImage(L, 0, 0);
 }
+
+// ---------------------------------------------------------------- the live panel (the game, V4 #69; grid doc 7b)
+// The game draws the webcam view as it always has (src/ui/door.ts: 296 x 532 CSS px, exactly 2x the grid). Here it
+// comes down 2x in linear light and is ordered-dithered the way bake_her.py baked the stills: his room to the desk's
+// Graphite with a light dither, her side (what shows through the door, the daydream bubble, the strip under the door)
+// to the PC-98 set plus the desk's darks with a stronger one; the light under the door a gold bar with a pale top
+// row. The nearest colour is memoised on a 6-bit RGB grid, so a frame is a table lookup per pixel.
+const HL = {};
+function herOk(r, g, b) {   // sRGB 0..255 -> Oklab, L weighted 1.3 (as the bakes)
+  const l0 = HL.lin[r], m0 = HL.lin[g], s0 = HL.lin[b];
+  const l = Math.cbrt(0.4122214708 * l0 + 0.5363325363 * m0 + 0.0514459929 * s0), m = Math.cbrt(0.2119034982 * l0 + 0.6806995451 * m0 + 0.1073969566 * s0), s = Math.cbrt(0.0883024619 * l0 + 0.2817188376 * m0 + 0.6299787005 * s0);
+  return [1.3 * (0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s), 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+}
+function herLuts() {
+  if (HL.lin) return;
+  HL.lin = new Float32Array(256); for (let i = 0; i < 256; i++) { const a = i / 255; HL.lin[i] = a <= 0.04045 ? a / 12.92 : ((a + 0.055) / 1.055) ** 2.4; }
+  HL.lin12 = new Uint16Array(256); for (let i = 0; i < 256; i++) HL.lin12[i] = Math.round(HL.lin[i] * 4095);   // four of them sum to 0..16380: >> 2 is the mean
+  HL.dRoom = new Int16Array(64); HL.dSide = new Int16Array(64); for (let k = 0; k < 64; k++) { HL.dRoom[k] = Math.round((BAYER8[k] - 0.5) * 0.035 * 255); HL.dSide[k] = Math.round((BAYER8[k] - 0.5) * 0.09 * 255); }
+  HL.srgb = new Uint8Array(4096); for (let i = 0; i < 4096; i++) { const a = i / 4095; HL.srgb[i] = Math.round(255 * (a <= 0.0031308 ? a * 12.92 : 1.055 * a ** (1 / 2.4) - 0.055)); }
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const room = deskSet(DESK_VARIANT).PAL.slice(0, 33).map(hex);   // the desk's Graphite (and the knight's steel)
+  const side = PC98.map(hex).concat(room);                        // her world: PC-98 plus the desk's darks and greiges
+  HL.room = { rgb: room, ok: room.map((c) => herOk(...c)), lut: new Int16Array(1 << 18).fill(-1) };
+  HL.side = { rgb: side, ok: side.map((c) => herOk(...c)), lut: new Int16Array(1 << 18).fill(-1) };
+  HL.gold = hex(CORE8.gold); HL.pale = hex(deskSet(DESK_VARIANT).PAL[P.pale] || '#eee5c6');
+}
+function herNear(P0, r, g, b) {
+  const k = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2); let v = P0.lut[k];
+  if (v >= 0) return v;
+  const o = herOk((r & ~3) + 2, (g & ~3) + 2, (b & ~3) + 2); let best = 1e9;
+  for (let i = 0; i < P0.ok.length; i++) { const q = P0.ok[i], d = (q[0] - o[0]) ** 2 + (q[1] - o[1]) ** 2 + (q[2] - o[2]) ** 2; if (d < best) { best = d; v = i; } }
+  P0.lut[k] = v; return v;
+}
+// side: her side of the picture in the source's px: door [x0, x1, y0, y1] (the open doorway or the crack), strip
+// [x0, x1, y0, y1] (under the door), bubbles [[cx, cy, r], ...] (the daydream)
+function herWebcam(D, src, side) {
+  herLuts();
+  const SW = src.width, S = src.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, SW, VIEW_H * 2).data;
+  const L = HL.lin12, sr = HL.srgb, st = side.strip, bb = side.bubbles || [], row = SW * 4;
+  const dr = side.door || [0, 0, 0, 0], sx0 = st ? st[0] : 0, sx1 = st ? st[1] : 0, sy0 = st ? st[2] : 0, sy1 = st ? st[3] : 0;
+  const ROOM = HL.room, SIDE = HL.side, gold = HL.gold, pale = HL.pale;
+  for (let y = 0; y < VIEW_H; y++) {
+    const cy = y * 2 + 1, yb = (y & 7) << 3, inDoorY = cy >= dr[2] && cy < dr[3], inStripY = cy >= sy0 && cy < sy1;
+    let p = y * 2 * row, q = y * HP_W * 4;
+    for (let x = 0; x < HP_W; x++, p += 8, q += 4) {
+      const p2 = p + row;
+      const r = sr[(L[S[p]] + L[S[p + 4]] + L[S[p2]] + L[S[p2 + 4]]) >> 2], g = sr[(L[S[p + 1]] + L[S[p + 5]] + L[S[p2 + 1]] + L[S[p2 + 5]]) >> 2], b = sr[(L[S[p + 2]] + L[S[p + 6]] + L[S[p2 + 2]] + L[S[p2 + 6]]) >> 2];
+      const cx = x * 2 + 1, inStrip = inStripY && cx >= sx0 && cx < sx1;
+      if (inStrip && r > 200 && b < 170) {   // the light under the door: a gold bar with a pale top row
+        const c = cy < sy0 + 2 ? pale : gold; D[q] = c[0]; D[q + 1] = c[1]; D[q + 2] = c[2]; continue;
+      }
+      let her = inStrip || (inDoorY && cx >= dr[0] && cx < dr[1]);
+      if (!her) for (let i = 0; i < bb.length; i++) { const B0 = bb[i], dx = cx - B0[0], dy = cy - B0[1]; if (dx * dx + dy * dy <= B0[2] * B0[2]) { her = true; break; } }
+      const P0 = her ? SIDE : ROOM, o = (her ? HL.dSide : HL.dRoom)[yb | (x & 7)];
+      let r1 = r + o, g1 = g + o, b1 = b + o;
+      r1 = r1 < 0 ? 0 : r1 > 255 ? 255 : r1; g1 = g1 < 0 ? 0 : g1 > 255 ? 255 : g1; b1 = b1 < 0 ? 0 : b1 > 255 ? 255 : b1;
+      const key = ((r1 >> 2) << 12) | ((g1 >> 2) << 6) | (b1 >> 2), k0 = P0.lut[key], c = P0.rgb[k0 >= 0 ? k0 : herNear(P0, r1, g1, b1)];
+      D[q] = c[0]; D[q + 1] = c[1]; D[q + 2] = c[2];
+    }
+  }
+}
+
+// the UI from the game's view (render/herView.ts), with hit regions for the game ({x, y, w, h, act, arg, tip}, grid px)
+let HER_HITS = null;
+const hhit = (x, y, w, h, act = '', arg = '', tip = '') => { if (HER_HITS) HER_HITS.push({ x, y, w, h, act, arg: String(arg), tip }); };
+const C9N = (n, d) => (n != null && C9[n] != null ? C9[n] : d);
+function pill9(x, y, w, h, top, bot, o = {}) {   // her pink answer: a name and what it costs (or why not) under it
+  const off = o.off, hov = o.hover && !off;
+  win9(x, y, w, h, off ? { fill: C9.purple, hi: C9.lilac, lo: C9.plum, edge: C9.plum } : { fill: hov ? C9.rose : C9.pink, hi: C9.skin, lo: C9.rose, edge: C9.plum, shadow: true });
+  text(top, x + 4, y + 3, 'tiny', off ? C9.lilac : C9.plum);
+  if (bot) text(bot, x + 4, y + 10, 'tiny', off ? C9.pink : o.botCol ?? C9.purple);
+}
+function herUILive(st, t) {
+  // header over the dark wall: a rose heart and her name; her mood in a pill
+  heart9(4, 4, true);
+  text('Babe', 14, 2, 'tinyL', C9.pink, { shadow: C9.void });
+  const [mc, mw] = MOOD9[st.mood] || MOOD9.happy, pw = measure(mw, 'tiny') + 8;
+  win9(HP_W - 4 - pw, 3, pw, 10, { fill: C9.plum, hi: C9.purple, lo: C9.plum, edge: C9.purple });
+  text(mw, HP_W - 4 - pw + 4, 5, 'tiny', mc);
+  hhit(HP_W - 4 - pw, 3, pw, 10, '', '', 'mood');
+  // the UI band
+  rectI(0, 266, HP_W, HP_H - 266, C9.plum);
+  for (let x = 0; x < HP_W; x++) { putI(x, 266, C9.purple); putI(x, 267, chk(x, 267) ? C9.purple : C9.plum); }
+  const hk = st.hover || '';
+  if (st.heard && !st.chat) {   // ♫ KETTLE · kitchen · now; ? Nothing yet. Listen.; the headset: you hear nothing
+    const H0 = st.heard;
+    if (H0.glyph === '?') text('?', 5, 270, 'tiny', C9.lilac); else g9(H0.glyph === 'hs' ? 'hs' : 'note', 4, 270, C9N(H0.glyphCol, C9.lilac));
+    runs9(H0.parts.map(([s, c]) => [s, C9N(c, C9.lilac)]), 13, 270);
+    hhit(0, 268, HP_W, 10, '', '', 'heard');
+  }
+  if (st.chat) {   // her question: the window grows from 270; her answers as pills
+    const c = st.chat, y = 270, lines = wrap9(c.q, 128).slice(0, 2);
+    let ax = 7, ay = y + 14 + lines.length * 8, rows = 1;
+    c.a.forEach((a) => { const w = measure(a.text, 'tiny') + 9; if (ax + w > 140) { ax = 7; rows++; } ax += w + 3; });
+    const h = 13 + lines.length * 8 + rows * 13 + 2;
+    win9(3, y, 141, h);
+    text(c.label, 8, y + 4, 'tiny', C9.rose); if (c.right) text(c.right, 137, y + 4, 'tiny', C9.purple, { align: 'r' });
+    lines.forEach((l, k) => text(l, 8, y + 13 + k * 8, 'tiny', C9.plum));
+    ax = 7;
+    c.a.forEach((a) => {
+      const w = measure(a.text, 'tiny') + 9; if (ax + w > 140) { ax = 7; ay += 13; }
+      const hov = hk === a.act + ':' + a.arg;
+      win9(ax, ay, w, 11, { fill: hov ? C9.pink : C9.moon, hi: hov ? C9.skin : C9.moon, lo: hov ? C9.rose : C9.beige, edge: hov ? C9.plum : C9.purple, shadow: hov });
+      text(a.text, ax + 4, ay + 3, 'tiny', C9.plum);
+      hhit(ax, ay, w, 11, a.act, a.arg, a.tip || ''); ax += w + 3;
+    });
+  } else if (st.win) {   // a window of hers: a label, the seconds at the right, her line, a bar, her answers as pills
+    const A = st.win, lines = A.line ? wrap9(A.line, 128).slice(0, 2) : [], bh = A.bar != null ? 9 + (A.barLabels ? 7 : 0) : 0, ph = A.pills ? 21 : 0;
+    const y = A.top ?? 279, h = 13 + lines.length * 8 + bh + ph + 2;
+    win9(3, y, 141, h, A.warm ? { fill: C9.beige, edge: C9.brown } : {});
+    if (A.line2 === 'alarm') { const on = Math.floor(t * 4) & 1; for (let i = 5; i < 142; i++) putI(i, y + 2, (chk(i, 0) ^ on) ? C9.crimson : C9.moon); }
+    else if (A.warm) for (let i = 5; i < 142; i++) putI(i, y + 2, chk(i, 0) ? C9.gold : C9.moon);
+    text(A.label, 8, y + 5, 'tiny', C9N(A.labelCol, C9.rose));
+    if (A.right) text(A.right, 137, y + 5, 'tiny', C9.purple, { align: 'r' });
+    lines.forEach((l, k) => text(l, 8, y + 13 + k * 8, 'tiny', C9.plum));
+    let yy = y + 14 + lines.length * 8;
+    if (A.bar != null) {
+      bar9(8, yy, 130, A.bar, C9N(A.barCol, C9.rose), A.marks || []);
+      if (A.barLabels) A.barLabels.forEach(([m, s]) => text(s, 9 + Math.round(128 * m), yy + 6, 'tiny', C9.brown, { align: m >= 1 ? 'r' : 'c' }));
+      if (A.barTip) hhit(8, yy - 1, 130, A.barLabels ? 14 : 7, '', '', A.barTip);
+      yy += bh;
+    }
+    if (A.pills) {
+      let px = 7;
+      A.pills.forEach((q) => {
+        const w = Math.max(measure(q.name, 'tiny'), measure(q.cost || '', 'tiny')) + 9;
+        pill9(px, yy, w, 18, q.name, q.cost, { hover: hk === q.act + ':' + q.arg });
+        hhit(px, yy, w, 18, q.act, q.arg, q.tip || ''); px += w + 4;
+      });
+    }
+  } else if (st.note) {   // her note: what she is up to as far as you can tell
+    const N0 = st.note, y = 279, warn = N0.tone === 'warn', alarm = N0.tone === 'alarm';
+    win9(3, y, 141, 29, warn || alarm ? { fill: C9.beige, edge: C9.brown } : {});
+    if (warn) for (let i = 5; i < 142; i++) putI(i, y + 2, chk(i, 0) ? C9.gold : C9.moon);
+    if (alarm) { const on = Math.floor(t * 4) & 1; for (let i = 5; i < 142; i++) putI(i, y + 2, (chk(i, 0) ^ on) ? C9.crimson : C9.moon); }
+    text(N0.label, 8, y + 5, 'tiny', alarm ? C9.crimson : warn ? C9.brown : C9.rose);
+    wrap9(N0.body, 128).slice(0, 2).forEach((l, k) => text(l, 8, y + 13 + k * 8, 'tiny', C9.plum));
+  }
+  if (st.buttons) {   // what you can do before she comes: two pink buttons
+    st.buttons.slice(0, 2).forEach((q, k) => {
+      const bx = 3 + k * 72, by = 310;
+      pill9(bx, by, 69, 17, q.name, q.sub, { off: q.off, hover: hk === q.act + ':' + q.arg, botCol: q.subCol ? C9N(q.subCol) : undefined });
+      hhit(bx, by, 69, 17, q.off ? '' : q.act, q.arg, q.tip || '');
+    });
+  }
+  // stats: fixed slots at the bottom
+  const HS = st.stats, sy = 331;
+  text('Patience', 4, sy, 'tiny', C9.beige);
+  for (let k = 0; k < 5; k++) heart9(42 + k * 8, sy - 1, k < HS.patience);
+  text('Caught', 88, sy, 'tiny', C9.beige);
+  for (let k = 0; k < 3; k++) heart9(119 + k * 8, sy - 1, k < HS.caught, 'caught');
+  hhit(0, sy - 1, 84, 9, '', '', 'patience'); hhit(84, sy - 1, 64, 9, '', '', 'caught');
+  text('Goodwill', 4, sy + 10, 'tiny', C9.beige); bar9(42, sy + 10, 92, HS.goodwill / 100, C9.rose, HS.gwMarks || []); text(String(HS.goodwill), 144, sy + 10, 'tiny', C9.beige, { align: 'r' });
+  if (st.gwTag) { const w = measure(st.gwTag, 'tiny') + 4, x = Math.min(134 - w, 42 + Math.round(92 * HS.goodwill / 100) + 2); rectI(x, sy + 9, w, 7, C9.plum); text(st.gwTag, x + 2, sy + 10, 'tiny', C9.pink); }
+  hhit(0, sy + 9, HP_W, 9, '', '', 'goodwill');
+  text('Noise', 4, sy + 20, 'tiny', C9.beige); bar9(42, sy + 20, 92, HS.noise / 100, C9.gold, HS.noiseMarks || []); text(String(HS.noise), 144, sy + 20, 'tiny', C9.beige, { align: 'r' });
+  hhit(0, sy + 19, HP_W, 9, '', '', 'noise');
+}
+let HER_IMG = null, HER_UI = null;   // HER_UI: the last UI layer (palette indexes, -1 clear), its hits and its key
+function drawHerLive(src, st, t) {
+  if (!HER_CANVAS) { HER_CANVAS = document.createElement('canvas'); HER_CANVAS.width = HP_W; HER_CANVAS.height = HP_H; }
+  // the UI is drawn again only when what it shows changes (its blinking lines tick at 4 Hz)
+  const blink = st.note?.tone === 'alarm' || st.win?.line2 === 'alarm' ? Math.floor(t * 4) & 1 : 0;
+  const key = JSON.stringify([st.mood, st.heard, st.note, st.win, st.chat, st.buttons, st.stats, st.hover, st.gwTag, blink]);
+  if (!HER_UI || HER_UI.key !== key) {
+    setRes(HP_W, HP_H); CLIP = null;
+    const G = buf('herPC', HP_W, HP_H); G.I.fill(-1); bind(G);
+    HER_HITS = []; herUILive(st, t);
+    HER_UI = { key, I: Int8Array.from(G.I), hits: HER_HITS }; HER_HITS = null;
+  }
+  const ctx = HER_CANVAS.getContext('2d'), img = HER_IMG || (HER_IMG = ctx.createImageData(HP_W, HP_H)), D = img.data, UI = HER_UI.I;
+  herWebcam(D, src, st.side || {});
+  for (let i = 0, p = 0; i < HP_W * HP_H; i++, p += 4) { D[p + 3] = 255; const c = UI[i]; if (c < 0) continue; const q = PC98_RGB[c]; D[p] = q[0]; D[p + 1] = q[1]; D[p + 2] = q[2]; }
+  ctx.putImageData(img, 0, 0);
+  return { canvas: HER_CANVAS, hits: HER_UI.hits };
+}

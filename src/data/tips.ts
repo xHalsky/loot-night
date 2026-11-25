@@ -31,7 +31,7 @@ export const END_HINT: Record<string, string> = {
 export type CoachId = 'steps' | 'door' | 'phone' | 'loot' | 'windup' | 'headset';
 export const COACH: Record<CoachId, { title: string; text: string; anchor: string; side: 'over' | 'right' | 'left' | 'above' }> = {
   steps: { title: 'Footsteps!', text: 'She is coming. Press Tab now: Excel has to be up before she opens the door.', anchor: '#monitor', side: 'over' },
-  door: { title: 'She is at your door', text: 'What she wants is in her note, under your door. Answer her there.', anchor: '.her-note', side: 'right' },
+  door: { title: 'She is at your door', text: 'What she wants is in her note, under your door. Answer her there.', anchor: '#herNote', side: 'right' },
   phone: { title: 'Your phone', text: 'Someone wants you. Click the phone to answer.', anchor: '#deskPhone', side: 'above' },
   loot: { title: 'Loot!', text: 'A green \u25b2 means it is an upgrade. Right-click it to equip it, or drag it onto a hero.', anchor: '#spBag', side: 'left' },
   headset: { title: 'Your headset', text: 'Click your head (or press H) to put it on. In the Zone you loot more, but you cannot hear her.', anchor: '#headHit', side: 'right' },

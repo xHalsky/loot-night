@@ -22,7 +22,10 @@ gameplay steps). This file says how the build gets there and where it stands. It
 - **V8, the phone in your hand, 0.65.0;** **V3, the desk and monitor, 0.66.0:** the whole right screen round the game
   screen is drawn by the renderer from `render/deskView.ts` (desk.js `drawDeskLive`), lit by what the monitor shows;
   the desk's DOM (bezel, taskbar, keyboard, phone, the Tonight note, the YOU and feed cards) is gone (screen.md).
-  Left as DOM for now: the webcam column, the pop-up windows, Excel's content (its step), the dog.
+  Left as DOM for now: the pop-up windows, Excel's content (its step), the dog.
+- **V4, her panel and his chair, 0.67.0:** the webcam stays the game's own drawing and is dithered onto the grid every
+  webcam frame as the stills were baked; her PC-98 UI from `render/herView.ts`; his gaming chair in `ui/him.ts`
+  (screen.md).
 
 - **The 15-minute gate** (handoff step 1: the RPG alone must hold 15 minutes before step 3) moved to after the
   redesign (Paweł, 2026-11-24): it needs number tuning first. Step 3 starts without it.
@@ -56,3 +59,4 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 9 | #54: the three stars; the phone retune | 0.63.0, 0.64.0 |
 | 10 | V8 (#73): the phone in your hand | 0.65.0 |
 | 11 | V3 (#68): the desk and monitor round the game screen | 0.66.0 |
+| 12 | V4 (#69): her panel and his chair | 0.67.0 |
