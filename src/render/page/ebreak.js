@@ -408,7 +408,7 @@ function drawerPrims(o, E, nCans = 3) {
   Q.push(rCyl([28.5, 57.7, o - 4], [0, 0, -1], 5, 0.72, battSh), rCyl([30.2, 57.7, o - 4.4], [0, 0, -1], 5, 0.72, battSh));
   return Q;
 }
-function deskPrims(E, o) {
+function deskPrims(E, o, nCans = 3) {
   const Q = [];
   Q.push(box([-95, 72, -82], [64, 75, 0], deskTopSh));
   Q.push(box([-95, 75, -62], [18, 75.3, -1.2], matSh));
@@ -421,7 +421,7 @@ function deskPrims(E, o) {
   Q.push(box([60, 0, -80], [62.5, 72, 0], pedSh));
   Q.push(box([-44, 0, 5.5], [-14, 3.4, 9.5], stripSh));
   Q.push(disc([0, 0, 0], [0, 1, 0], 0, floorSh));
-  return Q.concat(drawerPrims(o, E));
+  return Q.concat(drawerPrims(o, E, nCans));
 }
 // the monitor (cold, casts the shadows) and a soft fill from over your shoulder, so the dark room still reads
 const MON_LIGHT = (o = {}) => [{ p: [-22, 108, -70], face: [0, 0, 1], i: o.i ?? 3.2, r: o.r ?? 120 }, { p: o.fill ?? [30, 200, 140], i: o.fi ?? 1.05, r: 300, shadow: false }];
@@ -968,4 +968,224 @@ function ebGuides(step) {
   }
   ebVPMark(C, [0, 0, -1], P.crimson, 'depth');
   if (Math.abs(C.F[1]) > 0.05) ebVPMark(C, [0, -1, 0], P.s6, 'verticals');
+}
+
+// ================================================================ the game's energy break (V5, #70; grid doc 7c)
+// The game drives the five scenes: its rules (systems/monster.ts) and both physics (systems/fuelPhysics.ts: the drink's
+// particles, the throw's rigid cans) stay the game's. The cameras live here, and the game asks EB_MAP where things are
+// on screen (scene px, 392 x 258) and where a pointer is in its physics. The static part of each scene is ray-cast in
+// slices over idle frames before it is needed (a whole one is 0.2 to 0.7 s on a slow machine); the moving can, him,
+// the liquid and the UI are drawn each frame. The cursor is the game's CSS cursor (the hand below, at full rate).
+const EB_DR_STOPS = [0, 22, 12, 6, 18, 3, 9, 15, 21];          // the drawer's bakes, cm pulled (the ends first)
+// the drawer is drawn at the nearest pull already baked (while the rest bake, it moves in bigger steps)
+const ebDrStop = (o, n) => EB_DR_STOPS.filter((s) => s === 0 || EB_CACHE.has('drawer:' + n + ':' + s)).reduce((b, s) => (Math.abs(s - o) < Math.abs(b - o) ? s : b), 0);
+function ebGrabPrims(n) {   // the open drawer with its front can taken out (the one you drag)
+  const o = DR.open;
+  return deskPrims(DR_CAM.E, o, n).filter((q) => !(q.k === 1 && q.L === CAN.L && Math.abs(q.o[2] - (o + DR.cans[0])) < 0.01));
+}
+// between two pulls only the drawer's part of the picture changes: every pull but the shut one is the shut bake with
+// that part cast again (the drawer, its box, its shadow on the pedestal and the floor below it)
+let EB_DR_RECT = null;
+function ebDrRect() {
+  if (EB_DR_RECT) return EB_DR_RECT;
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9;
+  for (const o of [0, DR.open]) for (const X of [4.4, 45.6]) for (const Y of [54, 72]) for (const Z of [o - 37.5, o + 3]) { const p = camP(DR_CAM, X, Y, Z); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); }
+  return (EB_DR_RECT = [Math.max(0, Math.floor(x0 - 14)), Math.max(0, Math.floor(y0 - 6)), Math.min(EBW, Math.ceil(x1 + 30)), EBH]);
+}
+function ebJobs(n) {   // what a break with n cans in the drawer needs, in the order it needs them
+  const shut = 'drawer:' + n + ':0';
+  const J = EB_DR_STOPS.map((o) => ['drawer:' + n + ':' + o, DR_CAM, () => deskPrims(DR_CAM.E, o, n), MON_LIGHT, 0.16, o ? shut : null]);
+  J.push(['grab:' + n, DR_CAM, () => ebGrabPrims(n), MON_LIGHT, 0.16, shut]);
+  J.push(['open', OPEN_CAM, () => deskPrims(OPEN_CAM.E, 0, 0).concat(backProps()), () => MON_LIGHT({ fill: [10, 190, 150], fi: 0.8 }), 0.16]);
+  J.push(['drink', DRINK_CAM, drinkPrims, DRINK_LIGHT, 0.12]);
+  J.push(['toss', TOSS_CAM, tossPrims, TOSS_LIGHT, 0.1]);
+  return J;
+}
+const EB_PEND = new Map();   // key -> { F, y, prims, lights, amb, C }
+// cast rows of one bake until the budget is spent; true when it is complete
+function ebBakeStep(job, ms) {
+  const [key, C, primsFn, lightsFn, amb, from] = job;
+  if (EB_CACHE.has(key)) return true;
+  let P0 = EB_PEND.get(key);
+  if (!P0) {
+    if (from && !EB_CACHE.has(from)) return false;   // it starts from the shut drawer's bake
+    const F = ebBuf(), R = from ? ebDrRect() : [0, 0, EBW, EBH];
+    if (from) { const B = EB_CACHE.get(from); for (const k of ['V', 'M', 'E', 'S', 'R', 'Gc', 'Bc', 'Z', 'I', 'A', 'O']) F[k].set(B[k]); }
+    P0 = { F, R, y: R[1], prims: primsFn(), lights: lightsFn(), amb, C }; EB_PEND.set(key, P0);
+  }
+  RT_SCENE = { prims: P0.prims, lights: P0.lights, amb: P0.amb };
+  const t0 = performance.now(), [x0, , x1, y1] = P0.R;
+  while (P0.y < y1) { ebCastRect(P0.F, C, P0.prims, x0, P0.y, x1, P0.y + 1); P0.y += 1; if (performance.now() - t0 > ms) break; }
+  if (P0.y >= y1) { EB_CACHE.set(key, P0.F); EB_PEND.delete(key); return true; }
+  return false;
+}
+/** Bake ahead for a break with n cans; spends about ms. True when everything is ready. */
+let EB_N = 0;
+function ebWarm(n, ms) {
+  if (n !== EB_N) {   // the drawer's bakes are for this many cans: another count's are let go (a set is ~35 MB)
+    for (const k of [...EB_CACHE.keys(), ...EB_PEND.keys()]) if (/^(drawer|grab):/.test(k) && !k.startsWith('drawer:' + n + ':') && k !== 'grab:' + n) { EB_CACHE.delete(k); EB_PEND.delete(k); }
+    EB_N = n;
+  }
+  const t0 = performance.now();
+  let all = true;
+  for (const job of ebJobs(n)) { if (EB_CACHE.has(job[0])) continue; all = false; const left = ms - (performance.now() - t0); if (left <= 0) return false; ebBakeStep(job, left); }
+  return all;
+}
+function ebBase(key, n) {   // a bake now (finished at once if the warm-up has not got to it)
+  if (!EB_CACHE.has(key)) { const J = ebJobs(n), job = J.find((j) => j[0] === key); if (job[5]) ebBakeStep(J.find((j) => j[0] === job[5]), 1e9); ebBakeStep(job, 1e9); }
+  return EB_CACHE.get(key);
+}
+
+// where things are, for the game's input (scene px)
+const EB_MAP = {
+  drawerHandle: (o) => camP(DR_CAM, 25, 63.3, o + 3),
+  drawerCans: (n) => DR.cans.slice(0, n).map((dz, k) => camP(DR_CAM, 8.6 - k * 0.3 + CAN.L / 2, 57 + CAN.r, DR.open + dz)),
+  grabAt: (k) => { const p0 = [8.6 + CAN.L / 2, 57 + CAN.r, DR.open + DR.cans[0]], p1 = [DR.spot[0], 75 + CAN.L / 2, DR.spot[1]], c = lerp3(p0, p1, k); c[1] += Math.sin(Math.PI * Math.min(1, k)) * 16; return camP(DR_CAM, c[0], c[1], c[2]); },
+  spot: () => camP(DR_CAM, DR.spot[0], 75.02, DR.spot[1]),
+  openTab: (lift) => { const b = camP(OPEN_CAM, OPEN.c[0], 75, OPEN.c[2]), S = EB_SPR.can76, bx = Math.round(b[0] - S.w / 2), by = Math.round(b[1] - 166); return [bx + 37 + 6, by + 5 - Math.round(lift * 10) + 3]; },
+  lips: (th) => headPt([-10.2, -0.5], th),
+  // the throw's plane: the 2D physics stands at the bin's depth, its bin on the bin, its floor on the floor
+  toss: { bx: 505, sx: 26 / 74, sy: 32 / 76, floor: 272 },
+  tossToScene: (x, y) => { const M = EB_MAP.toss; return camP(TOSS_CAM, TOSS.bin[0] + (x - M.bx) * M.sx, (M.floor - y) * M.sy, TOSS.z); },
+  sceneToToss: (px, py) => {   // the ray through the pixel, met with the bin's plane
+    const C = TOSS_CAM, a = (px + 0.5 - C.cx) / C.f, b = -(py + 0.5 - C.cy) / C.f;
+    const d = [C.F[0] + C.R[0] * a + C.U[0] * b, C.F[1] + C.R[1] * a + C.U[1] * b, C.F[2] + C.R[2] * a + C.U[2] * b], k = (TOSS.z - C.E[2]) / d[2];
+    const X = C.E[0] + d[0] * k, Y = C.E[1] + d[1] * k, M = EB_MAP.toss; return [M.bx + (X - TOSS.bin[0]) / M.sx, M.floor - Y / M.sy];
+  },
+  // a lying can on the floor at depth z (cm), for last nights' misses (they lie round the bin, not in a row)
+  floorAt: (x, z) => { const M = EB_MAP.toss; return camP(TOSS_CAM, TOSS.bin[0] + (x - M.bx) * M.sx, 3.3, z); },
+};
+// the game's cursor as a CSS cursor (2x, a hotspot at the palm): the hand and the grabbing fist
+const EB_CURSORS = {};
+function ebCursorURL(kind) {
+  if (EB_CURSORS[kind]) return EB_CURSORS[kind];
+  const rows = CUR[kind], w = Math.max(...rows.map((r) => r.length)), h = rows.length, c = document.createElement('canvas'); c.width = w * 2; c.height = h * 2;
+  const g = c.getContext('2d'), col = { o: EB_PAL[P.void], '#': EB_PAL[P.moon] };
+  rows.forEach((r, j) => [...r].forEach((ch, i) => { if (col[ch]) { g.fillStyle = col[ch]; g.fillRect(i * 2, j * 2, 2, 2); } }));
+  return (EB_CURSORS[kind] = `url(${c.toDataURL()}) 8 8, ${kind === 'grab' ? 'grabbing' : 'grab'}`);
+}
+
+// ---------------------------------------------------------------- the scenes, from the game's state
+function ebDrawerLive(s) {
+  const C = DR_CAM, o = ebDrStop(s.o, s.n), F = EBF.buf; ebCopy(F, ebBase('drawer:' + s.n + ':' + o, s.n)); bind(F);
+  if (s.hint) { const hp = camP(C, 25, 63.3, o + 3); ebArrow(hp[0] + 34, hp[1] - 6, 'down'); ebLabel('grab the handle, pull', hp[0] + 39, hp[1] - 5); }
+  return C;
+}
+function ebGrabLive(s) {
+  const C = DR_CAM, o = DR.open, F = EBF.buf, prims = ebGrabPrims(s.n); ebCopy(F, ebBase('grab:' + s.n, s.n)); bind(F);
+  const k = s.k, p0 = [8.6 + CAN.L / 2, 57 + CAN.r, o + DR.cans[0]], p1 = [DR.spot[0], 75 + CAN.L / 2, DR.spot[1]];
+  const c = lerp3(p0, p1, k); c[1] += Math.sin(Math.PI * Math.min(1, k)) * 16 + (s.settle || 0);
+  const turn = ease((k - 0.35) / 0.55), ax = [Math.cos(turn * Math.PI / 2), Math.sin(turn * Math.PI / 2), 0];
+  const can = rCyl([c[0] - ax[0] * CAN.L / 2, c[1] - ax[1] * CAN.L / 2, c[2] - ax[2] * CAN.L / 2], ax, CAN.L, CAN.r, canShader(C.E));
+  RT_SCENE = { prims: prims.concat([can]), lights: MON_LIGHT(), amb: 0.16 };
+  const pa = camP(C, can.o[0], can.o[1], can.o[2]), pb = camP(C, can.o[0] + ax[0] * CAN.L, can.o[1] + ax[1] * CAN.L, can.o[2] + ax[2] * CAN.L), rr = 3.3 * C.f / Math.min(pa[2], pb[2]) + 3;
+  ebCastRect(F, C, [can], Math.min(pa[0], pb[0]) - rr, Math.min(pa[1], pb[1]) - rr, Math.max(pa[0], pb[0]) + rr, Math.max(pa[1], pb[1]) + rr, true);
+  const ring = [DR.spot[0], 75.02, DR.spot[1]], rp = camP(C, ring[0] + 5.2, ring[1], ring[2]);
+  if (!s.placed) { ebRing(C, ring, 4.6, [0, 1, 0], P.gold, s.t, 4); if (!s.carrying) ebLabel('put it here', rp[0] + 3, rp[1] - 3); }
+  else { ebRing(C, ring, 4.6, [0, 1, 0], P.g5, 0, 99); glyph('check', Math.round(rp[0] + 3), Math.round(rp[1] - 2), P.g5); }
+  if (!s.carrying && !s.placed) { const q = camP(C, p0[0], p0[1] + CAN.r, p0[2]); ebLabel('drag a can', q[0] + 26, q[1] - 6); }
+  return C;
+}
+function ebOpenLive(s) {
+  const C = OPEN_CAM, F = EBF.buf; ebCopy(F, ebBase('open', s.n)); bind(F);
+  const [bx, by] = canSprite(F, C, 'can76', [OPEN.c[0], 75, OPEN.c[2]], { baseRow: 166, light: (u, v) => 0.94 + 0.08 * (1 - u) - 0.12 * Math.max(0, v - 0.85) });
+  const lift = s.lift, opened = s.pop >= 0, cx = bx + 37, ly = by + 5;
+  if (lift > 0) {
+    for (let i = -5; i <= 5; i++) for (let j = -1; j <= 1; j++) if (Math.abs(i) + Math.abs(j) * 3 < 6) putI(cx + i, ly + j, P.s3);
+    const hgt = Math.round(lift * 10);
+    for (let j = 0; j <= hgt; j++) for (let i = -3; i <= 3; i++) {
+      const edge = Math.abs(i) === 3 || j === hgt, ring = j > hgt - 5 && j < hgt - 1 && Math.abs(i) < 2;
+      if (Math.abs(i) === 3 && j === hgt) continue;
+      putI(cx + i, ly - j, ring ? P.void : edge ? P.s4 : i < 0 ? P.moon : P.u6);
+    }
+    putI(cx, ly, P.s5);
+  }
+  if (opened) {
+    for (let i = -6; i <= 4; i++) for (let j = 0; j <= 2; j++) if (Math.abs(i + 1) + (j === 1 ? 0 : 2) <= 5) putI(cx + i, ly + 2 + j, j === 1 && Math.abs(i + 1) < 4 ? P.void : P.s1);
+    const ft = s.pop;
+    for (let k = 0; k < 30; k++) {
+      const a = hash(k, 3, 9), sp = 0.6 + hash(k, 4, 9), age = (ft * 1.6 + hash(k, 5, 9)) % 1.3; if (ft < 0.05) continue;
+      const x = cx - 2 + (a - 0.5) * 24 * age + Math.sin(age * 9 + k) * 1.5, y = ly + 2 - age * 36 * sp;
+      if (age < 1.15) putI(Math.round(x), Math.round(y), [EBX.a6, EBX.a5, EBX.a4][k % 3]);
+    }
+    if (ft < 1) ebLabel('psssht', cx + 16, ly - 20 - ft * 8, EBX.a5);
+  } else if (!s.holding) { ebArrow(cx + 28, ly - 16, 'up'); ebLabel('pull the tab up', cx + 32, ly - 15); }
+  return C;
+}
+function ebDrinkLive(s) {
+  const C = DRINK_CAM, F = EBF.buf; ebCopy(F, ebBase('drink', s.n)); bind(F);
+  if (EB_SCREEN) { const D = EB_SCREEN.data; for (let i = 0; i < EBW * EBH; i++) if (F.S[i] && F.R[i] < 0) { const u = F.Gc[i], v = F.Bc[i], sx = Math.min(473, (u * 474) | 0), sy = Math.min(231, (v * 232) | 0), o = (sy * 474 + sx) * 4; F.R[i] = 0; F.S[i] = 2; F.V[i] = 0; F.M[i] = 0; F.E[i] = 1; F.O[i] = o; } }
+  drawHim(F, s.th, s.open, s.t);
+  // spilled drink: what missed his mouth, falling and fading; then the can; then what is in the air
+  for (const [x, y, a] of s.spill) { const X = Math.round(x), Y = Math.round(y); if (X >= 0 && Y >= 0 && X < EBW && Y < EBH) { const c = acidAt(1 + 2 * a), i = Y * EBW + X; F.S[i] = 1; F.R[i] = c[0]; F.Gc[i] = c[1]; F.Bc[i] = c[2]; F.Z[i] = 50; F.I[i] = -1; } }
+  drawDrinkCan(F, s.top, s.phi, s.fill, s.t, s.slosh);
+  for (const [x, y] of s.air) for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) { const X = Math.round(x - 0.5) + dx, Y = Math.round(y - 0.5) + dy; if (X >= 0 && Y >= 0 && X < EBW && Y < EBH) { const c = acidAt(dy ? 2.8 : 3.8), i = Y * EBW + X; F.S[i] = 1; F.R[i] = c[0]; F.Gc[i] = c[1]; F.Bc[i] = c[2]; F.Z[i] = 40; F.I[i] = -1; } }
+  if (s.ring) ebRing2(s.ring[0], s.ring[1], s.ring[2], s.t);
+  if (s.hint) ebLabel(s.hint[0], s.hint[1], s.hint[2], s.hint[3] === 'warn' ? P.copper : P.gold);
+  // in you: the bar with its half and full marks; the Space key held while it tilts
+  const pct = s.pct, bx = 10, by = 12, bw = 120;
+  text('IN YOU', bx, by, 'tiny', P.u5); text(pct + '%', bx + bw + 4, by + 8, 'tiny', pct >= s.full ? P.gold : P.moon);
+  rectI(bx, by + 9, bw, 4, P.void); rectI(bx, by + 9, Math.round((bw * pct) / 100), 4, EBX.a4); if (pct) rectI(bx, by + 9, Math.round((bw * pct) / 100), 1, EBX.a6);
+  for (const [m, lab] of [[s.half, 'half'], [s.full, 'full']]) { const mx = bx + Math.round((bw * m) / 100); rectI(mx, by + 7, 1, 8, pct >= m ? P.gold : P.u5); text(lab, mx, by + 16, 'tiny', pct >= m ? P.gold : P.u4, { align: 'c' }); }
+  const kx = EBW - 66, ky = EBH - 22, dn = s.space ? 1 : 0;
+  rectI(kx, ky + 2, 40, 13, P.s1); rectI(kx, ky + dn, 40, 12, dn ? P.s3 : P.s4); rectI(kx + 1, ky + 1 + dn, 38, 9, dn ? P.s4 : P.s5);
+  text('Space', kx + 20, ky + 3 + dn, 'tiny', dn ? P.moon : P.s1, { align: 'c' }); text(dn ? 'tilting' : 'tilt', kx + 44, ky + 4, 'tiny', dn ? P.gold : P.u5);
+  if (s.verdict) ebLabel(s.verdict[0], EBW / 2 - 60, 44, s.verdict[1] === 'full' ? P.gold : s.verdict[1] === 'half' ? P.copper : P.crimson);
+  return C;
+}
+// a dashed gold ring in scene px (a screen-space ellipse), marching
+function ebRing2(cx, cy, r, t, idx = P.gold) { const n = Math.max(24, Math.round(r * 2.4)); for (let a = 0; a < n; a++) if (Math.floor(a / 3 + t * 4) % 2 === 0) putI(Math.round(cx + Math.cos((a / n) * 6.283) * r), Math.round(cy + Math.sin((a / n) * 6.283) * r * 0.9), idx); }
+function ebTossLive(s) {
+  const C = TOSS_CAM, F = EBF.buf; ebCopy(F, ebBase('toss', s.n)); bind(F);
+  for (const [x, y, rot, light, z] of s.cans) sprBlit(F, 'st_closed', x, y, rot, light, z);
+  if (s.held) {   // the can pulled back on its band; the slingshot's reach
+    const [hx, hy] = s.hand, [cx, cy] = s.held;
+    if (s.ring) ebRing2(hx, hy, s.ring, s.t);
+    for (let k = 0; k <= 14; k++) { const u = k / 14; if (k % 2 === 0) putI(Math.round(lerp(hx, cx, u)), Math.round(lerp(hy, cy, u)), P.gold); }
+    for (const [x, y] of s.dots) putI(Math.round(x), Math.round(y), P.moon);
+    sprBlit(F, 'st_closed', cx, cy, 0, 0.88, 1);
+  } else if (s.ready) { const [hx, hy] = s.hand; sprBlit(F, 'st_closed', hx, hy + Math.round(Math.sin(s.t * 2.4) * 2), 0, 0.88, 1); ebRing2(hx, hy, 22, s.t); ebLabel('one throw: grab it, pull back, let go', hx + 26, hy - 26); }
+  if (s.thrown) sprBlit(F, 'st_closed', s.thrown[0], s.thrown[1], s.thrown[2], 0.88, s.thrown[3]);
+  if (s.verdict) { ebLabel(s.verdict[0], EBW / 2 - measure(s.verdict[0], 'tiny') / 2, 40, s.verdict[1] ? P.g5 : P.crimson); }
+  if (s.floor > 0) ebLabel('on the floor: ' + s.floor, EBW - 8, EBH - 12, P.u5, 'r');
+  return C;
+}
+const EB_LIVE_SCENES = { 1: ebDrawerLive, 2: ebGrabLive, 3: ebOpenLive, 4: ebDrinkLive, 5: ebToss };
+EB_LIVE_SCENES[5] = ebTossLive;
+// the dimmed right screen behind the window, kept until the game sends a new one
+let EB_BG = null;
+function ebBackground(bg) {
+  const c = document.createElement('canvas'); c.width = RS_W; c.height = RS_H; const x = c.getContext('2d', { willReadFrequently: true });
+  x.drawImage(bg, 0, 0); EB_SCREEN = x.getImageData(9, 8, 474, 232); ebDim(x); EB_BG = c;
+}
+let EB_OUT = null, EB_WIN_KEY = '';
+function drawEbLive(bg, st, t) {
+  if (!EB_OUT) { EB_OUT = document.createElement('canvas'); EB_OUT.width = RS_W; EB_OUT.height = RS_H; }
+  if (bg) ebBackground(bg);
+  const ctx = EB_OUT.getContext('2d'), [wx, wy, ww] = EB_WIN;
+  if (EB_BG) ctx.drawImage(EB_BG, 0, 0); else { ctx.fillStyle = EB_PAL[P.void]; ctx.fillRect(0, 0, RS_W, RS_H); }
+  ctx.drawImage(ebWindowLive(st), wx, wy);
+  if (!EBF.buf) { EBF.buf = ebBuf(); EBF.canvas = document.createElement('canvas'); EBF.canvas.width = EBW; EBF.canvas.height = EBH; }
+  setRes(EBW, EBH); CLIP = null;
+  const s = { ...st.scene, t, n: st.n };
+  (EB_LIVE_SCENES[st.step] || ebDrawerLive)(s);
+  ebCompose(EBF.buf, EBF.canvas.getContext('2d'), ebTint());
+  ctx.drawImage(EBF.canvas, EB_SC[0], EB_SC[1]);
+  return { canvas: EB_OUT, hits: [{ x: wx + ww - 15, y: wy + 4, w: 10, h: 10, act: 'cancelMonster', arg: '', tip: 'close' }] };
+}
+// the window: as the mockup's, with the game's line under the steps (its instruction, or what just happened)
+function ebWindowLive(st) {
+  const key = st.step + '|' + st.say + '|' + (st.note || '');
+  if (key === EB_WIN_KEY && EBWIN.canvas) return EBWIN.canvas;
+  EB_WIN_KEY = key;
+  const c = ebWindowCanvas(st.step, 0);
+  if (st.say !== EB_STEPS[st.step - 1].say || st.note) {   // the line under the steps, redrawn
+    const [, , w, h] = EB_WIN; setRes(w, h); CLIP = null; const F = EBWIN.buf; F.I.fill(-1); bind(F);
+    rectI(8, 30, w - 16, 7, P.s1);
+    const x1 = 8 + text(st.say, 8, 31, 'tiny', P.moon); if (st.note) text(st.note, x1 + 8, 31, 'tiny', P.gold);
+    const g = c.getContext('2d'), img = g.getImageData(0, 0, w, h), D = img.data;
+    for (let k = 0; k < w * h; k++) { const q = F.I[k]; if (q < 0) continue; const cc = EB_RGB[q]; D[k * 4] = cc[0]; D[k * 4 + 1] = cc[1]; D[k * 4 + 2] = cc[2]; D[k * 4 + 3] = 255; }
+    g.putImageData(img, 0, 0);
+  }
+  return c;
 }

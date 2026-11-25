@@ -23,6 +23,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
   screen is drawn by the renderer from `render/deskView.ts` (desk.js `drawDeskLive`), lit by what the monitor shows;
   the desk's DOM (bezel, taskbar, keyboard, phone, the Tonight note, the YOU and feed cards) is gone (screen.md).
   Left as DOM for now: the pop-up windows, Excel's content (its step), the dog.
+- **V5, the energy break, 0.68.0:** the five scenes ray-cast through their cameras over the dimmed right screen, on the
+  game's own physics (desk.md, Goblin Fuel energy break); baked ahead in idle time.
 - **V4, her panel and his chair, 0.67.0:** the webcam stays the game's own drawing and is dithered onto the grid every
   webcam frame as the stills were baked; her PC-98 UI from `render/herView.ts`; his gaming chair in `ui/him.ts`
   (screen.md).
@@ -60,3 +62,4 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 10 | V8 (#73): the phone in your hand | 0.65.0 |
 | 11 | V3 (#68): the desk and monitor round the game screen | 0.66.0 |
 | 12 | V4 (#69): her panel and his chair | 0.67.0 |
+| 13 | V5 (#70): the energy break | 0.68.0 |

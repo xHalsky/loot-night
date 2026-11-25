@@ -37,6 +37,13 @@ export const PK = {
   /** Her panel (V4, #69; grid doc 7b): the game's webcam canvas (296 x 532) dithered onto the grid, her PC-98 UI under it;
    *  148 x 360 and the UI's hit regions. */
   her: (src, st, t) => drawHerLive(src, st, t),
+  /** The energy break (V5, #70; grid doc 7c) over the right screen, 492 x 360: bg (the right screen, when it should be
+   *  dimmed anew) or null, the game's view of the step; and its hit regions. ebWarm bakes ahead (ms), ebMap says where
+   *  things are on screen, ebCursor gives the CSS cursor. */
+  ebreak: (bg, st, t) => drawEbLive(bg, st, t),
+  ebWarm: (n, ms) => ebWarm(n, ms),
+  ebMap: EB_MAP,
+  ebCursor: (kind) => ebCursorURL(kind),
   /** The right screen around the game screen (V3, #68): desk, bezel, taskbar, keyboard, phone, cards; 492 x 360.
    *  phase 1 builds the frame and returns null, phase 2 lights it and returns it (two frames' work); 0 does both. */
   desk: (src, st, t, phase = 0) => drawDeskLive(src, st, t, phase),

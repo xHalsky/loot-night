@@ -5,7 +5,7 @@ import { T } from '../config/tuning';
 import { moodZone } from '../systems/meters';
 import { hasLife } from '../systems/affixes';
 import { preBlocked, nextMult } from '../systems/preemptive';
-import { PRE_ACTIONS, PRE_BY_ID } from '../data/preemptive';
+import { PRE_ACTIONS } from '../data/preemptive';
 import { END_HINT } from '../data/tips';
 import { CHAT_QS, VISIT_CUE } from '../data/content';
 import { ROOM_NAME } from '../data/apartment';

@@ -23,8 +23,10 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
   actions through the hit regions the renderer returns (grid px). The panel goes the same way into `#spArea`, the phone in your hand
   (`phoneView.ts`) into `#phHand`, her panel (`herView.ts`; the webcam canvas `#doorCanvas` stays drawn, hidden, and is
   dithered onto the grid at 15 fps) into `#herArea`, and the right screen round the game screen (`deskView.ts`) into
-  `#rsArea` under them all: 15 fps, built on one frame and lit on the next, both on frames the battle area and the panel skip
-  (`liveDrewAt`), because a whole desk costs about 7 ms on the CPU.
+  `#rsArea` under them all: 15 fps, built on one frame and lit on the next, both on frames the battle area and the panel
+  skip (`liveDrewAt`), because a whole desk costs about 7 ms on the CPU. The energy break (`ui/monsterScene.ts` gives
+  the view, the renderer's `PK.ebMap` the cameras) goes into `#ebArea` over the whole right screen at 30 fps, its
+  scenes baked ahead in `requestIdleCallback` time; under it the battle area and the desk draw four times a second.
 
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.

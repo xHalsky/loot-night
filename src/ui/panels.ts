@@ -3,7 +3,7 @@ import { VERSION } from '../config/version';
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
-import {  S, N, type BagEntry, type Item, type Hero, type MonsterGame } from '../core/state';
+import {  S, N, type BagEntry, type Item, type Hero } from '../core/state';
 import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, ULT_SLOT } from '../data/heroes';
 import { autocastBought, autocastOn } from '../systems/tree';
 import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
@@ -19,7 +19,6 @@ import {  PRE_BY_ID, type PreId } from '../data/preemptive';
 import { phoneAction } from '../systems/interrupts';
 import { planSvg } from './plan';
 import { RARITY_COLOR, STAT_LABEL, MAP_INFO, FEATHER } from '../data/items';
-import { SW, SH } from './monsterScene';
 import { cuddleDot, CUDDLE_W, CUDDLE_H } from '../systems/cuddle';
 import { heroStats, itemPower, heroPower } from '../systems/stats';
 import {  abilityUnlocked } from '../systems/battle';
@@ -96,25 +95,6 @@ const MORNING_CAPTION: Record<MorningScene, string> = {
 
 
 
-const M_STEPS: [MonsterGame['stage'], string, string][] = [
-  ['drawer', 'Drawer', 'Grab the drawer handle and pull.'],
-  ['grab', 'Grab', 'Drag a can to its spot on the desk.'],
-  ['open', 'Open', 'Pull the tab up.'],
-  ['drink', 'Drink', 'Click the can: it follows your mouse. Hold Space to tilt it, let go to tilt back. 85% for the full boost.'],
-  ['toss', 'Toss', 'One throw. A miss stays on the floor.'],
-];
-
-function monsterHtml(g: MonsterGame): string {
-  const si = M_STEPS.findIndex(s => s[0] === g.stage);
-  const steps = M_STEPS.map((s, i) => `<span class="${i < si ? 'done' : i === si ? 'now' : ''}"><b>${i + 1}</b>${s[1]}</span>`).join('');
-  const scene = `<canvas id="mcv" width="${SW}" height="${SH}"></canvas>`;
-  return `<div class="monster-win">
-    <div class="m-head"><span class="m-title">Energy break</span><span class="m-sub">Hands busy: abilities paused</span>${btn('cancelMonster', '×', '', 'x')}</div>
-    <div class="m-steps">${steps}</div>
-    <div class="m-instr">${M_STEPS[si][2]}${g.feedback ? `<em>${esc(g.feedback)}</em>` : ''}</div>
-    <div class="m-scene">${scene}</div>
-  </div>`;
-}
 
 
 export function windowHtml(): string {
@@ -124,8 +104,7 @@ export function windowHtml(): string {
   // grey circle with a red X just outside the top-right corner: always a way out
   // windows sit over the battle area (#49), each with the close button just outside its top-right corner
   if (n.game.kind === 'cuddle') return cuddleHtml() + '<button class="mg-close" data-act="cuddleQuit" title="Back to the game (she will not like it)" style="left:532px;top:66px">\u2715</button>';
-  if (n.game.kind === 'phone') return '';
-  return monsterHtml(n.game) + '<button class="mg-close" data-act="cancelMonster" title="Stop" style="left:622px;top:0px">\u2715</button>';
+  return '';   // the phone and the energy break are the renderer's (V8, V5: main.ts drawPhone, drawEnergyBreak)
 }
 
 /** Cuddle window: follow her slow breathing (the dot). Static frame; the dot and warmth move in updateWindowDynamics. */

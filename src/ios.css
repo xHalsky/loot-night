@@ -1,26 +1,25 @@
 /* ===== iOS phone (desk + in hand) ===== */
 
-.ios { position: relative; width: 100%; height: 100%; border-radius: 11px; overflow: hidden; font-family: -apple-system, 'SF Pro Text', Inter, sans-serif; color: #fff; }
-.ios.off { background: #050506; display: grid; place-items: center; }
-.ios.lock { background: radial-gradient(circle at 30% 20%, #6a5acd, #2a1f5a 55%, #120c2a); padding: 22px 4px 4px; display: flex; flex-direction: column; gap: 3px; }
+.ios{ position: relative; width: 100%; height: 100%; border-radius: 11px; overflow: hidden; font-family: -apple-system, 'SF Pro Text', Inter, sans-serif; color: #fff; }
+.ios.off{ background: #050506; display: grid; place-items: center; }
+.ios.lock{ background: radial-gradient(circle at 30% 20%, #6a5acd, #2a1f5a 55%, #120c2a); padding: 22px 4px 4px; display: flex; flex-direction: column; gap: 3px; }
 @keyframes banIn { from { transform: translateY(-14px) scale(.9); opacity: 0; } }
-.ios.call { background: linear-gradient(#3a3f4a, #1c1f26); display: flex; flex-direction: column; align-items: center; padding-top: 30px; }
+.ios.call{ background: linear-gradient(#3a3f4a, #1c1f26); display: flex; flex-direction: column; align-items: center; padding-top: 30px; }
 /* in hand: iPhone proportions */
 
 /* ===== Buffs and debuffs (top right of the game screen) ===== */
-#monUi .buffs { position: absolute; right: 8px; top: 32px; display: flex; gap: 4px; flex-direction: row-reverse; z-index: 3; pointer-events: auto; }
-#monUi .buff { width: 30px; text-align: center; font: 600 10px Inter, sans-serif; color: #fff; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
-#monUi .buff .bi { position: relative; width: 30px; height: 30px; border: 2px solid #6fcf7f; border-radius: 3px; background: #14101a; display: grid; place-items: center; box-shadow: 0 0 0 1px #000; overflow: hidden; }
-#monUi .buff .bi svg { display: block; }
-#monUi .buff .sweep { position: absolute; inset: 0; background: conic-gradient(rgba(0,0,0,.55) var(--p), transparent 0); }
-#monUi .buff .bt { display: block; margin-top: 1px; }
-#monUi .buff.low .bt { color: #ffcf6a; }
+#monUi .buffs{ position: absolute; right: 8px; top: 32px; display: flex; gap: 4px; flex-direction: row-reverse; z-index: 3; pointer-events: auto; }
+#monUi .buff{ width: 30px; text-align: center; font: 600 10px Inter, sans-serif; color: #fff; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
+#monUi .buff .bi{ position: relative; width: 30px; height: 30px; border: 2px solid #6fcf7f; border-radius: 3px; background: #14101a; display: grid; place-items: center; box-shadow: 0 0 0 1px #000; overflow: hidden; }
+#monUi .buff .bi svg{ display: block; }
+#monUi .buff .sweep{ position: absolute; inset: 0; background: conic-gradient(rgba(0,0,0,.55) var(--p), transparent 0); }
+#monUi .buff .bt{ display: block; margin-top: 1px; }
+#monUi .buff.low .bt{ color: #ffcf6a; }
 
-.ios.call { padding-top: 22px !important; }
+.ios.call{ padding-top: 22px !important; }
 /* floating close button for every minigame window */
-.mg-close { position: absolute; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; background: #8e8e93; color: #ff3b30; font: 900 15px/1 Inter, sans-serif; display: grid; place-items: center; cursor: pointer; z-index: 9; box-shadow: 0 2px 6px rgba(0,0,0,.5); padding: 0; }
-.mg-close:hover { background: #a8a8ad; transform: scale(1.08); }
-.monster-win .m-head .btn.x { display: none; }
+.mg-close{ position: absolute; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; background: #8e8e93; color: #ff3b30; font: 900 15px/1 Inter, sans-serif; display: grid; place-items: center; cursor: pointer; z-index: 9; box-shadow: 0 2px 6px rgba(0,0,0,.5); padding: 0; }
+.mg-close:hover{ background: #a8a8ad; transform: scale(1.08); }
 
 /* ---------- Phone minigames, clean pass (#45): fixed sizes for the things you aim at, nothing spills ---------- */
 
@@ -38,7 +37,7 @@
 
 /* Messages, in the phone (#63): the phone's own chats (Text her, Raid night?), and a message being sent */
 
-@keyframes caretBlink{ 50% { opacity: 0; } }
+@keyframes caretBlink { 50% { opacity: 0; } }
 /* Speaker or pick up (#54, 3.2): every call can be answered on speaker, hands free and loud */
    /* right under the slider, so the desk shows them */
 

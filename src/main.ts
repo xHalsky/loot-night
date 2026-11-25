@@ -23,7 +23,7 @@ import { monUiLiveHtml } from './ui/town';
 import { altTab, excelInput } from './systems/excel';
 import { talkPick, openPhone, momReply, bossPick, closeGame, spawnInterrupt, answerSlide, answerSpeaker, phoneAction, setPhoneHold, textReply, togglePhoneDown, declineCall } from './systems/interrupts';
 import { openMonster, cancelMonster } from './systems/monster';
-import { drawMonsterScene, monsterTilt } from './ui/monsterScene';
+import { monsterView, monsterTilt, monsterDown, monsterMove, monsterUp, monsterGrabbing, EB_SCENE } from './ui/monsterScene';
 import { setPeeking } from './systems/peek';
 import { drawDeskFx, drawLapFx, lapUiHtml, setDeskScale } from './ui/deskFx';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
@@ -62,7 +62,7 @@ stage.innerHTML = `
   <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><canvas id="herArea" width="148" height="360"></canvas><div id="herNote" aria-hidden="true"></div><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"><span class="hh-tip" id="hhTip"></span></div></div>
   <div id="desk">
     <div id="deskInner">
-      <canvas id="rsArea" width="492" height="360"></canvas><div id="deskPhone" aria-hidden="true"></div>
+      <canvas id="rsArea" width="492" height="360"></canvas><div id="deskPhone" aria-hidden="true"></div><canvas id="ebArea" width="492" height="360"></canvas>
       <div id="screen">
         <canvas id="monitor" width="${MON_W}" height="${MON_H}"></canvas>
         <canvas id="rpgArea" width="334" height="232"></canvas><div id="rpgBar" aria-hidden="true"></div>
@@ -240,7 +240,7 @@ document.addEventListener('pointermove', ev => {
       ghost().classList.toggle('hero', !!h); ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
-  } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases set their own hover (V2, V3)
+  } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea', 'ebArea'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases set their own hover (V2, V3)
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
   }
@@ -381,6 +381,7 @@ function drawHerPanel() {
   const r = PK.her(el('doorCanvas') as HTMLCanvasElement, herView(herHover), performance.now() / 1000);
   herCtx.drawImage(r.canvas, 0, 0);
   herHits = r.hits; (window as unknown as { __lootnight: { herHits?: unknown } }).__lootnight.herHits = herHits;   // for the tests
+  (window as unknown as { __lootnight: { ebWarm?: unknown } }).__lootnight.ebWarm = ebWarmDone;   // which can count the break is baked for
 }
 herCanvas.addEventListener('pointerdown', ev => {
   if (!S.g.night || S.g.paused || ev.button !== 0) return;
@@ -528,6 +529,47 @@ function placeCoach() {
   Object.assign(box.style, { left: `${bx}px`, top: `${by}px`, visibility: 'visible' });
 }
 
+// ---------- The energy break (V5, #70; grid doc 7c): the renderer's window over the dimmed right screen ----------
+const ebCanvas = el('ebArea') as HTMLCanvasElement, ebCtx = ebCanvas.getContext('2d')!;
+let ebHits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] = [], ebOdd = false, ebBgLast = 0, ebWarmDone = '', ebIdle = false;
+function drawEnergyBreak() {
+  const v = PK.ready() ? monsterView() : null, now = performance.now();
+  ebCanvas.style.display = v ? 'block' : 'none';
+  if (!v) {
+    ebHits = [];
+    // bake the break's scenes ahead in the browser's idle time (what the frames leave over), so opening it never stalls
+    const n = S.g.night, key = n && S.g.monsters > 0 ? String(Math.min(3, S.g.monsters)) : '';
+    if (key && ebWarmDone !== key && PK.ready() && !ebIdle) {
+      ebIdle = true;
+      const rIC = (window as unknown as { requestIdleCallback?: (f: (d: { timeRemaining(): number }) => void, o?: { timeout: number }) => void }).requestIdleCallback;
+      const job = (ms: number) => { ebIdle = false; if (ms > 1 && PK.ebWarm(Number(key), ms - 1)) ebWarmDone = key; };
+      if (rIC) rIC(d => job(d.timeRemaining())); else setTimeout(() => job(3), 50);
+    }
+    return;
+  }
+  ebOdd = !ebOdd; if (!ebOdd) { PK.ebWarm(v.n, 6); return; }   // 30 fps (the cursor is a CSS cursor, at full rate); in between, bake what is still to come
+  const bg = now - ebBgLast > 250 ? rsCanvas : null; if (bg) ebBgLast = now;   // the dimmed right screen behind it, four times a second
+  const r = PK.ebreak(bg, v, now / 1000);
+  ebCtx.drawImage(r.canvas, 0, 0);
+  ebHits = r.hits;
+}
+const ebXY = (ev: PointerEvent) => { const r = ebCanvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 492, ((ev.clientY - r.top) / r.height) * 360] as const; };
+const inEbScene = (x: number, y: number) => x >= EB_SCENE.x && y >= EB_SCENE.y && x < EB_SCENE.x + EB_SCENE.w && y < EB_SCENE.y + EB_SCENE.h;
+ebCanvas.addEventListener('pointerdown', ev => {
+  if (!S.g.night || S.g.paused || ev.button !== 0) return;
+  ev.preventDefault();
+  const [x, y] = ebXY(ev), h = ebHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h);
+  if (h) { actions[h.act]?.(h.arg); return; }
+  if (inEbScene(x, y)) { monsterDown(x - EB_SCENE.x, y - EB_SCENE.y); ebCanvas.style.cursor = PK.ebCursor(monsterGrabbing() ? 'grab' : 'hand'); }
+});
+ebCanvas.addEventListener('pointermove', ev => {
+  const [x, y] = ebXY(ev), p = toStage(ev), h = ebHits.find(q => x >= q.x && x < q.x + q.w && y >= q.y && y < q.y + q.h);
+  monsterMove(x - EB_SCENE.x, y - EB_SCENE.y);
+  ebCanvas.style.cursor = h ? 'pointer' : inEbScene(x, y) && PK.ready() ? PK.ebCursor(monsterGrabbing() ? 'grab' : 'hand') : 'default';
+  hover.key = h ? 'text:Stop the energy break. Before the can is open nothing is lost.' : ''; hover.x = p.x; hover.y = p.y;
+});
+document.addEventListener('pointerup', () => { if (S.g.night?.game?.kind === 'monster') { monsterUp(); ebCanvas.style.cursor = PK.ready() ? PK.ebCursor('hand') : 'default'; } });
+
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
 const rsCanvas = el('rsArea') as HTMLCanvasElement, rsCtx = rsCanvas.getContext('2d')!;
 const rsSrc = document.createElement('canvas'); rsSrc.width = 474; rsSrc.height = 232;
@@ -621,10 +663,15 @@ function render() {
   // few ms), on the frames the battle area and the panel skip; a click or a hover on the panel shows at once
   const tNow = performance.now();
   if (herDirty || (tNow - herLast >= 62 && (tNow - liveDrewAt() >= 8 || tNow - herLast >= 150))) { herLast = tNow; herDirty = false; drawDoor(doorCtx); drawHerPanel(); }
-  drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
-  drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
+  // under the energy break the right screen is dimmed behind its window: drawn four times a second, for the dim
+  const behind = !(n?.game?.kind === 'monster' && PK.ready()) || performance.now() - ebBgLast > 200;
+  if (behind) {
+    drawLiveRpg(el('rpgArea') as HTMLCanvasElement);
+    drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
+    drawDesk();    // V3 (#68): the right screen round the monitor, drawn by the renderer
+  }
   drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
-  drawDesk();    // V3 (#68): the right screen round the monitor, drawn by the renderer
+  drawEnergyBreak();   // V5 (#70): the energy break over the right screen, drawn by the renderer
   document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {
@@ -635,7 +682,6 @@ function render() {
     setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : '');   // dark until the renderer's fonts load
     setHtml('toasts', toastsHtml());
     updateWindowDynamics();
-    drawMonsterScene();
     drawDeskFx();
     drawLapFx();
     setHtml('lapUi', lapUiHtml());

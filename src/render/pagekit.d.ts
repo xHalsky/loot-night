@@ -5,6 +5,15 @@ declare module 'virtual:pagekit' {
     ready(): boolean;
     battleArea(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     panel(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
+    ebreak(bg: HTMLCanvasElement | null, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
+    ebWarm(n: number, ms: number): boolean;
+    ebMap: {
+      drawerHandle(o: number): number[]; drawerCans(n: number): number[][]; grabAt(k: number): number[]; spot(): number[];
+      openTab(lift: number): number[]; lips(th: number): number[];
+      toss: { bx: number; sx: number; sy: number; floor: number };
+      tossToScene(x: number, y: number): number[]; sceneToToss(px: number, py: number): number[]; floorAt(x: number, z: number): number[];
+    };
+    ebCursor(kind: 'hand' | 'grab'): string;
     her(src: HTMLCanvasElement, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     desk(src: HTMLCanvasElement, st: unknown, t: number, phase?: 0 | 1 | 2): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] } | null;
     phone(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string }[] };

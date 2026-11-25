@@ -144,37 +144,7 @@ async def main():
         await ev(pg, "if(n.unplugged){n.unplugged.plugged=n.unplugged.plugged.map(()=>true)}"); await pg.wait_for_timeout(800)
         await ev(pg, "n.unplugged=null"); await pg.wait_for_timeout(300)
 
-        # ---- the energy break, all five steps (real input for the first three) ----
-        await dbg(pg, 'openMonster'); await pg.wait_for_timeout(400)
-        r = await pg.evaluate("()=>{const r=document.getElementById('mcv').getBoundingClientRect(); return [r.left,r.top,r.width/600]}")
-        async def W(x, y):
-            sx, sy = await pg.evaluate(f"()=>window.__lnScreen({x},{y})"); return r[0] + sx * r[2], r[1] + sy * r[2]
-        async def drag(p0, p1, steps=14):
-            await pg.mouse.move(*p0); await pg.mouse.down()
-            for i in range(1, steps + 1): await pg.mouse.move(p0[0] + (p1[0] - p0[0]) * i / steps, p0[1] + (p1[1] - p0[1]) * i / steps); await pg.wait_for_timeout(25)
-            await pg.mouse.up()
-        await shot(pg, 'windows', 'energy_break_1_drawer', sel='.monster-win')
-        await shot(pg, 'windows', 'energy_break_context_full_frame')
-        await drag(await W(430, 180), await W(430, 240)); await pg.wait_for_timeout(600)
-        await shot(pg, 'windows', 'energy_break_2_grab', sel='.monster-win')
-        await drag(await W(358, 232), await W(424, 104), 16); await pg.wait_for_timeout(1300)
-        await shot(pg, 'windows', 'energy_break_3_open', sel='.monster-win')
-        await drag(await W(300, 75), await W(300, 10), 18); await pg.wait_for_timeout(1500)
-        await shot(pg, 'windows', 'energy_break_4_drink', sel='.monster-win')
-        f = await pg.evaluate("()=>window.__lnFluid()")
-        await pg.mouse.click(*(await W(f['x'], f['y'])))
-        import math
-        for i in range(40):
-            a = max((await pg.evaluate("()=>window.__lnFluid()"))['a'], 0.5)
-            await pg.mouse.move(*(await W(f['mx'] - (12 * math.cos(a) + 40 * math.sin(a)), f['my'] - (12 * math.sin(a) - 40 * math.cos(a)))))
-            if i % 3 == 0: await pg.keyboard.down(' ')
-            if i % 3 == 2: await pg.keyboard.up(' ')
-            await pg.wait_for_timeout(40)
-        await shot(pg, 'windows', 'energy_break_4b_pouring', sel='.monster-win')
-        await pg.keyboard.up(' ')
-        await ev(pg, "n.game.stage='toss'"); await pg.wait_for_timeout(500)
-        await shot(pg, 'windows', 'energy_break_5_toss', sel='.monster-win')
-        await dbg(pg, 'cancelMonster'); await pg.wait_for_timeout(400)
+        # the energy break is the renderer's since 0.68 (V5): test/ebreak.py shoots it
 
         # ---- her windows: the cuddle break, the plan, her on the desk ----
         await ev(pg, "n.game={kind:'cuddle',t:20,max:20,warmth:0.45,mx:0,my:0,lastMx:0,lastMy:0,jerk:0}; n.action='miniGame'"); await pg.wait_for_timeout(500)

@@ -3,6 +3,27 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.68.0 (2026-11-25)
+
+- **The energy break is the redesign's** (V5, #70; grid doc 7c). The desk's glass window opens over the right screen,
+  which dims behind it: "Energy break", the close box, five step pills, the step's line. Each scene is ray-cast through
+  its own camera, as the mockup: the desk and the drawer from above its edge (the mouse, the mug, the receipt, the
+  pedestal), the can standing on its spot from the front left, the drink close on him from his left (the monitor with
+  the game on its glass, the moonlit blinds), the throw from his chair into a dark corner with the mesh bin and last
+  nights' misses lying round it. The can is the pixel sprite at every size.
+- **On the game's own physics.** The drink's particles and the throw's rigid cans are unchanged; the renderer draws
+  them where the physics has them (the can 1:1 at his lips, its drink one level body that sloshes with the tilt; the
+  throw on the bin's plane). Pulling the drawer, dragging the can and lifting the tab follow the hand in the new
+  pictures. The cursor is the game's pixel hand (open, grabbing).
+- **No stalls.** A scene's static part is up to 0.7 s of ray casting on a slow machine, so the break bakes its scenes
+  ahead in the browser's idle time during the night (about a minute on a slow machine, each drawer pull past the
+  first only the drawer's part). The break draws at 30 fps and the right screen behind it four times a second.
+  Frame times outside the break as 0.67.
+- The DOM window and its 34 CSS rules are gone; the old canvas painter in `ui/monsterScene.ts` is replaced by its view
+  for the renderer. `test/ebreak.py` plays the five steps with the real mouse and Space next to stills 077 to 081;
+  the old browser tests of the break are deleted (`test/pour.ts` and `test/toss.ts` still test the physics). UI only:
+  sims as before.
+
 ## 0.67.0 (2026-11-25)
 
 - **Her panel is the redesign's** (V4, #69; grid doc 7b). The renderer draws the whole left column as one picture:
