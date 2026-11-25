@@ -2,7 +2,7 @@
 // Times: night clock in minutes after midnight of the evening (20:00 = 1200, 01:00 = 1500).
 
 /** One night of the week (NIGHT_SCHEDULE). */
-export interface NightPlan { day: string; adds: string[]; visits: number; bed: number; end: number; dog: [number, number, number] | null; friends: number }
+export interface NightPlan { day: string; adds: string[]; visits: number; bed: number; end: number; dog: [number, number, number] | null; friends: number; first?: string }
 
 export const T = {
   // --- Night clock ---
@@ -22,14 +22,15 @@ export const T = {
   // One entry a night, Monday first. adds: what comes in that night; everything from earlier nights stays on. The
   // numbers are that night's own: visits (how often she comes, x), bed (she goes to bed at this clock; 0 = she stays
   // up), end (the night ends at this clock: Monday, no Tiredness yet), dog ([first visit s, then every min, max s];
-  // null = no dog), friends (the boys' calls tonight). After Sunday the week starts again with everything on (week
+  // null = no dog), friends (the boys' calls tonight), first (in week one: her first visit is this type, early and safe:
+  // a catch on it is let go, the night's new visit taught by happening; 2b in the week doc). After Sunday the week starts again with everything on (week
   // two is TBD: systems/week.ts). Ids not built yet sit in the list so they come in on their night once they are:
   // lean, mirror (#77, #59), home (step 6, #57), mask, comeToBed, selfies, tease, lapSit, towelReq, bath, wine (#59).
   NIGHT_SCHEDULE: [
     { day: 'Monday', adds: ['her', 'peek', 'snack', 'q4', 'shop'], visits: 1, bed: 0, end: 25 * 60, dog: null, friends: 0 },
-    { day: 'Tuesday', adds: ['chat', 'headset', 'onDesk', 'rogue', 'tired', 'lean', 'mirror'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0 },
+    { day: 'Tuesday', adds: ['chat', 'headset', 'onDesk', 'rogue', 'tired', 'lean', 'mirror'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0, first: 'chat' },
     { day: 'Wednesday', adds: ['phone', 'messages'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0 },
-    { day: 'Thursday', adds: ['dog', 'cuddle', 'friends', 'fuel', 'home', 'tea', 'towel'], visits: 1.2, bed: 0, end: 0, dog: [90, 120, 180], friends: 1 },
+    { day: 'Thursday', adds: ['dog', 'cuddle', 'friends', 'fuel', 'home', 'tea', 'towel'], visits: 1.2, bed: 0, end: 0, dog: [90, 120, 180], friends: 1, first: 'snack' },
     { day: 'Friday', adds: ['bed', 'witching', 'mask', 'comeToBed', 'selfies'], visits: 1.2, bed: 24 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
     { day: 'Saturday', adds: ['tease', 'lapSit', 'towelReq', 'bath', 'wine'], visits: 1.4, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
     { day: 'Sunday', adds: [], visits: 1.6, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },

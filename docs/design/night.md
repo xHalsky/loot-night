@@ -35,6 +35,17 @@ wine (Saturday; #59).
 - **The night's name** is everywhere: the feed's 20:00 line, How to hide, the phone's date and her chat's separators,
   the results ("TUESDAY · RESULTS"), the morning ("Tue 07:40", "Start Tuesday night"; after the plug UNPLUGGED, what
   it cost and "Tuesday, again"), the title ("Continue · Tuesday", read from the save).
+- **Danny's 20:00 voice note** (grid doc 7m; `data/voice.ts`): every night of week one the phone rises into your hand
+  while the night waits, at The Boys' chat: his voice note (the waveform fills gold over 14 s, the transcript comes in
+  at 0, 4.5 and 9.5 s) names tonight's new things in his chat voice. After the plug it is the replay's ("F. she
+  pulled the plug", "tuesday again then..."), under "Tuesday, again". Got it (or the home bar, the close box, Esc,
+  Enter) puts the phone down; How to hide follows on a night with a new tile; then the night starts. The note stays
+  in The Boys' chat until the next call. Week two has none (nothing new).
+- **The first chance** (`first` in the schedule, week one): her first visit tonight is the night's new type, within
+  `VISIT_FIRST_DELAY_SEC` (35 s), never a fake-out, and safe. Tuesday a chat visit: caught on it, she lets it go ("Raid
+  night? Fine. Just this once.": no catch, no Mood, no Goodwill spent). Thursday a snack run: cans in sight, she points
+  at them and takes none, and the plate is still yours. The coach marks are the build's (the footsteps, her at the
+  door, the phone, the headset); lean in's three come with lean in.
 - **F1** has a button per night (it restarts the night at 20:00 with that night's rules).
 
 **Measured** (`DAY=n npx tsx test/sim.ts good`, 16 seeds a night; demands = the visits she came in on, phone events and
@@ -42,14 +53,14 @@ the dog before 01:00, as the week doc's model counts them):
 
 | | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
-| Demands before 01:00 | 3.6 | 3.9 | 7.4 | 8.9 | 11.7 | 9.5 | 10.4 |
-| Seconds apart (the model) | 101 (97) | 91 (81) | 57 (48) | 43 (34) | 33 (38) | 42 (27) | 38 (24) |
+| Demands before 01:00 | 3.7 | 4.2 | 7.0 | 10.8 | 9.5 | 9.4 | 10.7 |
+| Seconds apart (the model) | 105 (97) | 98 (81) | 57 (48) | 40 (34) | 39 (38) | 41 (27) | 37 (24) |
 | Good bot, one night: stars, caught | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 |
 | Good bot, the week in a row (`campaign.py 8 7`): stars | 3.00 | 2.88 | 3.00 | 2.75 | 2.62 | 2.75 | 2.62 |
-| Idle bot: caught, unplugged of 8 | 2.3, 1 | 4.0, 8 | 3.8, 8 | 1.9, 1 | 1.6, 0 | 1.5, 0 | 1.5, 2 |
+| Idle bot: caught, unplugged of 8 | 2.5, 2 | 4.0, 8 | 3.8, 8 | 1.0, 0 | 1.4, 2 | 1.9, 1 | 2.0, 1 |
 
-Monday to Wednesday sit within 20% of the model; Thursday is 26% light and the weekend is the model's tease visits
-and bath requests short (#59). The good bot always answers her sweetly, and each sweet pass can buy 60 s of calm (her
+Monday to Friday sit within about 20% of the model (Tuesday 21%); the weekend is the model's tease visits and bath
+requests short (#59). The good bot always answers her sweetly, and each sweet pass can buy 60 s of calm (her
 lean), which takes the edge off the weekend: without it Saturday and Sunday run x1.29 and x1.45 Monday's visits.
 Tests: `npx tsx test/week.ts`, `python3 test/week.py` (screens `test/shots/week_*.png`).
 
@@ -187,8 +198,15 @@ happening.
   routine: with Noise her odds were already near certain at each activity's end, so gaps and odds alone gave Sunday
   +25% instead of +60%. Rejected: tea and the towel on Tuesday (the week doc gives it to lean in) or dropped now
   (Thursday would have nothing to prevent with until step 6); replaying week one's rules in week two (easy with a
-  week of RPG growth); one `SATURDAY_VISIT_MULT` (the handoff's: the week doc wants a ramp). Danny's 20:00 voice
-  note and teaching each night's new thing come next (0.78).
+  week of RPG growth); one `SATURDAY_VISIT_MULT` (the handoff's: the week doc wants a ramp).
+- **Taught the night it unlocks** (0.78, #56; the week doc 2b, grid doc 7m). Danny's voice note is on the phone, in
+  The Boys' chat, because everything on the phone happens inside it (decided 2026-11-24); it comes before How to hide
+  so the night opens with a friend's voice and the card only shows when there is a new tile. Tuesday's note names
+  what is built (Garrote, the headset, chat visits); the page's lean-in lines wait for lean in. The first chance is a
+  scripted first visit of the night's new type, and safe as a let-go catch, so the first chat visit teaches by
+  happening and a slow Tab can't cost the night. Rejected: a transcript bubble by the desk phone (the handoff's:
+  outside the phone); a note in week two (nothing new to say); making the whole first visit a crawl (the coach
+  marks already crawl the footsteps and her first time at the door).
 - **Coach marks and tooltips in the redesign's look** (0.74, V11 #76). Coach marks are the game talking, so one look
   everywhere; their targets are the renderer's own rectangles (the DOM stand-ins they used to anchor on stay only for
   the tests). Tooltips follow the pointer's world; the RPG's card is drawn inside the battle area and the panel because
@@ -213,6 +231,6 @@ happening.
 
 ## Planned
 
-- Week one's teaching (0.78): Danny's 20:00 voice note, each new thing's first chance early and safe, its coach mark.
+- Lean in's teaching (its yoga first chance, three coach marks) with lean in (#77, #59).
 - Week two and the endgame: TBD (Paweł).
 - Save between nights exists for progress only (party, bag, city, debt); a night in progress is not saved.

@@ -3,6 +3,21 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.78.0 (2026-11-25)
+
+- **Danny's 20:00 voice note** (step 5, #56; V13, #78; grid doc 7m): every night of week one the phone comes into your
+  hand at The Boys' chat while the night waits. His voice note plays (the waveform fills gold), the transcript comes in
+  line by line, naming tonight's new things in his chat voice; Got it (or Esc, Enter, the home bar) puts the phone
+  down, then How to hide on a night with a new tile. After the plug it's the replay's note: "F. she pulled the plug",
+  under "Tuesday, again". The note stays in The Boys' chat. Week two has none.
+- **Each night's first chance, early and safe:** Tuesday her first visit is a chat (caught on it, she lets it go once:
+  "Raid night? Fine. Just this once."), Thursday a snack run (cans in sight, she points at them and takes none).
+- The snack run says "Made you a plate. Eat something, babe." (V13).
+- Sims (16 seeds a night, demands before 01:00, seconds apart against the model): Monday 3.7, 105 s (97); Tuesday 4.2,
+  98 (81); Wednesday 7.0, 57 (48); Thursday 10.8, 40 (34); Friday 9.5, 39 (38); Saturday 9.4, 41 (27); Sunday 10.7,
+  37 (24). Good bot 3 stars, caught 0 every night; idle unplugged every Tuesday and Wednesday, as in 0.77.
+- `test/week.ts` and `test/week.py` check the notes and the first chances. With 0.77 this completes step 5 (#56).
+
 ## 0.77.0 (2026-11-25)
 
 - **The week** (step 5, #56; `NIGHT_SCHEDULE` in tuning, `systems/week.ts`; the week doc approved for now). Nights
@@ -28,7 +43,6 @@ Versions before 0.14.0 predate the repository (they exist only as published arti
   night alone; the week in a row 3.00, 2.88, 3.00, 2.75, 2.62, 2.75, 2.62 stars. Before (everything on, every night
   Monday): good 3 stars, caught 0. Idle bot unplugged on every Tuesday and Wednesday, 1 in 8 on Monday (peeks only),
   mostly reaching dawn from Thursday as before.
-- Danny's 20:00 voice note and teaching each night's new thing come next (0.78).
 
 ## 0.76.0 (2026-11-25)
 

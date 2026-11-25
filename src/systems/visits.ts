@@ -35,6 +35,9 @@ export function initVisits() {
   v.stage = 'idle'; v.checked = false; v.result = ''; v.kind = 'peek'; v.chat = null;
   initApartment();
   N().apt.lastVisitEnd = -(T.DOOR_MAX_GAP_SEC / rules().visits - T.VISIT_FIRST_DELAY_SEC);   // her first visit comes VISIT_FIRST_DELAY_SEC in at the latest
+  // the night's first chance (the week, #56): her first visit is tonight's new type, early, and safe
+  const f = rules().first;
+  if (f && on(f)) { N().apt.forceKind = f as VisitKind; N().firstSafe = f; }
 }
 
 function endVisit() {
@@ -68,6 +71,7 @@ export function startVisit(woken = false, kind?: VisitKind) {
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
   if (!kind) N().apt.forceKind = null;
   if (v.kind === 'night') v.from = 'night';   // the hoodie outfit
+  v.safe = !woken && !!N().firstSafe && v.kind === N().firstSafe; if (v.safe) N().firstSafe = '';
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
   if (v.kind === 'snack' && !v.fake && on('fuel') && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
 }
@@ -222,7 +226,10 @@ export const cansInSight = () => { const n = N(); return n.game?.kind === 'monst
 function snackArrive() {
   const n = N();
   const v = n.visit;
-  if (cansInSight()) {
+  if (cansInSight() && v.safe) {   // the night's first chance (#56): she only points at them
+    v.safe = false;
+    toast('"Are those cans? Hide them when you hear me coming." She lets it go. Once.', '#ff9ab8');
+  } else if (cansInSight()) {
     v.result = 'snackFail';
     addMood(T.SNACK_FAIL_MOOD);
     if (S.g.monsters > 0) S.g.monsters--;
@@ -230,7 +237,7 @@ function snackArrive() {
     return;
   }
   v.result = 'offer'; v.t = T.SNACK_TAKE_SEC;
-  toast('"I made you a sandwich." Take the plate!', '#ff9ab8');
+  toast('"Made you a plate. Eat something, babe." Take the plate!', '#ff9ab8');
 }
 
 export function takePlate() {
@@ -301,6 +308,11 @@ export function cuddleDone(score: number | null) {
 
 function caught() {
   const n = N();
+  if (n.visit.safe) {   // the night's first chance (#56): she lets it go, once
+    n.visit.safe = false; n.visit.result = 'forgiven'; n.visit.chat = null; n.visit.t = 1.8;
+    toast('She sees the game. "Raid night? Fine. Just this once." First time: she lets it go.', '#ff9ab8'); sfx.kiss(); tip('caught');
+    return;
+  }
   if (hasLife('excuses') && !n.excused) {   // of Infinite Excuses: once a night she buys it
     n.excused = true; n.visit.result = 'pass';
     addMood(T.AFFIX_EXCUSE_MOOD);

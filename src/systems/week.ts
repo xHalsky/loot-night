@@ -1,3 +1,4 @@
+import { VOICE_NOTES, voiceReplay } from '../data/voice';
 import { T, type NightPlan } from '../config/tuning';
 import { S } from '../core/state';
 
@@ -13,6 +14,7 @@ export interface WeekRules {
   on: string[];          // everything on tonight
   isNew: string[];       // what came in tonight (week one; empty after it)
   visits: number; bed: number; end: number; dog: [number, number, number] | null; friends: number;
+  first: string;         // week one: her first visit tonight is this type, early and safe ('' = none)
 }
 
 const WEEK = () => T.NIGHT_SCHEDULE as NightPlan[];
@@ -28,6 +30,7 @@ export function rulesFor(day: number): WeekRules {
   return {
     day: d, name: p.day, week, on, isNew: week === 1 ? [...p.adds] : [],
     visits: p.visits, bed: week === 1 ? p.bed : p.bed || T.WEEK_TWO_BED, end: week === 1 ? p.end : 0, dog: p.dog, friends: p.friends,
+    first: week === 1 ? p.first ?? '' : '',
   };
 }
 
@@ -57,3 +60,11 @@ export function howtoTiles(): { ids: string[]; isNew: string[]; answer: 'mon' | 
 }
 /** How to hide opens before the night: the first Monday, and any night with a new tile. */
 export const howtoOpens = () => rules().day === 0 || howtoTiles().isNew.length > 0;
+
+/** Danny's 20:00 voice note (grid doc 7m): tonight's, week one only; after the plug, the replay's. */
+export function voiceNote(): { lines: string[]; date: string } | null {
+  const r = rules(), res = S.g.results;
+  if (res?.ending === 'unplugged' && res.day === r.day) return { lines: voiceReplay(r.name), date: `${r.name}, again` };
+  if (r.week > 1 || !VOICE_NOTES[r.name]) return null;
+  return { lines: VOICE_NOTES[r.name], date: 'Today 20:00' };
+}

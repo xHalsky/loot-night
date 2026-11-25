@@ -41,8 +41,14 @@ async def main():
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(600)
 
-        # --- Monday ---
-        check(await ev("g.day") == 0 and await ev("g.howto"), 'a new game is Monday, How to hide first')
+        # --- Monday: Danny's voice note first, on the phone in your hand; Esc; How to hide ---
+        check(await ev("g.day") == 0 and await ev("!!g.voice && g.howto"), 'a new game is Monday: Danny\'s voice note first, the night waits')
+        check(await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'block', 'the phone is in your hand')
+        await shot('0_monday_voice', 10800)   # the waveform plays, the transcript comes in line by line
+        check(await ev("g.voice.lines[0].startsWith('yo its raid night')") and await ev("n.threat") < 0.5, 'Monday\'s note; the night has not started')
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
+        check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'Esc puts the phone down; How to hide next')
+        check(await ev("g.boysThread && g.boysThread[0].text.startsWith('Danny · voice note')"), 'the note stays in The Boys\' chat')
         await shot('1_monday_howto')
         await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(900)
@@ -71,8 +77,12 @@ async def main():
         spot = await morning_button(); check(spot is not None, 'the morning\'s pink button')
         await pg.mouse.click(*spot); await pg.wait_for_timeout(700)
 
-        # --- Tuesday ---
-        check(await ev("g.day") == 1 and await ev("g.howto"), 'Tuesday: How to hide, the headset new')
+        # --- Tuesday: the voice note (Got it with the mouse), then How to hide with the headset new ---
+        check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.lines[0].startsWith(\"garrote\")"), 'Tuesday: Danny\'s note says Garrote joins')
+        await pg.wait_for_timeout(400)
+        check(await tap('voiceOk'), 'Got it on the phone')
+        check(await ev("g.day") == 1 and await ev("g.howto && !g.voice"), 'Tuesday: How to hide, the headset new')
+        check(await ev("n.apt.forceKind") == 'chat' and await ev("n.firstSafe") == 'chat', 'Tuesday: her first visit will be a chat, and safe')
         await shot('7_tuesday_howto')
         await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(900)
@@ -89,13 +99,14 @@ async def main():
         await shot('10_replay_morning')
         spot = await morning_button(); await pg.mouse.click(*spot); await pg.wait_for_timeout(700)
         check(await ev("g.day") == 1 and await ev("g.nightsPlayed") == 2, 'the replay: Tuesday again, the third night played')
+        check(await ev("g.voice && g.voice.date") == 'Tuesday, again' and await ev("g.voice.lines[0]") == 'F. she pulled the plug', 'the replay\'s voice note')
+        await shot('11_replay_voice', 10800)
         # the title
         await pg.reload(); await pg.wait_for_timeout(700)
         txt = await pg.evaluate("()=>{const b=document.querySelector('[data-act=continue]'); return b ? b.textContent : ''}")
         check('Tuesday' in txt, f'the title: "{txt.strip()}"')
         check(not errs, 'errors: ' + ('none' if not errs else errs[0]))
         await b.close()
-    pair = {'7_tuesday_howto': '063__small-pieces__windows__how-to-hide', '10_replay_morning': None}
     rows = [(n, Image.open(pth).convert('RGB')) for n, pth in shots]
     sheet = Image.new('RGB', (1280 * 2 + 8, (len(rows) + 1) // 2 * 728), (20, 16, 26))
     for i, (n, im) in enumerate(rows): sheet.paste(im.resize((1280, 720)), ((i % 2) * 1288, (i // 2) * 728))

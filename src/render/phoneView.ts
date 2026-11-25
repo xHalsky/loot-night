@@ -15,7 +15,7 @@ const unquote = (s: string) => s.replace(/"/g, '');
 /** The phone is up in your hand: a call or a text, the idle phone's apps, or a message typing itself. */
 export function phoneShown(): boolean {
   const n = S.g.night;
-  return !!n && S.g.screen === 'night' && (n.game?.kind === 'phone' || n.preMenu === 'phone' || phoneAction());
+  return !!n && S.g.screen === 'night' && (voiceUp() || n.game?.kind === 'phone' || n.preMenu === 'phone' || phoneAction());
 }
 
 type Item = ['date' | 'sys' | 'l' | 'r', string];
@@ -69,9 +69,17 @@ function chatAction(id: 'text' | 'raid') {
 let shopFlash: { id: string; at: number } | null = null;
 export function shopFlashed(id: string) { shopFlash = { id, at: performance.now() }; }
 
+/** Danny's 20:00 voice note is up (the week, #56): the phone is in your hand while the night waits. */
+export const voiceUp = () => !!S.g.voice && S.g.howto && !S.g.paused;
+let voiceOf: unknown = null, voiceAt = 0;
+
 export function phoneView() {
   const n = N(), g = S.g;
   const base = { time: fmtClock(n.clock), date: `${dayName()} night` };
+  if (voiceUp()) {   // its time played runs from when it came up
+    if (voiceOf !== g.voice) { voiceOf = g.voice; voiceAt = performance.now(); n.phUp = voiceAt; }   // it rises into your hand
+    return { ...base, screen: 'voice', lines: g.voice!.lines, date: g.voice!.date, tt: (performance.now() - voiceAt) / 1000 };
+  }
   if (n.game?.kind === 'phone') return gameView(n.game, base);
   const p = n.pre;
   if (p && phoneAction()) {   // a message typing itself into the chat

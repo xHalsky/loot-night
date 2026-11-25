@@ -17,7 +17,7 @@ import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx, setHeadset, stopAmbience } from '../ui/audio';
 import { cityOutlook } from './town';
-import { rules, on, dayName, howtoOpens } from './week';
+import { rules, on, dayName, howtoOpens, voiceNote } from './week';
 
 export function newNight(): Night {
   return {
@@ -55,7 +55,9 @@ export function startNight() {
   planPhone();   // tonight's phone events (#54, 3.2)
   S.g.screen = 'night';
   S.g.paused = false;
-  S.g.howto = howtoOpens();   // How to hide before the night: the first Monday, and a night with a new tile (#28, #56)
+  // before the night (#28, #56): Danny's voice note on the phone, then How to hide on the first Monday and a night with a new tile
+  S.g.voice = voiceNote();
+  S.g.howto = howtoOpens() || !!S.g.voice;
   toast(`${dayName()}, 20:00. Town is quiet. Hit the Dungeon Gate.`, '#8fb3ff');
 }
 

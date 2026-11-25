@@ -871,10 +871,10 @@ const VOICE_NOTES = {
 };
 const VOICE_AT = [0, 4.5, 9.5], VOICE_LEN = 14;
 PHONE_SCREENS.voicenote = (t, o) => {
-  const lines = VOICE_NOTES[o.night || 'mon'], tt = t % (VOICE_LEN + 4), p = Math.min(1, tt / VOICE_LEN);
+  const lines = o.lines || VOICE_NOTES[o.night || 'mon'], tt = o.tt ?? t % (VOICE_LEN + 4), p = Math.min(1, tt / VOICE_LEN);   // the game passes its lines and the time played
   const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', '20:00');
   let y = y0 + 3;
-  drawItem(['date', o.night === 'replay' ? 'Tuesday, again' : 'Today 20:00'], y, t); y += 14;
+  drawItem(['date', o.date || (o.night === 'replay' ? 'Tuesday, again' : 'Today 20:00')], y, t); y += 14;
   // the voice note: who and how long, a play disc, a waveform that fills gold as it plays
   const x = 7, w = 98, h = 25;
   rrI(x, y, w, h, 4, P.s2); px(x - 1, y + h - 1, P.s2); px(x, y + h - 1, P.s2);
@@ -896,7 +896,8 @@ PHONE_SCREENS.voicenote = (t, o) => {
     rrI(x, y, w, hh, 4, P.s1);
     let yy = y + 3; for (const r of rows) { if (r === null) { yy += 4; continue; } tx(r, x + 5, yy, P.u6); yy += 8; }
   }
-  pill('Got it', 203); tx('the night starts', 56, 223, P.s4, { align: 'c' });
+  const gh = pill('Got it', 203); tx('the night starts', 56, 223, P.s4, { align: 'c' });
+  if (o.live) { hit(8, 203, PH.sw - 16, gh - 2, 'voiceOk', ''); homeBar(); homeHit('voiceOk'); return; }   // the game's: Got it, or the home bar
   homeBar();
 };
 // paint the photo crops the screen asked for onto the composed phone, in her colours
@@ -1087,6 +1088,8 @@ const LIVE = {
     tx('Tap a chat to open it.', 56, 120, P.s4, { align: 'c' });
     homeBar(); homeHit('preMenu');
   },
+  // Danny's 20:00 voice note (the week, #56): the night waits; Got it (or the home bar, Esc, Enter) starts it
+  voice(t, v) { PHONE_SCREENS.voicenote(t, { lines: v.lines, date: v.date, tt: v.tt, live: true }); },
   // her chat, kept for good: scroll a bubble at a time (wheel), back to the newest, Text her
   babe(t, v) {
     const y0 = chatHead('Babe', 'babe', null, null, 'Messages', v.time); backHit('phApp', 'messages');

@@ -3,6 +3,7 @@
 const store: Record<string, string> = {};
 (globalThis as any).localStorage = { getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => { store[k] = v; }, removeItem: (k: string) => { delete store[k]; } };
 (globalThis as any).performance ??= { now: () => Date.now() };
+import { howtoOpens } from '../src/systems/week';
 import { T } from '../src/config/tuning';
 import { S, N, initialState } from '../src/core/state';
 import { startNight } from '../src/systems/night';
@@ -30,7 +31,7 @@ ok(S.g.tipsSeen.includes('dog'), 'tips seen survive a save');
 startNight();
 ok(S.g.howto, 'Monday again (same save): the card shows');
 S.g.day = 1; startNight(); ok(S.g.howto, 'Tuesday: the card again, the headset new (#56)');
-S.g.day = 2; startNight(); ok(!S.g.howto, 'Wednesday, nothing new to hide from: no card');
+S.g.day = 2; startNight(); ok(!howtoOpens() && !!S.g.voice, 'Wednesday, nothing new to hide from: Danny\'s note, no card');
 S.g = initialState();
 ok(S.g.tipsSeen.length === 0, 'a new game starts the tips over');
 console.log(fails ? `${fails} FAILED` : 'PASS');

@@ -32,7 +32,7 @@ function feedRows(): [string, string, string, string?][] {
 /** What the phone lying on the desk shows (phone.js deskScreen): a call, banners, face down, or in your hand. */
 function deskPhone() {
   const n = N(), it = n.interrupts[0];
-  if (n.game?.kind === 'phone' || n.preMenu === 'phone' || (n.pre && (n.pre.id === 'text' || n.pre.id === 'raid'))) return { phone: 'hand' };
+  if ((S.g.voice && S.g.howto) || n.game?.kind === 'phone' || n.preMenu === 'phone' || (n.pre && (n.pre.id === 'text' || n.pre.id === 'raid'))) return { phone: 'hand' };   // Danny's voice note too (#56)
   if (n.phoneDown > 0) return it ? { phone: 'downGlow', glowKind: CALLS.has(it.kind) ? 'call' : 'msg' } : { phone: 'down' };
   if (it && CALLS.has(it.kind)) return { phone: 'call', caller: CALLER[it.kind], ringLeft: it.t };
   if (it) return { phone: 'lock', banners: it.msgs.map(m => ({ app: it.kind === 'boss' ? 'work' : 'msg', who: it.kind === 'boss' ? 'Boss' : 'Babe', what: m })) };

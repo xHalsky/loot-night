@@ -8,7 +8,8 @@ import { T } from '../src/config/tuning';
 import { S, N, initialState } from '../src/core/state';
 import { startNight, checkNightEnd, endNight } from '../src/systems/night';
 import { rulesFor, rules, on, dayName, howtoTiles, howtoOpens, bedAt } from '../src/systems/week';
-import { pickKind } from '../src/systems/visits';
+import { pickKind, startVisit, updateVisits } from '../src/systems/visits';
+import { VOICE_NOTES } from '../src/data/voice';
 import { updateTired } from '../src/systems/tired';
 import { openMonster } from '../src/systems/monster';
 import { shopState } from '../src/systems/shop';
@@ -94,6 +95,26 @@ ok(tiles(1) === 'listen,tab,answer,headset|headset|tue|true', `Tuesday: the head
 ok(tiles(2) === 'listen,tab,answer,headset||tue|false', `Wednesday: nothing new to hide from, no card (${tiles(2)})`);
 ok(tiles(3) === 'listen,tab,answer,headset|answer|thu|true', `Thursday: the cans and the cuddle in Answer her (${tiles(3)})`);
 ok(tiles(7) === 'listen,tab,answer,headset||thu|false', `week two: no card (${tiles(7)})`);
+
+// --- Danny's 20:00 voice note ---
+n = night(0); ok(S.g.voice?.lines[0].startsWith('yo its raid night') === true && S.g.voice?.date === 'Today 20:00', 'Monday: Danny\'s voice note');
+S.g = initialState(); S.g.day = 0; startNight(); ok(S.g.howto && !!S.g.voice, 'the night waits for it (howto), the card after it');
+ok([1, 2, 3, 4, 5, 6].every(d => { S.g = initialState(); S.g.day = d; startNight(); return !!S.g.voice && S.g.voice.lines.length === 3; }), 'a note every night of week one');
+ok(Object.values(VOICE_NOTES).flat().every(l => !/[\u2013\u2014]/.test(l) && l.replace(/BEFORE|\(G\)|^F\./g, '') === l.replace(/BEFORE|\(G\)|^F\./g, '').toLowerCase()), 'his voice: lowercase (his BEFORE aside), no dashes');
+S.g = initialState(); S.g.day = 7; startNight(); ok(!S.g.voice && !S.g.howto, 'week two: no note, no card');
+n = night(1); n.mood = T.MOOD_MAX; checkNightEnd(); startNight();
+ok(S.g.voice?.date === 'Tuesday, again' && S.g.voice.lines[0] === 'F. she pulled the plug' && S.g.voice.lines[1].startsWith('tuesday again'), 'after the plug: the replay\'s note');
+
+// --- the first chance: her first visit is tonight's new type, early and safe ---
+n = night(1); ok(n.apt.forceKind === 'chat' && n.firstSafe === 'chat', 'Tuesday: her first visit is a chat');
+startVisit(); ok(n.visit.kind === 'chat' && !!n.visit.safe && !n.visit.fake && !n.firstSafe, '...not a fake-out, and safe');
+n.visit.stage = 'in'; n.visit.result = 'chat'; n.monitor = 'rpg'; n.monitorOff = 0; const c0 = n.catches, m0 = n.mood; updateVisits(1 / 60);
+ok(n.catches === c0 && n.mood === m0 && n.visit.result === 'forgiven', `a catch on it is let go (catches ${n.catches}, Mood ${n.mood})`);
+n = night(0); ok(!n.firstSafe && n.apt.forceKind === null, 'Monday: nothing scripted');
+n = night(3); ok(n.apt.forceKind === 'snack', 'Thursday: her first visit is a snack run');
+startVisit(); const cans = S.g.monsters; n.visit.stage = 'handle'; n.visit.t = 0.001; n.cansHidden = false; updateVisits(1 / 60); updateVisits(1 / 60);   // the door opens, then she looks
+ok(S.g.monsters === cans && n.visit.result === 'offer', `cans in sight on it: she lets it go, the plate is still yours (${S.g.monsters} cans, ${n.visit.result})`);
+S.g = initialState(); S.g.day = 8; startNight(); ok(!N().firstSafe, 'week two: nothing scripted');
 
 // --- a save from before the week ---
 S.g = initialState(); S.g.nightsPlayed = 3; S.g.day = 3; S.g.screen = 'title';

@@ -1,5 +1,5 @@
 import './style.css';
-import { on, rules, dayName, howtoTiles } from './systems/week';
+import { on, rules, dayName, howtoTiles, howtoOpens } from './systems/week';
 import './ios.css';
 import { T } from './config/tuning';
 import {  S, N, initialState } from './core/state';
@@ -44,10 +44,10 @@ import type { HeroId } from './core/state';
 import { setRpgTip, rpgTipShown, type RpgTip } from './render/liveRpg';
 import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown, liveDrewAt } from './render/liveRpg';
 import { PK } from 'virtual:pagekit';
-import { phoneShown, phoneView, shopFlashed } from './render/phoneView';
+import { phoneShown, phoneView, shopFlashed, voiceUp } from './render/phoneView';
 import { deskView, deskTip } from './render/deskView';
 import { herView, herTip } from './render/herView';
-import { herRead, phoneScroll } from './systems/messages';
+import { herRead, phoneScroll, boysLog } from './systems/messages';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
@@ -133,7 +133,8 @@ const actions: Record<string, (arg: string) => void> = {
   morning: () => toMorning(),
   resume: () => { S.g.paused = false; },
   howtoOpen: () => { S.g.paused = false; S.g.howto = true; },
-  howtoClose: () => { S.g.howto = false; },
+  howtoClose: () => { S.g.howto = false; S.g.voice = null; },
+  voiceOk: () => voiceOk(),   // Danny's voice note: Got it (the week, #56)
   altTab: () => { if (S.g.night) altTab(); },
   showRpg: () => { if (S.g.night && N().monitor !== 'rpg') altTab(); },
   showExcel: () => { if (S.g.night && N().monitor !== 'excel') altTab(); },
@@ -493,7 +494,7 @@ window.addEventListener('keydown', ev => {
     if (ev.key === 'Escape' || ev.key === 'Enter') { ev.preventDefault(); actions.inspectClose(''); return; }
   }
   if (caughtT(performance.now()) >= 0) { ev.preventDefault(); caughtEnd(performance.now()); return; }   // her screen takes the key (V7)
-  if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); g.howto = false; } return; }   // the card: the night waits
+  if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (g.voice) voiceOk(); else g.howto = false; } return; }   // the voice note, the card: the night waits
   if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } g.paused = !g.paused; return; }
   if (g.paused) return;
   if (n.switching) { ev.preventDefault(); return; }
@@ -695,6 +696,14 @@ const microCanvas = el('microArea') as HTMLCanvasElement, microCtx = microCanvas
 const rsSmallCanvas = el('rsSmall') as HTMLCanvasElement, rsSmallCtx = rsSmallCanvas.getContext('2d')!;
 type SmHit = { x: number; y: number; w: number; h: number; act: string; arg: string };
 let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt = 0, rsSmallAt = 0, rsSmallBg = 0, microAt = 0, inspectOpen = false;
+/** Got it on Danny's voice note (the week, #56): the phone goes down, the note stays in The Boys' chat until the next
+ *  call; How to hide next on a night with a new tile, else the night starts. */
+function voiceOk() {
+  const v = S.g.voice;
+  if (!v) return;
+  boysLog([['sys', `Danny · voice note · ${v.date}`], ...v.lines.map(l => ['l', l] as ['l', string])]);
+  S.g.voice = null; S.g.howto = howtoOpens(); sfx.click();
+}
 // How to hide (grid doc 7k): tonight's tiles (the week, #56: systems/week.ts howtoTiles), the new ones framed gold
 const HOWTO_ANSWER = {
   mon: 'Each visit wants something else. Plates clinking: a snack run.',
@@ -729,7 +738,7 @@ function drawSmallPieces() {
   if (ready && !inspectOpen && on('fuel') && g.monsters > 0 && !g.tipsSeen.includes('inspect:fuel') && !g.paused && !g.howto && n.tired >= T.TIRED_YAWN && !demandActive() && !n.switching && n.monitor === 'rpg') { g.tipsSeen.push('inspect:fuel'); inspectOpen = true; }
   if (inspectOpen && (!ready || n.game || n.pre || n.switching)) inspectOpen = false;
   // pause, How to hide
-  const modal = !ready ? '' : g.paused ? 'pause' : g.howto ? 'howto' : '';
+  const modal = !ready ? '' : g.paused ? 'pause' : g.howto && !g.voice ? 'howto' : '';   // the voice note comes first (#56)
   if (modal !== modalWas) { modalWas = modal; modalCanvas.style.display = modal ? 'block' : 'none'; modalAt = 0; if (!modal) modalHits = []; }
   if (modal && now - modalAt >= 66) {
     const first = modalAt === 0; modalAt = now;
@@ -927,7 +936,7 @@ function drawPhone() {
   if (!on) return;
   const now = performance.now(), k = Math.min(1, (now - (n!.phUp ?? 0)) / PH_RISE_MS), dy = Math.round((1 - (1 - (1 - k) ** 3)) * 540);
   phCanvas.style.transform = dy ? `translateY(${dy}px)` : '';
-  el('phClose').dataset.act = n!.game?.kind === 'phone' ? 'closeGame' : phoneAction() ? 'preCancel' : 'preMenu';
+  el('phClose').dataset.act = voiceUp() ? 'voiceOk' : n!.game?.kind === 'phone' ? 'closeGame' : phoneAction() ? 'preCancel' : 'preMenu';
   if (now - phLast < 33) return;   // 30 fps is plenty for a phone
   phLast = now;
   const r = PK.phone(phoneView(), now / 1000);

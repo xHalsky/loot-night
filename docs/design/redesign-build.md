@@ -31,7 +31,9 @@ gameplay steps). This file says how the build gets there and where it stands. It
   step 6.
 - **Step 5 (#56), the week, 0.77.0:** Monday to Sunday from `NIGHT_SCHEDULE`, each night's things gated, the replay
   after the plug (the renderer's replay morning), the night's name everywhere, How to hide's tiles by night
-  (night.md, the week). Danny's 20:00 voice note and the teaching follow in 0.78.0 with V13 (#78).
+  (night.md, the week). **0.78.0:** Danny's 20:00 voice note on the phone (V13, #78), each night's first chance
+  early and safe, the snack run's "Made you a plate". V13's other pieces (Eyes busy, She has the mouse, the tease, the
+  towel and the wine, come to bed, the lap sit) go with #59.
 - **V11, the small pieces, 0.73.0 and 0.74.0:** pause, How to hide, the microsleep's lids, away from the PC (the empty
   chair, the card), the Goblin Fuel inspect window, then coach marks and tooltips in each world's look, all the
   renderer's (night.md, desk.md, preemptive.md, screen.md). Item tooltips keep the DOM card (the side panel's item
@@ -87,5 +89,5 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 16 | V9 (#74): her windows (the cuddle break, the plan) | 0.71.0 |
 | 17 | V10 (#75): the morning | 0.72.0 |
 | 19 | #55: Q4, the Excel clicker; the Shop app | 0.75.0: Q4; 0.76.0: the Shop |
-| 20 | #56: the week | 0.77.0: the schedule, the replay |
+| 20 | #56: the week | 0.77.0: the schedule, the replay; 0.78.0: Danny's voice note, the first chances |
 | 18 | V11 (#76): the small pieces | 0.73.0: pause, How to hide, microsleep, away, the inspect window; 0.74.0: coach marks, tooltips |

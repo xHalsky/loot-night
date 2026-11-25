@@ -105,7 +105,9 @@ read the cue, not just alt-tab every time. The type depends on what she was doin
 below); `VISIT_RANDOM` (25%) of the time it is drawn from `VISIT_FLAT` instead (Peek 2, Snack, Chat, Cuddle),
 so the activity is a good bet and never a promise. Only the types that are in tonight are drawn (the week: peeks and
 snack runs from Monday, chat from Tuesday, cuddle from Thursday; one that is out falls back to a Peek). Cuddle is only
-drawn while she is happy (green). Woken visits are always Peeks. On the first Monday the her-note names the hallway cue (`VISIT_CUE`) and the cue that
+drawn while she is happy (green). Woken visits are always Peeks. On a night that brings a new type (Tuesday chat,
+Thursday a snack run that finds cans) her first visit is that type, early and safe ([night.md](night.md), the first
+chance). On the first Monday the her-note names the hallway cue (`VISIT_CUE`) and the cue that
 ends each activity (`END_HINT`); later nights rely on the sound. Onboarding: [night.md](night.md).
 
 **What she was doing predicts the visit** (`test/predict.ts` prints the odds):

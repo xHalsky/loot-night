@@ -67,6 +67,7 @@ export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle' | 'night';   // nig
 export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string; last: number }   // last: his last answer (0 good, 1 meh, 2 rude, -1 none)
 export interface VisitState {
   stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean;
+  safe?: boolean;   // the night's first chance (the week, #56): a catch on it is let go
   kind: VisitKind;
   chat?: ChatState | null;        // Chat: the questions she asks while you sit on Excel
 }
@@ -175,6 +176,7 @@ export interface Night {
   paths: PathCard[] | null; safest: number; mapAway: number;   // the route choice at a floor's end (#52, 1.5)
   feature: FeatureId | null; cond: ConditionId | null; featureMet?: boolean;   // this floor's feature and condition; the feature's curio has stood
   runCard: (RunState & { banked: boolean; t: number }) | null;   // the run end card
+  firstSafe?: string;   // the week (#56): tonight's first visit of this type is early and safe
   runWarned?: { dawn?: boolean; plug?: boolean; bed?: boolean };                // the warnings before a forced end loses the run
   visit: VisitState;
   apt: Apartment;
@@ -256,7 +258,8 @@ export interface GameState {
   day: number;          // the week (#56): the night being played, 0 = the first Monday; an unplugged night is played again
   mapPath: (string | null)[];    // the dungeon map (#48): what each floor was the last time you entered it, by floor number
   tipsSeen: string[];   // first-time tips already shown (#28)
-  howto: boolean;       // the how-to-hide card is open (the night waits)
+  howto: boolean;       // the night waits before it starts: Danny's voice note, then How to hide (#28, #56)
+  voice?: { lines: string[]; date: string } | null;   // Danny's 20:00 voice note while it is up (not saved)
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back
   goodwill: number;              // her Goodwill bank, 0-100 (systems/goodwill.ts); half carries over
