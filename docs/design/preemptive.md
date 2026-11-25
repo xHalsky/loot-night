@@ -38,7 +38,7 @@ visit roll while it runs), set the next visit's type, change Mood, or change a r
   (Raid night?), each with its cost or why it's blocked. Tap a chat: the message types itself into that chat
   (`PRE_TEXT_SEC`, hands busy), "Delivered", then the phone goes down; her reply lights the desk phone later. No
   call or text arrives while the phone is in your hand. Only allowed while no visit is under way and your hands
-  are free. When the Shop app exists (handoff step 4.6) the tap opens the home screen and Messages is an app on it.
+  are free. The tap opens the home screen (0.67); Messages is an app on it, beside the Shop (0.76).
   **Decision (#63): everything on the phone happens inside the phone.** Rejected: an iOS card floating next to
   the phone with the two actions, and a "Typing..." busy card on the desk (it was outside the phone, and the raid's
   card even read "Making her tea...").

@@ -1,5 +1,7 @@
 // The phone in your hand (V8, #73; grid doc 7f) as a view model for the renderer's live phone (phone.js, LIVE).
 // The rules stay in systems/interrupts.ts, preemptive.ts and messages.ts; this only reads them.
+import { SHOP_ITEMS } from '../data/shop';
+import { shopState } from '../systems/shop';
 import { T } from '../config/tuning';
 import { S, N, type ChatLine, type PhoneGame } from '../core/state';
 import { fmtClock } from '../core/fx';
@@ -62,6 +64,10 @@ function chatAction(id: 'text' | 'raid') {
     : { ok: !why, label: 'Raid night?', act: 'pre', arg: 'raid', sub: `Goodwill -${T.GOODWILL_RAID}: no visits ${T.RAID_CALM_SEC} s`, why };
 }
 
+/** The row that was just bought flashes moss (main.ts sets it). */
+let shopFlash: { id: string; at: number } | null = null;
+export function shopFlashed(id: string) { shopFlash = { id, at: performance.now() }; }
+
 export function phoneView() {
   const n = N(), g = S.g;
   const base = { time: fmtClock(n.clock), date: `${DAYS[((g.nightsPlayed % 7) + 7) % 7]} night` };
@@ -82,5 +88,10 @@ export function phoneView() {
   }
   if (app === 'babe') return { ...base, screen: 'babe', items: chatItems(g.herThread ?? []), scroll: n.phScroll ?? 0, action: chatAction('text') };
   if (app === 'boys') return { ...base, screen: 'boys', items: chatItems(g.boysThread ?? []), action: chatAction('raid') };
+  if (app === 'shop') {   // the Shop app (step 4.6, #55)
+    const tab = n.shopTab ?? 'you';
+    return { ...base, screen: 'shop', tab, wallet: Math.floor(g.zl), flash: shopFlash && performance.now() - shopFlash.at < 900 ? shopFlash.id : '',
+      items: SHOP_ITEMS.filter(i => i.tab === tab).map(i => ({ id: i.id, g: i.g, name: i.name, zl: T.SHOP_ZL[i.id], fx: i.fx, state: shopState(i.id) })) };
+  }
   return { ...base, screen: 'home', unread: herUnread() };
 }

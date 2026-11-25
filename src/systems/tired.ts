@@ -14,7 +14,7 @@ export const startTired = () => Math.min(100, T.TIRED_BASE + S.g.sleepDebt * T.T
 
 export function updateTired(dt: number, clockDelta: number) {
   const n = N();
-  if (n.clock > T.TIRED_FROM && clockDelta > 0) n.tired = Math.min(100, n.tired + clockDelta * T.TIRED_PER_GAME_MIN * (hasLife('fiveMore') ? 1 - T.AFFIX_TIRED : 1));
+  if (n.clock > T.TIRED_FROM && clockDelta > 0) n.tired = Math.min(100, n.tired + clockDelta * T.TIRED_PER_GAME_MIN * (hasLife('fiveMore') ? 1 - T.AFFIX_TIRED : 1) * (S.g.owned.includes('chair') ? T.SHOP_CHAIR_TIRED : 1));   // the ergo chair (Shop, #55)
 
   // Monster boost, then the crash.
   if (n.boost > 0) {

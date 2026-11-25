@@ -70,13 +70,31 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   End, the back chevron, the home bar, the grey/red close box outside the top-right corner); leaving counts as
   ignoring. A bubble that would be cut is left out (#45).
 - **The idle phone, picked up** (tap it on the desk): the home screen (the night, the big clock, the apps: Messages
-  with her unread count; the Shop and Home join with steps 4 and 6). **Messages** lists Babe and The Boys (3).
+  with her unread count, and the Shop; Home joins with step 6). **Messages** lists Babe and The Boys (3).
   **Her chat is kept for good** (`S.g.herThread`, `systems/messages.ts`): her texts, your answers, Text her and her
   replies, across the nights, with a grey separator per sitting (the day, "Today 23:12", the time after a gap); the
   wheel scrolls it a bubble at a time, a chip goes back to the newest; Text her at the bottom (dim, with a lock and
   why, when it can't). **The Boys' chat** shows the last call's exchange (their lines, your replies, how it ended)
   until the next, with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
   message into the chat (hands busy), then Delivered.
+- **The Shop** (step 4.6, #55; grid doc 7i and 7f; `systems/shop.ts`, `data/shop.ts`): real-life things for złoty,
+  the money Q4 pays. The header has the back chevron, "Shop" and the wallet; two tabs, **For you** and **For her**
+  (Home joins with step 6). Each row: an icon, the name, what it does, and the price as a button (gold when you can
+  pay, dim when you can't) or its state: *owned*, *tonight* (one use, bought tonight), *full*, *soon*. Buying is
+  instant, with a coin and a line in the feed; the phone is in your hand (hands busy) the whole time.
+
+  | Item | zł (`SHOP_ZL`) | Does |
+  |---|---|---|
+  | Goblin Fuel | 29 | `SHOP_FUEL_CANS` (4) cans into the drawer, up to its 8; *full* when it is |
+  | Dog chew | 29 | His next visit comes `SHOP_CHEW_SEC` (2 min) later (bought while he is in: the one after); once a night |
+  | Silent keys | 249 | Q4 makes half the Noise (kept) |
+  | Mini fridge | 599 | The energy break starts at the cold can on the desk, the drawer and the grab done (kept) |
+  | Ergo chair | 899 | Tiredness builds at `SHOP_CHAIR_TIRED` (15% slower) (kept) |
+  | New phone | 2,999 | *soon*: the battery comes with step 6 |
+  | Flowers (For her) | 49 | +`SHOP_FLOWERS_GOODWILL` (20) Goodwill at once; once a night |
+
+  What you keep is saved (`S.g.owned`); the one-use things reset each night. For her ends on "More for her soon."
+  (the gifts she wears come with #59). The Goblin Fuel inspect window says where more cans come from.
 
 Sluggish (Tired 70+) shortens every call timer to `SLUGGISH_TIMER_MULT`. F1 has a button for each call (it skips the
 one-demand rule). `npx tsx test/phone.ts` checks the script, the spacing, each event, speaker and Do Not Disturb.
@@ -141,7 +159,7 @@ the Drink button lights) with cans in the drawer and nothing else asking for you
 the Drink button), whichever comes first. A glass window over the dimmed right screen: "In your drawer" (and "New
 tonight" on the first night), the can at full size on an acid glow, bobbing; "Goblin Fuel", "100% greed. Tastes like a
 loot drop."; what it does as + and - lines and how to pour it, from the tuning; the cans you have as eight slots
-(`MONSTER_DRAWER`), the empty ones dark; "Topped up to 3 every night." (the Shop's line comes with the Shop, #55);
+(`MONSTER_DRAWER`), the empty ones dark; "More in the Shop: 29 zł for four." (from the tuning);
 Drink (G) goes on to the energy break, Later, the close box, Esc or Enter shut it. After that G and Drink go straight
 to the break.
 
@@ -241,8 +259,8 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 
 - **The phone in the renderer** (0.65, V8 #73). The DOM iPhone was the prototype's placeholder; the redesign's
   phone is the game's pixel OS, so the phone matches the battle area and the desk. Left out for now: the incoming
-  call's Message button (no rule behind it; Speaker sits alone), the battery widget and the Shop and Home apps (they
-  come with steps 4 and 6), her photos in the chat (fan-service step 5, #59). Rejected: keeping the DOM phone under the new look (two phone looks in one game).
+  call's Message button (no rule behind it; Speaker sits alone), the battery widget and the Home app (step 6; the
+  Shop came in 0.76), her photos in the chat (fan-service step 5, #59). Rejected: keeping the DOM phone under the new look (two phone looks in one game).
 - **The desk phone is drawn too, and declines on the desk** (0.66, V3 #68): the same OS seen lying down, through the
   desk's camera and in its light. Its red Decline stays clickable, so a call can be turned down without picking it
   up, as before; Speaker moved into your hand (pick up, then Speaker), which the redesign's ringing desk screen has
@@ -291,6 +309,15 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   causes a catch, it only decides how long she stays. Rejected: keeping Tetris beside Q4 (two jobs on one sheet);
   Hustle on the macros (it would punish leaving Excel, the opposite of the RPG loop); a promotion dialog over the RPG
   (it waits for Excel, where it means something).
+- **The Shop as the grid doc has it** (0.76, step 4, #55). Prices and effects are grid doc 7i's (Flowers 49, lowered
+  from the handoff's 89 so the first night's Q4 at one click a second pays for them). Only Flowers is in For her:
+  the gifts she wears (socks, tee, pajamas, hoodie) and their trade-offs come with fan service (#59), and the Home tab
+  and the new phone's battery with step 6. The free top-up to `MONSTER_PER_NIGHT` cans each night stays until the
+  week (#56) decides which night the drink comes in; the Shop's pack is on top of it, so cans are never scarce yet.
+  The chew is once a night so one purchase cannot push the dog off a whole night. Rejected: the shop in the morning
+  (campaign.md's first plan: buying with the phone in your hand costs hands busy, which is the point); showing the
+  her gifts dimmed as "soon" (a wall of things you can't buy on the first night); a Goblin Fuel price per can (four
+  for 29 is one tap).
 - **Excel as Tetris** (0.20 to 0.74) instead of a rhythm game: the rhythm game was too fast and gave nothing. Honest
   work paid (overtime gold) but was never required. Replaced by Q4.
 - **No hands; he is only in the drink** (0.49.1, #62). The cursor handles the drawer, the can and the tab, and the

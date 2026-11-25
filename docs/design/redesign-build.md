@@ -26,7 +26,9 @@ gameplay steps). This file says how the build gets there and where it stands. It
 - **V5, the energy break, 0.68.0:** the five scenes ray-cast through their cameras over the dimmed right screen, on the
   game's own physics (desk.md, Goblin Fuel energy break); baked ahead in idle time.
 - **Step 4 (#55), Q4, 0.75.0:** the Excel clicker in the renderer's Windows 98 window: the toys, the macros, the
-  titles, Hustle, looking busy; Tetris is gone (desk.md). The Shop app follows.
+  titles, Hustle, looking busy; Tetris is gone (desk.md). **The Shop app, 0.76.0:** on the phone's home screen, For
+  you and For her, the grid doc's items and prices (desk.md, the Shop); the gifts she wears wait for #59, Home for
+  step 6.
 - **V11, the small pieces, 0.73.0 and 0.74.0:** pause, How to hide, the microsleep's lids, away from the PC (the empty
   chair, the card), the Goblin Fuel inspect window, then coach marks and tooltips in each world's look, all the
   renderer's (night.md, desk.md, preemptive.md, screen.md). Item tooltips keep the DOM card (the side panel's item
@@ -81,5 +83,5 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 15 | V7 (#72): caught | 0.70.0 |
 | 16 | V9 (#74): her windows (the cuddle break, the plan) | 0.71.0 |
 | 17 | V10 (#75): the morning | 0.72.0 |
-| 19 | #55: Q4, the Excel clicker; the Shop app | 0.75.0: Q4 |
+| 19 | #55: Q4, the Excel clicker; the Shop app | 0.75.0: Q4; 0.76.0: the Shop |
 | 18 | V11 (#76): the small pieces | 0.73.0: pause, How to hide, microsleep, away, the inspect window; 0.74.0: coach marks, tooltips |

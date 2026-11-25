@@ -106,8 +106,8 @@ function inspectWindow(t, o = INSPECT_PAGE) {
     y += 40;
     text(o.cans + ' of ' + o.max + ' in the drawer.', x, y, 'tiny', P.u6);
     if (o.shop) {
-      const zw = measure('More in the Shop: 29 z', 'tiny');
-      text('More in the Shop: 29 z', x, y + 9, 'tiny', P.s5); glyph('lstroke', x + zw - 1, y + 8, P.s5); text('for four.', x + zw + 5, y + 9, 'tiny', P.s5);
+      const sh = typeof o.shop === 'object' ? o.shop : { zl: 29, cans: 'four' }, s1 = 'More in the Shop: ' + sh.zl + ' z', zw = measure(s1, 'tiny');
+      text(s1, x, y + 9, 'tiny', P.s5); glyph('lstroke', x + zw - 1, y + 8, P.s5); text('for ' + sh.cans + '.', x + zw + 5, y + 9, 'tiny', P.s5);
     } else if (o.more) text(o.more, x, y + 9, 'tiny', P.s5);
     // what to do
     smBtn(x, h - 22, 104, 'Drink', { gold: true, key: 'G' });

@@ -1040,8 +1040,35 @@ const LIVE = {
     tx(v.date, 56, 22, P.d6, { align: 'c' }); bigTime(v.time, 56, 32, P.moon);
     appIcon('messages', 8, 72, P.g4, P.moon, 'Messages', { hi: P.g5 }); hit(6, 70, 32, 44, 'phApp', 'messages');
     if (v.unread) { disc(35, 73, 4.5, P.d6); tx(String(v.unread), 35, 71, P.void, { align: 'c' }); }
+    appIcon('shop', 42, 72, P.copper, P.pale, 'Shop', { hi: P.gold }); hit(40, 70, 32, 44, 'phApp', 'shop');   // step 4.6 (#55)
     tx('Put the phone down:', 56, 206, P.s4, { align: 'c' }); tx('the home bar', 56, 214, P.s4, { align: 'c' });
     homeBar(P.s5); homeHit('preMenu');
+  },
+  // the Shop (step 4.6, #55): For you and For her, the wallet, a price pill to tap (gold when you can buy it now), or
+  // what you already have; the row flashes moss when bought. v: { tab, wallet, items [{ id, g, name, zl, fx, state }], flash }
+  shop(t, v) {
+    flatBg(46); statusBar({ time: v.time });
+    gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 15, P.moon, { f: 'tinyL' }); backHit('phApp', 'home');
+    zlP(String(v.wallet), PH.sw - 6, 19, P.g5, 'r');
+    rrI(6, 33, PH.sw - 12, 11, 5, P.s2);
+    const TABS = [['you', 'For you', P.s4], ['her', 'For her', P.d4]], hw = (PH.sw - 14) / 2;
+    TABS.forEach(([id, lab, fill], k) => { const on = id === v.tab; if (on) rrI(Math.round(7 + k * hw), 34, Math.round(hw), 9, 4, fill); tx(lab, Math.round(7 + hw * (k + 0.5)), 36, on ? P.moon : P.s5, { align: 'c' }); hit(Math.round(7 + k * hw), 32, Math.round(hw), 13, 'shopTab', id); });
+    const col = (g) => (SHOP.you.concat(SHOP.her).find((it) => it.g === g) || { c: [P.s3, P.moon] }).c;
+    v.items.forEach((it, k) => {
+      const y = 50 + k * 30, c = col(it.g);
+      if (k) rrI(26, y - 2, PH.sw - 30, 1, 0, P.s1);
+      if (v.flash === it.id) rrI(3, y - 1, PH.sw - 6, 28, 4, P.g2);
+      rrI(5, y + 1, 17, 17, 4, P.void); rrI(5, y, 17, 17, 4, c[0]); gl(ITEM_G[it.g], 9, y + 4, c[1]);
+      tx(it.name, 26, y + 2, it.state === 'soon' ? P.s4 : v.tab === 'her' ? P.d6 : P.moon);
+      wrapT(it.fx, PH.sw - 30).slice(0, 2).forEach((ln, j) => tx(ln, 26, y + 11 + j * 8, P.s5));
+      const pw = 30, pxx = PH.sw - pw - 4, py = y + 1, st = it.state;
+      if (st === 'buy') { rrI(pxx, py + 1, pw, 9, 4, P.copper); rrI(pxx, py, pw, 9, 4, P.gold); zlP(String(it.zl), pxx + pw / 2, py + 2, P.void, 'c'); hit(pxx - 2, py - 2, pw + 4, 13, 'shopBuy', it.id); }
+      else if (st === 'dear') { rrI(pxx, py, pw, 9, 4, P.s2); zlP(String(it.zl), pxx + pw / 2, py + 2, P.s4, 'c'); }
+      else if (st === 'soon') { rrI(pxx, py, pw, 9, 4, P.s1); tx('soon', pxx + pw / 2, py + 2, P.s4, { align: 'c' }); }
+      else { const s2 = st === 'owned' ? 'owned' : st === 'full' ? 'full' : 'tonight', w2 = measure(s2, 'tiny') + 6; rrI(PH.sw - w2 - 4, py, w2, 9, 4, st === 'full' ? P.s2 : P.g3); tx(s2, PH.sw - 4 - w2 / 2, py + 2, st === 'full' ? P.s5 : P.g6, { align: 'c' }); }
+    });
+    if (v.tab === 'her') tx('More for her soon.', 56, 50 + v.items.length * 30 + 4, P.s4, { align: 'c' });
+    homeBar(); homeHit('preMenu');
   },
   // Messages: her chat and The Boys'
   messages(t, v) {

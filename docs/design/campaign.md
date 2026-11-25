@@ -41,6 +41,10 @@ drops (boss set pieces, one night legendary), depth milestones, that night's scr
 
 ## Desk shop (zł), #4
 
+Built differently: the Shop is an app on the phone, bought during the night (desk.md, the Shop, 0.76).
+The first plan, kept for the ideas:
+
+
 Real-life upgrades and consumables bought in the morning. Candidates: noise-cancelling headphones,
 desk drawer (hides cans in one click), quieter keyboard, phone stand (+3 s on phone timers), Goblin Fuel
 4-pack, Zyn tin, a "premium stash tab" joke, and a borderless-window upgrade that shortens alt-tab lag

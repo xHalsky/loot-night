@@ -30,7 +30,7 @@ export const T = {
   SLUGGISH_TIMER_MULT: 0.85, SLUGGISH_FLOW_MULT: 0.75,
 
   // --- Monster ---
-  MONSTER_PER_NIGHT: 3,           // prototype: topped up to this at night start (desk shop later)
+  MONSTER_PER_NIGHT: 3,           // topped up to this at night start (until the week, #56, decides); the Shop sells more
   MONSTER_DRAWER: 8,              // the drawer holds this many (the inspect window shows the slots; the Shop, #55, fills them)
   MONSTER_TIRED: -35,
   MONSTER_BOOST_SEC: 60, MONSTER_SPEED: 0.30,   // party acts 30% faster
@@ -386,6 +386,13 @@ export const T = {
   Q4_PIVOT_AT: 2,                 // the pivot spinner unlocks at Analyst
   Q4_NOISE: 0.5, Q4_NOISE_FLICK: 1, Q4_NOISE_SORT: 1.5, Q4_NOISE_SPIN: 1,   // Noise a toy action makes (the Silent keys halve it)
   Q4_BUSY_SEC: 2, Q4_IDLE_SEC: 3, Q4_BUSY_MULT: 1.5,   // looking busy while she is in: acted in the last 2 s, her visit runs x1.5; idle 3 s, it waits
+
+  // --- The Shop app (step 4.6, #55; prices from grid doc 7i, to be tuned in playtests) ---
+  SHOP_ZL: { fuel: 29, chew: 29, keys: 249, fridge: 599, chair: 899, phone: 2999, flowers: 49 } as Record<string, number>,
+  SHOP_FUEL_CANS: 4,              // Goblin Fuel: a pack of four for the drawer (MONSTER_DRAWER holds 8)
+  SHOP_CHEW_SEC: 120,             // the dog chew: his next visit comes this much later
+  SHOP_CHAIR_TIRED: 0.85,         // the ergo chair: Tiredness builds at this rate
+  SHOP_FLOWERS_GOODWILL: 20,      // flowers for her: Goodwill at once
 
   // --- Economy ---
   START_GOLD: 100, START_ZL: 50,

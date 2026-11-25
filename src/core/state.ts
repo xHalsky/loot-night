@@ -198,8 +198,9 @@ export interface Night {
   interrupts: Interrupt[];
   game: MiniGame | null;
   q4: Q4Night;
+  shopTonight: string[]; dogChew?: boolean;   // the Shop's one-use things bought tonight; a chew waiting for the dog's next visit (#55)
   pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
-  phApp?: 'home' | 'messages' | 'babe' | 'boys'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
+  phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop'; shopTab?: 'you' | 'her'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
   towel: boolean; herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   sulk: number; bankNotice: number; bankItem: string;

@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.76.0 (2026-11-25)
+
+- **The Shop app** (step 4.6, #55; grid doc 7i and 7f): the phone's home screen has the Shop next to Messages. Spend
+  the złoty Q4 pays on real-life things, with the phone in your hand (hands busy). **For you:** Goblin Fuel (29 zł,
+  four cans for the drawer, up to its 8), Dog chew (29, his next visit 2 min later, once a night), Silent keys (249,
+  Q4 makes half the Noise), Mini fridge (599, the energy break starts at a cold can on the desk), Ergo chair (899,
+  Tiredness builds 15% slower), New phone (2,999, *soon*: the battery comes with step 6). **For her:** Flowers (49,
+  +20 Goodwill at once, once a night); the gifts she wears come with #59. What you keep is saved.
+- The Goblin Fuel inspect window says where more cans come from ("More in the Shop: 29 zł for four.", from the
+  tuning). The free top-up to 3 cans a night stays until the week (#56).
+- `test/shop.py` buys everything with the real mouse next to stills 103, 111 and 112. No change to a night without
+  buying: sims as 0.75 (good 3 stars, caught 0, avg Noise 23, Q4 46 zł; idle 3 stars, caught 0, in its usual 0 to 3
+  catches spread). Fixes #55.
+
 ## 0.75.0 (2026-11-25)
 
 - **Q4: Excel is your job now** (step 4, #55; grid doc 7i). The spreadsheet Tetris is gone; Excel is a maximised
@@ -19,8 +33,7 @@ Versions before 0.14.0 predate the repository (they exist only as published arti
 - Healero's first-time tip explains it. Numbers are grid doc 7i's (to be tuned in playtests). Sims (good bot now
   works in Excel during her visits, two AutoSums a second): before, good 3 stars, caught 0, avg Noise 19 to 36;
   after, good 3 stars, caught 0, avg Noise 53 to 77, Q4 13 to 50 zł a night; idle as before (it never opens Excel).
-- `test/q4.py` plays every toy, the dialog, a macro and looking busy next to stills 004 and 011 to 014. The Shop app
-  (the rest of #55) comes next.
+- `test/q4.py` plays every toy, the dialog, a macro and looking busy next to stills 004 and 011 to 014.
 
 ## 0.74.0 (2026-11-25)
 

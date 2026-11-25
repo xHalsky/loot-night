@@ -28,8 +28,8 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    3. #54 Real life back on: done in 0.63 and 0.64 (gameplay); in the new look the phone in hand 0.65 (V8, #73) and
       the desk and monitor 0.66 (V3, #68), her panel and his chair 0.67 (V4, #69), the energy break 0.68 (V5, #70),
       the dog and the cable fix 0.69 (V6, #71), caught 0.70 (V7, #72), her windows 0.71 (V9, #74), the morning 0.72
-      (V10, #75), the small pieces 0.73 and 0.74 (V11, #76): real life is in the new look. Next, step 4 (#55).
-   4. #55 Q4, the Excel clicker, and the Shop app.
+      (V10, #75), the small pieces 0.73 and 0.74 (V11, #76): real life is in the new look.
+   4. #55 Q4, the Excel clicker (0.75), and the Shop app (0.76): done. Next, step 5 (#56).
    5. #56 The week (FNAF's nights).
    6. #57 The smart home and the phone battery.
    7. #58 Before the playtest.

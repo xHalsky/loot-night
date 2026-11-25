@@ -43,7 +43,7 @@ import type { HeroId } from './core/state';
 import { setRpgTip, rpgTipShown, type RpgTip } from './render/liveRpg';
 import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown, liveDrewAt } from './render/liveRpg';
 import { PK } from 'virtual:pagekit';
-import { phoneShown, phoneView } from './render/phoneView';
+import { phoneShown, phoneView, shopFlashed } from './render/phoneView';
 import { deskView, deskTip } from './render/deskView';
 import { herView, herTip } from './render/herView';
 import { herRead, phoneScroll } from './systems/messages';
@@ -57,6 +57,8 @@ import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
 import { closeCoach } from './systems/coach';
+import { shopBuy } from './systems/shop';
+import type { ShopId } from './data/shop';
 import { COACH } from './data/tips';
 
 (window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints }, herView: () => herView() };   // test hook for the Playwright scripts
@@ -189,6 +191,8 @@ const actions: Record<string, (arg: string) => void> = {
   closeGame: () => closeGame(false),
   // the phone in your hand (V8, #73): its apps and her chat
   phApp: a => { const n = N(); n.phApp = a as 'home'; n.phScroll = 0; if (a === 'babe') herRead(); sfx.click(); },
+  shopTab: a => { N().shopTab = a as 'you'; sfx.click(); },
+  shopBuy: a => { if (shopBuy(a as ShopId)) shopFlashed(a); else sfx.bad(); },
   phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
   // Debug (F1)
   dbgSpeed: a => { S.g.timeScale = Number(a); },
@@ -705,7 +709,7 @@ function inspectView() {
     bullets: [['+', `Party ${pct(T.MONSTER_SPEED)}% faster for ${T.MONSTER_BOOST_SEC} s.`], ['+', `Tiredness ${T.MONSTER_TIRED}.`],
       ['-', `Then a sugar crash: ${pct(T.MONSTER_CRASH_SPEED)}% slower for ${T.MONSTER_CRASH_SEC} s, Tiredness +${T.MONSTER_CRASH_TIRED}.`]],
     pour: `Pour it well: ${pct(T.MONSTER_DRINK_FULL)}% down for the full boost, ${pct(T.MONSTER_DRINK_HALF)}% for half.`,
-    shop: false, more: `Topped up to ${T.MONSTER_PER_NIGHT} every night.`, tag: S.g.nightsPlayed === 0 ? 'New tonight' : '',
+    shop: { zl: T.SHOP_ZL.fuel, cans: ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][T.SHOP_FUEL_CANS] ?? String(T.SHOP_FUEL_CANS) }, tag: S.g.nightsPlayed === 0 ? 'New tonight' : '',
   };
 }
 function drawSmallPieces() {
@@ -827,6 +831,7 @@ function drawTips() {
   setHtml('tooltipLayer', quiet || real || (rpg && rpgTipShown()) ? '' : tooltipHtml());
 }
 
+(window as unknown as Record<string, unknown>).__lnPhone = () => { const r = phCanvas.getBoundingClientRect(); return phHits.map(h => ({ act: h.act, arg: h.arg, x: r.left + (h.x + h.w / 2) * r.width / phCanvas.width, y: r.top + (h.y + h.h / 2) * r.height / phCanvas.height })); };   // for the tests
 (window as unknown as Record<string, unknown>).__lnCoach = () => coachHits;   // for the tests: the close box, then the callout
 (window as unknown as Record<string, unknown>).__lnCaught = () => ({ t: caughtT(performance.now()), ...caughtShot() });   // for the tests
 el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });

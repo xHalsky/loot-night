@@ -1,3 +1,4 @@
+import { chewDelay } from './shop';
 import { T } from '../config/tuning';
 import { N } from '../core/state';
 import { rand, randi } from '../core/rng';
@@ -27,7 +28,7 @@ export function updateDog(dt: number) {
       d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweetPet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); tip('dog'); }
     return;
   }
-  if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC); } return; }
+  if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC) + chewDelay(); } return; }
   // up: whining, waiting for you
   d.t -= dt;
   n.noise = Math.min(100, n.noise + T.DOG_WHINE_NOISE * dt);
@@ -36,10 +37,10 @@ export function updateDog(dt: number) {
     d.ignores++;
     if (d.ignores >= d.limit) {
       d.ignores = 0; d.limit = randi(1, 3);
-      d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC);
+      d.stage = 'away'; d.next = rand(...T.DOG_EVERY_SEC) + chewDelay();
       bump();
     } else {
-      d.stage = 'away'; d.next = rand(...T.DOG_AGAIN_SEC);
+      d.stage = 'away'; d.next = rand(...T.DOG_AGAIN_SEC) + chewDelay();
       toast('The dog gives up and lies down. He looks offended.', '#a999bd');
     }
   }

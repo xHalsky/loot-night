@@ -14,9 +14,10 @@ import { DROPPED } from './fuelPhysics';
 export function openMonster() {
   const n = N();
   if (n.game) return;
-  if (S.g.monsters <= 0) { toast(`Your heart says no. ${T.MONSTER_PER_NIGHT} a night is the limit.`, '#a999bd'); sfx.bad(); return; }
+  if (S.g.monsters <= 0) { toast('No cans left in the drawer. The Shop on your phone has more.', '#a999bd'); sfx.bad(); return; }
   n.action = 'miniGame';
-  n.game = { kind: 'monster', stage: 'drawer', opened: false, feedback: '', drunk: 0, result: null };
+  // the mini fridge (Shop, #55): a cold can already waits on the desk, so the break starts at the can
+  n.game = { kind: 'monster', stage: S.g.owned.includes('fridge') ? 'open' : 'drawer', opened: false, feedback: '', drunk: 0, result: null };
   sfx.click();
 }
 
