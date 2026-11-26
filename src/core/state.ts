@@ -63,11 +63,12 @@ export interface Vfx { kind: VfxKind; x: number; y: number; x2: number; y2: numb
 
 export type VisitStage = 'idle' | 'far' | 'hall' | 'handle' | 'in' | 'passing';
 /** What she comes for (docs/design/her.md, visit types). Each asks for a different answer. */
-export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle' | 'night';   // night: the hoodie walk-by on her way to bed
+export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle' | 'night' | 'tease';   // night: the hoodie walk-by on her way to bed; tease: she wants you (#85)
 export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string; last: number }   // last: his last answer (0 good, 1 meh, 2 rude, -1 none)
 export interface VisitState {
   stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean;
   safe?: boolean;   // the night's first chance (the week, #56): a catch on it is let go
+  bed?: boolean; looked?: number; gw?: number; esc?: boolean;   // the tease (#85): come to bed (#89), seconds you looked, Goodwill it paid, escalated
   kind: VisitKind;
   chat?: ChatState | null;        // Chat: the questions she asks while you sit on Excel
 }
@@ -177,6 +178,8 @@ export interface Night {
   feature: FeatureId | null; cond: ConditionId | null; featureMet?: boolean;   // this floor's feature and condition; the feature's curio has stood
   runCard: (RunState & { banked: boolean; t: number }) | null;   // the run end card
   firstSafe?: string;   // the week (#56): tonight's first visit of this type is early and safe
+  looking: boolean;     // the pointer is over the webcam view (the UI sets it): during a tease, you look at her (#85)
+  tease: { left: number; next: number; bedAt: number; bedDone: boolean };   // tonight's tease visits left, when the next is due (play s); when she gets up to say come to bed (#89)
   runWarned?: { dawn?: boolean; plug?: boolean; bed?: boolean };                // the warnings before a forced end loses the run
   visit: VisitState;
   apt: Apartment;
@@ -235,6 +238,7 @@ export interface RunState { startFloor: number; deepest: number; gold: number; i
 
 export interface Results {
   ending: 'sleep' | 'dawn' | 'unplugged';
+  coming?: boolean;                // Coming, babe (#89): the night ended in bed with her
   bedtime?: boolean;               // the night ended at its set time (Monday, 01:00), as a Sleep
   day: number;                     // the day just played (#56); unplugged: it is played again
   endClock: number; stars: number; depth: number; prevRecord: number;

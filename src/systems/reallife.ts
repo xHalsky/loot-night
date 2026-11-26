@@ -12,11 +12,11 @@ export function demandActive(): boolean {
   return n.interrupts.length > 0 || !!n.game || !!n.pre || n.dog.stage !== 'away' || n.visit.stage !== 'idle';
 }
 /** A new demand may start now. */
-export function realLifeFree(): boolean {
+export function realLifeFree(windupOk = false): boolean {
   const n = N();
   if (demandActive() || n.threat - n.lastDemand < T.REAL_LIFE_GAP_SEC) return false;
   if (n.apt.activity === 'shower' || n.apt.calm > 0) return false;
-  return !n.enemies.some(e => (e.wind ?? 0) > 0);
+  return windupOk || !n.enemies.some(e => (e.wind ?? 0) > 0);   // windupOk: her tease aims for the worst moments (#85)
 }
 /** Every frame: while anything asks for you, the gap keeps restarting. */
 export function updateRealLife() {

@@ -11,6 +11,7 @@ export function morningScene(): MorningScene {
   const r = S.g.results;
   if (!r) return 'green';
   if (r.ending === 'unplugged') return 'unplugged';
+  if (r.coming) return 'green';   // Coming, babe (#89): she fell asleep in your shirt, whatever her Mood
   return r.mood < T.MOOD_GREEN ? 'green' : r.mood < T.MOOD_RED ? 'yellow' : 'red';
 }
 

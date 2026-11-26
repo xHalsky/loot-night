@@ -1,4 +1,5 @@
 import { updateRanks } from './ranks';
+import { eyesBusy } from './eyes';
 import { isWitching } from './affixes';
 import { T } from '../config/tuning';
 import { S, N } from '../core/state';
@@ -29,7 +30,7 @@ export function updateMeters(dt: number) {
   if (!off) updateTired(dt, clockDelta);
 
   // Flow builds only while the RPG is on screen in the dungeon and the hands are free.
-  const building = n.location === 'dungeon' && n.monitor === 'rpg' && n.action === 'none' && n.monitorOff <= 0;
+  const building = n.location === 'dungeon' && n.monitor === 'rpg' && n.action === 'none' && n.monitorOff <= 0 && !eyesBusy();   // looking at her: no Flow (#85)
   const rate = (T.FLOW_MAX - T.FLOW_MIN) / T.FLOW_BUILD_SEC;
   // Zone: headset on without a break fills it; taking the headset off empties it.
   n.zone = n.headset ? Math.min(1, n.zone + dt / T.ZONE_FILL_SEC) : 0;

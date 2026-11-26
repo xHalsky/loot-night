@@ -1,5 +1,6 @@
 // Her panel's view (V4, #69; grid doc 7b): what the renderer's her.js drawHerLive needs, read from the game. No rules
 // here, only reading; the texts are the ones her DOM panel had (docs/design/her.md, screen.md).
+import { eyesBusy } from '../systems/eyes';
 import { S, N } from '../core/state';
 import { T } from '../config/tuning';
 import { moodZone } from '../systems/meters';
@@ -37,6 +38,7 @@ function middle(hover: string) {
       marks: [T.WAKE_TEXT / 100], barLabels: [[T.WAKE_TEXT / 100, 'texts you'], [1, 'gets up']] as [number, string][], barTip: 'wake' } };
   }
   if (v.stage === 'idle' && S.g.day === 0 && n.apt.cued && !n.headset && END_HINT[n.apt.activity]) { label = 'listen'; body = END_HINT[n.apt.activity]; tone = 'warn'; }   // first night: name the tell
+  if (v.kind === 'tease') return teaseWin();   // she wants you (#85, #89)
   if (v.stage === 'far' && !n.headset) { label = 'footsteps'; body = 'Footsteps... is she coming?'; tone = 'warn'; }
   if (v.stage === 'hall') { label = 'at the door'; body = S.g.day === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; tone = 'alarm'; }
   if (v.stage === 'handle') { label = 'door'; body = 'The handle is turning!'; tone = 'alarm'; }
@@ -69,10 +71,28 @@ function middle(hover: string) {
 }
 
 
+/** Her tease in her window (grid doc 7m): the pink line, HER, three hearts for the looking she wants, her line, her
+ *  time; come to bed with Coming, babe. */
+function teaseWin() {
+  const v = N().visit, bed = !!v.bed;
+  const look = Math.min(3, Math.floor(((v.looked ?? 0) / T.TEASE_LOOK_SEC) * 3 + (v.result === 'kissed' ? 3 : 0)));
+  if (v.stage === 'far') return { win: { label: 'HER', pink: true, line: bed ? '"babe...?"' : '"babe?"' } };
+  if (v.result === 'kissed') return { win: { label: 'HER', pink: true, look: 3, line: bed ? 'She smiles, half asleep. "Don\'t be long."' : 'She blows you a kiss. "Ok. Go play."' } };
+  if (v.result === 'pout') return { win: { label: 'HER', pink: true, look, line: bed ? '"Fine. Goodnight."' : '"Fine. Enjoy your elves."' } };
+  return { win: {
+    label: bed ? 'COME TO BED' : 'HER', pink: true, fast: !!v.esc, look,
+    line: v.esc ? (bed ? '"Babe... come to bed."' : '"Baaabe."') : bed ? '"come to bed... it\'s late"' : '"babe? come here a sec..."',
+    bar: bed ? undefined : Math.max(0, v.t / (v.esc ? T.TEASE_ESCALATE_SEC : T.TEASE_SEC)), barCol: 'rose' as Col,
+    right: bed ? `${Math.max(0, Math.ceil(v.t))} s` : undefined,   // with the pill, the seconds in the corner (as the cuddle ask)
+    pills: bed ? [{ name: 'Coming, babe', cost: 'ends the night', act: 'comingBabe', arg: '0', tip: 'coming' }] as Pill[] : undefined,
+  } };
+}
+
 export function herView(hover = '') {
-  const n = N(), zone = moodZone(n.mood);
+  const n = N(), zone = moodZone(n.mood), v = n.visit, tease = v.kind === 'tease' && v.stage === 'in';
   return {
-    mood: n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'annoyed' : 'furious',
+    gwTag: tease && (v.gw ?? 0) >= 1 ? `+${Math.floor(v.gw ?? 0)}${v.bed && eyesBusy() ? ' x2' : ''}` : undefined,   // looking at her: Goodwill rises on its bar
+    mood: tease && v.result === 'kissed' ? 'flustered' : tease && v.bed ? 'sleepy' : n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'annoyed' : 'furious',
     heard: heard(),
     ...middle(hover),
     buttons: null,   // Make her tea and the towel went with step 6 (#57): bubble tea and the door seal are in the Home app
@@ -97,6 +117,7 @@ export function herTip(key: string): string {
     case 'noise': return `Your Noise.${n.apt.asleep ? ` Above ${T.WAKE_NOISE_FLOOR} it wakes her.` : ' How much reaches her depends on where she is.'}`;
     case 'wake': return `Waking up ${Math.round(n.apt.wake)}. At ${T.WAKE_TEXT} she texts you; full, she gets up.`;
     case 'plate': return 'Take it and say thanks: the party heals.';
+    case 'coming': return 'Go to bed with her. The night ends here, like Sleep, and the morning is the best one. No Witching Hour tonight.';
     case 'cuddleYes': return 'Go to her. The party fights on without you.';
     case 'cuddleNo': return 'Stay. She will not be happy.';
     case 'door': return 'Your door. Hold it to peek out: the crack shows what she is doing.';

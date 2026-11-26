@@ -2,7 +2,7 @@
 // Times: night clock in minutes after midnight of the evening (20:00 = 1200, 01:00 = 1500).
 
 /** One night of the week (NIGHT_SCHEDULE). */
-export interface NightPlan { day: string; adds: string[]; visits: number; bed: number; end: number; dog: [number, number, number] | null; friends: number; first?: string }
+export interface NightPlan { day: string; adds: string[]; visits: number; bed: number; end: number; dog: [number, number, number] | null; friends: number; first?: string; teases?: [number, number] }
 
 export const T = {
   // --- Night clock ---
@@ -22,7 +22,7 @@ export const T = {
   // One entry a night, Monday first. adds: what comes in that night; everything from earlier nights stays on. The
   // numbers are that night's own: visits (how often she comes, x), bed (she goes to bed at this clock; 0 = she stays
   // up), end (the night ends at this clock: Monday, no Tiredness yet), dog ([first visit s, then every min, max s];
-  // null = no dog), friends (the boys' calls tonight), first (in week one: her first visit is this type, early and safe:
+  // null = no dog), friends (the boys' calls tonight), teases (her tease visits tonight, min to max), first (in week one: her first visit is this type, early and safe:
   // a catch on it is let go, the night's new visit taught by happening; 2b in the week doc). After Sunday the week starts again with everything on (week
   // two is TBD: systems/week.ts). Ids not built yet sit in the list so they come in on their night once they are:
   // lean, mirror (#77, #59), mask, comeToBed, selfies, tease, lapSit, towelReq, bath, wine (#59). home: the Home app, the
@@ -33,11 +33,24 @@ export const T = {
     { day: 'Wednesday', adds: ['phone', 'messages'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0 },
     { day: 'Thursday', adds: ['dog', 'cuddle', 'friends', 'fuel', 'home'], visits: 1.2, bed: 0, end: 0, dog: [90, 120, 180], friends: 1, first: 'snack' },
     { day: 'Friday', adds: ['bed', 'witching', 'mask', 'comeToBed', 'selfies'], visits: 1.2, bed: 24 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
-    { day: 'Saturday', adds: ['tease', 'lapSit', 'towelReq', 'bath', 'wine'], visits: 1.4, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
-    { day: 'Sunday', adds: [], visits: 1.6, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
+    { day: 'Saturday', adds: ['tease', 'lapSit', 'towelReq', 'bath', 'wine'], visits: 1.4, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1, teases: [1, 2] },
+    { day: 'Sunday', adds: [], visits: 1.6, bed: 25 * 60, end: 0, dog: [90, 120, 180], friends: 1, teases: [2, 3] },
   ] as NightPlan[],
   WEEK_TWO_BED: 24 * 60,          // after the first week she goes to bed every night: this on weeknights, the weekend's own on Sat and Sun
   BEDTIME_WARN_MIN: 15,           // a night that ends at a set time (Monday) warns this long before
+
+  // --- Her moments (the fan-service pass, #59) ---
+  // The tease visit (step 1, #85): she wants you, not proof. No footsteps: her call, then the doorway.
+  TEASE_CALL_SEC: 2,              // her soft "babe?" before she is in the doorway
+  TEASE_SEC: 8, TEASE_ESCALATE_SEC: 6,   // she poses this long; ignored, once more ("Baaabe.")
+  TEASE_LOOK_SEC: 3,              // looking at her this long in total: she's happy (a blown kiss) and goes
+  TEASE_GOODWILL_PER_SEC: 4, TEASE_IGNORE_MOOD: 10,
+  TEASE_FIRST_SEC: [50, 90] as [number, number],   // the first one this far into the night (play seconds)...
+  TEASE_GAP_SEC: [70, 110] as [number, number],    // ...then one this long after the last, when real life is free
+  TEASE_HOT_EARLY_SEC: 40,        // a boss wind-up or a legendary on the floor brings her up to this much early (the worst moments)
+  // "Come to bed" (step 2, #89), Friday on: once a night after 01:00, half asleep in your hoodie
+  BED_TEASE_AT: [25 * 60 + 10, 25 * 60 + 45] as [number, number],   // when she gets up for it (clock minutes)
+  BED_TEASE_GOODWILL_MULT: 2, BED_TEASE_MOOD_MULT: 1.5,
 
   // --- Sleep debt ---
   SLEEP_DEBT_STEP_MIN: 15,

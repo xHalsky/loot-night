@@ -131,6 +131,23 @@ The activity's loop stops when its cue starts. Sounds and files: [screen.md](scr
 | Chat | Humming | The screen, then your ears | Excel on screen and headset off, then answer 3 questions (`CHAT_ASK_SEC` each, good / meh / rude, shuffled; silence = meh) while staying on Excel | 2 good: Mood `CHAT_PASS_MOOD`. 2 rude: Mood +`CHAT_BAD_MOOD`. Headset on: "are you even listening?" Mood +`CHAT_HEADSET_MOOD`. Back to the game mid-chat: caught |
 | Cuddle (green only) | Slow, soft slipper steps | Nothing | "Come here" or "One sec, babe" (`CUDDLE_ASK_SEC`; no answer = one sec) | Cuddle minigame below. One sec: Mood +`CUDDLE_REFUSE_MOOD` |
 | Good night (green at bedtime, once) | Soft, sleepy steps | Nothing | Nothing to do | She stops at the door in your gaming hoodie, sleeves over her hands: "Night, babe." Mood `WALKBY_MOOD`, then she goes to bed ([eye-candy.md](eye-candy.md)) |
+| Tease (Saturday and Sunday) | No steps: her soft "babe?" (`TEASE_CALL_SEC`) | Nothing: she knows you're gaming | Look at her: the pointer on the webcam view with the game on screen (`TEASE_LOOK_SEC` in total) | Looking: Goodwill `TEASE_GOODWILL_PER_SEC` a second, Eyes busy, then a blown kiss. Ignored (`TEASE_SEC`): "Baaabe." once more (`TEASE_ESCALATE_SEC`), then she leaves pouting, Mood +`TEASE_IGNORE_MOOD`. Never a catch |
+| Come to bed (Friday on, after 01:00, once) | Her sleepy "babe...?" | Nothing | Look at her, or "Coming, babe" | As the tease, in your hoodie, half asleep: looking pays x`BED_TEASE_GOODWILL_MULT`, ignoring costs x`BED_TEASE_MOOD_MULT`. Coming, babe ends the night like Sleep at that hour and the morning is the green one whatever her Mood |
+
+**The tease** (fan-service step 1, #85). On the weekend she comes to your doorway because she wants you, not to check
+on you: Saturday `teases` 1 to 2, Sunday 2 to 3 (the week's plan in `NIGHT_SCHEDULE`). The first is due
+`TEASE_FIRST_SEC` play seconds in, the next `TEASE_GAP_SEC` after the last, each only when real life is free (one
+demand at a time); a boss wind-up or a legendary on the floor brings her up to `TEASE_HOT_EARLY_SEC` early, so she aims
+for the worst moments. No footsteps: a soft "babe?", and she leans on the frame. Her window turns pink (label HER, a
+dotted rose line under it that runs fast once she asks again, three hearts that fill as you look). Looking at her is the
+pointer on the webcam view (an eye cursor there) with the game on screen: while you look, his back is to you (he turns
+to her), the skill bar reads EYES BUSY (no skills, no Flow building) and Goodwill rises with a +N tag on its bar. Excel
+on screen counts as ignoring her. She never catches you: she knows what you're doing, and the cost is only Mood.
+
+**Come to bed** (step 2, #89). From Friday, once a night, she gets up after `BED_TEASE_AT` (and not before 01:00) in your
+hoodie, half asleep: label COME TO BED, the seconds in the corner and a "Coming, babe" pill (ends the night). Taking it
+ends the night like Sleep at that hour (the same sleep debt), even mid-battle, and the morning is the green one; Sweet
+still goes by her Mood. Looked at or ignored, she goes back to bed.
 
 **The cuddle minigame.** Her window over the battle area (grid doc 7g: night plum, her name on a pink tab, the right
 screen dimmed behind it). Her breath, a small heart in a ring that breathes with her, goes once round a big heart
@@ -186,6 +203,16 @@ buys it, angry, then furious with an anger mark on later catches, pout when woke
 visits and when she leans in. A small reaction bubble (?, !, heart, ...) over her head.
 
 ## Decisions
+
+- **The tease and come to bed are never a catch** (0.81, #85, #89): she isn't checking on you, so the game on screen is
+  the point; ignoring her only costs Mood (x1.5 at bedtime). Looking is the pointer on the webcam with the game up, so
+  it costs something real: Eyes busy (no skills, no Flow) while a fight goes on, and she comes early for a boss wind-up
+  or a legendary on the floor. Her teases are scheduled (first 50 to 90 s, then 70 to 110 s apart) rather than rolled:
+  rolled odds gave 0.25 a Saturday in the sims, scheduled gives 1 to 2 and 2 to 3 as planned. She may come during a
+  boss wind-up, which no other real-life demand does. Rejected: a key to look (the pointer is where your eyes are);
+  Excel as looking (she wants you to stop hiding, not to look busy); counting her as a demand in `REAL_LIFE_GAP_SEC`
+  terms, which would push the dog and the phone further apart on the weekend (it is one: nothing else starts while she
+  is there).
 
 - **Her questions lean into your face, over the whole screen** (0.49.7, #65, Paweł's review): she comes in from
   outside the right edge, part of her off screen, the way someone leans between you and your monitor. Rejected:

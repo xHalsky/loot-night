@@ -15,6 +15,7 @@ export interface WeekRules {
   isNew: string[];       // what came in tonight (week one; empty after it)
   visits: number; bed: number; end: number; dog: [number, number, number] | null; friends: number;
   first: string;         // week one: her first visit tonight is this type, early and safe ('' = none)
+  teases: [number, number];   // her tease visits tonight (#85)
 }
 
 const WEEK = () => T.NIGHT_SCHEDULE as NightPlan[];
@@ -30,7 +31,7 @@ export function rulesFor(day: number): WeekRules {
   return {
     day: d, name: p.day, week, on, isNew: week === 1 ? [...p.adds] : [],
     visits: p.visits, bed: week === 1 ? p.bed : p.bed || T.WEEK_TWO_BED, end: week === 1 ? p.end : 0, dog: p.dog, friends: p.friends,
-    first: week === 1 ? p.first ?? '' : '',
+    first: week === 1 ? p.first ?? '' : '', teases: p.teases ?? [0, 0],
   };
 }
 

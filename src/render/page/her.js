@@ -551,9 +551,11 @@ function herUILive(st, t) {
     const y = A.top ?? 279, h = 13 + lines.length * 8 + bh + ph + 2;
     win9(3, y, 141, h, A.warm ? { fill: C9.beige, edge: C9.brown } : {});
     if (A.line2 === 'alarm') { const on = Math.floor(t * 4) & 1; for (let i = 5; i < 142; i++) putI(i, y + 2, (chk(i, 0) ^ on) ? C9.crimson : C9.moon); }
+    else if (A.pink) { const on = Math.floor(t * (A.fast ? 8 : 3)) & 1; for (let i = 5; i < 142; i++) putI(i, y + 2, (chk(i, 0) ^ on) ? C9.rose : C9.moon); }   // her tease (#85): pink where footsteps have amber
     else if (A.warm) for (let i = 5; i < 142; i++) putI(i, y + 2, chk(i, 0) ? C9.gold : C9.moon);
     text(A.label, 8, y + 5, 'tiny', C9N(A.labelCol, C9.rose));
-    if (A.right) text(A.right, 137, y + 5, 'tiny', C9.purple, { align: 'r' });
+    if (A.look != null) { for (let k = 0; k < 3; k++) heart9(118 + k * 8, y + 4, k < A.look); }   // the 3 s of looking she wants
+    else if (A.right) text(A.right, 137, y + 5, 'tiny', C9.purple, { align: 'r' });
     lines.forEach((l, k) => text(l, 8, y + 13 + k * 8, 'tiny', C9.plum));
     let yy = y + 14 + lines.length * 8;
     if (A.bar != null) {
@@ -603,7 +605,7 @@ function drawHerLive(src, st, t) {
   if (!HER_CANVAS) { HER_CANVAS = document.createElement('canvas'); HER_CANVAS.width = HP_W; HER_CANVAS.height = HP_H; }
   // the UI is drawn again only when what it shows changes (its blinking lines tick at 4 Hz)
   const blink = st.note?.tone === 'alarm' || st.win?.line2 === 'alarm' ? Math.floor(t * 4) & 1 : 0;
-  const key = JSON.stringify([st.mood, st.heard, st.note, st.win, st.chat, st.buttons, st.stats, st.hover, st.gwTag, blink]);
+  const key = JSON.stringify([st.mood, st.heard, st.note, st.win, st.chat, st.buttons, st.stats, st.hover, st.gwTag, blink, st.win && (st.win.pink || st.win.line2) ? Math.floor(t * 8) : 0]);   // a blinking top line redraws
   if (!HER_UI || HER_UI.key !== key) {
     setRes(HP_W, HP_H); CLIP = null;
     const G = buf('herPC', HP_W, HP_H); G.I.fill(-1); bind(G);

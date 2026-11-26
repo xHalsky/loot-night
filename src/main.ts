@@ -53,7 +53,7 @@ import { herRead, phoneScroll, boysLog } from './systems/messages';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
-import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans } from './systems/visits';
+import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans, comingBabe } from './systems/visits';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
 import type { VisitKind, Room } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
@@ -200,6 +200,7 @@ const actions: Record<string, (arg: string) => void> = {
   homeUse: () => { const h = N().home; if (h.pick && useDevice(h.pick, h.pickRoom)) h.pick = ''; },
   homeTea: () => { orderTea(); },
   charge: () => startPre('charge'),
+  comingBabe: () => comingBabe(),   // come to bed (#89): the night ends with her
   shopTab: a => { N().shopTab = a as 'you'; sfx.click(); },
   shopBuy: a => { if (shopBuy(a as ShopId)) shopFlashed(a); else sfx.bad(); },
   phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
@@ -207,6 +208,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgSpeed: a => { S.g.timeScale = Number(a); },
   dbgLife: () => { S.g.realLifeOff = !S.g.realLifeOff; },   // #52, 1.1: nobody is home
   dbgVisit: a => triggerVisitNow((a || undefined) as VisitKind | undefined),
+  dbgBedTease: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('tease'); n.visit.bed = true; n.visit.from = 'night'; n.apt.asleep = false; },   // come to bed (#89)
   hideCans: () => { hideCans(); },
   takePlate: () => takePlate(),
   chatAnswer: a => chatAnswer(Number(a)),
@@ -420,15 +422,26 @@ herCanvas.addEventListener('pointerdown', ev => {
   if (hit === 'plan') { ev.preventDefault(); planOpen = true; sfx.click(); }
   else if (hit === 'door') { ev.preventDefault(); setPeeking(true); herDirty = true; }
 });
+// the eye (grid doc 7m): the pointer over the webcam view while you look at her during a tease (#85), 11 x 6 at 2x
+const EYE_CURSOR = (() => {
+  const c = document.createElement('canvas'); c.width = 22; c.height = 12; const g = c.getContext('2d')!;
+  const rows = ['   xxxxx   ', ' xxmmmmmxx ', 'xmmmpppmmmx', 'xmmmpvpmmmx', ' xxmmmmmxx ', '   xxxxx   '];
+  const col: Record<string, string> = { x: '#0c0a10', m: '#f2ecdc', p: '#7a4fa0', v: '#0c0a10' };
+  rows.forEach((r, j) => [...r].forEach((ch, i) => { if (col[ch]) { g.fillStyle = col[ch]; g.fillRect(i * 2, j * 2, 2, 2); } }));
+  return `url(${c.toDataURL()}) 11 6, default`;
+})();
 herCanvas.addEventListener('pointermove', ev => {
   const h = S.g.night ? herHitAt(ev) : null, p = toStage(ev);
+  const overCam = !!S.g.night && camXY(ev)[1] < DOOR_H;
+  if (S.g.night) S.g.night.looking = overCam && !h;   // during a tease, pointing at the webcam is looking at her (#85)
   const hit = !h && S.g.night && camXY(ev)[1] < DOOR_H ? doorHit(...camXY(ev)) : null;
-  herCanvas.style.cursor = h?.act ? 'pointer' : hit === 'plan' ? 'zoom-in' : hit === 'door' ? 'grab' : 'default';
+  const tease = S.g.night?.visit.kind === 'tease' && S.g.night.visit.stage === 'in';
+  herCanvas.style.cursor = h?.act ? 'pointer' : tease && overCam ? EYE_CURSOR : hit === 'plan' ? 'zoom-in' : hit === 'door' ? 'grab' : 'default';
   const hv = h?.act ? `${h.act}:${h.arg}` : ''; if (hv !== herHover) { herHover = hv; herDirty = true; }
-  const tip = h?.tip ? (h.tip.startsWith('pre:') ? h.tip : herTip(h.tip) && `text:${herTip(h.tip)}`) : hit && !S.g.night?.peeking ? `text:${herTip(hit)}` : '';
+  const tip = h?.tip ? (h.tip.startsWith('pre:') ? h.tip : herTip(h.tip) && `text:${herTip(h.tip)}`) : hit && !S.g.night?.peeking && !(tease && overCam) ? `text:${herTip(hit)}` : '';   // looking at her: no door tip in the way
   hover.key = tip || ''; hover.x = p.x; hover.y = p.y; hover.src = 'her';
 });
-herCanvas.addEventListener('pointerleave', () => { if (herHover) herDirty = true; herHover = ''; hover.key = ''; });
+herCanvas.addEventListener('pointerleave', () => { if (herHover) herDirty = true; herHover = ''; hover.key = ''; if (S.g.night) S.g.night.looking = false; });
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
 document.addEventListener('keyup', ev => { if (ev.key === ' ' || ev.code === 'Space') { monsterTilt(false); if (S.g.night?.game?.kind === 'monster') ev.preventDefault(); } });
 window.addEventListener('blur', () => monsterTilt(false));

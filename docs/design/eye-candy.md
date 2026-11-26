@@ -15,6 +15,8 @@ explicit. A Steam game gets streamed and shown around.
 | Barefoot at the door in every outfit, painted toenails | Door | [her.md](her.md) |
 | Outfit by activity (off-shoulder tee and shorts, oversized hoodie, tank top, towel wrap and turban, sleep shirt) | Door | her.md |
 | Lean visit: leaning on the frame, one foot against her calf, blush and wink | Door | her.md |
+| The tease (0.81, #85): weekends, she leans in your doorway because she wants you. Look at her (the pointer on the webcam, an eye cursor) and he turns to her, the skills read EYES BUSY, Goodwill rises and three hearts fill her pink window, then a blown kiss. Ignored: "Baaabe.", then a pout. She aims for boss wind-ups and legendary drops | Door, her window | [her.md](her.md) |
+| Come to bed (0.81, #89): from Friday after 01:00, half asleep in your hoodie; "Coming, babe" ends the night on the green morning | Door, her window | her.md |
 | Bare toes in the light gap under the door | Door | her.md |
 | Through the crack (0.34): her at the kitchen counter from behind (bare legs, the hoodie, the pink clip), her bare feet on the sofa armrest in the TV light, the frosted shape in the bathroom door's glass with steam leaking out | Door crack | her.md, Peeking |
 | She leans into your face from the right, over the whole screen, three poses (shh, hair twirl, chin on fist) | Whole screen | her.md |

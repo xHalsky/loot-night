@@ -33,7 +33,12 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    5. #56 The week (FNAF's nights): the schedule and the replay (0.77), Danny's voice note and the first chances
       (0.78): done. V13's remaining pieces go with #59.
    6. #57 The smart home and the phone battery: done (0.79).
-   7. #58 Before the playtest: done (0.80): the redesign handoff is built. Next, Paweł's RPG session (2).
+   7. #58 Before the playtest: done (0.80): the redesign handoff is built.
+   8. **#59 the fan-service pass, V12 (#77) lean in and V13's rest (#78)**, moved here before the playtests
+      (Paweł, 2026-11-26: everything planned is in before he tests, so tuning starts with no backlog). Spec: the
+      project doc `loot-night-fan-service.md`, one issue per step. Rounds: the tease and come to bed (0.81, #85,
+      #89: done); the bath, "Babe, towel!" and the wine (#93, #88); the lap sit (#86); outfits, gifts and selfies
+      (#90, #91, #92); lean in, her timers and the hall mirror (#77); mornings and the cuddle close-up (#94, #87).
 2. **Paweł's 15-minute RPG session** (real life off, F1), moved here from before step 3 (2026-11-24): the RPG
    alone needs number tuning first. Then the real-life-on night.
 3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
@@ -43,8 +48,6 @@ The bot sims (good + idle) still run every round, but these four criteria come f
 
 ## Phase 2: toward Steam (p2)
 
-- **#59 Fan-service pass:** the appeal of Steam's adult-tagged games with no 18+ requirement. Audit the whole game
-  for where and what; feeds #22 and #6.
 - **#60 Steam release** after the outside playtests: desktop build, Steamworks, settings, brand renames, store page.
 - **#39 Poker face** (idea): a big drop while she is in the doorway makes him grin; hold a key to keep a straight face.
 - **#5 Final sprites** once the slice's screens are stable (the left panel rework, 0.34 to 0.36, set its layout; him included).

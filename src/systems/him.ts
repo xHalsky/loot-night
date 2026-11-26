@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { eyesBusy } from './eyes';
 import { N } from '../core/state';
 import { ROOM_LOOK } from '../data/apartment';
 import type { HisFace } from '../ui/him';
@@ -30,6 +31,7 @@ export function updateHim(dt: number) {
 function visitFace(): HisFace | null {
   const v = N().visit;
   if (v.stage !== 'in') return null;
+  if (v.kind === 'tease') return v.result === 'pout' ? 'guilty' : eyesBusy() || v.result === 'kissed' ? 'blush' : 'focused';   // her tease (#85): eyes on her, or on the game
   if (v.result === 'chat' && v.chat) return v.chat.last === 0 ? 'grin' : v.chat.last === 1 ? 'meh' : v.chat.last === 2 ? 'rude' : 'guilty';
   const by: Record<string, HisFace> = {
     caught: 'panic', pass: 'relief', look: 'blush', ask: 'blush', cuddling: 'blush', cuddleGood: 'blush', night: 'blush',

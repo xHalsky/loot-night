@@ -4,7 +4,7 @@ import { resetPacing } from './pacing';
 import { T } from '../config/tuning';
 import { carryGoodwill, addGoodwill } from './goodwill';
 import { S, N, type Night, type Results, type Item, type BagEntry } from '../core/state';
-import { rand } from '../core/rng';
+import { rand, randi } from '../core/rng';
 import { maxHp } from './stats';
 import { entryValue, removeEntry, sweepFloorLoot, genItem, itemEntry } from './loot';
 import { initVisits } from './visits';
@@ -32,7 +32,7 @@ export function newNight(): Night {
     interrupts: [], game: null,
     q4: newQ4Night(), shopTonight: [],
     taunt: 0, ward: 0, lastStand: 0, smoke: 0, heist: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
-    pre: null, preUses: {}, preMenu: null, seal: false, home: newHomeNight(), herReply: null,
+    pre: null, preUses: {}, preMenu: null, seal: false, home: newHomeNight(), looking: false, tease: { left: randi(...rules().teases), next: rand(...T.TEASE_FIRST_SEC), bedAt: rand(...T.BED_TEASE_AT), bedDone: false }, herReply: null,
     curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null, goldStart: S.g.gold, coach: null,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,
@@ -83,7 +83,7 @@ function warnRun() {
 
 export function canSleep() { const n = N(); return n.clock >= T.EARLIEST_SLEEP && (n.location === 'town' || n.phase !== 'battle'); }
 
-export function endNight(ending: Results['ending'], bedtime = false) {
+export function endNight(ending: Results['ending'], bedtime = false, coming = false) {
   stopAmbience();
   const n = N();
   if (ending === 'sleep' && !bedtime && !canSleep()) { toast(n.clock < T.EARLIEST_SLEEP ? 'Too early to sleep. Play until at least 23:00.' : 'Finish the battle first.', '#a999bd'); return; }
@@ -136,7 +136,7 @@ export function endNight(ending: Results['ending'], bedtime = false) {
   S.g.nightsPlayed++;
   const day = S.g.day ?? 0;
   if (ending !== 'unplugged') S.g.day = day + 1;   // the week (#56): unplugged, you play the same night again
-  S.g.results = { ending, bedtime: bedtime || undefined, day, endClock, stars, depth, prevRecord, debtBefore, debtAfter: S.g.sleepDebt, mood: Math.round(n.mood), caught: n.everCaught, unidentified, nearMisses: near, goals, q4: Math.round(n.q4.tonight) };
+  S.g.results = { ending, bedtime: bedtime || undefined, coming: coming || undefined, day, endClock, stars, depth, prevRecord, debtBefore, debtAfter: S.g.sleepDebt, mood: Math.round(n.mood), caught: n.everCaught, unidentified, nearMisses: near, goals, q4: Math.round(n.q4.tonight) };
   S.g.screen = 'results';
   sfx.level();
   save();

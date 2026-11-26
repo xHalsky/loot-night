@@ -3,6 +3,25 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.81.0 (2026-11-26)
+
+- **Her tease visit** (fan-service step 1, #85). Weekends: 1 to 2 on Saturday, 2 to 3 on Sunday. No footsteps, just a
+  soft "babe?", and she leans in your doorway because she wants you. Her window turns pink (HER, a dotted rose line,
+  three hearts). Point at the webcam view (an eye cursor) with the game on screen to look at her: he turns to her,
+  the skill bar reads EYES BUSY (no skills, no Flow building) and Goodwill rises (4 a second, a +N tag on its bar);
+  3 s of looking and she blows you a kiss. Ignore her and she asks once more ("Baaabe."), then leaves pouting, Mood
+  +10. Excel counts as ignoring. Never a catch. She is scheduled (first at 50 to 90 s, then 70 to 110 s apart, when
+  real life is free) and comes up to 40 s early for a boss wind-up or a legendary on the floor, the one demand that
+  may land on a wind-up.
+- **Come to bed** (step 2, #89). From Friday, once a night after 01:10 to 01:45, she gets up half asleep in your
+  hoodie: COME TO BED, the seconds in the corner and **Coming, babe** (ends the night like Sleep at that hour, even
+  mid-battle, on the green morning; Sweet still goes by her Mood). Looking pays x2, ignoring costs x1.5.
+- F1: Tease and Come to bed buttons. The good sim bot looks at her (`teases` in its summary).
+- Sims (16 a night, good bot): Saturday 9.4 to 10.6 demands before 01:00, 41 to 36 s apart (the model 27); Sunday
+  10.7 to 11.4, 37 to 34 (24); 1.3 and 1.6 looked-at teases a night; stars 3, no catches. Idle bot: 2 to 3 teases,
+  each a pout. Weekdays unchanged. Rolled odds (first try) gave 0.25 a Saturday, so the teases went on a schedule.
+- Tests: `npx tsx test/tease.ts`, `python3 test/tease.py` (screens `test/shots/tease_*.png`).
+
 ## 0.80.0 (2026-11-26)
 
 - **The playtest build** (step 7, #58, the last step of the redesign handoff). The title says PLAYTEST BUILD, the

@@ -1,4 +1,5 @@
 import { S } from '../core/state';
+import { eyesBusy } from '../systems/eyes';
 import { drawHer, drawHerFrosted, drawHerBack, drawShowerPanel, OUTFIT_BY_ACTIVITY, type Face } from './her';
 import { drawHim, drawChair, drawChairWrap } from './him';
 import { hisLook } from '../systems/him';
@@ -51,9 +52,9 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     for (let i = -4; i <= 4; i++) { c.beginPath(); c.moveTo(X0 + DW / 2 + i * 12, FY); c.lineTo(X0 + DW / 2 + i * 34, BOT); c.stroke(); }
     c.fillStyle = '#2a2a31'; c.fillRect(X0, TOP, 20, H);
     const v = n!.visit;
-    const look = OUTFIT_BY_ACTIVITY[v.from ?? 'tv'] ?? OUTFIT_BY_ACTIVITY.tv;
+    const look = OUTFIT_BY_ACTIVITY[v.bed ? 'night' : v.from ?? 'tv'] ?? OUTFIT_BY_ACTIVITY.tv;   // come to bed: your hoodie (#89)
     const face = herFace(v, n!.catches, n!.mood, t);
-    const lean = v.result === 'look';
+    const lean = v.result === 'look' || v.kind === 'tease';   // her tease (#85): she leans on the frame (Paweł's poses come later)
     const s = 1.24, feet = BOT - 6;
     const top = feet - 239.5 * s;
     const cx = X0 + DW / 2 + (lean ? -12 : 4);
@@ -165,7 +166,8 @@ function room(c: CanvasRenderingContext2D, t: number) {
   drawChair(c, HIM_X, HIM_Y);
   const away = !!n.pre?.away;
   if (!away) {
-    drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking, look: me.look, headset: n.headset, jitter: me.jitter, glow, lens: excel ? '#b3bdb2' : undefined });   // under Excel his glasses go grey-green
+    // looking at her during a tease (#85) he turns over his shoulder: his back view, a stand-in for Paweł's emote
+    drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking || eyesBusy(), look: me.look, headset: n.headset, jitter: me.jitter, glow, lens: excel ? '#b3bdb2' : undefined });   // under Excel his glasses go grey-green
     drawChairWrap(c, HIM_X, HIM_Y);
   }
   if (!away && me.face === 'asleep') { c.fillStyle = '#c8cad8'; c.font = '16px "Patrick Hand", sans-serif'; c.textAlign = 'left'; c.fillText('z', HIM_X + 38, HIM_Y + 6 - (t * 8 % 12)); c.fillText('z', HIM_X + 48, HIM_Y - 8 - (t * 8 % 12)); }
@@ -336,7 +338,8 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
 }
 
 /** Her face when she comes in, by situation (docs/design/her.md). */
-function herFace(v: { checked: boolean; result: string; from?: string; kind?: string }, catches: number, mood: number, t: number): Face {
+function herFace(v: { checked: boolean; result: string; from?: string; kind?: string; bed?: boolean; esc?: boolean }, catches: number, mood: number, t: number): Face {
+  if (v.kind === 'tease') return v.result === 'kissed' ? 'wink' : v.result === 'pout' || v.esc ? 'pout' : v.bed ? 'sleepy' : eyesBusy() ? 'blush' : Math.floor(t / 1.6) % 3 === 2 ? 'wink' : 'smile';   // #85
   if (v.result === 'caught') return catches >= 2 ? 'furious' : 'angry';
   const byResult: Record<string, Face> = { night: 'sleepy', forgiven: 'pout', offer: 'smile', snackOk: 'wink', snackFail: 'angry', deaf: 'angry', chat: 'neutral', chatGood: 'smile', chatBad: 'pout', chatMeh: 'neutral', ask: 'blush', cuddling: 'blush', cuddleGood: 'wink', cuddleMeh: 'pout', refused: 'pout' };
   if (byResult[v.result]) return byResult[v.result];

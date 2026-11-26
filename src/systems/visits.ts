@@ -1,8 +1,12 @@
 import { q4Look, q4Up } from './q4';
+import { eyesBusy } from './eyes';
+import { realLifeFree } from './reallife';
+import { bedAt } from './week';
+import { endNight } from './night';
 import { rules, on } from './week';
 import { T } from '../config/tuning';
 import { S, N, type VisitKind } from '../core/state';
-import { chance, pick, weighted } from '../core/rng';
+import { chance, pick, weighted, rand } from '../core/rng';
 import { addMood, moodZone } from './meters';
 import { toastAs } from '../core/fx';
 const toast = toastAs('HER');   // feed tag (#49)
@@ -67,12 +71,18 @@ export function startVisit(woken = false, kind?: VisitKind) {
   if (v.stage !== 'idle') return;
   coach('steps');
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && !N().apt.forceKind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
+  v.bed = false; v.looked = 0; v.gw = 0; v.esc = false;
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
   if (!kind) N().apt.forceKind = null;
   if (v.kind === 'night') v.from = 'night';   // the hoodie outfit
   v.safe = !woken && !!N().firstSafe && v.kind === N().firstSafe; if (v.safe) N().firstSafe = '';
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
+  if (v.kind === 'tease') {   // she wants you (#85): no footsteps, her soft call, then the doorway
+    const n = N(); v.t = T.TEASE_CALL_SEC; v.fake = false; v.safe = false; v.lean = false;
+    n.apt.heard = 'hallway'; n.apt.heardWhat = 'BABE?'; n.apt.heardAt = n.threat; sfx.hum();
+    return;
+  }
   if (v.kind === 'snack' && !v.fake && on('fuel') && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
 }
 export const visitSooner = () => sendHerSoon();
@@ -108,10 +118,13 @@ export function updateVisits(dt: number) {
   ambience(amb?.cue ?? null, amb?.room, amb?.level);   // her TV, kettle or shower, while she is at it
   if (n.lap) return;                 // she is leaning in: the apartment waits
   if (v.stage === 'idle') {
+    const tz = teaseDue(dt);   // her tease, or come to bed (#85, #89): one demand at a time, like the rest of her
+    if (tz) { startVisit(false, 'tease'); if (tz === 'bed') { v.bed = true; v.from = 'night'; n.apt.asleep = false; n.apt.wake = 0; n.apt.heardWhat = 'BABE?'; } return; }
     const r = updateApartment(dt);
     if (r) startVisit(r === 'wake');
     return;
   }
+  if (v.kind === 'tease') { updateTease(dt); return; }
   if (v.stage === 'far' || v.stage === 'hall' || v.stage === 'passing') telegraphSounds(dt);
   if (v.stage === 'in' && n.game?.kind === 'cuddle') return;     // you are cuddling: the visit waits for it
   // looking busy (#55, 4.5): she watches you work in Excel; busy, she leaves sooner; idle, she waits and asks
@@ -164,6 +177,56 @@ function leave() {
   if (v.result === 'ask') { cuddleAnswer(false); return; }
   if ((v.result === 'pass' || v.result === 'chatGood') && maybeLap()) { afterVisit(); v.stage = 'idle'; v.checked = false; n.cansHidden = false; return; }
   endVisit();
+}
+
+/** Is a tease due now (#85), or "come to bed" (#89)? Her odds run while she is up and real life is free, x3 at the
+ *  worst moments (a boss wind-up, a legendary on the floor). Come to bed: once, after 01:00, from her bed. */
+function teaseDue(dt: number): 'tease' | 'bed' | null {
+  const n = N(), tz = n.tease, a = n.apt;
+  if (!realLifeFree(true) || S.g.realLifeOff) return null;   // one demand at a time, but a boss wind-up is fair game
+  if (on('comeToBed') && !tz.bedDone && a.asleep && n.clock >= Math.max(tz.bedAt, T.BEDTIME)) { tz.bedDone = true; return 'bed'; }
+  if (!on('tease') || tz.left <= 0 || a.asleep || a.activity === 'shower' || a.moving > 0 || n.clock >= bedAt()) return null;
+  const hot = n.enemies.some(e => (e.wind ?? 0) > 0 && e.hp > 0) || n.floorLoot.some(l => l.entry.kind === 'item' && l.entry.item.rarity === 'legendary');
+  if (n.threat < tz.next - (hot ? T.TEASE_HOT_EARLY_SEC : 0)) return null;   // due, or early for the worst moment
+  tz.left--; tz.next = n.threat + rand(...T.TEASE_GAP_SEC);
+  return 'tease';
+}
+
+/** The tease in your doorway (#85): look at her (the pointer on the webcam, the game on screen) and Goodwill fills; 3 s
+ *  of looking and she's happy. Ignored, she asks once more, then leaves pouting. Never a catch: she knows you're
+ *  gaming. Come to bed (#89) is the same, stronger, and Coming, babe ends the night. */
+function updateTease(dt: number) {
+  const n = N(), v = n.visit;
+  v.t -= dt;
+  if (v.stage === 'far') { if (v.t <= 0) { v.stage = 'in'; v.t = T.TEASE_SEC; v.checked = true; sfx.door(); } return; }
+  if (v.stage !== 'in') { endTease(); return; }
+  if (v.result) { if (v.t <= 0) endTease(); return; }   // kissed or pouting: she goes
+  if (eyesBusy()) {
+    const gw = T.TEASE_GOODWILL_PER_SEC * dt * (v.bed ? T.BED_TEASE_GOODWILL_MULT : 1);
+    S.g.goodwill = Math.min(T.GOODWILL_MAX, S.g.goodwill + gw); v.gw = (v.gw ?? 0) + gw;
+    v.looked = (v.looked ?? 0) + dt;
+    if (v.looked >= T.TEASE_LOOK_SEC) {
+      v.result = 'kissed'; v.t = 1.8; sfx.kiss();
+      toast(`${v.bed ? 'She smiles, half asleep. "Don\'t be long."' : 'She blows you a kiss. "Ok. Go play."'} Goodwill +${Math.round(v.gw ?? 0)}.`, '#ff9ab8');
+    }
+    return;
+  }
+  if (v.t > 0) return;
+  if (!v.esc) { v.esc = true; v.t = T.TEASE_ESCALATE_SEC; sfx.hum(); toast(v.bed ? '"Babe... come to bed."' : '"Baaabe."', '#ff9ab8'); return; }
+  const m = Math.round(T.TEASE_IGNORE_MOOD * (v.bed ? T.BED_TEASE_MOOD_MULT : 1));
+  addMood(m); v.result = 'pout'; v.t = 1.5;
+  toast(`${v.bed ? '"Fine. Goodnight."' : '"Fine. Enjoy your elves."'} Mood +${m}.`, '#ffb07a');
+}
+function endTease() {
+  const n = N(), bed = n.visit.bed;
+  endVisit();
+  if (bed) { n.apt.asleep = true; n.apt.wake = 0; }   // back to bed
+}
+/** Coming, babe (#89): the night ends like Sleep, in bed with her: the green morning whatever her Mood. */
+export function comingBabe() {
+  const v = N().visit;
+  if (v.kind !== 'tease' || !v.bed || v.stage !== 'in' || v.result) return;
+  endNight('sleep', true, true);
 }
 
 /** She comes in while you are out of the room: the screen speaks for you. */
