@@ -98,6 +98,23 @@ export const T = {
   // She leans into your face (only when she is happy): sweet-talk her away
   // The lap sit (fan-service 10, #86): from Saturday, with this much Goodwill a chat visit becomes her on your lap
   LAP_GOODWILL: 70,
+  // What she wears (fan-service 3, #90): home from work, getting ready for bed; her feet change her footsteps
+  WORK_CLOTHES_UNTIL: 21 * 60,    // weekdays: her work blouse till then
+  BED_CLOTHES_FROM: 23 * 60 + 30, // on her phone in the bedroom after this: her pajama shorts
+  SLIPPERS_EARLY_SEC: 2, SLIPPERS_STEP_VOL: 1.4,   // slippers: her steps start this much earlier, louder
+  SOCKS_STEP_VOL: 0.6,            // socks: quieter, and heard only from the hallway (the far stage's 2 s are silent)
+  // Her gifts (fan-service 4, #91; trade-offs Paweł 2026-11-26)
+  GIFT_GOODWILL: 20,              // the first time she wears one
+  // Selfies (fan-service 5, #92): her texts after midnight (the waking meter's) carry a photo this often
+  SELFIE_CHANCE: 1 / 3,
+  SELFIE_SEC: 60,                 // not opened in this long: "Babe unsent a photo."
+  SELFIE_GOODWILL: 5,             // opening one, the first time
+  GIFT_FURY_CATCH_MOOD: 0.5,      // the Goblin Fury tee: a catch costs half the Mood...
+  GIFT_FURY_PEEK: 2,              // ...but peeks weigh this much more in her visits
+  GIFT_PJ_BED_MIN: 30,            // the pajama set: on nights she goes to bed, this much earlier...
+  GIFT_PJ_WAKE: 1.25,             // ...and the waking meter fills this much faster
+  GIFT_CAT_TEASES: 1,             // the cat-ear hoodie: one more tease a night (any night)...
+  GIFT_CAT_GOODWILL: 1.5,         // ...and looking at her pays this much more
   LAP_SIT_SEC: 20,                // she stays this long at most (or till the chat's three are asked)
   LAP_SIT_ASK_SEC: 10,            // each question waits this long; ignored, she takes your mouse...
   LAP_MOUSE_SEC: 3,               // ...for this long (skills blocked: SHE HAS THE MOUSE), unless you answer her
@@ -454,7 +471,7 @@ export const T = {
   Q4_BUSY_SEC: 2, Q4_IDLE_SEC: 3, Q4_BUSY_MULT: 1.5,   // looking busy while she is in: acted in the last 2 s, her visit runs x1.5; idle 3 s, it waits
 
   // --- The Shop app (step 4.6, #55; prices from grid doc 7i, to be tuned in playtests) ---
-  SHOP_ZL: { fuel: 29, chew: 29, keys: 249, fridge: 599, chair: 899, phone: 2999, flowers: 49, vacuum: 899, speaker: 199, tv: 149, seal: 39, tea: 25 } as Record<string, number>,
+  SHOP_ZL: { fuel: 29, chew: 29, keys: 249, fridge: 599, chair: 899, phone: 2999, flowers: 49, fluffy: 79, knee: 99, fury: 129, pjset: 149, cathoodie: 199, vacuum: 899, speaker: 199, tv: 149, seal: 39, tea: 25 } as Record<string, number>,
   SHOP_FUEL_CANS: 4,              // Goblin Fuel: a pack of four for the drawer (MONSTER_DRAWER holds 8)
   SHOP_CHEW_SEC: 120,             // the dog chew: his next visit comes this much later
   SHOP_CHAIR_TIRED: 0.85,         // the ergo chair: Tiredness builds at this rate

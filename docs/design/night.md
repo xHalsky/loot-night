@@ -17,7 +17,7 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
 | Tuesday | Chat visits; the headset (Zone); her leaning into your face after a pass; Garrote; Tiredness, and the night runs past 01:00; the Ergo chair | x1.2 | stays up | dawn |
 | Wednesday | The phone rings: the courier, Mom, the boss; Messages: Text her and Raid night? | x1.2 | stays up | dawn |
 | Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); the smart home: the battery, Charge, the Home app and its devices ([desk.md](desk.md)) | x1.2 | stays up | dawn |
-| Friday | She goes to bed: the waking meter, her texts, the good-night walk-by; the Witching Hour after 01:00; "come to bed" after 01:00 with Coming, babe ([her.md](her.md)) | x1.2 | 00:00 | dawn |
+| Friday | She goes to bed: the waking meter, her texts (one in three with a selfie), the good-night walk-by; the Witching Hour after 01:00; "come to bed" after 01:00 with Coming, babe ([her.md](her.md)) | x1.2 | 00:00 | dawn |
 | Saturday | The weekend: she's off and wants you: 1 to 2 tease visits (look at her); her shower is a bath, and not a break (the phone and the dog go on); "Babe, towel!" and "Babe, bring my wine?"; at Goodwill 70 a chat visit is her on your lap ([her.md](her.md)) | x1.4 | 01:00 | dawn |
 | Sunday | The weekend, more: 2 to 3 tease visits | x1.6 | 01:00 | dawn |
 

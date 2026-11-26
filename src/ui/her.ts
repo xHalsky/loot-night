@@ -4,10 +4,13 @@
 // questions, upper body), and asleep in bed seen from the foot end (bare soles out from under the blanket).
 import { pixelSprite, blit, smooth, poly, mirror, rows, cel, type Pt } from './pixel';
 
-export type Outfit = 'lounge' | 'towel' | 'hoodie' | 'bighoodie' | 'pajama' | 'tank';   // bighoodie: your gaming hoodie on her, sleeves over her hands
+export type Outfit = 'lounge' | 'towel' | 'hoodie' | 'bighoodie' | 'pajama' | 'tank'   // bighoodie: your gaming hoodie on her, sleeves over her hands
+  | 'blouse' | 'sweater' | 'yoga' | 'fury' | 'cathoodie' | 'pjset';   // fan-service 3 and 4 (#90, #91): home from work, the couch, yoga; her gifts
+/** What's on her feet (#90): it changes her footsteps. */
+export type Feet = 'bare' | 'slippers' | 'socks' | 'fluffy' | 'knee';
 export type Face = 'smile' | 'neutral' | 'angry' | 'pout' | 'blush' | 'sleepy' | 'suspicious' | 'wink' | 'surprised' | 'furious';
 export type Item = 'none' | 'mug' | 'phone' | 'remote' | 'plate';
-export interface HerOpts { outfit: Outfit; face: Face; pose?: 'stand' | 'lean'; item?: Item; blink?: boolean }
+export interface HerOpts { outfit: Outfit; face: Face; pose?: 'stand' | 'lean'; item?: Item; blink?: boolean; feet?: Feet }
 
 const C = {
   skin: '#f9d8c2', skinS: '#e9ad96', skinD: '#c9846f', skinH: '#fff1e6', sole: '#f7c4b2',
@@ -21,6 +24,11 @@ let LW = 1;   // outline width in local units (≈1 output pixel), set per rende
 const CLOTH: Record<string, [string, string]> = {
   tee: ['#f4f1ea', '#d3cdc2'], denim: ['#5c7aaa', '#3f5a8a'], tank: ['#2e2d3a', '#1d1c26'], sweat: ['#a7aec0', '#7d8598'],
   hoodie: ['#b8a4e2', '#8b77bf'], gamer: ['#2c2f3a', '#1c1e26'], shirt: ['#d3e3f4', '#a5bfdb'], towel: ['#f7f4ef', '#d9d2c6'],
+  // the set (#90) and her gifts (#91)
+  // picked on her panel's PC-98 colours, so the dither keeps them solid (pastels between two of them read see-through)
+  blouse: ['#f6f1ec', '#d6ccc6'], skirt: ['#343a52', '#232838'], knit: ['#bb9977', '#774433'], yogatop: ['#7a4f8c', '#56356a'], legging: ['#3c3248', '#29222f'],
+  fury: ['#2a2630', '#18161c'], cat: ['#d9a69c', '#ee6688'], satin: ['#aa88cc', '#553366'],
+  sock: ['#efeae2', '#cfc6ba'], fluffy: ['#f2efdc', '#aa88cc'], knee: ['#f4f1ea', '#cfc8bd'], slipper: ['#aa88cc', '#553366'],
 };
 
 // ---------------------------------------------------------------- head (shared by all poses)
@@ -102,6 +110,11 @@ function head(c: CanvasRenderingContext2D, o: { outfit: Outfit; face: Face; blin
     c.strokeStyle = C.hairL; c.lineWidth = 1.3; c.lineCap = 'round';
     c.beginPath(); c.moveTo(-11, 5); c.quadraticCurveTo(-7, 2, -3, 3); c.moveTo(3, 2.5); c.quadraticCurveTo(8, 1.5, 11.5, 4.5); c.stroke();   // angel ring
     c.fillStyle = '#e65a80'; c.fill(smooth([[11, 4], [16, 1.5], [17, 5.5], [12.5, 7]]));                                                         // hair clip
+    if (o.outfit === 'cathoodie') {   // the hood up over her crown, its cat ears (#91)
+      const ln = { color: C.line, w: LW };
+      for (const k of [-1, 1]) { cel(c, poly([[k * 17, 1], [k * 15, -16], [k * 5, -7]]), CLOTH.cat[0], CLOTH.cat[1], 0.6, ln); c.fillStyle = '#e8728a'; c.fill(poly([[k * 14.5, -1], [k * 14, -11], [k * 8, -6]])); }
+      cel(c, smooth([[-21, 20], [-22, 4], [-13, -8], [0, -11], [13, -8], [22, 4], [21, 20], [18, 7], [0, -3], [-18, 7]]), CLOTH.cat[0], CLOTH.cat[1], 1, ln);
+    }
   }
   // brows peek over the bangs
   c.strokeStyle = 'rgba(36,18,26,.75)'; c.lineWidth = 0.9;
@@ -174,6 +187,12 @@ function standGeo(lean: boolean): Geo {
       bighoodie: [{ on: 'torso', poly: B(49, 999), cloth: 'gamer' }, { on: 'legs', poly: B(-999, 150), cloth: 'gamer' }, { on: 'arms', poly: B(-999, 999), cloth: 'gamer' }],
       pajama: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 73], [7, 51], [999, 51], [999, 999], [-999, 999]], cloth: 'shirt' }, { on: 'legs', poly: B(-999, 152), cloth: 'shirt' }, { on: 'arms', poly: B(-999, 97), cloth: 'shirt' }],
       towel: [{ on: 'torso', poly: [[-999, 70], [-10, 66], [10, 66], [999, 70], [999, 999], [-999, 999]], cloth: 'towel' }, { on: 'legs', poly: [[-999, 0], [999, 0], [999, 138], [-999, 143]], cloth: 'towel' }],
+      blouse: [{ on: 'torso', poly: [[-999, 53], [-7, 53], [0, 67], [7, 53], [999, 53], [999, 117], [-999, 117]], cloth: 'blouse' }, { on: 'torso', poly: B(113, 999), cloth: 'skirt' }, { on: 'legs', poly: B(-999, 164), cloth: 'skirt' }, { on: 'arms', poly: B(-999, 104), cloth: 'blouse' }],
+      sweater: [{ on: 'torso', poly: B(49, 999), cloth: 'knit' }, { on: 'legs', poly: B(-999, 140), cloth: 'knit' }, { on: 'arms', poly: B(-999, 124), cloth: 'knit' }],
+      yoga: [{ on: 'torso', poly: [[-999, 60], [-12, 58], [0, 64], [12, 58], [999, 60], [999, 94], [-999, 94]], cloth: 'yogatop' }, { on: 'torso', poly: B(112, 999), cloth: 'legging' }, { on: 'legs', poly: B(-999, 222), cloth: 'legging' }],
+      fury: [{ on: 'torso', poly: B(52, 999), cloth: 'fury' }, { on: 'legs', poly: B(-999, 138), cloth: 'fury' }, { on: 'arms', poly: B(-999, 78), cloth: 'fury' }],
+      cathoodie: [{ on: 'torso', poly: B(49, 999), cloth: 'cat' }, { on: 'legs', poly: B(-999, 142), cloth: 'cat' }, { on: 'arms', poly: B(-999, 126), cloth: 'cat' }],
+      pjset: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 72], [7, 51], [999, 51], [999, 116], [-999, 116]], cloth: 'satin' }, { on: 'torso', poly: B(114, 999), cloth: 'satin' }, { on: 'legs', poly: B(-999, 136), cloth: 'satin' }, { on: 'arms', poly: B(-999, 82), cloth: 'satin' }],
     },
   };
 }
@@ -225,6 +244,12 @@ function peekGeo(pose: number): Geo {
       bighoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'gamer' }, { on: 'arms', poly: B2(-999, 999), cloth: 'gamer' }],
       pajama: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 76], [7, 51], [999, 51], [999, 999], [-999, 999]], cloth: 'shirt' }, { on: 'arms', poly: B2(-999, 999), cloth: 'shirt' }],
       towel: [{ on: 'torso', poly: [[-999, 70], [-10, 66], [10, 66], [999, 70], [999, 999], [-999, 999]], cloth: 'towel' }],
+      blouse: [{ on: 'torso', poly: [[-999, 53], [-7, 53], [0, 67], [7, 53], [999, 53], [999, 999], [-999, 999]], cloth: 'blouse' }, { on: 'arms', poly: B2(-999, 999), cloth: 'blouse' }],
+      sweater: [{ on: 'torso', poly: B2(49, 999), cloth: 'knit' }, { on: 'arms', poly: B2(-999, 999), cloth: 'knit' }],
+      yoga: [{ on: 'torso', poly: [[-999, 60], [-12, 58], [0, 64], [12, 58], [999, 60], [999, 92], [-999, 92]], cloth: 'yogatop' }, { on: 'torso', poly: B2(110, 999), cloth: 'legging' }],
+      fury: [{ on: 'torso', poly: B2(52, 999), cloth: 'fury' }, { on: 'armL', poly: B2(-999, 76), cloth: 'fury' }, { on: 'armR', poly: B2(-999, 76), cloth: 'fury' }],
+      cathoodie: [{ on: 'torso', poly: B2(49, 999), cloth: 'cat' }, { on: 'arms', poly: B2(-999, 999), cloth: 'cat' }],
+      pjset: [{ on: 'torso', poly: [[-999, 51], [-7, 51], [0, 74], [7, 51], [999, 51], [999, 999], [-999, 999]], cloth: 'satin' }, { on: 'arms', poly: B2(-999, 84), cloth: 'satin' }],
     },
   };
 }
@@ -244,12 +269,19 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
   const ln = { color: C.line, w: LW };
   const headAt = () => { c.save(); c.translate(g.head.x, g.head.y); c.rotate(g.head.r); };
   headAt(); head(c, o, false); c.restore();
-  if (o.outfit === 'hoodie' || o.outfit === 'bighoodie') { const cl = CLOTH[o.outfit === 'hoodie' ? 'hoodie' : 'gamer']; cel(c, smooth([[-21, 47], [-25, 40], [-14, 38], [0, 44], [14, 38], [25, 40], [21, 47], [0, 53]]), cl[0], cl[1], 1, ln); }
-  for (const a of g.armsBack) { cel(c, a, C.skin, C.skinS, 1, ln); if (o.outfit === 'hoodie' || o.outfit === 'bighoodie' || o.outfit === 'pajama') band(c, a, rows(-999, 999), o.outfit === 'hoodie' ? 'hoodie' : o.outfit === 'bighoodie' ? 'gamer' : 'shirt'); }
+  const hood = o.outfit === 'hoodie' ? 'hoodie' : o.outfit === 'bighoodie' ? 'gamer' : o.outfit === 'cathoodie' ? 'cat' : '';
+  if (hood) { const cl = CLOTH[hood]; cel(c, smooth([[-21, 47], [-25, 40], [-14, 38], [0, 44], [14, 38], [25, 40], [21, 47], [0, 53]]), cl[0], cl[1], 1, ln); }
+  const sleeve = hood || (o.outfit === 'pajama' ? 'shirt' : o.outfit === 'sweater' ? 'knit' : '');
+  for (const a of g.armsBack) { cel(c, a, C.skin, C.skinS, 1, ln); if (sleeve) band(c, a, rows(-999, 999), sleeve); }
   const bands = g.bands[o.outfit];
-  for (const f of g.feet) cel(c, f, C.skin, C.skinS, 0.8, ln);
+  const feet = o.feet ?? 'bare', sock = feet === 'bare' ? '' : feet === 'slippers' ? 'slipper' : feet === 'socks' ? 'sock' : feet;
+  for (const f of g.feet) {
+    if (feet === 'fluffy') { c.save(); c.translate(0, -0.6); c.scale(1.08, 1.06); cel(c, f, CLOTH.fluffy[0], CLOTH.fluffy[1], 0.8, ln); c.restore(); }   // fluffy: a little bigger
+    else cel(c, f, sock ? CLOTH[sock][0] : C.skin, sock ? CLOTH[sock][1] : C.skinS, 0.8, ln);
+    if (feet === 'slippers') { c.save(); c.clip(f); c.fillStyle = '#3a2840'; c.fillRect(-999, 238, 1999, 4); c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(-999, 226, 1999, 1.2); c.restore(); }   // the sole, the band
+  }
   // toes: nails + separations on the bare feet
-  if (g.feet.length) {
+  if (g.feet.length && feet === 'bare') {
     const toes = (cx: number, dir: number) => {
       for (let i = 0; i < 4; i++) { const x = cx + dir * i * 2.1; c.fillStyle = C.nail; c.fillRect(x - 0.7, 237.4, 1.5, 1.2); if (i) { c.strokeStyle = C.skinS; c.lineWidth = 0.5; c.beginPath(); c.moveTo(x + dir * 1.05, 236); c.lineTo(x + dir * 1.05, 239.4); c.stroke(); } }
     };
@@ -258,6 +290,8 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
   g.legs.forEach((l, i) => {
     cel(c, l, C.skin, C.skinS, 1.2, ln);
     for (const b of bands) if (b.on === 'legs' || (b.on === 'legL' && i === 0) || (b.on === 'legR' && i === 1)) band(c, l, b.poly, b.cloth);
+    if (feet === 'knee') { band(c, l, rows(172, 999), 'knee'); c.save(); c.clip(l); c.fillStyle = '#d6607a'; c.fillRect(-999, 175, 1999, 1.4); c.fillRect(-999, 178, 1999, 1.4); c.restore(); }   // knee socks, two stripes
+    else if (feet === 'socks' || feet === 'fluffy') band(c, l, rows(feet === 'fluffy' ? 210 : 214, 999), feet === 'fluffy' ? 'fluffy' : 'sock');
     if (i === 0 && g.extra && !g.feet.length) g.extra(c);
   });
   if (g.extra && g.feet.length) g.extra(c);
@@ -274,7 +308,7 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
   for (const sx of [-1, 1]) {
     c.globalAlpha = 0.75; c.fillStyle = bShade; c.beginPath(); c.ellipse(sx * 9, g.bust + 1.5, 9, 5.2, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
     c.fillStyle = bBase; c.beginPath(); c.ellipse(sx * 9 - 1, g.bust - 0.8, 8.4, 4.6, 0, 0, Math.PI * 2); c.fill();
-    c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(sx * 9 - 3, g.bust - 3, 3, 1.4, -0.3, 0, Math.PI * 2); c.fill();
+    if (!cover || ['tee', 'blouse', 'towel', 'shirt'].includes(cover.cloth)) { c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(sx * 9 - 3, g.bust - 3, 3, 1.4, -0.3, 0, Math.PI * 2); c.fill(); }   // a sheen only on light cloth: on darker colours the dither made it two dots
   }
   c.fillStyle = bShade; c.fillRect(-0.5, g.bust - 3, 1, 5);
   c.restore();
@@ -282,6 +316,11 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
   if (o.outfit === 'bighoodie') { c.fillStyle = '#6ef06e'; c.fillRect(-6, 74, 12, 3); c.fillStyle = '#c8ffc8'; c.fillRect(-4, 75, 3, 1); }   // a guild logo on your hoodie
   if (o.outfit === 'hoodie') { c.strokeStyle = '#fff'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-3.5, 53); c.lineTo(-4.5, 70); c.moveTo(3.5, 53); c.lineTo(4.5, 68); c.stroke(); }
   if (o.outfit === 'pajama') { c.fillStyle = '#7f98b8'; for (let y = 80; y < 150; y += 12) c.fillRect(-0.5, y, 1.2, 1.2); }
+  if (o.outfit === 'pjset') { c.fillStyle = '#f2efdc'; for (let y = 78; y < 116; y += 10) c.fillRect(-0.5, y, 1.2, 1.2); c.strokeStyle = '#efe6ff'; c.lineWidth = 0.6; c.beginPath(); c.moveTo(-7, 51); c.lineTo(0, 72); c.lineTo(7, 51); c.stroke(); }   // buttons, piping
+  if (o.outfit === 'blouse') { c.fillStyle = '#c9bfb9'; for (let y = 72; y < 112; y += 9) c.fillRect(-0.5, y, 1.1, 1.1); }   // the buttons, the collar undone
+  if (o.outfit === 'sweater') { c.strokeStyle = 'rgba(140,118,86,.55)'; c.lineWidth = 0.5; c.beginPath(); for (let x = -18; x <= 18; x += 4) { c.moveTo(x, 60); c.lineTo(x, 130); } c.stroke(); }   // the knit's ribs
+  if (o.outfit === 'fury') { c.fillStyle = '#7cc21f'; c.fillRect(-6, 74, 12, 9); c.fillStyle = '#f1a934'; c.fillRect(-4, 76, 2, 2); c.fillRect(2, 76, 2, 2); c.fillStyle = '#2a2630'; c.fillRect(-3, 80, 6, 1.2); c.fillStyle = '#7cc21f'; c.fillRect(-7, 85, 14, 1.4); }   // Goblin Fury: the goblin, the title bar
+  if (o.outfit === 'cathoodie') { c.strokeStyle = '#fff'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-3.5, 53); c.lineTo(-4.5, 70); c.moveTo(3.5, 53); c.lineTo(4.5, 68); c.stroke(); c.fillStyle = '#ee6688'; c.fillRect(-9, 96, 18, 8); }   // strings, the pocket
   if (o.outfit === 'towel') {
     c.fillStyle = CLOTH.towel[1]; c.fill(poly([[13, 68], [20, 70], [16, 83]]));
     c.fillStyle = 'rgba(255,255,255,.85)'; for (const [x, y] of [[-14, 59], [12, 56], [-4, 64], [19, 63], [-21, 66]]) c.fillRect(x, y, 1, 1.4);
@@ -290,7 +329,7 @@ function figure(c: CanvasRenderingContext2D, g: Geo, o: HerOpts & { outfit: Outf
     cel(c, a, C.skin, C.skinS, 1, ln);
     for (const b of bands) if (b.on === 'arms' || (b.on === 'armL' && i === 0) || (b.on === 'armR' && i === 1)) band(c, a, b.poly, b.cloth);
   });
-  for (const h of g.hands) o.outfit === 'bighoodie' ? cel(c, h, CLOTH.gamer[0], CLOTH.gamer[1], 0.6, ln) : cel(c, h, C.skin, C.skinS, 0.6, ln);   // sleeves past her hands
+  for (const h of g.hands) o.outfit === 'bighoodie' ? cel(c, h, CLOTH.gamer[0], CLOTH.gamer[1], 0.6, ln) : o.outfit === 'sweater' ? cel(c, h, CLOTH.knit[0], CLOTH.knit[1], 0.6, ln) : cel(c, h, C.skin, C.skinS, 0.6, ln);   // sleeves past her hands
   const item = o.item ?? 'none';
   if (item !== 'none') {
     const [x, y] = g.hand;
@@ -310,7 +349,7 @@ export function drawHer(c: CanvasRenderingContext2D, x: number, y: number, s: nu
   const ls = s / px;
   const w = Math.ceil(S_W * ls) + 4, h = Math.ceil(S_H * ls) + 4;
   const ox = (S_W / 2) * ls + 2, oy = S_TOP * ls + 2;
-  const key = `her:${o.pose ?? 'stand'}:${o.outfit}:${o.face}:${o.item ?? 'none'}:${o.blink ? 1 : 0}:${ls.toFixed(3)}`;
+  const key = `her:${o.pose ?? 'stand'}:${o.outfit}:${o.face}:${o.item ?? 'none'}:${o.blink ? 1 : 0}:${o.feet ?? 'bare'}:${ls.toFixed(3)}`;
   const sp = pixelSprite(key, w, h, cc => { LW = 0.9 / ls; cc.translate(ox, oy); cc.scale(ls, ls); figure(cc, standGeo(o.pose === 'lean'), { ...o, outfit: o.outfit }); });
   blit(c, sp, x - ox * px, y - oy * px, px);
 }
@@ -327,13 +366,13 @@ export function drawHerPeek(c: CanvasRenderingContext2D, o: HerOpts, pose: numbe
 
 /** Her from behind (through the crack: at the kitchen counter). Head top at (x, y), s = output scale.
  *  One small pose: long hair over her back, arms forward at the counter, bare legs and heels. */
-const BACK_TOP: Record<Outfit, string> = { lounge: 'tee', hoodie: 'hoodie', tank: 'tank', bighoodie: 'gamer', pajama: 'shirt', towel: 'towel' };
+const BACK_TOP: Record<Outfit, string> = { lounge: 'tee', hoodie: 'hoodie', tank: 'tank', bighoodie: 'gamer', pajama: 'shirt', towel: 'towel', blouse: 'blouse', sweater: 'knit', yoga: 'yogatop', fury: 'fury', cathoodie: 'cat', pjset: 'satin' };
 export function drawHerBack(c: CanvasRenderingContext2D, x: number, y: number, s: number, outfit: Outfit) {
   const W = Math.ceil(70 * s) + 4, H = Math.ceil(240 * s) + 4, ox = 35 * s + 2, oy = 6 * s + 2;
   const sp = pixelSprite(`herback:${outfit}:${s.toFixed(3)}`, W, H, cc => {
     LW = 0.9 / s; cc.translate(ox, oy); cc.scale(s, s);
     const [cb, cs] = CLOTH[BACK_TOP[outfit]];
-    const long = outfit === 'hoodie' || outfit === 'bighoodie';
+    const long = outfit === 'hoodie' || outfit === 'bighoodie' || outfit === 'sweater' || outfit === 'cathoodie';
     for (const k of [-1, 1]) {   // legs, bare, a little apart; heels lifted off the floor
       cel(cc, smooth([[k * 4, 140], [k * 13, 140], [k * 12.5, 182], [k * 10.5, 222], [k * 9, 228, 1], [k * 4.5, 228, 1], [k * 4.5, 200], [k * 3.5, 170]]), C.skin, C.skinS, 1);
       cel(cc, smooth([[k * 4.5, 224], [k * 10, 224], [k * 9.5, 231, 1], [k * 5, 231, 1]]), C.sole, C.skinS, 0.6);
@@ -356,15 +395,18 @@ export function drawHerFrosted(c: CanvasRenderingContext2D, x: number, y: number
   c.restore();
 }
 
-export const OUTFIT_BY_ACTIVITY: Record<string, { outfit: Outfit; item: Item }> = {
-  tv: { outfit: 'lounge', item: 'remote' },
-  tea: { outfit: 'hoodie', item: 'mug' },
-  toilet: { outfit: 'tank', item: 'none' },
-  phone: { outfit: 'tank', item: 'phone' },
+// What she wears by what she was doing (fan-service 3, #90): the outfit tells you where she has been. The rules on top
+// (home from work, getting ready for bed, her gifts) are systems/wardrobe.ts herLook; draw with that, not this table.
+export const OUTFIT_BY_ACTIVITY: Record<string, { outfit: Outfit; item: Item; feet?: Feet }> = {
+  tv: { outfit: 'sweater', item: 'remote', feet: 'socks' },     // on the couch: a knit sweater
+  tea: { outfit: 'bighoodie', item: 'mug', feet: 'slippers' },  // in the kitchen: your hoodie, bare legs
+  toilet: { outfit: 'lounge', item: 'none' },                   // anything else: the cream wide-neck tee and the pink clip
+  phone: { outfit: 'lounge', item: 'phone' },
   shower: { outfit: 'towel', item: 'none' },
   bath: { outfit: 'towel', item: 'none' },
+  yoga: { outfit: 'yoga', item: 'none' },                       // Tuesday's yoga (lean in, #77)
   sleep: { outfit: 'pajama', item: 'none' },
-  night: { outfit: 'bighoodie', item: 'none' },   // the walk-by: your gaming hoodie
+  night: { outfit: 'bighoodie', item: 'none', feet: 'slippers' },   // the walk-by, come to bed: your gaming hoodie
 };
 
 /** The shower panel (docs/design/eye-candy.md, #22): a frosted glass cabin with her silhouette, water and steam.

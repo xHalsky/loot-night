@@ -38,7 +38,7 @@ The bot sims (good + idle) still run every round, but these four criteria come f
       (Paweł, 2026-11-26: everything planned is in before he tests, so tuning starts with no backlog). Spec: the
       project doc `loot-night-fan-service.md`, one issue per step. Rounds: the tease and come to bed (0.81, #85,
       #89: done); the bath, "Babe, towel!" and the wine (0.82, #93, #88: done); the lap sit (0.83, #86: done); outfits, gifts and selfies
-      (#90, #91, #92); lean in, her timers and the hall mirror (#77); mornings and the cuddle close-up (#94, #87).
+      (0.84, #90, #91, #92: done); lean in, her timers and the hall mirror (#77); mornings and the cuddle close-up (#94, #87).
 2. **Paweł's 15-minute RPG session** (real life off, F1), moved here from before step 3 (2026-11-24): the RPG
    alone needs number tuning first. Then the real-life-on night.
 3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every

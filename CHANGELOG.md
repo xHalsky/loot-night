@@ -3,6 +3,28 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.84.0 (2026-11-26)
+
+- **What she wears** (fan-service step 3, #90). Her outfit comes from what she was doing: a knit sweater and socks on
+  the couch, your hoodie and slippers in the kitchen, the cream tee otherwise, the towel from the water; home from work
+  (weekdays before 21:00) her work blouse with the collar undone; on her phone in the bedroom after 23:30 her pajama
+  shorts. **Her feet change her footsteps:** slippers louder and heard 2 s earlier, socks quieter and only from the
+  hallway; the light gap under the door shows her socks.
+- **Gifts for her** (fan-service step 4, #91): the Shop's For her sells the Fluffy socks (79 zł: silent steps), Knee
+  socks (99: steps 2 s later), Fury tee (129: a catch costs half the Mood, she peeks more), Pajama set (149: bed 30
+  min earlier from Friday, the waking meter 25% faster) and Cat-ear hoodie (199: one more tease a night, any night,
+  looking pays x1.5). One per slot (feet, top) a night, the newest the night after you buy it, then at random;
+  Goodwill +20 the first time she wears one. Trade-offs as Paweł chose (2026-11-26).
+- **Selfies** (fan-service step 5, #92): from Friday one in three of her texts after midnight carries a photo (the
+  mirror selfie in your jersey, or in her gift; under the duvet). Tap the crop in her chat and the photo opens beside
+  the phone (hands busy; close, Esc or click outside), Goodwill +5 the first time; not opened in 60 s, "Babe unsent a
+  photo."
+- Her new clothes sit on her panel's PC-98 colours (pastels between two of them read see-through after the dither); the
+  bust's sheen only on light cloth.
+- F1: Selfie. Sims (16 a night, good bot): seconds between demands Mon 108, Tue 95, Wed 53, Thu 38, Fri 41, Sat 34,
+  Sun 34; stars 3, no catches. Idle bot unplugged every Tuesday, Wednesday and Sunday, 3 to 4 of 8 Thursday to Saturday.
+- Tests: `npx tsx test/wardrobe.ts`, `npx tsx test/selfies.ts`, `python3 test/wardrobe.py`, `python3 test/selfies.py`.
+
 ## 0.83.0 (2026-11-26)
 
 - **On your lap** (fan-service step 10, #86). From Saturday, at Goodwill 70 or more, her chat visit is a lap sit: she

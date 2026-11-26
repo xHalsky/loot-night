@@ -49,7 +49,7 @@ export const isNewTonight = (what: string) => rules().isNew.includes(what);
 /** The day's name: tonight's, or another day's. */
 export const dayName = (day = S.g.day ?? 0) => WEEK()[((day % WEEK().length) + WEEK().length) % WEEK().length].day;
 /** When she goes to bed tonight (Infinity: she stays up). */
-export const bedAt = () => rules().bed || Infinity;
+export const bedAt = () => { const b = rules().bed; return b ? b - (S.g.night?.wear?.top === 'pjset' ? T.GIFT_PJ_BED_MIN : 0) : Infinity; };   // the pajama set (#91): 30 min earlier
 
 /** How to hide's tiles tonight (grid doc 7k): one per thing that is on, tonight's new ones framed gold. The third
  *  tile's words follow the visit types that are on (mon: peek and snack; tue: + chat; thu: + cuddle, the cans). */

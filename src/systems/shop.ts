@@ -3,6 +3,7 @@ import { on } from './week';
 import { S, N } from '../core/state';
 import { SHOP_ITEMS, type ShopId } from '../data/shop';
 import { addGoodwill } from './goodwill';
+import { isGift, giftBought } from './wardrobe';
 import { sfx } from '../ui/audio';
 import { toastAs } from '../core/fx';
 const toast = toastAs('SHOP');
@@ -32,6 +33,7 @@ export function shopBuy(id: ShopId): boolean {
   else if (id === 'chew') { if (n.dog.stage === 'away') n.dog.next += T.SHOP_CHEW_SEC; else n.dogChew = true; toast('A chew for the dog. His next visit comes later.', '#f2c46b'); }
   else if (id === 'flowers') { toast('Flowers for her. She will find them on the table.', '#ff9ab8'); addGoodwill(T.SHOP_FLOWERS_GOODWILL, 'flowers'); }
   else if (it.tab === 'home') toast(`${it.name}: installed. It's in the Home app.`, '#9fe08a');
+  else if (isGift(id)) { giftBought(id); toast(`${it.name} for her. She'll wear them tomorrow.`.replace('wear them', /socks/.test(it.name) ? 'wear them' : 'wear it'), '#ff9ab8'); }
   else toast(`${it.name}: yours.`, '#9fe08a');
   sfx.coin();
   return true;

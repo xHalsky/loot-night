@@ -64,6 +64,14 @@ export const PK = {
   away: (bg, st, t) => drawAwayLive(bg, st, t),
   /** The lap sit (fan-service 10, #86; grid doc 7m): the back of her head and her shoulder over the battle's left third,
    *  transparent, 640 x 360. o { say: her line by her head ('ooh, shiny'), mouse }. */
+  /** Her photo opened beside the phone (fan-service 5, #92): 640 x 360, transparent; hits: the close box, the window
+   *  (nothing), then the rest of the frame (closes it). o { first (the Goodwill chip), time }. */
+  photo: (key, t, o) => {
+    const c = smCanvas('photo', 640, 360), g = c.getContext('2d'); g.clearRect(0, 0, 640, 360);
+    PHONEOS.photoWindow(g, key, t, o || {});
+    const w = PHONEOS.SELFIE_W + 12, h = PHONEOS.SELFIE_H + 22, x = 356, y = 50;
+    return { canvas: c, hits: [{ x: x + w - 15, y, w: 14, h: 14, act: 'photoClose', arg: '' }, { x, y, w, h, act: 'photoNoop', arg: '' }, { x: 0, y: 0, w: 640, h: 360, act: 'photoClose', arg: '' }] };
+  },
   lap: (t, o) => { const c = smCanvas('lap', 640, 360), g = c.getContext('2d'); g.clearRect(0, 0, 640, 360); lapOver(g, t, o || {}); return c; },
   inspect: (bg, o, t) => drawInspectLive(bg, o, t),
   /** A coach mark over the whole frame, transparent (V11): id, { title, text }; hits: the close box, then the callout. */

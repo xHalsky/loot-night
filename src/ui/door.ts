@@ -1,7 +1,8 @@
 import { S } from '../core/state';
 import { eyesBusy } from '../systems/eyes';
 import { onLap } from '../systems/lapsit';
-import { drawHer, drawHerFrosted, drawHerBack, drawShowerPanel, OUTFIT_BY_ACTIVITY, type Face } from './her';
+import { herLook } from '../systems/wardrobe';
+import { drawHer, drawHerFrosted, drawHerBack, drawShowerPanel, type Face } from './her';
 import { drawHim, drawChair, drawChairWrap } from './him';
 import { hisLook } from '../systems/him';
 import { T } from '../config/tuning';
@@ -54,7 +55,7 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     c.fillStyle = '#2a2a31'; c.fillRect(X0, TOP, 20, H);
     const v = n!.visit;
     if (!onLap()) {   // on your lap (#86) she's in the room with you, not in the doorway
-    const look = OUTFIT_BY_ACTIVITY[v.bed ? 'night' : v.from ?? 'tv'] ?? OUTFIT_BY_ACTIVITY.tv;   // come to bed: your hoodie (#89)
+    const look = herLook(v.bed ? 'night' : v.from ?? 'tv');   // come to bed: your hoodie (#89); the set and her gifts (#90, #91)
     const face = herFace(v, n!.catches, n!.mood, t);
     const lean = v.result === 'look' || v.kind === 'tease';   // her tease (#85): she leans on the frame (Paweł's poses come later)
     const s = 1.24, feet = BOT - 6;
@@ -63,7 +64,7 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     c.save(); c.beginPath(); c.rect(X0, TOP, DW, H); c.clip();
     c.fillStyle = 'rgba(60,30,10,.35)'; c.beginPath(); c.ellipse(cx, feet, 30, 6, 0, 0, Math.PI * 2); c.fill();     // contact shadow
     const item = lean ? 'none' : v.kind === 'snack' && v.result !== 'snackOk' ? 'plate' : look.item;
-    drawHer(c, cx, top, s, { outfit: look.outfit, item, face, pose: lean ? 'lean' : 'stand', blink: face !== 'wink' && (t % 3.7) < 0.12 });
+    drawHer(c, cx, top, s, { outfit: look.outfit, item, face, pose: lean ? 'lean' : 'stand', blink: face !== 'wink' && (t % 3.7) < 0.12, feet: look.feet });
     c.restore();
     emote(c, cx + 34, top - 6, face, t);
     }
@@ -92,9 +93,11 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     rg.addColorStop(0, 'rgba(255,207,122,0.35)'); rg.addColorStop(1, 'rgba(255,207,122,0)');
     c.fillStyle = rg; c.fillRect(X0 - 40, BOT + 6, DW + 80, 120);
     if (stage === 'hall' || stage === 'handle') {
-      // her bare toes in the light gap under the door
+      // her bare toes in the light gap under the door, or her socks, her slippers (#90)
+      const ft = n?.visit.feet ?? 'bare', sockCol: Record<string, [string, string]> = { socks: ['#efeae2', '#cfc6ba'], knee: ['#f4f1ea', '#cfc8bd'], fluffy: ['#f2efdc', '#aa88cc'], slippers: ['#aa88cc', '#553366'] };
       for (const fx of [X0 + 56, X0 + 102]) {
         c.fillStyle = 'rgba(17,13,23,.55)'; c.fillRect(fx - 4, BOT, 34, 6);
+        if (ft !== 'bare') { const [b, sh] = sockCol[ft] ?? sockCol.socks, fl = ft === 'fluffy' ? 2 : 0; c.fillStyle = sh; c.fillRect(fx - fl, BOT + 1 - fl, 28 + fl * 2, 5 + fl); c.fillStyle = b; c.fillRect(fx + 1 - fl, BOT + 1 - fl, 25 + fl * 2, 3 + fl); continue; }
         for (let i = 0; i < 5; i++) {
           const tw = i === 0 ? 8 : 6, tx = fx + (fx < X0 + 92 ? 20 - i * 6 - (i ? 2 : 0) : i * 6);
           c.fillStyle = '#e9ad96'; c.fillRect(tx, BOT + 2 - (i === 0 ? 0 : i > 2 ? -1 : 0), tw, 4);
@@ -173,7 +176,7 @@ function room(c: CanvasRenderingContext2D, t: number) {
     drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking || eyesBusy(), look: me.look, headset: n.headset, jitter: me.jitter, glow, lens: excel ? '#b3bdb2' : undefined });   // under Excel his glasses go grey-green
     drawChairWrap(c, HIM_X, HIM_Y);
     if (onLap()) {   // the lap sit (#86): she sits on his lap facing the monitor (and the camera), him behind her; a stand-in for Paweł's art
-      const v = n.visit, look = OUTFIT_BY_ACTIVITY[v.from ?? 'tv'] ?? OUTFIT_BY_ACTIVITY.tv, last = v.chat?.last ?? -1;
+      const v = n.visit, look = herLook(v.from ?? 'tv'), last = v.chat?.last ?? -1;
       const face: Face = v.chat?.mouse ? 'wink' : last === 0 ? 'blush' : last === 2 ? 'pout' : 'smile';
       const s = 1.55, lx = HIM_X - 30, top = HIM_Y - 18 + (Math.sin(t * 1.6) > 0.7 ? 1 : 0);
       drawHer(c, lx, top, s, { outfit: look.outfit, item: 'none', face, pose: 'stand', blink: (t % 4.3) < 0.12 });
@@ -284,7 +287,7 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
     for (let i = 0; i < 4; i++) { const k = (t * 0.6 + i / 4) % 1; c.fillStyle = `rgba(255,255,255,${0.35 * (1 - k)})`; c.beginPath(); c.arc(221 + Math.sin(t * 2 + i) * 4, 192 - k * 50, 4 + k * 6, 0, Math.PI * 2); c.fill(); }
     if (act === 'tea') {   // her at the counter, from behind (inside the opening)
       c.save(); c.beginPath(); kq.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.clip();
-      drawHerBack(c, 224, 150, 0.6, OUTFIT_BY_ACTIVITY.tea.outfit); c.restore();
+      drawHerBack(c, 224, 150, 0.6, herLook('tea').outfit); c.restore();
     }
     const spill = c.createLinearGradient(0, yBot(207), 0, BOT); spill.addColorStop(0, 'rgba(255,214,150,.35)'); spill.addColorStop(1, 'rgba(255,214,150,0)');
     fillPoly(c, [[207, yBot(207)], [XR, yBot(XR)], [XR, BOT], [196, BOT]], spill);
@@ -340,9 +343,9 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
   // --- her in the hallway: head to toe, close when she is at your door
   if (room === 'hallway' && v !== 'in') {
     const near = v === 'hall' || v === 'handle';
-    const look = OUTFIT_BY_ACTIVITY[v === 'idle' ? a.activity : (n.visit.from ?? 'tv')] ?? OUTFIT_BY_ACTIVITY.tv;
+    const look = herLook(v === 'idle' ? a.activity : (n.visit.from ?? 'tv'));
     const s = near ? 1.18 : 0.66, feet = near ? BOT - 4 : 300;
-    drawHer(c, near ? 214 : 210, feet - 239.5 * s, s, { outfit: look.outfit, item: look.item, face: near ? 'neutral' : 'smile', pose: 'stand' });
+    drawHer(c, near ? 214 : 210, feet - 239.5 * s, s, { outfit: look.outfit, item: look.item, face: near ? 'neutral' : 'smile', pose: 'stand', feet: look.feet });
   }
   c.restore();
 }

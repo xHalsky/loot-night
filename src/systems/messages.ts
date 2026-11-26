@@ -20,7 +20,7 @@ export function boysLog(lines: [ChatLine['s'], string][]) {
 /** Her messages you haven't seen in her chat. */
 export function herUnread(): number {
   const t = S.g.herThread ?? [];
-  return t.slice(S.g.herSeen ?? 0).filter(l => l.s === 'l').length;
+  return t.slice(S.g.herSeen ?? 0).filter(l => l.s === 'l' || l.s === 'photo').length;
 }
 export function herRead() { S.g.herSeen = (S.g.herThread ?? []).length; }
 /** While the phone shows a chat: scrolled back this many items from the newest (0 = the newest). */

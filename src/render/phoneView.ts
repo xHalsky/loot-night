@@ -1,4 +1,5 @@
 // The phone in your hand (V8, #73; grid doc 7f) as a view model for the renderer's live phone (phone.js, LIVE).
+import { photoLeft } from '../systems/selfies';
 import { on, dayName } from '../systems/week';
 import { battOn, battery, phoneDead, battCost, deviceState, deviceBlocked, teaDue } from '../systems/home';
 import { DEVICES, DEVICE_BY_ID, HOME_ROOMS, type DeviceId } from '../data/home';
@@ -21,7 +22,7 @@ export function phoneShown(): boolean {
   return !!n && S.g.screen === 'night' && (voiceUp() || n.game?.kind === 'phone' || n.preMenu === 'phone' || phoneAction());
 }
 
-type Item = ['date' | 'sys' | 'l' | 'r', string];
+type Item = ['date' | 'sys' | 'l' | 'r', string] | ['photo', string, { left?: number; ring?: boolean; tap?: number }];
 /** A chat's lines with a grey separator between sittings: the day for an earlier night, "Today 23:12" for the first
  *  of tonight, the time after a gap of half an hour. */
 export function chatItems(lines: ChatLine[], extra: Item[] = []): Item[] {
@@ -30,7 +31,8 @@ export function chatItems(lines: ChatLine[], extra: Item[] = []): Item[] {
   for (const l of lines) {
     if (!prev || prev.night !== l.night) out.push(['date', l.night === S.g.nightsPlayed ? `Today ${fmtClock(l.clock)}` : dayName(l.day ?? l.night)]);
     else if (l.clock - prev.clock >= 30) out.push(['date', fmtClock(l.clock)]);
-    out.push([l.s, l.text]);
+    if (l.s === 'photo') { const left = photoLeft(l), i = lines.indexOf(l); out.push(['photo', l.text, left != null ? { left, ring: true, tap: i } : { tap: i }]); }   // her photo (#92): tap it
+    else out.push([l.s, l.text]);
     prev = l;
   }
   if (extra.length && (!prev || prev.night !== S.g.nightsPlayed)) out.push(['date', `Today ${fmtClock(N().clock)}`]);

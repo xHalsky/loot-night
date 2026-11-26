@@ -150,6 +150,13 @@ has you):
 Her routine waits while she asks and while you bring it. Back early from the away card (its close box) counts as
 ignoring her. Her voice is a sound of its own (`babe`: the tease's "babe?", "baaabe.", "babe, towel!", "babe, wine?").
 
+**Selfies** (fan-service step 5, #92). From Friday, one in three (`SELFIE_CHANCE`) of her texts after midnight (the
+waking meter's "are you coming to bed?") carries a photo: a mirror selfie in your jersey, or under the duvet ("its
+cold"); with a top gift on tonight, the mirror one is in it. It sits in her chat as a crop with a gold ring and its
+`SELFIE_SEC` (60) s; tap it and the whole photo opens in a window beside the phone (hands busy; its close box, Esc or
+a click outside closes it), Goodwill +`SELFIE_GOODWILL` (5) the first time. Not opened in 60 s: "Babe unsent a
+photo." Face-down or a dead phone, you miss it. No Gallery (2026-11-20): her chat keeps the ones you opened.
+
 **The tease** (fan-service step 1, #85). On the weekend she comes to your doorway because she wants you, not to check
 on you: Saturday `teases` 1 to 2, Sunday 2 to 3 (the week's plan in `NIGHT_SCHEDULE`). The first is due
 `TEASE_FIRST_SEC` play seconds in, the next `TEASE_GAP_SEC` after the last, each only when real life is free (one
@@ -223,15 +230,54 @@ chat's Mood and Goodwill). A question ignored and she takes your mouse: "You sto
 answer her ("Okay, I'm here.", "Give it back!", "The boss!"); it counts as one of her three. On a rare or better drop
 "ooh, shiny" by her head. She gets up after the three or `LAP_SIT_SEC` (20) at most.
 
-**How she looks.** Outfit comes from what she was doing: TV = off-shoulder tee and shorts with the
-remote; tea = oversized hoodie and mug; phone or bathroom = tank top and shorts; shower or bath = towel wrap and
-turban with droplets; woken = sleep shirt and messy hair. Barefoot at the door, painted toenails, contact
-shadow on the hallway floor. Expressions follow the situation: suspicious while she looks, smile when she
+**How she looks** (fan-service step 3, #90; `systems/wardrobe.ts` herLook). Her outfit comes from what she was
+doing, so it tells you where she has been: on the couch (TV) a knit sweater and socks, with the remote; in the kitchen
+your hoodie, bare legs and slippers, with a mug; the shower or the bath the towel wrap and turban with droplets;
+anything else the cream wide-neck tee and shorts with the pink clip (on her phone, the phone); woken, her sleep shirt.
+On top: home from work, Monday to Friday before `WORK_CLOTHES_UNTIL` (21:00), her work blouse with the collar undone
+and a dark skirt, socks (not in the water); getting ready for bed, on her phone in the bedroom after
+`BED_CLOTHES_FROM` (23:30), her pajama shorts; the walk-by and come to bed, your gaming hoodie and slippers. The yoga
+set is there for Tuesday's yoga (lean in, #77). Contact shadow on the hallway floor, painted toenails when barefoot.
+The colours sit on her panel's PC-98 sixteen, so the dither keeps the cloth solid.
+
+**Her feet change her footsteps** (#90): barefoot as always; slippers louder (x`SLIPPERS_STEP_VOL`) and heard
+`SLIPPERS_EARLY_SEC` (2) earlier (her walk starts that much sooner); socks quieter (x`SOCKS_STEP_VOL`) and only from
+the hallway (the first 2 s of her walk are silent, cues included); the fluffy socks (a gift) not at all, only the
+handle. The light gap under the door shows her toes, or her socks or slippers.
+
+**Her gifts** (fan-service step 4, #91; the Shop's For her). Each takes a slot, feet or top, and she wears one gift per
+slot a night: the newest the night after you buy it, then one at random of those you've given her. The first time she
+wears one, Goodwill +`GIFT_GOODWILL` (20) ("She's wearing the fluffy socks you got her."). A top gift goes over the set
+(not over the towel or your hoodie); a feet gift over her feet (not out of the water). Every gift has a trade-off
+(Paweł, 2026-11-26):
+
+| Gift | zł | Slot | Trade-off |
+|---|---|---|---|
+| Fluffy socks | 79 | Feet | She loves them: her steps are silent, the only warning is the handle |
+| Knee socks | 99 | Feet | White with two stripes: her steps are heard 2 s later, quieter (as socks) |
+| Fury tee (Goblin Fury merch) | 129 | Top | A catch costs half the Mood (x`GIFT_FURY_CATCH_MOOD`), but she peeks more (Peek weighs x`GIFT_FURY_PEEK`) |
+| Pajama set | 149 | Top | On nights she goes to bed, `GIFT_PJ_BED_MIN` (30) min earlier, and the waking meter fills x`GIFT_PJ_WAKE` faster |
+| Cat-ear hoodie | 199 | Top | One more tease a night, any night (`GIFT_CAT_TEASES`), and looking at her pays x`GIFT_CAT_GOODWILL` |
+
+She wears them at your door, on your lap, in the crack, in her selfies (the mirror one). The mornings' CGs are baked
+and don't change yet (Paweł's art). Expressions follow the situation: suspicious while she looks, smile when she
 buys it, angry, then furious with an anger mark on later catches, pout when woken, blush and wink on lean
 visits and when she leans in. A small reaction bubble (?, !, heart, ...) over her head.
 
 ## Decisions
 
+- **Her gifts' trade-offs are Paweł's** (2026-11-26): the proposals, taken as they were. She wears one per slot a night
+  (the newest first) so a gift you just bought shows the next night and each trade-off is on for whole nights you can
+  plan around, not per visit. The cat-ear hoodie's extra tease comes on any night, so it is not dead before the
+  weekend. Rejected: wearing every gift at once (the top gifts would fight), and gifts as one-use like the flowers.
+- **The outfit set follows the build's activities** (0.84, #90): the couch is the TV, the kitchen the kettle; home from
+  work is a clock rule (weekdays before 21:00) rather than an activity, and getting ready for bed is her phone in the
+  bedroom after 23:30 until the sheet mask (#77) gives it its own. Light pastels (a beige knit, pale pink, pale
+  satin) read see-through after her panel's dither, so every new cloth sits on one of her sixteen colours, and the
+  bust's white sheen stays on light cloth only (on darker colours it dithered into two dots).
+- **Selfies follow her texts after midnight** (0.84, #92): her bed texts come from the waking meter, so a quiet night
+  brings none; a photo is the reward for half waking her. Rejected: a goodnight text of her own (a new demand on
+  Friday that nothing in the week asked for).
 - **The lap sit has no check** (0.83, #86): at Goodwill 70 she trusts you, so she comes to watch you play, not to see
   what's on screen; what it costs is the battle's left third and, if you ignore her, your mouse. It comes as a chat's
   humming, so a player who tabs to Excel is not punished (her window says KEEP PLAYING). Ignoring her takes the mouse

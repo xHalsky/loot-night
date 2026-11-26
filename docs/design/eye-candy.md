@@ -13,7 +13,9 @@ explicit. A Steam game gets streamed and shown around.
 |---|---|---|
 | Her in the doorway with him in front (0.35; centred silhouette since 0.37): the key screenshot. He sits centred below the door line, a dark silhouette with shining glasses, and never covers her, the crack or her toes. His face answers hers: a sweat drop when she comes in, fogged glasses and a blush when she asks to cuddle or leans on the frame, a small exhale when she leaves | Webcam view | [screen.md](screen.md) |
 | Barefoot at the door in every outfit, painted toenails | Door | [her.md](her.md) |
-| Outfit by activity (off-shoulder tee and shorts, oversized hoodie, tank top, towel wrap and turban, sleep shirt) | Door | her.md |
+| Outfit by activity (0.84, #90): her work blouse home from work, a knit sweater on the couch, your hoodie and slippers in the kitchen, the cream tee, pajama shorts before bed, the towel; her feet (socks, slippers) change her footsteps and show in the light gap | Door, the crack, the lap | her.md |
+| Her gifts (0.84, #91): fluffy socks, knee socks, the Fury tee, a satin pajama set, the cat-ear hoodie; she wears one per slot a night | Door, the lap, selfies | her.md |
+| Selfies (0.84, #92): the mirror selfie in your jersey (or her gift), under the duvet; a crop in her chat, the whole photo beside the phone | Her chat, the photo window | her.md |
 | Lean visit: leaning on the frame, one foot against her calf, blush and wink | Door | her.md |
 | The tease (0.81, #85): weekends, she leans in your doorway because she wants you. Look at her (the pointer on the webcam, an eye cursor) and he turns to her, the skills read EYES BUSY, Goodwill rises and three hearts fill her pink window, then a blown kiss. Ignored: "Baaabe.", then a pout. She aims for boss wind-ups and legendary drops | Door, her window | [her.md](her.md) |
 | The bath (0.82, #88): weekends, her music through the bathroom door, candlelight in the gap when it's ajar. "Babe, bring my wine?": bring it and she takes the glass, foam to her shoulders | Door crack, her window | [her.md](her.md) |

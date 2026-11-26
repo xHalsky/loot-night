@@ -1,6 +1,9 @@
 import { q4Look, q4Up } from './q4';
+import { herLook, stepsFor, wearing } from './wardrobe';
+import type { Feet } from '../ui/her';
 import { sitDown, updateLapSit, lapSitEnd } from './lapsit';
 import { updateAsks } from './asks';
+import { updateSelfies } from './selfies';
 import { wet } from '../data/apartment';
 import { eyesBusy } from './eyes';
 import { realLifeFree } from './reallife';
@@ -63,7 +66,8 @@ function endVisit() {
  *  Cuddle only while she is happy (green). Woken visits are always Peeks. */
 export function pickKind(from: string, woken = false, green = moodZone(N().mood) === 'green', roll = Math.random()): VisitKind {
   if (woken) return 'peek';
-  const table = roll < T.VISIT_RANDOM || !T.VISIT_BIAS[from] ? T.VISIT_FLAT : T.VISIT_BIAS[from];
+  const table0 = roll < T.VISIT_RANDOM || !T.VISIT_BIAS[from] ? T.VISIT_FLAT : T.VISIT_BIAS[from];
+  const table = wearing('fury') ? { ...table0, peek: (table0.peek ?? 0) * T.GIFT_FURY_PEEK || T.GIFT_FURY_PEEK - 1 } : table0;   // the Goblin Fury tee (#91): she peeks more
   const kinds = Object.keys(table).filter(k => on(k) && (k !== 'cuddle' || green)) as VisitKind[];   // the week (#56): chat from Tuesday, cuddle Thursday
   if (!kinds.length) return 'peek';
   return kinds[weighted(kinds.map(k => table[k]))];
@@ -79,6 +83,8 @@ export function startVisit(woken = false, kind?: VisitKind) {
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
   if (!kind) N().apt.forceKind = null;
   if (v.kind === 'night') v.from = 'night';   // the hoodie outfit
+  v.feet = herLook(v.from ?? 'tv').feet;   // what's on her feet: her footsteps (#90)
+  const st = stepsFor(v.feet as Feet); if (st.early) v.t += st.early;   // slippers: heard earlier
   v.safe = !woken && !!N().firstSafe && v.kind === N().firstSafe; if (v.safe) N().firstSafe = '';
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
   v.lapSit = v.kind === 'chat' && !woken && !v.fake && on('lapSit') && S.g.goodwill >= T.LAP_GOODWILL;   // the lap sit (#86): she hums as for a chat
@@ -98,10 +104,12 @@ function telegraphSounds(dt: number) {
   const v = n.visit;
   stepTimer -= dt;
   const slow = (v.kind === 'cuddle' || v.kind === 'night') && v.stage !== 'passing';
+  const st = stepsFor((v.feet ?? 'bare') as Feet), quiet = st.from === 'never' || (st.from === 'hall' && v.stage === 'far');   // socks: not yet; fluffy socks: never (#90, #91)
+  if (quiet) return;
   if (stepTimer <= 0) {
     stepTimer = slow ? 0.8 : 0.45;
     const loud = (v.stage === 'hall' ? 0.7 : v.stage === 'passing' ? 0.25 : 0.35) * (slow ? 0.6 : 1);
-    sfx.step(loud * sealSteps());   // the door seal muffles her steps too
+    sfx.step(loud * sealSteps() * st.vol);   // the door seal muffles her steps too; slippers louder, socks quieter
     if (n.headset && hasLife('earplugs')) sfx.stepClear(loud);   // Earplugs of Peace: the steps come through the headset
     if (hearsHallway()) { n.apt.heard = 'hallway'; n.apt.heardWhat = 'STEPS'; n.apt.heardAt = n.threat; }
   }
@@ -122,6 +130,7 @@ export function updateVisits(dt: number) {
   ambience(amb?.cue ?? null, amb?.room, amb?.level);   // her TV, kettle or shower, while she is at it
   if (n.lap) return;                 // she is leaning in: the apartment waits
   updateAsks(dt);                    // her requests from the bathroom (#93, #88)
+  updateSelfies(dt);                 // her photos: 60 s to open one (#92)
   if (v.stage === 'idle') {
     const tz = teaseDue(dt);   // her tease, or come to bed (#85, #89): one demand at a time, like the rest of her
     if (tz) { startVisit(false, 'tease'); if (tz === 'bed') { v.bed = true; v.from = 'night'; n.apt.asleep = false; n.apt.wake = 0; n.apt.heardWhat = 'BABE?'; } return; }
@@ -193,7 +202,7 @@ function teaseDue(dt: number): 'tease' | 'bed' | null {
   const n = N(), tz = n.tease, a = n.apt;
   if (!realLifeFree(true) || S.g.realLifeOff || n.herAsk) return null;   // one demand at a time, but a boss wind-up is fair game
   if (on('comeToBed') && !tz.bedDone && a.asleep && n.clock >= Math.max(tz.bedAt, T.BEDTIME)) { tz.bedDone = true; return 'bed'; }
-  if (!on('tease') || tz.left <= 0 || a.asleep || wet(a.activity) || a.moving > 0 || n.clock >= bedAt()) return null;
+  if (!(on('tease') || wearing('cathoodie')) || tz.left <= 0 || a.asleep || wet(a.activity) || a.moving > 0 || n.clock >= bedAt()) return null;
   const hot = n.enemies.some(e => (e.wind ?? 0) > 0 && e.hp > 0) || n.floorLoot.some(l => l.entry.kind === 'item' && l.entry.item.rarity === 'legendary');
   if (n.threat < tz.next - (hot ? T.TEASE_HOT_EARLY_SEC : 0)) return null;   // due, or early for the worst moment
   tz.left--; tz.next = n.threat + rand(...T.TEASE_GAP_SEC);
@@ -210,7 +219,7 @@ function updateTease(dt: number) {
   if (v.stage !== 'in') { endTease(); return; }
   if (v.result) { if (v.t <= 0) endTease(); return; }   // kissed or pouting: she goes
   if (eyesBusy()) {
-    const gw = T.TEASE_GOODWILL_PER_SEC * dt * (v.bed ? T.BED_TEASE_GOODWILL_MULT : 1);
+    const gw = T.TEASE_GOODWILL_PER_SEC * dt * (v.bed ? T.BED_TEASE_GOODWILL_MULT : 1) * (wearing('cathoodie') ? T.GIFT_CAT_GOODWILL : 1);
     S.g.goodwill = Math.min(T.GOODWILL_MAX, S.g.goodwill + gw); v.gw = (v.gw ?? 0) + gw;
     v.looked = (v.looked ?? 0) + dt;
     if (v.looked >= T.TEASE_LOOK_SEC) {
@@ -403,7 +412,7 @@ function caught() {
   sfx.sting();
   const step = Math.min(n.catches, 3);
   toast(`CAUGHT! ${pick(PEEK_CAUGHT)}`, '#ff8a80');
-  addMood(T.CATCH_MOOD[step - 1]);
+  addMood(Math.round(T.CATCH_MOOD[step - 1] * (wearing('fury') ? T.GIFT_FURY_CATCH_MOOD : 1)));   // in the Goblin Fury tee she gets it (#91)
   n.guilt = T.GUILT_SEC; toast(`Guilt: party -${Math.round(T.GUILT_DMG * 100)}% damage for ${T.GUILT_SEC} s.`, '#ff8a80');   // every rung (echo)
   if (step === 1) { n.flow = T.FLOW_MIN; toast('Warning: Flow reset.', '#ff8a80'); }
   if (step === 3) { n.monitorOff = T.MONITOR_OFF_SEC; n.flow = T.FLOW_MIN; toast('She turned the monitor off!', '#ff8a80'); }

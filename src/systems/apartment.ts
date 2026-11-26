@@ -1,4 +1,6 @@
 import { T } from '../config/tuning';
+import { maybeSelfie } from './selfies';
+import { wearing } from './wardrobe';
 import { rules, bedAt, on } from './week';
 import { S, N, type ActivityId, type Room } from '../core/state';
 import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE, wet } from '../data/apartment';
@@ -149,11 +151,12 @@ function updateSleep(dt: number): 'wake' | null {
   const n = N();
   const a = n.apt;
   const owl = hasLife('owl') ? 1 - T.AFFIX_OWL : 1;   // of Slumber
-  a.wake = clamp(a.wake + Math.max(0, n.noise * sealNoise() - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
+  a.wake = clamp(a.wake + Math.max(0, n.noise * sealNoise() - T.WAKE_NOISE_FLOOR) * T.WAKE_RATE * owl * (wearing('pjset') ? T.GIFT_PJ_WAKE : 1) * dt - T.WAKE_DECAY * dt, 0, T.WAKE_UP);
   if (a.wake >= T.WAKE_TEXT && !a.textSent) {
     if (spawnInterrupt('text')) {
       a.textSent = true;
-      toast('[Phone] Babe: "are you coming to bed?"', '#b98cff');
+      const photo = on('selfies') && maybeSelfie();   // her photo with it (#92)
+      toast(photo ? '[Phone] Babe sent a photo. "are you coming to bed?"' : '[Phone] Babe: "are you coming to bed?"', '#b98cff');
     }
   }
   if (a.wake >= T.WAKE_UP) {

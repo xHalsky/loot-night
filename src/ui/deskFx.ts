@@ -3,7 +3,8 @@
 // to the renderer in V6, #71: render/page/dog.js and cables.js, render/dogView.ts.)
 import { S } from '../core/state';
 import { LAP_QS } from '../systems/lap';
-import { drawHerPeek, OUTFIT_BY_ACTIVITY } from './her';
+import { drawHerPeek } from './her';
+import { herLook } from '../systems/wardrobe';
 
 // ---------- her questions: she leans into your face from the right (#65) ----------
 // Over the whole stage (the webcam, the monitor, the desk), her body running off the bottom right. She slides in
@@ -17,7 +18,7 @@ export function drawLapFx() {
   const l = S.g.night?.lap;
   if (!l) return;
   const t = performance.now() / 1000;
-  const look = OUTFIT_BY_ACTIVITY[l.outfit] ?? OUTFIT_BY_ACTIVITY.tv;
+  const look = herLook(l.outfit);
   const k = l.stage === 'arrive' ? Math.max(0, l.t / 1.2) : l.stage === 'leave' ? 1 - Math.max(0, l.t / 1.4) : 0;
   const ease = k * k;
   const breathe = Math.sin(t * 1.6) > 0 ? 3 : 0;

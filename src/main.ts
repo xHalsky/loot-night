@@ -1,4 +1,5 @@
 import './style.css';
+import { fmtClock } from './core/fx';
 import { on, rules, dayName, howtoTiles, howtoOpens } from './systems/week';
 import './ios.css';
 import { T } from './config/tuning';
@@ -56,6 +57,7 @@ import { wakeUp } from './systems/tired';
 import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans, comingBabe } from './systems/visits';
 import { takeAsk, startAsk } from './systems/asks';
 import { lapSitAnswer, onLap } from './systems/lapsit';
+import { openPhoto, closePhoto, sendSelfie } from './systems/selfies';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
 import type { VisitKind, Room } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
@@ -205,6 +207,9 @@ const actions: Record<string, (arg: string) => void> = {
   comingBabe: () => comingBabe(),   // come to bed (#89): the night ends with her
   herAsk: () => takeAsk(),           // her towel, her wine (#93, #88)
   lapSitAnswer: a => lapSitAnswer(Number(a)),   // on your lap (#86)
+  photoOpen: a => openPhoto(Number(a)),          // her photo (#92)
+  photoClose: () => closePhoto(),
+  photoNoop: () => {},
   shopTab: a => { N().shopTab = a as 'you'; sfx.click(); },
   shopBuy: a => { if (shopBuy(a as ShopId)) shopFlashed(a); else sfx.bad(); },
   phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
@@ -214,6 +219,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgVisit: a => triggerVisitNow((a || undefined) as VisitKind | undefined),
   dbgAsk: a => { const n = N(), ap = n.apt; if (n.visit.stage !== 'idle') return; ap.activity = a === 'wine' ? 'bath' : 'shower'; ap.room = 'bathroom'; ap.moving = 0; ap.asleep = false; ap.t = 60; ap.cued = false; startAsk(a as 'towel' | 'wine'); },
   dbgBath: () => { const ap = N().apt; ap.activity = 'bath'; ap.room = 'bathroom'; ap.moving = 0.5; ap.asleep = false; ap.t = 130; ap.cued = false; ap.ajar = true; ap.towelAsk = true; ap.wineAt = 110; },
+  dbgSelfie: a => sendSelfie(a || undefined),   // her photo (#92)
   dbgLapSit: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('chat'); n.visit.lapSit = true; },   // the lap sit (#86)
   dbgBedTease: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('tease'); n.visit.bed = true; n.visit.from = 'night'; n.apt.asleep = false; },   // come to bed (#89)
   hideCans: () => { hideCans(); },
@@ -523,7 +529,7 @@ window.addEventListener('keydown', ev => {
   }
   if (caughtT(performance.now()) >= 0) { ev.preventDefault(); caughtEnd(performance.now()); return; }   // her screen takes the key (V7)
   if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (g.voice) voiceOk(); else g.howto = false; } return; }   // the voice note, the card: the night waits
-  if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } g.paused = !g.paused; return; }
+  if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } if (g.night?.photo) { closePhoto(); return; } g.paused = !g.paused; return; }   // her photo (#92): Esc closes it
   if (g.paused) return;
   if (n.switching) { ev.preventDefault(); return; }
   if (n.pre) { ev.preventDefault(); return; }     // busy with a pre-emptive action: hands full
@@ -766,11 +772,12 @@ function drawSmallPieces() {
   if (ready && !inspectOpen && on('fuel') && g.monsters > 0 && !g.tipsSeen.includes('inspect:fuel') && !g.paused && !g.howto && n.tired >= T.TIRED_YAWN && !demandActive() && !n.switching && n.monitor === 'rpg') { g.tipsSeen.push('inspect:fuel'); inspectOpen = true; }
   if (inspectOpen && (!ready || n.game || n.pre || n.switching)) inspectOpen = false;
   // pause, How to hide
-  const modal = !ready ? '' : g.paused ? 'pause' : g.howto && !g.voice ? 'howto' : '';   // the voice note comes first (#56)
+  const modal = !ready ? '' : g.paused ? 'pause' : g.howto && !g.voice ? 'howto' : n.photo ? 'photo' : '';   // the voice note comes first (#56); her photo beside the phone (#92)
   if (modal !== modalWas) { modalWas = modal; modalCanvas.style.display = modal ? 'block' : 'none'; modalAt = 0; if (!modal) modalHits = []; }
   if (modal && now - modalAt >= 66) {
     const first = modalAt === 0; modalAt = now;
-    const r = modal === 'pause' ? PK.pause(t) : PK.howto(first ? composeFrame() : null, howtoGame(), t, false);
+    if (modal === 'photo') modalCtx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+    const r = modal === 'pause' ? PK.pause(t) : modal === 'photo' ? PK.photo(n!.photo!.key, n!.photo!.t, { first: n!.photo!.first, time: fmtClock(n!.photo!.clock) }) : PK.howto(first ? composeFrame() : null, howtoGame(), t, false);
     modalCtx.drawImage(r.canvas, 0, 0); modalHits = r.hits;
   }
   // the microsleep: the lids close over the frame; shut, zzz

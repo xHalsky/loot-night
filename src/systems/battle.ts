@@ -124,6 +124,7 @@ export function abilitiesLocked(): string | null {
   if (n.location !== 'dungeon') return 'In town';
   if (eyesBusy()) return 'Eyes busy';   // looking at her (#85)
   if (lapMouse()) return 'She has the mouse';   // the lap sit (#86): you ignored her
+  if (n.photo) return 'Hands busy';             // her photo open (#92)
   if (n.action !== 'none') return 'Hands busy';
   if (n.switching) return 'Switching window';
   if (n.monitor === 'excel') return 'Excel is up';

@@ -95,13 +95,13 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   | Ergo chair | 899 | Tiredness builds at `SHOP_CHAIR_TIRED` (15% slower) (kept) |
   | New phone | 2,999 | The battery drains at `NEW_PHONE_DRAIN` (40% slower) (kept) |
   | Flowers (For her) | 49 | +`SHOP_FLOWERS_GOODWILL` (20) Goodwill at once; once a night |
+  | Fluffy socks, Knee socks, Fury tee, Pajama set, Cat-ear hoodie (For her) | 79, 99, 129, 149, 199 | Her gifts (#91): she wears one per slot a night, +20 Goodwill the first time; each with a trade-off ([her.md](her.md)) (kept) |
   | Robot vacuum, Speakers, TV cast, Door seal (Home) | 899, 199, 149, 39 | Installed for the Home app (below) (kept) |
   | Bubble tea (Home) | 25 | Listed as *Home*: it is ordered in the Home app |
 
   What you keep is saved (`S.g.owned`); the one-use things reset each night. A thing is listed from the night its
   thing comes in (the week): Silent keys and Flowers Monday, the Ergo chair Tuesday, the Goblin Fuel, the Mini fridge,
-  the Dog chew, the New phone and the Home tab Thursday. For her ends on "More for her soon."
-  (the gifts she wears come with #59). The Goblin Fuel inspect window says where more cans come from.
+  the Dog chew, the New phone and the Home tab Thursday. For her lists the flowers and her five gifts from Monday. The Goblin Fuel inspect window says where more cans come from.
 - **The battery** (step 6.1, #57; grid doc 7j; `systems/home.ts`; FNAF's power), from Thursday: 100% at the start of
   every night. Every call or text you answer takes `BATTERY_ANSWER` (2%), each device use its own (below); the New phone
   makes everything `NEW_PHONE_DRAIN` (x0.6). It shows in the status bar (crimson from 20%), on the home screen's

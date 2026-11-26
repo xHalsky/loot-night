@@ -1,4 +1,5 @@
 import { ensureParty } from './ranks';
+import { chooseWear, giftFirstNote, wearing } from './wardrobe';
 import { bankRun, loseRun, unbanked } from './run';
 import { resetPacing } from './pacing';
 import { T } from '../config/tuning';
@@ -32,7 +33,7 @@ export function newNight(): Night {
     interrupts: [], game: null,
     q4: newQ4Night(), shopTonight: [],
     taunt: 0, ward: 0, lastStand: 0, smoke: 0, heist: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
-    pre: null, preUses: {}, preMenu: null, herAsk: null, herThanks: null, lapMouse: 0, lapSay: null, seal: false, home: newHomeNight(), looking: false, tease: { left: randi(...rules().teases), next: rand(...T.TEASE_FIRST_SEC), bedAt: rand(...T.BED_TEASE_AT), bedDone: false }, herReply: null,
+    pre: null, preUses: {}, preMenu: null, herAsk: null, herThanks: null, lapMouse: 0, lapSay: null, wear: { top: null, feet: null }, photo: null, seal: false, home: newHomeNight(), looking: false, tease: { left: randi(...rules().teases), next: rand(...T.TEASE_FIRST_SEC), bedAt: rand(...T.BED_TEASE_AT), bedDone: false }, herReply: null,
     curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null, goldStart: S.g.gold, coach: null,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,
@@ -48,6 +49,8 @@ export function startNight() {
   S.g.heroes.forEach(h => { h.moving = undefined; h.from = undefined; });
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.queued = null; h.cd = [0, 0, 0, 0]; h.ult = 0; h.atb = Math.random() * 50; });
   initVisits();
+  chooseWear(); if (wearing('cathoodie')) S.g.night.tease.left += T.GIFT_CAT_TEASES;   // her gifts tonight (#91)
+  giftFirstNote();
   // last morning's rewards (#54, 3.1): Trust's Goodwill on top of what carried over; a chest that found the bag full
   if (S.g.carry) { addGoodwill(S.g.carry.goodwill, 'Trust: she never caught you last night'); S.g.night.dropQueue.push(...S.g.carry.drops); S.g.carry = undefined; }
   S.g.night.tired = startTired();

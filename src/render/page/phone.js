@@ -708,9 +708,13 @@ function selfieArt(key) {
   const C = C9, W = SELFIE_W, H = SELFIE_H;
   const hair = { fill: C.plum, shade: C.void, hi: C.purple, hiCut: -0.55, line: C.void };
   const skin = { fill: C.skin, shade: C.beige, line: C.brown, cut: 0.35 }, skinD = { fill: C.beige, shade: C.tan, line: C.brown };
-  const jer = { fill: C.denim, shade: C.purple, hi: C.lilac, hiCut: -0.8, line: C.plum };
+  const top = key.split(':')[1] || '';   // 'jersey:fury': she wears her gift in it (fan-service 4 and 5, #91, #92)
+  const jer = top === 'fury' ? { fill: C.void, shade: C.plum, hi: C.purple, hiCut: -0.8, line: C.void }
+    : top === 'cathoodie' ? { fill: C.pink, shade: C.rose, hi: C.skin, hiCut: -0.8, line: C.plum }
+    : top === 'pjset' ? { fill: C.lilac, shade: C.purple, hi: C.moon, hiCut: -0.8, line: C.plum }
+    : { fill: C.denim, shade: C.purple, hi: C.lilac, hiCut: -0.8, line: C.plum };
   let I;
-  if (key === 'jersey') {   // a mirror selfie in his jersey: the phone hides half her face (fan-service step 5)
+  if (key.startsWith('jersey')) {   // a mirror selfie in his jersey: the phone hides half her face (fan-service step 5)
     const bg = (x, y) => {
       if (x < 6 || y < 5) return x === 5 || y === 4 ? C.brown : (x + y) % 9 === 0 ? C.brown : C.tan;   // the mirror's wooden frame
       if (y > 206) return (y - 206) % 9 === 0 ? C.plum : x % 31 === 0 ? C.plum : C.brown;                // the floor
@@ -754,8 +758,14 @@ function selfieArt(key) {
     rect(109, 25, 3, 3, C.gold);
     // his number on her: 17, moon on the jersey
     const dig = (x, y, segs) => { for (const sg of segs) rect(x + sg[0], y + sg[1], sg[2], sg[3], C.moon); };
-    dig(80, 108, [[4, 0, 3, 22], [2, 2, 2, 3]]); dig(90, 108, [[0, 0, 12, 3], [9, 3, 3, 6], [6, 9, 3, 6], [4, 15, 3, 7]]);
-    rect(56, 98, 2, 3, C.crimson); rect(126, 98, 2, 3, C.crimson);
+    if (!top) { dig(80, 108, [[4, 0, 3, 22], [2, 2, 2, 3]]); dig(90, 108, [[0, 0, 12, 3], [9, 3, 3, 6], [6, 9, 3, 6], [4, 15, 3, 7]]);
+    rect(56, 98, 2, 3, C.crimson); rect(126, 98, 2, 3, C.crimson); }
+    if (top === 'fury') { rect(82, 104, 20, 14, C.moss); rect(85, 107, 3, 3, C.gold); rect(96, 107, 3, 3, C.gold); rect(87, 113, 10, 2, C.void); rect(80, 121, 24, 2, C.moss); }   // Goblin Fury: the goblin, the title bar
+    if (top === 'pjset') { for (let y = 96; y < 168; y += 12) rect(91, y, 2, 2, C.moon); }   // the buttons
+    if (top === 'cathoodie') {   // the hood's ears, up over her crown
+      for (const [a, b, c2] of [[74, 26, 80], [99, 26, 105]]) for (let j = 0; j < 12; j++) { const w = Math.round((12 - j) * 0.55); rect(c2 - w, b - j, w * 2 + 1, 1, j < 9 && w > 1 ? (j > 1 ? C.rose : C.pink) : C.pink); }
+      rect(84, 132, 16, 10, C.rose);   // the pocket
+    }
   } else {   // under the duvet, "it's cold": seen from above, the duvet up to her nose
     const bg = (x, y) => ((x * 3 + y * 2) % 41 < 2 ? C.tan : (x + y) % 2 && (x * 7 + y * 3) % 23 === 0 ? C.tan : C.beige);
     const S = [
@@ -802,9 +812,10 @@ function drawItem(m, y, t) {
   if (m[0] === 'photo') {
     const x = 7, o = m[2] || {};
     rrI(x, y, PB.w, PB.h, 4, P.d3); rrI(x - 1, y + PB.h - 1, 2, 1, 0, P.d3);
-    const [sx, sy] = PHOTO_CROP[m[1]];
+    const [sx, sy] = PHOTO_CROP[m[1].split(':')[0]];
     PH_PHOTOS.push({ key: m[1], x: PHX(x + 1), y: PHY(y + 1), w: PB.w - 2, h: PB.h - 2, sx, sy, clip: CLIP && CLIP.slice() });
     if (o.ring) { const on = Math.floor(t * 6) & 1; for (let k = 0; k < PB.w + 4; k++) if (((k >> 1) + on) & 1) { px(x - 2 + k, y - 2, P.gold); px(x - 2 + k, y + PB.h + 1, P.gold); } for (let k = 0; k < PB.h + 4; k++) if (((k >> 1) + on) & 1) { px(x - 2, y - 2 + k, P.gold); px(x + PB.w + 1, y - 2 + k, P.gold); } }
+    if (o.tap != null) hit(x, y, PB.w, PB.h, 'photoOpen', o.tap);   // the game: tap it to open it (#92)
     if (o.left != null) { const w = PB.w; rrI(x, y + PB.h + 3, w, 3, 1, P.s1); rrI(x, y + PB.h + 3, Math.max(1, Math.round(w * o.left / 60)), 3, 1, P.gold); tx('open', x + w + 5, y + PB.h - 15, P.gold); tx(Math.ceil(o.left) + ' s', x + w + 5, y + PB.h - 7, P.gold); }
     return;
   }
@@ -1086,7 +1097,7 @@ const LIVE = {
       else if (st === 'inhome') { rrI(pxx, py, pw, 9, 4, P.s2); tx('Home', pxx + pw / 2, py + 2, P.s5, { align: 'c' }); }
       else { const s2 = st === 'owned' ? 'owned' : st === 'full' ? 'full' : 'tonight', w2 = measure(s2, 'tiny') + 6; rrI(PH.sw - w2 - 4, py, w2, 9, 4, st === 'full' ? P.s2 : P.g3); tx(s2, PH.sw - 4 - w2 / 2, py + 2, st === 'full' ? P.s5 : P.g6, { align: 'c' }); }
     });
-    if (v.tab === 'her') tx('More for her soon.', 56, 50 + v.items.length * 30 + 4, P.s4, { align: 'c' });
+    if (v.tab === 'her' && v.items.length < 6) tx('More for her soon.', 56, 50 + v.items.length * 30 + 4, P.s4, { align: 'c' });
     homeBar(); homeHit('preMenu');
   },
   // Messages: her chat and The Boys'
