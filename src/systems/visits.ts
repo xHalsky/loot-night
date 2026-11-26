@@ -1,4 +1,5 @@
 import { q4Look, q4Up } from './q4';
+import { sitDown, updateLapSit, lapSitEnd } from './lapsit';
 import { updateAsks } from './asks';
 import { wet } from '../data/apartment';
 import { eyesBusy } from './eyes';
@@ -73,13 +74,14 @@ export function startVisit(woken = false, kind?: VisitKind) {
   if (v.stage !== 'idle') return;
   coach('steps');
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && !N().apt.forceKind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
-  v.bed = false; v.looked = 0; v.gw = 0; v.esc = false; v.ask = undefined;
+  v.bed = false; v.looked = 0; v.gw = 0; v.esc = false; v.ask = undefined; v.lapSit = false;
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
   if (!kind) N().apt.forceKind = null;
   if (v.kind === 'night') v.from = 'night';   // the hoodie outfit
   v.safe = !woken && !!N().firstSafe && v.kind === N().firstSafe; if (v.safe) N().firstSafe = '';
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
+  v.lapSit = v.kind === 'chat' && !woken && !v.fake && on('lapSit') && S.g.goodwill >= T.LAP_GOODWILL;   // the lap sit (#86): she hums as for a chat
   if (v.kind === 'tease') {   // she wants you (#85): no footsteps, her soft call, then the doorway
     const n = N(); v.t = T.TEASE_CALL_SEC; v.fake = false; v.safe = false; v.lean = false;
     n.apt.heard = 'hallway'; n.apt.heardWhat = 'BABE?'; n.apt.heardAt = n.threat; sfx.babe(0);
@@ -159,11 +161,13 @@ function updateIn(dt: number) {
     else if (v.kind === 'snack') snackArrive();
     else if (v.kind === 'cuddle') { v.result = 'ask'; v.t = T.CUDDLE_ASK_SEC; sfx.kiss(); }
     else if (v.kind === 'night') walkBy();
+    else if (v.lapSit) sitDown();   // on your lap (#86): no check, KEEP PLAYING
     else check();
     return;
   }
   // Switching back to the game while she still watches (Peek, Chat) gets you caught.
   if ((v.result === 'pass' || v.result === 'chat') && n.monitor === 'rpg' && n.monitorOff <= 0) { v.result = 'caught'; v.chat = null; v.t = T.VISIT_IN_SEC; caught(); return; }
+  if (v.result === 'lap') { updateLapSit(dt); return; }
   if (v.result === 'chat' && v.chat) {
     const c = v.chat;
     c.t -= dt;
@@ -178,6 +182,7 @@ function leave() {
   const v = n.visit;
   if (v.result === 'offer') { addMood(T.SNACK_IGNORE_MOOD); toast('"Fine. More for me." She takes the plate back.', '#ffb07a'); }
   if (v.result === 'ask') { cuddleAnswer(false); return; }
+  if (v.result === 'lap') { lapSitEnd(); return; }   // LAP_SIT_SEC: she gets up
   if ((v.result === 'pass' || v.result === 'chatGood') && maybeLap()) { afterVisit(); v.stage = 'idle'; v.checked = false; n.cansHidden = false; return; }
   endVisit();
 }

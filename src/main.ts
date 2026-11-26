@@ -55,6 +55,7 @@ import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
 import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans, comingBabe } from './systems/visits';
 import { takeAsk, startAsk } from './systems/asks';
+import { lapSitAnswer, onLap } from './systems/lapsit';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
 import type { VisitKind, Room } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
@@ -201,8 +202,9 @@ const actions: Record<string, (arg: string) => void> = {
   homeUse: () => { const h = N().home; if (h.pick && useDevice(h.pick, h.pickRoom)) h.pick = ''; },
   homeTea: () => { orderTea(); },
   charge: () => startPre('charge'),
-  comingBabe: () => comingBabe(),
-  herAsk: () => takeAsk(),   // come to bed (#89): the night ends with her
+  comingBabe: () => comingBabe(),   // come to bed (#89): the night ends with her
+  herAsk: () => takeAsk(),           // her towel, her wine (#93, #88)
+  lapSitAnswer: a => lapSitAnswer(Number(a)),   // on your lap (#86)
   shopTab: a => { N().shopTab = a as 'you'; sfx.click(); },
   shopBuy: a => { if (shopBuy(a as ShopId)) shopFlashed(a); else sfx.bad(); },
   phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
@@ -212,6 +214,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgVisit: a => triggerVisitNow((a || undefined) as VisitKind | undefined),
   dbgAsk: a => { const n = N(), ap = n.apt; if (n.visit.stage !== 'idle') return; ap.activity = a === 'wine' ? 'bath' : 'shower'; ap.room = 'bathroom'; ap.moving = 0; ap.asleep = false; ap.t = 60; ap.cued = false; startAsk(a as 'towel' | 'wine'); },
   dbgBath: () => { const ap = N().apt; ap.activity = 'bath'; ap.room = 'bathroom'; ap.moving = 0.5; ap.asleep = false; ap.t = 130; ap.cued = false; ap.ajar = true; ap.towelAsk = true; ap.wineAt = 110; },
+  dbgLapSit: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('chat'); n.visit.lapSit = true; },   // the lap sit (#86)
   dbgBedTease: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('tease'); n.visit.bed = true; n.visit.from = 'night'; n.apt.asleep = false; },   // come to bed (#89)
   hideCans: () => { hideCans(); },
   takePlate: () => takePlate(),
@@ -1010,6 +1013,10 @@ function render() {
     setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : '');   // dark until the renderer's fonts load
     setHtml('toasts', toastsHtml());
     drawLapFx();
+    if (onLap() && PK.ready()) {   // the lap sit (#86): the back of her head over the battle's left third; you play around her
+      const lc = (el('lapFx') as HTMLCanvasElement).getContext('2d')!; lc.imageSmoothingEnabled = false;
+      lc.drawImage(PK.lap(performance.now() / 1000, { say: n.lapSay?.text, mouse: n.lapMouse > 0 }), 0, 0, 1280, 720);
+    }
     setHtml('lapUi', lapUiHtml());
     el('desk').classList.toggle('yawn', n.yawn > 0);
     el('ui').classList.toggle('off', n.monitor === 'excel' || n.monitorOff > 0 || !!n.switching);   // the side panel is on the screen: it goes with it

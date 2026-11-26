@@ -64,12 +64,13 @@ export interface Vfx { kind: VfxKind; x: number; y: number; x2: number; y2: numb
 export type VisitStage = 'idle' | 'far' | 'hall' | 'handle' | 'in' | 'passing';
 /** What she comes for (docs/design/her.md, visit types). Each asks for a different answer. */
 export type VisitKind = 'peek' | 'snack' | 'chat' | 'cuddle' | 'night' | 'tease';   // night: the hoodie walk-by on her way to bed; tease: she wants you (#85)
-export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string; last: number }   // last: his last answer (0 good, 1 meh, 2 rude, -1 none)
+export interface ChatState { order: number[]; asked: number; good: number; bad: number; t: number; line: string; last: number; mouse?: boolean }   // mouse: the lap sit's "My turn!" (#86)   // last: his last answer (0 good, 1 meh, 2 rude, -1 none)
 export interface VisitState {
   stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean;
   safe?: boolean;   // the night's first chance (the week, #56): a catch on it is let go
   bed?: boolean; looked?: number; gw?: number; esc?: boolean;   // the tease (#85): come to bed (#89), seconds you looked, Goodwill it paid, escalated
   ask?: 'towel' | 'wine';   // she came to get it herself (#93, #88)
+  lapSit?: boolean;         // this chat visit is a lap sit (#86): Saturday on, Goodwill 70+
   kind: VisitKind;
   chat?: ChatState | null;        // Chat: the questions she asks while you sit on Excel
 }
@@ -208,7 +209,8 @@ export interface Night {
   shopTonight: string[]; dogChew?: boolean;   // the Shop's one-use things bought tonight; a chew waiting for the dog's next visit (#55)
   pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;
   herAsk: { kind: 'towel' | 'wine'; t: number; max: number } | null;   // "Babe, towel!" (#93), "Babe, bring my wine?" (#88): her window, waiting for you
-  herThanks: { kind: 'towel' | 'wine'; t: number } | null;          // you brought it: her line for a moment   // pre-emptive actions (#19)
+  herThanks: { kind: 'towel' | 'wine'; t: number } | null;
+  lapMouse: number; lapSay: { text: string; t: number } | null;   // the lap sit (#86): seconds she has your mouse; her line by her head          // you brought it: her line for a moment   // pre-emptive actions (#19)
   phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop' | 'homeapp'; shopTab?: 'you' | 'her' | 'home'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
   seal: boolean;   // the door seal is on (the Home app, #57; it was the towel)
   home: import('../systems/home').HomeNight;   // the battery and the devices tonight (#57)

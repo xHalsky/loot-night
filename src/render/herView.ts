@@ -2,6 +2,7 @@
 // here, only reading; the texts are the ones her DOM panel had (docs/design/her.md, screen.md).
 import { eyesBusy } from '../systems/eyes';
 import { askAwaySec } from '../systems/asks';
+import { lapSitQ } from '../systems/lapsit';
 import { S, N } from '../core/state';
 import { T } from '../config/tuning';
 import { moodZone } from '../systems/meters';
@@ -53,6 +54,14 @@ function middle(hover: string) {
     const secs = `${Math.max(0, Math.ceil(v.t))} s`;
     if (v.result === 'offer') return { win: { label: 'SNACK RUN', right: secs, line: '"Made you a plate. Eat something, babe."', warm: true, pills: [{ name: 'Take the plate', cost: `party +${Math.round(T.SNACK_HEAL * 100)}% HP`, act: 'takePlate', arg: '0', tip: 'plate' }] as Pill[] } };
     if (v.result === 'ask') return { win: { label: 'CUDDLE', right: secs, line: '"Come cuddle for a bit?"', pills: [{ name: 'Come here', cost: `${T.CUDDLE_SEC} s with her`, act: 'cuddle', arg: '1', tip: 'cuddleYes' }, { name: 'One sec, babe', cost: 'she sighs', act: 'cuddle', arg: '0', tip: 'cuddleNo' }] as Pill[] } };
+    if (v.result === 'lap' && v.chat) {   // on your lap (#86): the chat's window, KEEP PLAYING
+      const q = lapSitQ()!, c = v.chat;
+      const order = [0, 1, 2].sort((a, b) => ((c.order[0] * 7 + a * 5 + c.asked) % 3) - ((c.order[0] * 7 + b * 5 + c.asked) % 3));
+      return { chat: { label: `ON YOUR LAP ${Math.min(T.CHAT_QUESTIONS, c.asked + 1)}/${T.CHAT_QUESTIONS}`, right: 'KEEP PLAYING', q: c.line, a: order.map(k => ({ text: q.a[k], act: 'lapSitAnswer', arg: String(k) })), hover } };
+    }
+    if (v.result === 'lapGood') { label = 'on your lap'; body = 'She kisses your cheek and hops off. "Go get them, knight."'; tone = 'calm'; }
+    if (v.result === 'lapMeh') { label = 'on your lap'; body = '"Okay, nerd. I\'ll let you play."'; tone = 'warn'; }
+    if (v.result === 'lapBad') { label = 'on your lap'; body = '"Fine. Enjoy your elf."'; tone = 'alarm'; }
     if (v.result === 'chat' && v.chat) {
       const q = CHAT_QS[v.chat.order[v.chat.asked]];
       const order = [0, 1, 2].sort((a, b) => ((v.chat!.order[0] * 7 + a * 5 + v.chat!.asked) % 3) - ((v.chat!.order[0] * 7 + b * 5 + v.chat!.asked) % 3));

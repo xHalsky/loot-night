@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { lapMouse } from './lapsit';
 import { eyesBusy } from './eyes';
 import { S, N, type Enemy, type Hero, type VfxKind, type MarkId } from '../core/state';
 import { ENEMIES, BOSSES, ENEMY_BY_ID, bossFor, type EnemyDef } from '../data/enemies';
@@ -122,6 +123,7 @@ export function abilitiesLocked(): string | null {
   if (!n) return 'No night';
   if (n.location !== 'dungeon') return 'In town';
   if (eyesBusy()) return 'Eyes busy';   // looking at her (#85)
+  if (lapMouse()) return 'She has the mouse';   // the lap sit (#86): you ignored her
   if (n.action !== 'none') return 'Hands busy';
   if (n.switching) return 'Switching window';
   if (n.monitor === 'excel') return 'Excel is up';

@@ -96,6 +96,12 @@ export const T = {
   DOG_AGAIN_SEC: [25, 40] as [number, number], DOG_WAIT_SEC: 12, DOG_WHINE_NOISE: 0.6,
   DOG_PET_RATE: 0.0064, DOG_SWEET_MULT: 3, DOG_FAST: 1100,  // per grid px stroked across his head; faster than this (grid px/s) and he flinches (V6: was 0.0032 / 2200 in 2x desk px)
   // She leans into your face (only when she is happy): sweet-talk her away
+  // The lap sit (fan-service 10, #86): from Saturday, with this much Goodwill a chat visit becomes her on your lap
+  LAP_GOODWILL: 70,
+  LAP_SIT_SEC: 20,                // she stays this long at most (or till the chat's three are asked)
+  LAP_SIT_ASK_SEC: 10,            // each question waits this long; ignored, she takes your mouse...
+  LAP_MOUSE_SEC: 3,               // ...for this long (skills blocked: SHE HAS THE MOUSE), unless you answer her
+  LAP_SAY_SEC: 2,                 // "ooh, shiny" by her head on a rare or better drop
   LAP_CHANCE: 0.4, LAP_MIN_GAP_SEC: 180, LAP_ASK_SEC: 7, LAP_QUESTIONS: 3, LAP_HAPPY_MOOD: -15, LAP_RUDE_MOOD: 6, LAP_SULK_MOOD: 10, LAP_CALM_SEC: 60,
 
   // --- Flow ---

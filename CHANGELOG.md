@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.83.0 (2026-11-26)
+
+- **On your lap** (fan-service step 10, #86). From Saturday, at Goodwill 70 or more, her chat visit is a lap sit: she
+  hums her way over, then sits on your lap facing the monitor to watch you play. No check (KEEP PLAYING). The back of
+  her head and her shoulder cover the battle's left third (the renderer's lap layer over the frame) and in the webcam
+  she sits on his lap. Three questions about the game ("Which one is you? The one with the shield?"), 10 s each, the
+  chat's sweet / meh / rude and its Mood and Goodwill. Ignore one and she takes your mouse: "You stopped talking to
+  me. My turn!", SHE HAS THE MOUSE on the skill bar for 3 s or till you answer her. "ooh, shiny" on rare or better
+  drops. Up after the three or 20 s.
+- F1: Lap sit. The good sim bot answers her sweetly (`laps`, `gwEnd` in its summary). Single-night sims start at
+  Goodwill 0, so lap sits are rare there (Sunday 1 in 8 nights started one, at Goodwill 87 to 100); weekend sims
+  otherwise as 0.82 (30 and 31 s between demands, stars 3, no catches).
+- Tests: `npx tsx test/lapsit.ts`, `python3 test/lapsit.py` (screens `test/shots/lapsit_*.png`).
+
 ## 0.82.0 (2026-11-26)
 
 - **Her bath** (fan-service, #88). On Saturday and Sunday her shower is a bath, 120 to 150 s after 21:30 (most nights

@@ -14,6 +14,7 @@ declare module 'virtual:pagekit' {
     howto(frame: HTMLCanvasElement | null, o: unknown, t: number, black: boolean): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     micro(frame: HTMLCanvasElement | null, lid: number, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     away(bg: HTMLCanvasElement | null, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
+    lap(t: number, o: { say?: string; mouse?: boolean }): HTMLCanvasElement;
     q4(st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     q4Cursor(kind: string): string;
     coach(id: string, o: { title: string; text: string }, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };

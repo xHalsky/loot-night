@@ -62,6 +62,9 @@ export const PK = {
   howto: (frame, o, t, black) => drawHowtoLive(frame, o, t, black),
   micro: (frame, lid, t) => drawMicroLive(frame, lid, t),
   away: (bg, st, t) => drawAwayLive(bg, st, t),
+  /** The lap sit (fan-service 10, #86; grid doc 7m): the back of her head and her shoulder over the battle's left third,
+   *  transparent, 640 x 360. o { say: her line by her head ('ooh, shiny'), mouse }. */
+  lap: (t, o) => { const c = smCanvas('lap', 640, 360), g = c.getContext('2d'); g.clearRect(0, 0, 640, 360); lapOver(g, t, o || {}); return c; },
   inspect: (bg, o, t) => drawInspectLive(bg, o, t),
   /** A coach mark over the whole frame, transparent (V11): id, { title, text }; hits: the close box, then the callout. */
   /** Q4, the Excel clicker (step 4, #55; grid doc 7i): the game screen, 474 x 232, from the game's view; hits in its px. */

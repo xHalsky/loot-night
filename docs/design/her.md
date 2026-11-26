@@ -211,6 +211,18 @@ silence is meh. Two sweet: she kisses your cheek and leaves happy (Mood `LAP_HAP
 `LAP_CALM_SEC`). Two rude: she sulks off ("Fine. Enjoy your elf."). Poses change with each sweet answer
 (a finger on her lips, twirling her hair, her chin on her fist). Guild chat reacts ("who is that??").
 
+**On your lap** (fan-service step 10, #86; grid doc 7m), a step up from leaning in. From Saturday, at Goodwill
+`LAP_GOODWILL` (70) or more, a chat visit becomes a lap sit: she hums her way over as for a chat, then comes in and
+sits on your lap facing the monitor to watch you play. No check, so the game on screen is fine (Excel too):
+her window is the chat's with ON YOUR LAP 1/3 and KEEP PLAYING. The back of her head and her shoulder, backlit by
+the screen, cover the battle's left third and run off the frame's bottom (the renderer's `lapOver`); you play
+around her, the side panel stays clear. In the webcam she sits on his lap, him behind her (a stand-in for Paweł's
+art). She asks three things about the game (`LAP_SIT_ASK_SEC` 10 each; sweet / meh / rude as the chat, with the
+chat's Mood and Goodwill). A question ignored and she takes your mouse: "You stopped talking to me. My turn!",
+"my turn!" by her head, the skill bar's plate SHE HAS THE MOUSE (skills blocked) for `LAP_MOUSE_SEC` (3) or till you
+answer her ("Okay, I'm here.", "Give it back!", "The boss!"); it counts as one of her three. On a rare or better drop
+"ooh, shiny" by her head. She gets up after the three or `LAP_SIT_SEC` (20) at most.
+
 **How she looks.** Outfit comes from what she was doing: TV = off-shoulder tee and shorts with the
 remote; tea = oversized hoodie and mug; phone or bathroom = tank top and shorts; shower or bath = towel wrap and
 turban with droplets; woken = sleep shirt and messy hair. Barefoot at the door, painted toenails, contact
@@ -220,6 +232,11 @@ visits and when she leans in. A small reaction bubble (?, !, heart, ...) over he
 
 ## Decisions
 
+- **The lap sit has no check** (0.83, #86): at Goodwill 70 she trusts you, so she comes to watch you play, not to see
+  what's on screen; what it costs is the battle's left third and, if you ignore her, your mouse. It comes as a chat's
+  humming, so a player who tabs to Excel is not punished (her window says KEEP PLAYING). Ignoring her takes the mouse
+  once per question rather than ending the visit, as the page draws it (2/3 is her "My turn!"). Rejected: the lap sit
+  from Goodwill 50 (week-one doc), and leaving it on the build's lean-in (#65), which keeps its own place as Tuesday's.
 - **The bath is not a break** (0.82, #88): the shower's 90 to 120 s are the week's safe window (nothing from real life
   starts), but the weekend is where she wants your attention, so in her bath the phone and the dog go on, she asks for
   her wine and her towel, and only her own visits wait. With the bath as a second shelter Saturday and Sunday got easier

@@ -18,11 +18,11 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
 | Wednesday | The phone rings: the courier, Mom, the boss; Messages: Text her and Raid night? | x1.2 | stays up | dawn |
 | Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); the smart home: the battery, Charge, the Home app and its devices ([desk.md](desk.md)) | x1.2 | stays up | dawn |
 | Friday | She goes to bed: the waking meter, her texts, the good-night walk-by; the Witching Hour after 01:00; "come to bed" after 01:00 with Coming, babe ([her.md](her.md)) | x1.2 | 00:00 | dawn |
-| Saturday | The weekend: she's off and wants you: 1 to 2 tease visits (look at her); her shower is a bath, and not a break (the phone and the dog go on); "Babe, towel!" and "Babe, bring my wine?" ([her.md](her.md)) | x1.4 | 01:00 | dawn |
+| Saturday | The weekend: she's off and wants you: 1 to 2 tease visits (look at her); her shower is a bath, and not a break (the phone and the dog go on); "Babe, towel!" and "Babe, bring my wine?"; at Goodwill 70 a chat visit is her on your lap ([her.md](her.md)) | x1.4 | 01:00 | dawn |
 | Sunday | The weekend, more: 2 to 3 tease visits | x1.6 | 01:00 | dawn |
 
 In the schedule already, so they come in on their night once built: lean in and the hall mirror (Tuesday; #77, #59),
-the sheet mask and her selfies (Friday; #59), the lap sit (Saturday; #59).
+the sheet mask and her selfies (Friday; #59).
 - **Visits x** scales her odds at each activity's end, the shortest and longest gap between visits
   (`DOOR_MIN_GAP_SEC`, `DOOR_MAX_GAP_SEC` divided by it) and how fast she gets through her things (not the shower).
 - **Monday's 01:00** ends the night as a Sleep (the run banked, no sleep debt), mid-battle too; the feed warns
