@@ -70,7 +70,7 @@ export function drawDoor(c: CanvasRenderingContext2D) {
     }
   } else {
     const p = n?.peek ?? 0;                       // 0 shut .. 1 = PEEK_CRACK_MAX of the door's width
-    const gap = p * DW * T.PEEK_CRACK_MAX;
+    const ln = n?.lean, gap = ln ? 3 + 9 * (ln.slit - T.LEAN_SLIT[0]) / (T.LEAN_SLIT[1] - T.LEAN_SLIT[0]) : p * DW * T.PEEK_CRACK_MAX;   // leaning in (#77): a slit as the lean's
     if (gap > 0.5) drawHallway(c, X0 + DW - gap, TOP, gap, H, t);
     // the door panel swings toward you: narrower and darker as it opens
     const w = DW - gap;
@@ -173,7 +173,8 @@ function room(c: CanvasRenderingContext2D, t: number) {
   const away = !!n.pre?.away;
   if (!away) {
     // looking at her during a tease (#85) he turns over his shoulder: his back view, a stand-in for Paweł's emote
-    drawHim(c, HIM_X, HIM_Y + bob + me.nod, { face: me.face, back: n.peek > 0.05 || n.peeking || eyesBusy(), look: me.look, headset: n.headset, jitter: me.jitter, glow, lens: excel ? '#b3bdb2' : undefined });   // under Excel his glasses go grey-green
+    // leaning in (#77): turned round, out of the chair toward the crack
+    drawHim(c, HIM_X + (n.lean ? 16 : 0), HIM_Y + bob + me.nod + (n.lean ? 6 : 0), { face: me.face, back: n.peek > 0.05 || n.peeking || eyesBusy(), look: me.look, headset: n.headset, jitter: me.jitter, glow, lens: excel ? '#b3bdb2' : undefined });   // under Excel his glasses go grey-green
     drawChairWrap(c, HIM_X, HIM_Y);
     if (onLap()) {   // the lap sit (#86): she sits on his lap facing the monitor (and the camera), him behind her; a stand-in for Paweł's art
       const v = n.visit, look = herLook(v.from ?? 'tv'), last = v.chat?.last ?? -1;
@@ -297,48 +298,50 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
   }
   c.fillStyle = '#2c2128'; c.fillRect(205, yTop(205) + 2, 3, yBot(205) - yTop(205));   // door frame edge
 
-  // --- bathroom door, further along the right wall (medium crack)
+  // --- the bedroom door, further along the right wall (medium crack). The plan as approved for lean in (#77, 7l): the
+  // bedroom off the hallway, the bathroom at the far end facing your crack, the living room through the arch on the left
   const bq = wallQuad(182, 200, 0.2);
-  const bath = room === 'bathroom';
-  fillPoly(c, bq, bath ? '#cdbfa6' : '#a99c88');
-  const gl = wallQuad(185, 197, 0.28).map(([px, py], i) => [px, i < 2 ? py : py - (yBot(px) - yTop(px)) * 0.38] as [number, number]);   // the frosted glass panel
-  fillPoly(c, gl, bath ? 'rgba(235,240,250,.9)' : '#8d8b95');
-  if (bath && (act === 'shower' || act === 'bath')) {   // the bath (#88): steam, no shape behind the glass (she's down in the tub)
-    if (act === 'shower') { c.save(); c.beginPath(); gl.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.clip();
-    drawHerFrosted(c, 191, gl[0][1] + 2, 0.36); c.restore(); }
-    else if (S.g.night?.apt.ajar) { c.fillStyle = 'rgba(255,190,110,.45)'; c.fillRect(196, yTop(196) + 4, 4, yBot(196) - yTop(196) - 4); }   // ajar for her music: candlelight in the gap
-    for (let i = 0; i < 6; i++) { const k = (t * 0.35 + i / 6) % 1; c.fillStyle = `rgba(240,244,255,${0.32 * (1 - k)})`; c.beginPath(); c.arc(184 + Math.sin(t + i * 1.7) * 6 - k * 12, yTop(186) + 30 + i * 8 - k * 30, 5 + k * 9, 0, Math.PI * 2); c.fill(); }   // steam leaking out
+  const inBed = room === 'bedroom', phoneGlow = inBed && act === 'phone' && !a.asleep;
+  const ajarB = inBed ? 0.35 : 0;
+  fillPoly(c, bq, '#0c0a10');                                                                     // inside (seen when ajar)
+  if (phoneGlow) fillPoly(c, wallQuad(182, 182 + 18 * ajarB, 0.2), '#5a78c8');
+  fillPoly(c, wallQuad(182 + 18 * ajarB, 200, 0.2), '#9a8a78');                                   // the door
+  if (inBed && !a.asleep) {   // her bedside lamp: a light strip under the door
+    c.fillStyle = phoneGlow ? '#a8c0ff' : '#ffe9a8'; c.beginPath(); c.moveTo(182, yBot(182) - 1); c.lineTo(200, yBot(200) - 1); c.lineTo(200, yBot(200) + 1); c.lineTo(182, yBot(182) + 1); c.fill();
   }
-  if (bath) {   // light strip under the door, and its glow on the floor
-    c.fillStyle = '#ffe9a8'; c.beginPath(); c.moveTo(182, yBot(182) - 1); c.lineTo(200, yBot(200) - 1); c.lineTo(200, yBot(200) + 1); c.lineTo(182, yBot(182) + 1); c.fill();
-    const bgw = c.createRadialGradient(191, yBot(191) + 6, 1, 191, yBot(191) + 6, 26); bgw.addColorStop(0, 'rgba(255,233,168,.35)'); bgw.addColorStop(1, 'rgba(255,233,168,0)');
-    c.fillStyle = bgw; c.fillRect(160, yBot(182) - 10, 60, 40);
+  if (phoneGlow) {   // cold blue phone glow on the ceiling
+    const pg = c.createRadialGradient(190, yTop(190) + 4, 2, 190, yTop(190) + 4, 40); pg.addColorStop(0, 'rgba(140,180,255,.45)'); pg.addColorStop(1, 'rgba(140,180,255,0)');
+    c.fillStyle = pg; c.fillRect(150, 80, 80, 70);
   }
 
-  // --- the far end: living-room opening (left) and the bedroom door (right) (wide crack)
+  // --- the far end: the living room through the arch (left) and the bathroom's door, facing you (wide crack)
   const tv = room === 'living' && act === 'tv';
-  c.fillStyle = '#120e15'; c.fillRect(106, 140, 32, yBot(RW) - 140);                      // living-room opening
+  c.fillStyle = '#120e15'; c.fillRect(96, 140, 42, yBot(RW) - 140);                       // the arch into the living room
   if (room === 'living') {
     const f = tv ? 0.55 + Math.sin(t * 9) * 0.15 + Math.sin(t * 23) * 0.1 : 0.4;
-    c.fillStyle = tv ? `rgba(90,140,255,${f})` : `rgba(255,200,130,${f})`; c.fillRect(106, 140, 32, yBot(RW) - 140);
+    c.fillStyle = tv ? `rgba(90,140,255,${f})` : `rgba(255,200,130,${f})`; c.fillRect(96, 140, 42, yBot(RW) - 140);
     if (tv) { c.fillStyle = `rgba(110,150,255,${f * 0.35})`; c.fillRect(END_L, yTop(RW), RW - END_L, yBot(RW) - yTop(RW)); }   // blue flicker on the wall
-    c.fillStyle = '#4a3a5a'; c.fillRect(110, 192, 28, 22); c.fillStyle = '#5c4a6e'; c.fillRect(110, 188, 28, 6);              // the sofa's armrest
-    for (const [fx, fy] of [[120, 182], [129, 184]]) {                                                                         // her bare feet on it
-      c.fillStyle = '#e9ad96'; c.fillRect(fx, fy, 7, 6); c.fillStyle = '#f9d8c2'; c.fillRect(fx, fy, 6, 5);
-      c.fillStyle = '#f7c4b2'; c.fillRect(fx + 1, fy + 1, 3, 3); c.fillStyle = '#f9d8c2'; c.fillRect(fx + 6, fy - 2, 2, 3);
+    c.fillStyle = '#4a3a5a'; c.fillRect(104, 192, 32, 22); c.fillStyle = '#5c4a6e'; c.fillRect(104, 188, 32, 6);              // the couch's armrest
+    if (tv) for (const [fx, fy] of [[116, 182], [125, 184]]) {                                                              // her feet on it
+      const ft = herLook('tv').feet, sock = ft !== 'bare';
+      c.fillStyle = sock ? '#cfc6ba' : '#e9ad96'; c.fillRect(fx, fy, 7, 6); c.fillStyle = sock ? '#efeae2' : '#f9d8c2'; c.fillRect(fx, fy, 6, 5);
+      if (!sock) { c.fillStyle = '#f7c4b2'; c.fillRect(fx + 1, fy + 1, 3, 3); } c.fillStyle = sock ? '#efeae2' : '#f9d8c2'; c.fillRect(fx + 6, fy - 2, 2, 3);
     }
   }
-  c.fillStyle = '#2c2128'; c.fillRect(104, 138, 36, 3); c.fillRect(104, 140, 2, yBot(RW) - 140); c.fillRect(138, 140, 2, yBot(RW) - 140);
-  const inBed = room === 'bedroom';
-  const ajar = inBed ? 7 : 0;
-  c.fillStyle = '#2c2128'; c.fillRect(144, 136, 26, yBot(RW) - 136);                        // bedroom door frame
-  c.fillStyle = inBed && act === 'phone' && !a.asleep ? '#5a78c8' : '#0c0a10'; c.fillRect(146, 138, 22, yBot(RW) - 138);   // inside (seen when ajar)
-  c.fillStyle = '#9a8a78'; c.fillRect(146 + ajar, 138, 22 - ajar, yBot(RW) - 138);           // the door
-  c.fillStyle = '#c9a441'; c.fillRect(146 + ajar + 2, 178, 2, 3);
-  if (inBed && act === 'phone' && !a.asleep) {   // cold blue phone glow on the ceiling
-    const pg = c.createRadialGradient(150, yTop(RW) + 4, 2, 150, yTop(RW) + 4, 46); pg.addColorStop(0, 'rgba(140,180,255,.55)'); pg.addColorStop(1, 'rgba(140,180,255,0)');
-    c.fillStyle = pg; c.fillRect(100, 80, 100, 70);
+  c.fillStyle = '#2c2128'; c.fillRect(94, 136, 46, 4); c.fillRect(94, 140, 2, yBot(RW) - 140);   // the arch's header
+  const bath = room === 'bathroom', wetNow = bath && (act === 'shower' || act === 'bath');
+  c.fillStyle = '#2c2128'; c.fillRect(144, 132, 28, yBot(RW) - 132);                        // the bathroom's door frame
+  const gap = act === 'bath' && a.ajar && bath ? 5 : 0;                                        // ajar for her music (a pocket door)
+  c.fillStyle = bath ? '#ffd9a0' : '#0c0a10'; c.fillRect(146, 134, 24, yBot(RW) - 134);
+  c.fillStyle = bath ? '#cdbfa6' : '#a99c88'; c.fillRect(146 + gap, 134, 24 - gap, yBot(RW) - 134);   // the door
+  const gx0 = 149 + gap, gx1 = 167;
+  c.fillStyle = bath ? 'rgba(235,240,250,.9)' : '#8d8b95'; c.fillRect(gx0, 140, gx1 - gx0, 34);       // the frosted glass panel
+  if (wetNow) {
+    if (act === 'shower') { c.save(); c.beginPath(); c.rect(gx0, 140, gx1 - gx0, 34); c.clip(); drawHerFrosted(c, (gx0 + gx1) / 2, 141, 0.16); c.restore(); }
+    else if (gap) { c.fillStyle = 'rgba(255,190,110,.6)'; c.fillRect(146, 134, gap, yBot(RW) - 134); }   // candlelight in the gap
+    for (let i = 0; i < 6; i++) { const k = (t * 0.35 + i / 6) % 1; c.fillStyle = `rgba(240,244,255,${0.3 * (1 - k)})`; c.beginPath(); c.arc(158 + Math.sin(t + i * 1.7) * 5, yBot(RW) - 6 - k * 26, 3 + k * 7, 0, Math.PI * 2); c.fill(); }   // steam under the door
   }
+  if (bath) { c.fillStyle = '#ffe9a8'; c.fillRect(146, yBot(RW) - 2, 24, 2); }                  // light under the door
 
   // --- her in the hallway: head to toe, close when she is at your door
   if (room === 'hallway' && v !== 'in') {

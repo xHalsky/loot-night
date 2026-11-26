@@ -5,5 +5,6 @@ import { S } from '../core/state';
  *  plate), bought autocasts still fire, Flow doesn't build. Excel up counts as ignoring her. */
 export function eyesBusy(): boolean {
   const n = S.g.night;
+  if (n?.lean) return true;   // leaning in (#77): you're watching her, not the game
   return !!n && n.visit.kind === 'tease' && n.visit.stage === 'in' && !n.visit.result && n.looking && n.monitor !== 'excel' && !n.switching && n.monitorOff <= 0;
 }

@@ -468,6 +468,7 @@ const ITEM_G = {
   door: ['.xxxxxx.', '.x....x.', '.x....x.', '.x...xx.', '.x....x.', '.x....x.', '.x....x.', 'xxxxxxxx'],
   cup: ['.....x..', '....x...', '.xxxxxx.', '.x....x.', '.x.x..x.', '.x..x.x.', '.x.x..x.', '..xxxx..'],
   hoodie: ['.x....x.', '.xx..xx.', '.xxxxxx.', 'xx.xx.xx', 'xxxxxxxx', '.xxxxxx.', '.xxxxxx.', '.xxxxxx.'],
+  mirror: ['.xxxxxx.', '.x....x.', '.x..x.x.', '.x.x..x.', '.x....x.', '.x....x.', '.xxxxxx.', '..x..x..'],   // the hall mirror (lean in, #77)
 };
 const SHOP = {
   you: [
@@ -484,6 +485,7 @@ const SHOP = {
     { g: 'tv', c: [P.steel, P.moon], name: 'TV cast', zl: 149, fx: 'At the credits: one more episode.' },
     { g: 'door', c: [P.steel, P.moon], name: 'Door seal', zl: 39, fx: 'Like a towel: quieter, no light under it.', state: 'owned' },
     { g: 'cup', c: [P.u3, P.pale], name: 'Bubble tea', zl: 25, fx: 'An order, in the Home app. Twice a night.', state: 'inhome' },
+    { g: 'mirror', c: [P.s3, P.s6], name: 'Hall mirror', zl: 199, fx: 'Lean past 3: round the corner. She sees you too.' },
   ],
   her: [
     { g: 'flowers', c: [P.d4, P.d6], name: 'Flowers', zl: 49, fx: '+20 Goodwill at once. One use.', state: 'tonight' },
@@ -556,7 +558,8 @@ const HROOM_BUILD = (u, v) => {
   return v < 108 ? 'hallway' : 'living';
 };
 const HL_APPROVED = { room: HROOM, dev: HDEV, labels: [['Bedroom', 2, 2], ['Bath', 2, 58], ['Kitchen', 110, 2], ['Hallway', 70, 84], ['Living', 2, 104]],
-  paths: { kitchen: [[130, 30], [180, 60], [150, 70], [125, 50]], living: [[50, 122], [112, 124], [108, 140], [52, 140]] } };
+  paths: { kitchen: [[130, 30], [180, 60], [150, 70], [125, 50]], living: [[50, 122], [112, 124], [108, 140], [52, 140]],
+    bath: [[10, 62], [60, 62], [60, 94], [10, 94]], bedroom: [[12, 20], [60, 20], [60, 48], [12, 48]], hallway: [[76, 92], [134, 92], [134, 102], [76, 102]] } };
 const HL_BUILD = { room: HROOM_BUILD, dev: { vacuum: [112, 184], speakerK: [176, 52], speakerB: [90, 46], tv: [12, 140], seal: [150, 96] },
   labels: [['Bedroom', 2, 2], ['Bath', 72, 2], ['Kitchen', 112, 2], ['Hallway', 72, 86], ['Living', 2, 100]],
   paths: { living: [[16, 108], [60, 112], [118, 184], [30, 186]], kitchen: [[120, 30], [170, 60], [150, 76], [118, 60]], bath: [[78, 58], [102, 60], [102, 78], [78, 78]],
@@ -1128,7 +1131,7 @@ const LIVE = {
   dead(t, v) { PHONE_SCREENS.dead(t, {}); if (!v.chargeOff) hit(10, 206, PH.sw - 20, 16, 'charge', ''); homeHit('preMenu'); },
   // the Home app (step 6.2, #57): the build's plan with what is installed, the bubble tea, a device's sheet
   homeapp(t, v) {
-    HL = HL_BUILD;
+    HL = HL_APPROVED;   // the plan change went in with lean in (V12, #77)
     homeApp(t, { batt: v.batt, owned: v.owned, dev: v.dev, coolText: v.coolText, runRoom: v.runRoom, pick: v.sheet ? v.sheet.kind : null, pickAt: v.sheet ? v.sheet.at : null,
       tea: v.tea, teaOf: v.teaOf, teaWhy: v.teaWhy, teaZl: v.teaZl, teaCost: v.teaCost, sub: v.sub, foot: v.foot });
     backHit('phApp', 'home');

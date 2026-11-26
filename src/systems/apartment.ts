@@ -1,7 +1,7 @@
 import { T } from '../config/tuning';
 import { maybeSelfie } from './selfies';
 import { wearing } from './wardrobe';
-import { rules, bedAt, on } from './week';
+import { rules, bedAt, on, isNewTonight } from './week';
 import { S, N, type ActivityId, type Room } from '../core/state';
 import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE, wet } from '../data/apartment';
 import { askFree, startAsk } from './asks';
@@ -25,6 +25,10 @@ export function initApartment() {
   n.apt = { room: 'living', activity: 'tv', t: rand(...ACT_BY_ID.tv.dur), moving: 0, soundT: 1,
     heard: 'living', heardWhat: 'TV', heardAt: 0, showerUsed: false, lastVisitEnd: 0, forceDoor: false,
     asleep: false, wake: 0, textSent: false, cued: false, calm: 0, forceKind: null };
+  n.apt.dur = n.apt.t;
+  // lean in's first chance (#77, week one 2b): the night it comes in she starts with yoga in the living room, where the
+  // lean reaches (stop 3), and no visit comes while that first yoga lasts
+  if (isNewTonight('lean')) { const a = n.apt; a.activity = 'yoga'; a.t = a.dur = rand(...ACT_BY_ID.yoga.dur); a.heardWhat = 'VIDEO'; a.calm = a.t; a.calmHard = true; }
 }
 
 /** Called by visits.ts when she leaves your door or walks past it. */
@@ -63,11 +67,13 @@ function pickActivity() {
   if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < bedAt() && chance(bath ? T.BATH_CHANCE : T.SHOWER_CHANCE)) {
     id = bath ? 'bath' : 'shower'; a.showerUsed = true; if (!n.headset && !bath) tip('shower');
   }
+  else if (on('mask') && !a.maskUsed && n.clock >= bedAt() - T.MASK_BEFORE_BED_MIN && n.clock < bedAt()) { id = 'mask'; a.maskUsed = true; }   // getting ready for bed (#77)
   else {
-    const pool = ACTIVITIES.filter(x => x.weight > 0 && x.id !== a.activity);
-    id = pool[weighted(pool.map(x => x.weight))].id;
+    const w = (x: typeof ACTIVITIES[number]) => x.id === 'yoga' ? (on('lean') ? 1 : 0) : x.weight;   // yoga from Tuesday (lean in, #77)
+    const pool = ACTIVITIES.filter(x => w(x) > 0 && x.id !== a.activity);
+    id = pool[weighted(pool.map(w))].id;
   }
-  a.activity = id; a.room = ACT_BY_ID[id].room; a.t = rand(...ACT_BY_ID[id].dur);
+  a.activity = id; a.room = ACT_BY_ID[id].room; a.t = a.dur = rand(...ACT_BY_ID[id].dur);
   a.moving = T.APT_MOVE_SEC; a.soundT = 0.5; a.cued = false;
   // her requests from the bathroom (#93, #88), decided as she goes in; the door ajar for her bath music
   a.ajar = id === 'bath' && chance(T.BATH_DOOR_AJAR);
@@ -186,7 +192,7 @@ export function replyText(ok: boolean) {
 /** A device sent her (the Home app, #57): she walks to that room, sees to it for a moment, then back to her things. */
 export function sendHerTo(room: Room, what: string, sec = T.CHECK_SEC) {
   const a = N().apt;
-  a.room = room; a.activity = ROOM_ACTIVITY[room]; a.t = sec + T.APT_MOVE_SEC; a.moving = T.APT_MOVE_SEC; a.cued = false; a.soundT = 0.3;
+  a.room = room; a.activity = ROOM_ACTIVITY[room]; a.t = a.dur = sec + T.APT_MOVE_SEC; a.moving = T.APT_MOVE_SEC; a.cued = false; a.soundT = 0.3;
   hear(room, what);
 }
 

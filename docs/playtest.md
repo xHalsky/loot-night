@@ -11,8 +11,9 @@ One person who has not seen the game, two nights (Monday and Tuesday), about 20 
 ## What the two nights hold
 - **Monday:** Danny's voice note on the phone, How to hide (three tiles), her peeks and snack runs, Excel (Q4 pays
   złoty), the phone's Shop. No Tiredness, no calls. The night ends at 01:00 (about 6 real minutes).
-- **Tuesday:** Danny's note, How to hide with the headset new, her first visit is a chat (safe the first time),
-  Garrote joins, Tiredness, and the night can run past 01:00 to dawn (6 to 14 minutes). Pulled plug: Tuesday again.
+- **Tuesday:** Danny's note (lean in), How to hide with the headset and Lean in new, the night opens with her yoga
+  (watch whether they hold the door and lean in; note if she spots them), her first visit is a chat (safe the first
+  time), Garrote joins, Tiredness, and the night can run past 01:00 to dawn (6 to 14 minutes). Pulled plug: Tuesday again.
 
 ## While they play (tick or note the time)
 | Criterion | What to watch | Note |

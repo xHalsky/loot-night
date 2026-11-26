@@ -72,6 +72,9 @@ export const PK = {
     const w = PHONEOS.SELFIE_W + 12, h = PHONEOS.SELFIE_H + 22, x = 356, y = 50;
     return { canvas: c, hits: [{ x: x + w - 15, y, w: 14, h: 14, act: 'photoClose', arg: '' }, { x, y, w, h, act: 'photoNoop', arg: '' }, { x: 0, y: 0, w: 640, h: 360, act: 'photoClose', arg: '' }] };
   },
+  /** Lean in (V12, #77; grid doc 7l): his view through the crack, 492 x 360 over the right screen. o { act, stage, u,
+   *  slit, focus, mirror: 'off' | 'clear' | 'fog', look: 'busy' | 'tell' | 'sees', bar, t }. */
+  lean: (o) => drawLean(o),
   lap: (t, o) => { const c = smCanvas('lap', 640, 360), g = c.getContext('2d'); g.clearRect(0, 0, 640, 360); lapOver(g, t, o || {}); return c; },
   inspect: (bg, o, t) => drawInspectLive(bg, o, t),
   /** A coach mark over the whole frame, transparent (V11): id, { title, text }; hits: the close box, then the callout. */

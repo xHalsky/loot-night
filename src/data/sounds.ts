@@ -21,6 +21,6 @@ export const LOOP_SEC: Record<string, number> = { tv: 9, kettle: 4, shower: 4, b
 export const LOOP_PAD = 0.25;
 
 /** Her activity -> its continuous sound while she is at it. */
-export const AMBIENCE: Record<string, string> = { tv: 'tv', tea: 'kettle', shower: 'shower', bath: 'bath' };
+export const AMBIENCE: Record<string, string> = { tv: 'tv', tea: 'kettle', shower: 'shower', bath: 'bath', yoga: 'tv' };   // yoga: the video on the TV
 /** Her activity -> the cue that it is ending (END_CUE_SEC before she moves). */
-export const END_CUE: Record<string, string> = { tv: 'credits', tea: 'kettleoff', toilet: 'tap', shower: 'dryer', bath: 'drain', phone: 'bye' };
+export const END_CUE: Record<string, string> = { tv: 'credits', tea: 'kettleoff', toilet: 'tap', shower: 'dryer', bath: 'drain', phone: 'bye', yoga: 'credits', mask: 'tap' };

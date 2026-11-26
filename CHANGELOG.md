@@ -3,6 +3,31 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.85.0 (2026-11-26)
+
+- **Lean in** (fan-service steps 7 and 12, V12 #77; grid doc 7l). From Tuesday, hold your door past 0.6 s and the
+  right screen is his view through the crack (the page's raytraced view): the mouse leans through 1 the kitchen, 2 the
+  bathroom, 3 the living room and the hall mirror, the wheel opens the door a notch (two quick notches creak, Noise
+  +8), the right button looks closer. Eyes busy the whole time; in the webcam he turns round and leans to the crack.
+- **Her timers** drawn in the scene, three stages each: yoga (new, from Tuesday), the couch (her TV), the bath (ajar),
+  the kitchen (her tea), the sheet mask (new, Friday on, once before bed).
+- **She can see you:** from where she sits she glances at your door every 5 to 12 s, her tell first (let go), then the
+  red bar fills while she looks, faster the wider the slit (x1 to x2.5), x1.5 closer, x2 in the mirror. Full: "Enjoying
+  the view?", never a catch: Goodwill 40+ she blushes (+10), below she teases (Mood +5).
+- **The hall mirror** (199 zł, the Shop's Home tab): round the corner past stop 3; her steam fogs it for 20 s.
+- **The plan change:** the bathroom at the hallway's far end (a pocket door), the bedroom off the hallway, the arch into
+  the living room, the mirror's wall; the plan, the crack's corner and the Home app follow; who hears you follows the
+  rooms (the bathroom x0.5, the bedroom x1).
+- **Taught on Tuesday:** Danny's note names it, How to hide's fifth tile, the night opens with her yoga (no visit while
+  it lasts), three coach marks (the door, the slit, her first tell, which waits till you let go), the first lean safe
+  for 6 s.
+- V13 (#78) is complete with this: the voice note, the replay morning, her moment windows, the blocked plates, the eye
+  pointer, Hide cans, the away card's reason, the lap sit.
+- Sims (16 a night, good bot): seconds between demands Mon 101, Tue 115 (her opening yoga holds her first visit off,
+  by design), Wed 50, Thu 40, Fri 37, Sat 32, Sun 33; stars 3, no catches. Idle bot: unplugged every Tuesday and
+  Wednesday, 4 and 7 of 8 on the weekend.
+- Tests: `npx tsx test/lean.ts`, `python3 test/lean.py` (screens `test/shots/lean_*.png`); week, asks updated.
+
 ## 0.84.0 (2026-11-26)
 
 - **What she wears** (fan-service step 3, #90). Her outfit comes from what she was doing: a knit sweater and socks on

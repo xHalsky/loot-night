@@ -56,6 +56,7 @@ export const bedAt = () => { const b = rules().bed; return b ? b - (S.g.night?.w
 export function howtoTiles(): { ids: string[]; isNew: string[]; answer: 'mon' | 'tue' | 'thu' } {
   const ids = ['listen', 'tab', 'answer'], isNew: string[] = [];
   if (on('headset')) { ids.push('headset'); if (isNewTonight('headset')) isNew.push('headset'); }
+  if (on('lean')) { ids.push('lean'); if (isNewTonight('lean')) isNew.push('lean'); }   // lean in (#77): five tiles from Tuesday
   if (isNewTonight('cuddle') || isNewTonight('fuel')) isNew.push('answer');
   return { ids, isNew, answer: on('cuddle') || on('fuel') ? 'thu' : on('chat') ? 'tue' : 'mon' };
 }

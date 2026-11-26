@@ -90,7 +90,7 @@ function leanScene(act, stage, o = {}) {
   const k = [0.12, 0.5, 0.9][stage];
   // the bathroom's door slides into the wall north of it (a pocket door): ajar for her music during the bath, it
   // opens a gap from the north jamb, so the tub's foot end shows; open otherwise
-  S.bathOpen = act === 'bath' ? 11 : 14;
+  S.bathOpen = act === 'bath' ? 11 : act === 'shut' ? 0 : 14;   // shut: the shower, the toilet, a bath with the door shut (the game, #77)
   if (S.bathOpen < 14) S.boxes.push({ r: [69.6, 85 + S.bathOpen, 70.4, 99], z0: 0, z1: 36, m: 'door' });
   S.doors.push({ h: [98, 84], len: 18, ang: 84, dir: [-1, 0], swing: 1 });   // the bedroom's, open
   if (act === 'yoga' || act === 'couch') {
@@ -436,7 +436,7 @@ function faceMarks(I, W, H, cx, cy, rx, ry, turned, P0, look, o, name) {
 // ---------------------------------------------------------------- the view
 // where she is, per activity and stage: [pose, plan x, y, z of what she stands or sits on]
 function herPlace(act, stage, mirror) {
-  if (mirror !== 'off') return [{ pose: 'mirrorMask', at: [15, 64.5, 0], refl: true }];
+  if (mirror !== 'off') return act === 'mask' ? [{ pose: 'mirrorMask', at: [15, 64.5, 0], refl: true }] : [];   // the game: in the mirror only at her sheet mask
   if (act === 'yoga') return [{ pose: ['yogaStand', 'yogaFloor', 'yogaLie'][stage], at: [22, [114, 110, 112][stage], 0.3] }];
   if (act === 'couch') return [{ pose: 'couch', at: [30.5, 134.5, 7.6] }];
   if (act === 'bath') return [{ pose: 'bathHead', at: [19, 94.2, 2.8] }, { leg: true }];
@@ -601,7 +601,7 @@ function leanGrid(ctx, C, xl, xr) {
 function leanUI(ctx, o, w, xl, xr) {
   const crim = '#d23c5a', t = o.t || 0, look = o.look || 'busy';
   const rate = (1 + 1.5 * (w - 24) / 136) * (o.focus ? 1.5 : 1);
-  const fill = look === 'sees' ? Math.min(1, (t % 3.2) * 0.28 * rate) : 0;
+  const fill = o.bar != null ? o.bar : look === 'sees' ? Math.min(1, (t % 3.2) * 0.28 * rate) : 0;   // the game passes its bar
   const bw = 72, bx = Math.round(LEAN.cx - bw / 2 + 7), by = 9;
   // the eye: shut while she's busy, half open at her tell, open and red when she sees you
   const ex = bx - 14, ey = by + 2;

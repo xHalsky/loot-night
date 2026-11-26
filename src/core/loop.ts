@@ -1,4 +1,5 @@
 import { updatePeek } from '../systems/peek';
+import { updateLean } from '../systems/lean';
 import { updateSwitch } from '../systems/excel';
 import { updateLap } from '../systems/lap';
 import { updateDog } from '../systems/pets';
@@ -30,7 +31,7 @@ export function step(dt: number) {
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
   updatePre(dt);
   updateCurioTimers(dt);   // party buffs, Magoo's sulk
-  if (life) { updateVisits(dt); updatePeek(dt); }
+  if (life) { updateVisits(dt); updatePeek(dt); updateLean(dt); }   // lean in (#77)
   updateHim(dt);
   updateTips(dt);
   if (life) { updateLap(dt); updateDog(dt); }

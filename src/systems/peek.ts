@@ -25,6 +25,7 @@ function seenRate(): number {
   const a = n.apt;
   if (a.asleep) return 0;
   if (a.moving > 0 || a.room === 'hallway') return T.PEEK_SEEN.hallway;
+  if (n.lean) return 0;   // leaning in (#77): where she sits, the red bar decides (systems/lean.ts)
   if (a.room === 'living') return a.activity === 'tv' ? T.PEEK_SEEN.tv : T.PEEK_SEEN.living;
   return 0;
 }

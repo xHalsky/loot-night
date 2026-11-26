@@ -90,6 +90,22 @@ export const T = {
   PEEK_OPEN_SEC: 0.5, PEEK_CRACK_MIN: 0.15, PEEK_CRACK_MAX: 0.66, PEEK_CREEP_SEC: 7,
   PEEK_SEEN: { hallway: 1.4, living: 0.45, tv: 0.18 } as Record<string, number>,
   PEEK_CAUGHT_MOOD: 8,
+  // Lean in (fan-service 7 and 12, V12 #77; grid doc 7l), from Tuesday: hold the door open past LEAN_DELAY and the
+  // right screen is his view through the crack. Eyes busy the whole time; she can see you
+  LEAN_DELAY: 0.6,
+  LEAN_SLIT: [24, 160] as [number, number], LEAN_SLIT_START: 64, LEAN_NOTCH: 8,   // px; the wheel opens or closes it a notch
+  LEAN_CREAK_SEC: 0.3, LEAN_CREAK_NOISE: 8,   // two notches this close together creak
+  LEAN_LOOK_GAP: [5, 12] as [number, number],   // her next glance toward your door, while she's somewhere she can see it
+  SPOT_TELL_SEC: 0.5,             // her tell: she pauses, her head turns (let go now)
+  LEAN_LOOK_SEC: 1.6,             // then she looks this long
+  LEAN_SPOT_RATE: 0.45,           // the red bar a second while she looks, at the narrowest slit...
+  LEAN_SPOT_MIN: 1, LEAN_SPOT_MAX: 2.5,   // ...x this at 24 px to x this at 160
+  LEAN_FOCUS_SPOT: 1.5, MIRROR_SPOT: 2,   // the closer framing; in the mirror (it works both ways)
+  LEAN_SPOT_DECAY: 0.25,          // the bar drains this fast while she's busy
+  LEAN_FIRST_SAFE_SEC: 6,         // the first lean ever: no tell this soon
+  LEAN_SPOT_GOODWILL: 40, LEAN_SPOT_GW: 10, LEAN_SPOT_MOOD: 5,   // spotted: "Enjoying the view?" flustered (Goodwill 40+: +10) or teasing (Mood +5); never a catch
+  MIRROR_DEFOG_SEC: 20,           // the hall mirror clears this long after her steam
+  MASK_BEFORE_BED_MIN: 45,        // the sheet mask: once, in the last this-many minutes before she goes to bed
   LEAN_CHANCE: 0.25, LEAN_MOOD: -2,      // a visit where she only leans on the frame and looks
   // The dog: pops up for attention; ignored 1-3 times -> bumps the desk, cables out
   // when he comes is the week's (NIGHT_SCHEDULE dog: first at 90 s, then every 120 to 180 s; the build's 50 and 70 to 120 before #56)
@@ -349,6 +365,8 @@ export const T = {
     phone:  { peek: 1 },
     shower: { cuddle: 2, peek: 1 },
     bath:   { cuddle: 2, peek: 1 },
+    yoga:   { chat: 1, cuddle: 1 },
+    mask:   { peek: 1, cuddle: 1 },
   } as Record<string, Record<string, number>>,
   END_CUE_SEC: 3.5,               // her activity ends with a sound this long before she moves
   SNACK_TAKE_SEC: 3, SNACK_HEAL: 0.2, SNACK_PASS_MOOD: -5, SNACK_IGNORE_MOOD: 3, SNACK_FAIL_MOOD: 8,   // fail = cans in sight: she takes one
@@ -401,7 +419,7 @@ export const T = {
   ASK_IGNORE_MOOD: 10,            // ignored: she gets it herself, in a towel, dripping, by way of your door (a normal visit)
   // Noise by distance and masking: how much of your Noise reaches her. Never shown to the player.
   HEAR_DISTANCE: { next: 2, middle: 1, far: 0.5 } as Record<string, number>,
-  HEAR_MASK: { tv: 0.5, shower: 0, bath: 0.35 } as Record<string, number>,   // her activity covers your noise (her bath music some of it)
+  HEAR_MASK: { tv: 0.5, shower: 0, bath: 0.35, yoga: 0.7 } as Record<string, number>,   // her activity covers your noise (her bath music some of it)
   BATH_AJAR_HEAR: 2,              // the bath's door ajar: she hears you this much better (and you her music)
   SCARE_SEC: 0.8,
   CAUGHT_HOLD_SEC: 3.2,           // after the scare her screen stays this long so the cost can be read; a click or a key ends it (V7)
@@ -471,7 +489,7 @@ export const T = {
   Q4_BUSY_SEC: 2, Q4_IDLE_SEC: 3, Q4_BUSY_MULT: 1.5,   // looking busy while she is in: acted in the last 2 s, her visit runs x1.5; idle 3 s, it waits
 
   // --- The Shop app (step 4.6, #55; prices from grid doc 7i, to be tuned in playtests) ---
-  SHOP_ZL: { fuel: 29, chew: 29, keys: 249, fridge: 599, chair: 899, phone: 2999, flowers: 49, fluffy: 79, knee: 99, fury: 129, pjset: 149, cathoodie: 199, vacuum: 899, speaker: 199, tv: 149, seal: 39, tea: 25 } as Record<string, number>,
+  SHOP_ZL: { fuel: 29, chew: 29, keys: 249, fridge: 599, chair: 899, phone: 2999, flowers: 49, fluffy: 79, knee: 99, fury: 129, pjset: 149, cathoodie: 199, mirror: 199, vacuum: 899, speaker: 199, tv: 149, seal: 39, tea: 25 } as Record<string, number>,
   SHOP_FUEL_CANS: 4,              // Goblin Fuel: a pack of four for the drawer (MONSTER_DRAWER holds 8)
   SHOP_CHEW_SEC: 120,             // the dog chew: his next visit comes this much later
   SHOP_CHAIR_TIRED: 0.85,         // the ergo chair: Tiredness builds at this rate

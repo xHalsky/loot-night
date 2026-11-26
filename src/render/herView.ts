@@ -40,6 +40,7 @@ function middle(hover: string) {
       marks: [T.WAKE_TEXT / 100], barLabels: [[T.WAKE_TEXT / 100, 'texts you'], [1, 'gets up']] as [number, string][], barTip: 'wake' } };
   }
   if (v.stage === 'idle' && S.g.day === 0 && n.apt.cued && !n.headset && END_HINT[n.apt.activity]) { label = 'listen'; body = END_HINT[n.apt.activity]; tone = 'warn'; }   // first night: name the tell
+  if (n.leanSpotted && v.stage === 'idle') return { win: { label: 'HER', pink: true, line: n.leanSpotted.good ? '"Enjoying the view?" She blushes and turns back.' : '"Enjoying the view, creep?"' } };   // she saw you leaning in (#77)
   if (v.kind === 'tease') return teaseWin();   // she wants you (#85, #89)
   if (v.stage === 'idle' && n.herAsk) return askWin();       // "Babe, towel!", "Babe, bring my wine?" (#93, #88)
   if (v.stage === 'idle' && n.herThanks && !n.pre) return thanksWin();
@@ -118,7 +119,7 @@ export function herView(hover = '') {
   const n = N(), zone = moodZone(n.mood), v = n.visit, tease = v.kind === 'tease' && v.stage === 'in';
   return {
     gwTag: tease && (v.gw ?? 0) >= 1 ? `+${Math.floor(v.gw ?? 0)}${v.bed && eyesBusy() ? ' x2' : ''}` : undefined,   // looking at her: Goodwill rises on its bar
-    mood: tease && v.result === 'kissed' ? 'flustered' : tease && v.bed ? 'sleepy' : n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'annoyed' : 'furious',
+    mood: n.leanSpotted?.good || (tease && v.result === 'kissed') ? 'flustered' : tease && v.bed ? 'sleepy' : n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'annoyed' : 'furious',
     heard: heard(),
     ...middle(hover),
     buttons: null,   // Make her tea and the towel went with step 6 (#57): bubble tea and the door seal are in the Home app

@@ -33,7 +33,7 @@ export function newNight(): Night {
     interrupts: [], game: null,
     q4: newQ4Night(), shopTonight: [],
     taunt: 0, ward: 0, lastStand: 0, smoke: 0, heist: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
-    pre: null, preUses: {}, preMenu: null, herAsk: null, herThanks: null, lapMouse: 0, lapSay: null, wear: { top: null, feet: null }, photo: null, seal: false, home: newHomeNight(), looking: false, tease: { left: randi(...rules().teases), next: rand(...T.TEASE_FIRST_SEC), bedAt: rand(...T.BED_TEASE_AT), bedDone: false }, herReply: null,
+    pre: null, preUses: {}, preMenu: null, herAsk: null, herThanks: null, lapMouse: 0, lapSay: null, wear: { top: null, feet: null }, photo: null, lean: null, leanHold: 0, leanFog: 0, leanSpotted: null, seal: false, home: newHomeNight(), looking: false, tease: { left: randi(...rules().teases), next: rand(...T.TEASE_FIRST_SEC), bedAt: rand(...T.BED_TEASE_AT), bedDone: false }, herReply: null,
     curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null, goldStart: S.g.gold, coach: null,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,

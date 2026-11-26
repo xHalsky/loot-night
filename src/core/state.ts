@@ -77,7 +77,7 @@ export interface VisitState {
 }
 
 export type Room = 'living' | 'kitchen' | 'bathroom' | 'bedroom' | 'hallway';
-export type ActivityId = 'tv' | 'tea' | 'toilet' | 'shower' | 'bath' | 'phone' | 'sleep';   // bath: the weekend's shower (#88)
+export type ActivityId = 'tv' | 'tea' | 'toilet' | 'shower' | 'bath' | 'phone' | 'sleep' | 'yoga' | 'mask';   // bath: the weekend's shower (#88); yoga (Tuesday on) and the sheet mask before bed (Friday on): her timers for lean in (#77)
 export interface Apartment {
   room: Room; activity: ActivityId; t: number; moving: number; soundT: number;
   heard: Room | null; heardWhat: string; heardAt: number;
@@ -85,7 +85,7 @@ export interface Apartment {
   asleep: boolean; wake: number; textSent: boolean; cued: boolean;   // cued: the end-of-activity sound has played
   calm: number; forceKind: VisitKind | null;   // pre-emptive: seconds with no visit roll; the next visit's type
   calmHard?: boolean;   // the Raid pass: she knows you are raiding, Noise does not end this calm
-  ajar?: boolean; wineAt?: number; towelAsk?: boolean;   // the bath (#88): the door ajar for her music; when (her a.t) she asks for her wine; she asks for a towel at the end (#93)
+  ajar?: boolean; wineAt?: number; towelAsk?: boolean; dur?: number; maskUsed?: boolean;   // dur: how long this activity was set to run (her timers' stages, #77)   // the bath (#88): the door ajar for her music; when (her a.t) she asks for her wine; she asks for a towel at the end (#93)
 }
 
 // Everything that reaches you through the phone (one device on the desk).
@@ -149,6 +149,9 @@ export interface Q4Night {
 
 /** A pre-emptive action in progress. stage: doing it; ask = her "stay for one episode?"; episode = staying.
  *  away: you are not at the desk. withHer: her apartment routine pauses (she is with you). */
+/** Lean in (V12, #77): u the lean (0 the kitchen .. 1 past the mirror), slit px (24..160), the right button's closer
+ *  framing, her look cycle (busy, her tell, she sees you), the red bar 0..1, the creak's last notch, how long it's on. */
+export interface LeanState { u: number; u0: number; slit: number; focus: boolean; look: 'busy' | 'tell' | 'sees'; lookT: number; bar: number; notchAt: number; t: number; safe: number }
 export interface PreState { id: string; stage: 'doing'; t: number; max: number; away: boolean; withHer: boolean; mult: number; outcome: string }
 export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
@@ -213,7 +216,8 @@ export interface Night {
   herThanks: { kind: 'towel' | 'wine'; t: number } | null;
   lapMouse: number; lapSay: { text: string; t: number } | null;
   wear: { top: string | null; feet: string | null }; giftFirst?: string[];
-  photo: { key: string; first: boolean; clock: number; t: number } | null;   // her photo open beside the phone (#92): hands busy   // her gifts tonight (#91), one per slot; worn for the first time   // the lap sit (#86): seconds she has your mouse; her line by her head          // you brought it: her line for a moment   // pre-emptive actions (#19)
+  photo: { key: string; first: boolean; clock: number; t: number } | null;
+  lean: LeanState | null; leanHold: number; leanFog: number; leanSpotted: { t: number; good: boolean } | null;   // lean in (#77): his view through the crack; holding the door; the mirror's fog; "Enjoying the view?"   // her photo open beside the phone (#92): hands busy   // her gifts tonight (#91), one per slot; worn for the first time   // the lap sit (#86): seconds she has your mouse; her line by her head          // you brought it: her line for a moment   // pre-emptive actions (#19)
   phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop' | 'homeapp'; shopTab?: 'you' | 'her' | 'home'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
   seal: boolean;   // the door seal is on (the Home app, #57; it was the towel)
   home: import('../systems/home').HomeNight;   // the battery and the devices tonight (#57)
@@ -227,7 +231,7 @@ export interface Night {
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
   tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
   goldStart: number;   // gold when the night began: the F1 line shows tonight's income (#2)
-  coach: { id: 'steps' | 'door' | 'phone' | 'loot' | 'windup' | 'headset'; t: number; mark: number } | null;   // a coach mark is up (#42)
+  coach: { id: 'steps' | 'door' | 'phone' | 'loot' | 'windup' | 'headset' | 'lean' | 'leanview' | 'tell'; t: number; mark: number } | null;   // a coach mark is up (#42)
   moodDrift: number;
   selected: string | null; heroTab: number;
   townTab?: 'town' | 'inventory' | 'tree'; treeHero?: HeroId; treeSel?: string;   // the town side panel's tab; the skill tree shown (#53)

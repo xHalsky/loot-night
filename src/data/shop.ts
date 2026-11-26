@@ -5,7 +5,7 @@
 import { T } from '../config/tuning';
 
 export type ShopId = 'fuel' | 'chew' | 'keys' | 'fridge' | 'chair' | 'phone' | 'flowers' | 'vacuum' | 'speaker' | 'tv' | 'seal' | 'tea'
-  | 'fluffy' | 'knee' | 'fury' | 'pjset' | 'cathoodie';   // her gifts (#91): she wears one per slot a night (systems/wardrobe.ts)
+  | 'fluffy' | 'knee' | 'fury' | 'pjset' | 'cathoodie' | 'mirror';   // her gifts (#91): she wears one per slot a night (systems/wardrobe.ts)
 export interface ShopItem { id: ShopId; tab: 'you' | 'her' | 'home'; g: string; name: string; fx: string; kind: 'repeat' | 'night' | 'own' | 'soon' | 'inhome'; needs?: string }   // inhome: ordered in the Home app, listed here
 export const SHOP_ITEMS: ShopItem[] = [
   { id: 'fuel', tab: 'you', g: 'can', name: 'Goblin Fuel', fx: `${T.SHOP_FUEL_CANS} cans for the drawer (it holds ${T.MONSTER_DRAWER}).`, kind: 'repeat', needs: 'fuel' },
@@ -19,6 +19,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: 'speaker', tab: 'home', g: 'spk', name: 'Speakers', fx: `A pair: kitchen and bath. A timer, +${T.SPEAKER_CALM} s.`, kind: 'own', needs: 'home' },
   { id: 'tv', tab: 'home', g: 'tv', name: 'TV cast', fx: 'At the credits: one more episode.', kind: 'own', needs: 'home' },
   { id: 'seal', tab: 'home', g: 'door', name: 'Door seal', fx: 'Quieter, but no light under your door.', kind: 'own', needs: 'home' },
+  { id: 'mirror', tab: 'home', g: 'mirror', name: 'Hall mirror', fx: 'Lean past 3: round the corner. She sees you too.', kind: 'own', needs: 'mirror' },   // lean in (#77): furniture, not a device
   { id: 'tea', tab: 'home', g: 'cup', name: 'Bubble tea', fx: `An order, in the Home app. ${T.TEA_MAX === 2 ? 'Twice' : T.TEA_MAX + ' times'} a night.`, kind: 'inhome', needs: 'home' },
   { id: 'flowers', tab: 'her', g: 'flowers', name: 'Flowers', fx: `+${T.SHOP_FLOWERS_GOODWILL} Goodwill at once. One use.`, kind: 'night' },
   // her gifts (fan-service 4, #91): each with its trade-off; +GIFT_GOODWILL the first time she wears one

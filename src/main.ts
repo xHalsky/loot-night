@@ -34,7 +34,7 @@ import { drawLapFx, lapUiHtml } from './ui/deskFx';
 import { morningView, morningScene } from './render/morningView';
 import { cuddleView, winToCuddle, CUD_WIN } from './render/herWinView';
 import { demandActive } from './systems/reallife';
-import { PLAN } from './ui/plan';
+import { PLAN, PLAN_MIRROR } from './ui/plan';
 import { caughtTick, caughtT, caughtEnd, caughtShot } from './render/caughtView';
 import { dogStroked, DOG_SPOTS } from './render/dogView';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
@@ -58,13 +58,14 @@ import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans, comingB
 import { takeAsk, startAsk } from './systems/asks';
 import { lapSitAnswer, onLap } from './systems/lapsit';
 import { openPhoto, closePhoto, sendSelfie } from './systems/selfies';
+import { leanTo, leanNotch, leanFocus, leanView } from './systems/lean';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
 import type { VisitKind, Room } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
 import { load, wipeSave } from './systems/save';
 import { addMood } from './systems/meters';
 import { closeCoach } from './systems/coach';
-import { shopBuy } from './systems/shop';
+import { shopBuy, owns } from './systems/shop';
 import type { ShopId } from './data/shop';
 import { COACH } from './data/tips';
 
@@ -457,6 +458,18 @@ herCanvas.addEventListener('pointermove', ev => {
 });
 herCanvas.addEventListener('pointerleave', () => { if (herHover) herDirty = true; herHover = ''; hover.key = ''; if (S.g.night) S.g.night.looking = false; });
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
+// lean in (#77): the mouse across the right screen leans, the wheel opens the door a notch, the right button looks closer
+// the buttons as pointer events report them (a second button pressed or let go fires pointermove, not down or up)
+const leanButtons = (ev: PointerEvent) => {
+  const n = S.g.night;
+  if (!n?.lean || ev.pointerType !== 'mouse') return;
+  leanFocus((ev.buttons & 2) !== 0);
+  if (!(ev.buttons & 1) && n.peeking) setPeeking(false);   // let go of the door (the right button may still be down)
+};
+document.addEventListener('pointermove', ev => { if (S.g.night?.lean) { leanTo((toStage(ev).x - 296) / 984); leanButtons(ev); } });
+document.addEventListener('pointerdown', leanButtons, true);
+document.addEventListener('wheel', ev => { if (!S.g.night?.lean) return; ev.preventDefault(); leanNotch(ev.deltaY < 0 ? 1 : -1); }, { passive: false });
+document.addEventListener('contextmenu', ev => { if (S.g.night?.lean || S.g.night?.peeking) ev.preventDefault(); });
 document.addEventListener('keyup', ev => { if (ev.key === ' ' || ev.code === 'Space') { monsterTilt(false); if (S.g.night?.game?.kind === 'monster') ev.preventDefault(); } });
 window.addEventListener('blur', () => monsterTilt(false));
 document.addEventListener('pointercancel', () => { drag = null; setDrag(0); setHold(false); });
@@ -691,7 +704,7 @@ function drawPlanScreen() {
   if (!on) return;
   const now = performance.now(); if (now - planAt < 250) return; planAt = now;
   const f = planFrame.getContext('2d')!; f.drawImage(herCanvas, 0, 0); f.drawImage(rsCanvas, 148, 0);   // her panel and the right screen (the game screen is in it)
-  const r = PK.plan(planFrame, PLAN, now / 1000);
+  const r = PK.plan(planFrame, owns('mirror') ? PLAN_MIRROR : PLAN, now / 1000);   // the hall mirror on it once you buy it (#77)
   planCtx.drawImage(r.canvas, 0, 0); planHits = r.hits;
 }
 const planXY = (ev: PointerEvent) => { const r = planCanvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * 640, ((ev.clientY - r.top) / r.height) * 360] as const; };
@@ -752,6 +765,7 @@ function howtoGame() {
       tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle.'],
       answer: ['Answer her', HOWTO_ANSWER[k.answer]],
       headset: ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.'],
+      lean: ['Lean in', 'Hold the door open: you lean in and see what she is doing. Move the mouse to look. While you look you cannot play, and she can see you.'],
     },
     foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.',
   };
@@ -789,10 +803,12 @@ function drawSmallPieces() {
   }
   // over the right screen: away from the PC, the inspect window
   const p = ready ? n.pre : null, away = !!p && p.away && !g.paused;
-  const rs = away ? 'away' : inspectOpen && !g.paused ? 'inspect' : '';
+  const rs = away ? 'away' : inspectOpen && !g.paused ? 'inspect' : ready && n.lean && !g.paused ? 'lean' : '';   // lean in (#77): his view through the crack
   rsSmallCanvas.style.display = rs ? 'block' : 'none';
+  rsSmallCanvas.style.cursor = rs === 'lean' ? 'none' : '';   // leaning, the pointer is his head
   if (!rs) { rsSmallHits = []; return; }
   if (now - rsSmallAt < 33) return; rsSmallAt = now;
+  if (rs === 'lean') { rsSmallCtx.drawImage(PK.lean(leanView(t)), 0, 0); rsSmallHits = []; return; }
   const bg = now - rsSmallBg > 250 ? rsCanvas : null; if (bg) rsSmallBg = now;
   const what = p?.id === 'charge' ? 'Charging your phone' : p?.id === 'towel' ? 'Bringing her a towel' : p?.id === 'wine' ? 'Bringing her wine' : 'Away from the PC';   // the away card says why (V13)
   const r = rs === 'away'

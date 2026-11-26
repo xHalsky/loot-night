@@ -42,7 +42,7 @@ ok(sb >= 36 && ss === 0, `Saturday after 21:30: a bath (${sb} of 40 nights withi
 ok(wb === 0, `Wednesday: never a bath (${ws} showers of 40)`);
 let n = night(5); inBath('bath', 130);
 const h0 = hearing(); n.apt.ajar = true; const h1 = hearing();
-ok(Math.abs(h0 - T.HEAR_DISTANCE.middle * T.HEAR_MASK.bath) < 1e-9 && Math.abs(h1 - h0 * T.BATH_AJAR_HEAR) < 1e-9, `her bath music covers some of your Noise (x${T.HEAR_MASK.bath}), with the door ajar she hears twice as much (x${T.HEAR_MASK.bath * T.BATH_AJAR_HEAR})`);
+ok(Math.abs(h0 - T.HEAR_DISTANCE.far * T.HEAR_MASK.bath) < 1e-9 && Math.abs(h1 - h0 * T.BATH_AJAR_HEAR) < 1e-9, `her bath music covers some of your Noise (x${T.HEAR_MASK.bath}), with the door ajar she hears twice as much (x${T.HEAR_MASK.bath * T.BATH_AJAR_HEAR})`);
 ok(!realLifeFree(), 'in the bath: real life waits (no phone, no dog, no visits)');
 
 // --- the wine ---

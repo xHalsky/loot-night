@@ -7,7 +7,7 @@ import { COACH, type CoachId } from '../data/tips';
 // the player does it, the moment passes, `COACH_MAX_SEC` (real seconds) runs out, or they close it. Once per save.
 
 /** Her comes first: a loot hint must never hide "she is at your door". */
-const PRIORITY: Record<CoachId, number> = { steps: 5, door: 4, phone: 3, windup: 2, loot: 1, headset: 0 };
+const PRIORITY: Record<CoachId, number> = { steps: 5, tell: 4.5, door: 4, phone: 3, windup: 2, loot: 1, headset: 0, lean: -1, leanview: -1 };   // lean in (#77): her tell right after the footsteps; the other two last
 
 export function coach(id: CoachId) {
   const g = S.g;
@@ -39,6 +39,9 @@ function done(id: CoachId, m: number): boolean {
     case 'loot': return S.g.heroes.reduce((a, h) => a + Object.keys(h.gear).length, 0) > m;
     case 'windup': return !n.enemies.some(e => (e.wind ?? 0) > 0) || S.g.heroes.some(h => h.queued !== null);
     case 'headset': return n.headset || v.stage !== 'idle';
+    case 'lean': return !!n.lean || n.peeking || n.apt.activity !== 'yoga' || v.stage !== 'idle';   // holding the door ends the crawl
+    case 'leanview': return !n.lean || Math.abs(n.lean.u - n.lean.u0) > 0.2;
+    case 'tell': return !n.lean;
   }
 }
 

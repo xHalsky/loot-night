@@ -17,6 +17,8 @@ through the flat doing activities, each with a room, a sound and a duration:
 | Bathroom | Bathroom | Flush (once, as she goes in) | 8 to 12 |
 | On her phone | Bedroom | silent | 15 to 25 |
 | Shower | Bathroom | Running water | 90 to 120, once per night after 21:30 (`SHOWER_CHANCE`): the safe window for greed |
+| Yoga (Tuesday on) | Living room | The video on the TV; its end jingle | 45 to 70 (weight 1). Tuesday opens with it (lean in's first chance, no visit while it lasts) |
+| Sheet mask (Friday on) | Bathroom | Silent; the tap as she rinses | 60 to 90, once, in the last `MASK_BEFORE_BED_MIN` (45) min before she goes to bed |
 | Bath (the weekend, in the shower's place) | Bathroom | The tap as she fills it, then her music through the door (louder when it's ajar) | 120 to 150, once per night after 21:30 (`BATH_CHANCE` 0.5 at each activity end, so most nights have it by about 22:00). Not a safe window: see below |
 
 Moving takes `APT_MOVE_SEC` with quiet steps. At each activity end she heads to your door with
@@ -27,8 +29,8 @@ Mom call sends her to your door next.
 
 **Noise by distance and masking.** How much of your Noise reaches her depends on where she is
 (`ROOM_DISTANCE` in `src/data/apartment.ts`, `HEAR_DISTANCE` / `HEAR_MASK` in `tuning.ts`). Your room is at the
-hallway's end and shares walls with the kitchen and the living room (x2, the hallway too); the bathroom is
-further down the hallway (x1); the bedroom is at the far end (x0.5). The TV masks an extra x0.5; the shower masks everything (x0), her bath music x0.35, and with the bath's door ajar for her music (`BATH_DOOR_AJAR`, half her baths) she hears you twice as well as that.
+hallway's end and shares walls with the kitchen and the living room (x2, the hallway too); the bedroom is
+further down the hallway (x1); the bathroom is at the far end (x0.5) (the plan change, 0.85: swapped). Her yoga video masks x0.7. The TV masks an extra x0.5; the shower masks everything (x0), her bath music x0.35, and with the bath's door ajar for her music (`BATH_DOOR_AJAR`, half her baths) she hears you twice as well as that.
 Moving between rooms counts as the hallway. This heard Noise drives her door chance and makes her wrap up
 early above 70. It is never shown; the player infers it from what they hear. `test/noise.ts`: a boss kill
 during her shower leaves the door chance at 35%; the same kill while she makes tea next door raises it to 85%.
@@ -36,10 +38,11 @@ during her shower leaves the door chance at 35%; the same kill while she makes t
 **The plan** (a sheet taped to the wall in the webcam view, only its corner in frame; #35, #41; screen.md). A blue architect's floor plan:
 white walls, door swings, furniture, a dashed line of sight from your door. It never marks where she is. Click
 it for the large version: it teaches the layout, which rooms are next to yours (Noise by distance) and what the
-crack shows. It is drawn to match the hallway behind your door (`src/ui/plan.ts`, one layout for the sheet and
-its corner in the webcam view): your room is at the hallway's end, so the crack looks straight down it; on the
-right wall the kitchen's open doorway (1), then the bathroom door (2); at the far end the living room's opening on
-the left and the bedroom door on the right (3). The kitchen is beside your room and the living room runs along the
+crack shows. It is the layout Paweł approved for lean in (2026-11-20, grid doc 7l; in since 0.85, `src/ui/plan.ts`,
+the page's sheet): your room is at the hallway's end, so the crack looks straight down it; on the right wall the
+kitchen's open doorway (1), then the bedroom door; at the far end the bathroom's pocket door facing you (2: the tub's
+foot end through it); on the left the arch into the living room (3: the TV, the couch, her yoga mat), and on that wall
+the hall mirror once you buy it. The kitchen is beside your room and the living room runs along the
 hallway's left side, so both share your walls. Your desk is on the far wall, facing away from the door, so the
 door is right behind you as in the webcam view, and your bed is along the same wall (0.49.7, #65; they were the
 other way round). The numbers 1 to 3 are the order the crack reveals them. The sheet
@@ -71,17 +74,18 @@ warning is gone; in the webcam view his eyes no longer flick toward her sounds. 
 opens to a narrow crack (`PEEK_CRACK_MIN` of its width) in `PEEK_OPEN_SEC`, then creeps wider to
 `PEEK_CRACK_MAX` over `PEEK_CREEP_SEC` (7 s). Let go and it closes. Behind it is one fixed picture of the
 hallway, laid out like the blueprint and seen from your door. The crack opens from the door's right edge, so
-the kitchen opening (first on the right) shows first, then the bathroom door, and the far end (the
-living-room opening on the left, the bedroom door on the right) only when wide. Lights are on only where she is.
+the kitchen opening (first on the right) shows first, then the bedroom door, and the far end (the arch into the
+living room on the left, the bathroom's door facing you) only when wide. Lights are on only where she is. From
+Tuesday, holding it past `LEAN_DELAY` is lean in (below).
 
 | She is | Through the crack | Crack | Can she see you |
 |---|---|---|---|
 | Kitchen, tea | Warm light, kettle steam, her at the counter from behind | Narrow | No |
-| Bathroom | Closed door, light strip under it | Medium | No |
-| Shower | Steam leaking out, frosted silhouette in the door glass | Medium | No |
-| Bath | Steam leaking out; ajar, candlelight in the gap | Medium | No |
-| Bedroom, phone | Far door ajar, cold blue glow on the ceiling | Wide | No |
-| Asleep | Far door ajar, dark | Wide | No |
+| Bedroom | The door ajar, a light strip under it (her phone: a cold blue glow) | Medium | No |
+| Asleep | The bedroom door ajar, dark | Medium | No |
+| Bathroom | The far door, light under it | Wide | No |
+| Shower | Steam under the far door, a frosted silhouette in its glass | Wide | No |
+| Bath | Steam; ajar, candlelight in the gap | Wide | No |
 | Living room, TV | Blue flicker in the opening and on the wall, her bare feet on the armrest | Wide | A little |
 | Hallway / moving | Her, head to toe (big when she is at your door) | Any | Yes, fast |
 
@@ -90,6 +94,40 @@ seeing the far end costs more risk); a red bar fills, and if it fills she rushes
 +`PEEK_CAUGHT_MOOD`, Flow reset. From the hallway she notices in about 2.5 s; with the TV on, the living room
 comes into view at 6.4 s and she notices at 8.7 s (`npx tsx test/peekcrack.ts`). `python3 test/peek.py`
 screenshots every row (`test/peek_sheet.png`).
+
+**Lean in** (fan-service steps 7 and 12, V12 #77; grid doc 7l; `src/systems/lean.ts`, the page's `lean.js`). From
+Tuesday, holding the door past `LEAN_DELAY` (0.6 s) turns the right screen into his view through the crack: one
+camera at his eye 16 cm behind the gap, a slit of her flat as wide as the door is open (`LEAN_SLIT` 24 to 160 px,
+`LEAN_SLIT_START` 64). The mouse across the right screen leans (the pointer is his head): 1 the kitchen, 2 the
+bathroom through its door, 3 the living room, then the hall mirror; the wheel opens or closes the door a notch
+(`LEAN_NOTCH` 8 px; two within `LEAN_CREAK_SEC` creak, Noise +`LEAN_CREAK_NOISE`); the right button cuts to a closer
+framing (a longer lens, drawn again, never a zoom). Let go of the door and you're back. While you lean: **Eyes busy**
+(no skills, no Flow), the battle and the desk out of view; in the webcam he turns round in his chair, leaning to the
+crack, the door open a slit.
+
+**Her timers** (step 12) are drawn into her scene, three stages each (just started, about halfway, the last
+stretch): her yoga (standing, on the floor, lying flat; the video's line), the couch (the bowl empties, the credits),
+the bath through the door ajar (the foam, the wine, the candles), the kitchen (the kettle's steam, reaching up to the
+high shelf, a mug), the sheet mask (smoothing it, scrolling, peeling it off). The shower and the toilet: the door shut.
+Seen, never told: nothing in the UI says where she is or how long she'll be.
+
+**She can see you.** From where she sits she glances at your door every `LEAN_LOOK_GAP` (5 to 12) s: her tell first
+(`SPOT_TELL_SEC` 0.5: she pauses, her head turns; the eye over the slit half opens, blinking), then she looks for
+`LEAN_LOOK_SEC` (1.6 s) and the red bar fills: `LEAN_SPOT_RATE` (0.45) a second x1 at a 24 px slit to x2.5 at 160, x1.5
+in the closer framing, x2 when she's in the mirror (it works both ways); it drains while she's busy. Let go during her
+tell and nothing fills. Full: "Enjoying the view?" Never a catch (she sees you, not the game): Goodwill 40+, she blushes
+(Goodwill +10); below, she teases (Mood +5); either way you let go. In the hallway or on her way, the glance's old
+rule stands (she sees you fast and comes over). Spying pays no Goodwill.
+
+**The hall mirror** (199 zł, the Shop's Home tab; furniture, no battery): past stop 3 it shows round the corner into the
+bathroom (her at the basin in her sheet mask) and the bedroom; her shower or bath steam fogs it to her outline, clearing
+`MIRROR_DEFOG_SEC` (20) s after.
+
+**Taught on Tuesday** (week one 2b): Danny's note ("hold your door open longer: you lean in and see what she's
+doing"), the Lean in tile in How to hide (five tiles), her yoga first (no visit meanwhile), three coach marks: the door
+("She is doing yoga..."; holding the door ends its crawl), the slit ("Move the mouse to look...", till you lean through a
+stop or let go), her first tell ("She is turning", the game crawls till you let go: it never spots you). The first lean
+can't be told on in its first `LEAN_FIRST_SAFE_SEC` (6 s).
 
 **Visit telegraph.**
 
@@ -266,6 +304,15 @@ visits and when she leans in. A small reaction bubble (?, !, heart, ...) over he
 
 ## Decisions
 
+- **Lean in as approved, with the build's activities** (0.85, V12 #77): the couch is her TV, the kitchen her tea, the
+  bath her weekend bath (its door ajar half the time, shut otherwise), the sheet mask a new once-a-night activity before
+  bed, the yoga a new one from Tuesday (weight 1, 45 to 70 s; 60 to 90 made Tuesday's visits too sparse). Her glances
+  are a cycle (busy, tell, look) only while she sits somewhere she can see your door; in the hallway the glance's old
+  rule stands. The first tell holds until you let go (a crawl that teaches the timing). The red bar's numbers are set so
+  a 24 px slit survives one look (0.72 of the bar) and 160 px doesn't. The view is cast every frame at about 20 fps (the
+  grid doc's 6 to 22 ms); casting once per lean position is the next step if it costs. The build's corner of the crack
+  (Monday's glance) follows the plan change. Rejected: keeping the build's plan for the lean (the crack saw the
+  bathroom door edge-on and a sliver of the living room).
 - **Her gifts' trade-offs are Paweł's** (2026-11-26): the proposals, taken as they were. She wears one per slot a night
   (the newest first) so a gift you just bought shows the next night and each trade-off is on for whole nights you can
   plan around, not per visit. The cat-ear hoodie's extra tease comes on any night, so it is not dead before the

@@ -186,6 +186,7 @@ function drawPlan(ctx, t) {
 // swings, the crack's stops and their digits, the room names and the note. Until the plan change (V12) it is the
 // build's layout, drawn in the page's look.
 function planLayout(G) {
+  if (G.page) return G.mirror ? PLAN_PAGE : { ...PLAN_PAGE, over() {} };   // the approved layout (V12, #77): the hall mirror once you buy it
   const P_ = PL.pencil;
   return {
     walls: G.walls, windows: G.windows, note: G.note, latch: G.latch, stops: G.stops, digits: G.digits, labels: G.labels,

@@ -97,6 +97,7 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   | Flowers (For her) | 49 | +`SHOP_FLOWERS_GOODWILL` (20) Goodwill at once; once a night |
   | Fluffy socks, Knee socks, Fury tee, Pajama set, Cat-ear hoodie (For her) | 79, 99, 129, 149, 199 | Her gifts (#91): she wears one per slot a night, +20 Goodwill the first time; each with a trade-off ([her.md](her.md)) (kept) |
   | Robot vacuum, Speakers, TV cast, Door seal (Home) | 899, 199, 149, 39 | Installed for the Home app (below) (kept) |
+  | Hall mirror (Home, from Tuesday) | 199 | Furniture for lean in: past stop 3 it shows round the corner; she sees you in it too ([her.md](her.md)) (kept) |
   | Bubble tea (Home) | 25 | Listed as *Home*: it is ordered in the Home app |
 
   What you keep is saved (`S.g.owned`); the one-use things reset each night. A thing is listed from the night its

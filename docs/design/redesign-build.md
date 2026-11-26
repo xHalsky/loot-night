@@ -44,8 +44,10 @@ gameplay steps). This file says how the build gets there and where it stands. It
   the dotted line and hearts from the page's `st.win`; her.md). **0.82.0:** the bath, the towel and the wine (her
   window's BABE, TOWEL! and BABE, WINE?, the away card's reason, her thank-you). **0.83.0:** the lap sit (the page's
   `lapOver` over the frame, SHE HAS THE MOUSE on the bar's block plate, ON YOUR LAP in the chat window). **0.84.0:** outfits, her feet, her gifts (the Shop's For her with the page's glyphs) and
-  selfies (the page's selfie art, gift variants, `photoWindow` as a modal). Next: lean in (V12); mornings and the cuddle
-  close-up.
+  selfies (the page's selfie art, gift variants, `photoWindow` as a modal). **0.85.0:** lean in (V12): the page's
+  `drawLean` over the right screen from the game's state (her activity and stage, the lean, the slit, the closer framing,
+  the mirror, her look and the bar), its coach marks and How to hide tile, the approved plan (`PLAN_PAGE`) and Home app
+  layout. V13 is complete. Next: mornings and the cuddle close-up.
 - **V11, the small pieces, 0.73.0 and 0.74.0:** pause, How to hide, the microsleep's lids, away from the PC (the empty
   chair, the card), the Goblin Fuel inspect window, then coach marks and tooltips in each world's look, all the
   renderer's (night.md, desk.md, preemptive.md, screen.md). Item tooltips keep the DOM card (the side panel's item

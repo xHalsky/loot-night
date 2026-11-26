@@ -405,6 +405,7 @@ export const OUTFIT_BY_ACTIVITY: Record<string, { outfit: Outfit; item: Item; fe
   shower: { outfit: 'towel', item: 'none' },
   bath: { outfit: 'towel', item: 'none' },
   yoga: { outfit: 'yoga', item: 'none' },                       // Tuesday's yoga (lean in, #77)
+  mask: { outfit: 'pajama', item: 'none' },                     // the sheet mask, getting ready for bed
   sleep: { outfit: 'pajama', item: 'none' },
   night: { outfit: 'bighoodie', item: 'none', feet: 'slippers' },   // the walk-by, come to bed: your gaming hoodie
 };
