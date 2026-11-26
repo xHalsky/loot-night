@@ -229,7 +229,7 @@ export const sfx = {
   door() { if (!play('door', { bus: 'apt' })) tone(180, 0.5, 'sawtooth', 0.08, 0, 120, 'apt'); },
   doorClose() { play('doorclose', { bus: 'apt' }); },
   /** She arrives at an activity. */
-  aptStart(id: string, room: Room) { if (id === 'toilet') play('flush', { bus: 'apt', room }); },
+  aptStart(id: string, room: Room) { if (id === 'toilet') play('flush', { bus: 'apt', room }); if (id === 'bath') play('tap', { bus: 'apt', room }); },   // the bath: the tap runs as she fills it
   /** Every few seconds while she is at it (on top of the loop). */
   aptTick(id: string, room: Room) {
     if (id === 'tv' && Math.random() < T.TV_LAUGH_CHANCE) play('laugh', { bus: 'apt', room, vol: 0.7 + Math.random() * 0.5 });
@@ -239,6 +239,8 @@ export const sfx = {
   endCue(id: string, room: Room) { const c = END_CUE[id]; if (c) play(c, { bus: 'apt', room }); },
   plates() { play('plate', { bus: 'apt', jitter: 0.04 }) || tone(2600 + Math.random() * 500, 0.05, 'triangle', 0.07, 0, undefined, 'apt'); },
   hum() { play('hum', { bus: 'apt', lowpass: 2400 }) || tone(440, 0.35, 'sine', 0.05, 0, 449, 'apt'); },
+  /** Her voice calling you: 0 "babe?" (the tease), 1 "baaabe.", 2 "babe, towel!", 3 "babe, wine?" (from the bathroom). */
+  babe(k: number, room?: Room) { play('babe', { bus: 'apt', variant: k, room }) || tone(520, 0.3, 'sine', 0.05, 0, 600, 'apt'); },
   creak() { play('creak', { bus: 'apt' }) || tone(140, 0.4, 'sawtooth', 0.04, 0, 210, 'apt'); },
   bark() { if (!play('bark', { bus: 'apt' })) { tone(420, 0.09, 'sawtooth', 0.14, 0, 300, 'apt'); tone(380, 0.12, 'sawtooth', 0.14, 0.14, 260, 'apt'); } },
   whine() { play('whine', { bus: 'apt', jitter: 0.05 }) || tone(900, 0.5, 'sine', 0.06, 0, 1300, 'apt'); },

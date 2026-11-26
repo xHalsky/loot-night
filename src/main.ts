@@ -54,6 +54,7 @@ import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
 import { triggerVisitNow, takePlate, chatAnswer, cuddleAnswer, hideCans, comingBabe } from './systems/visits';
+import { takeAsk, startAsk } from './systems/asks';
 import { cuddlePointer, endCuddle } from './systems/cuddle';
 import type { VisitKind, Room } from './core/state';
 import { startNight, endNight, toMorning } from './systems/night';
@@ -200,7 +201,8 @@ const actions: Record<string, (arg: string) => void> = {
   homeUse: () => { const h = N().home; if (h.pick && useDevice(h.pick, h.pickRoom)) h.pick = ''; },
   homeTea: () => { orderTea(); },
   charge: () => startPre('charge'),
-  comingBabe: () => comingBabe(),   // come to bed (#89): the night ends with her
+  comingBabe: () => comingBabe(),
+  herAsk: () => takeAsk(),   // come to bed (#89): the night ends with her
   shopTab: a => { N().shopTab = a as 'you'; sfx.click(); },
   shopBuy: a => { if (shopBuy(a as ShopId)) shopFlashed(a); else sfx.bad(); },
   phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
@@ -208,6 +210,8 @@ const actions: Record<string, (arg: string) => void> = {
   dbgSpeed: a => { S.g.timeScale = Number(a); },
   dbgLife: () => { S.g.realLifeOff = !S.g.realLifeOff; },   // #52, 1.1: nobody is home
   dbgVisit: a => triggerVisitNow((a || undefined) as VisitKind | undefined),
+  dbgAsk: a => { const n = N(), ap = n.apt; if (n.visit.stage !== 'idle') return; ap.activity = a === 'wine' ? 'bath' : 'shower'; ap.room = 'bathroom'; ap.moving = 0; ap.asleep = false; ap.t = 60; ap.cued = false; startAsk(a as 'towel' | 'wine'); },
+  dbgBath: () => { const ap = N().apt; ap.activity = 'bath'; ap.room = 'bathroom'; ap.moving = 0.5; ap.asleep = false; ap.t = 130; ap.cued = false; ap.ajar = true; ap.towelAsk = true; ap.wineAt = 110; },
   dbgBedTease: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('tease'); n.visit.bed = true; n.visit.from = 'night'; n.apt.asleep = false; },   // come to bed (#89)
   hideCans: () => { hideCans(); },
   takePlate: () => takePlate(),
@@ -412,6 +416,7 @@ function drawHerPanel() {
   const r = PK.her(el('doorCanvas') as HTMLCanvasElement, herView(herHover), performance.now() / 1000);
   herCtx.drawImage(r.canvas, 0, 0);
   herHits = r.hits; (window as unknown as { __lootnight: { herHits?: unknown } }).__lootnight.herHits = herHits;   // for the tests
+  if (herHover && !herHits.some(h => `${h.act}:${h.arg}` === herHover)) { herHover = ''; if (hover.src === 'her') hover.key = ''; }   // the pill went away under a still pointer: so does its tip
   (window as unknown as { __lootnight: { ebWarm?: unknown } }).__lootnight.ebWarm = ebWarmDone;   // which can count the break is baked for
 }
 herCanvas.addEventListener('pointerdown', ev => {
@@ -779,7 +784,7 @@ function drawSmallPieces() {
   if (!rs) { rsSmallHits = []; return; }
   if (now - rsSmallAt < 33) return; rsSmallAt = now;
   const bg = now - rsSmallBg > 250 ? rsCanvas : null; if (bg) rsSmallBg = now;
-  const what = p?.id === 'charge' ? 'Charging your phone' : 'Away from the PC';   // the away card says why (V13)
+  const what = p?.id === 'charge' ? 'Charging your phone' : p?.id === 'towel' ? 'Bringing her a towel' : p?.id === 'wine' ? 'Bringing her wine' : 'Away from the PC';   // the away card says why (V13)
   const r = rs === 'away'
     ? PK.away(bg, { what, left: p!.t, total: p!.max }, t)
     : PK.inspect(bg, inspectView(), t);

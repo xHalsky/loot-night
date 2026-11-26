@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { wet } from '../data/apartment';
 import { S, N, type Room } from '../core/state';
 import { rand, clamp } from '../core/rng';
 import { addMood } from './meters';
@@ -79,7 +80,7 @@ export function deviceBlocked(id: DeviceId | 'tea'): string {
 }
 
 /** She is up and can be sent somewhere: not asleep, not in the shower, not at your door. */
-const herFree = () => { const n = N(), a = n.apt; return !a.asleep && a.activity !== 'shower' && n.visit.stage === 'idle'; };
+const herFree = () => { const n = N(), a = n.apt; return !a.asleep && !wet(a.activity) && n.visit.stage === 'idle'; };
 const herRoom = (): Room => N().apt.room;
 const rest = (id: string, sec: number) => { const h = H(); h.rest[id] = sec; h.restMax[id] = sec; };
 
@@ -132,7 +133,7 @@ export function updateHome(dt: number) {
   h.lowShow = Math.max(0, h.lowShow - dt); h.deadShow = Math.max(0, h.deadShow - dt);
   // the doorbell: when it's due, as soon as nothing else asks for you (the collision rule: it slides, never drops)
   const due = h.bells.findIndex(t => n.threat >= t);
-  if (due >= 0 && realLifeFree()) {
+  if (due >= 0 && realLifeFree() && !wet(a.activity)) {   // in her bath (#88) she lets it ring till she's out
     h.bells.splice(due, 1); sfx.doorbell();
     if (a.asleep) { a.wake = clamp(a.wake + T.TEA_WAKE, 0, T.WAKE_UP); toast('The doorbell. Bubble tea, at this hour. She stirs in bed.', '#ff8a80'); return; }
     a.calm = Math.max(a.calm, T.TEA_CALM); sendHerTo('living', 'DOORBELL', T.TEA_CALM);

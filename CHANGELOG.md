@@ -3,6 +3,31 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.82.0 (2026-11-26)
+
+- **Her bath** (fan-service, #88). On Saturday and Sunday her shower is a bath, 120 to 150 s after 21:30 (most nights
+  by about 22:00): the tap as she fills it, her music through the door (lo-fi chords, a soft beat, the water moving;
+  louder when the door is ajar, half her baths), the drain gurgling as its end. It is not a break: the phone and the
+  dog go on (the shower stays the week's safe window); only her visits wait, and the doorbell waits for her to get out.
+  Her music covers your Noise x0.35, x0.7 with the door ajar.
+- **"Babe, bring my wine?"** (#88): half her baths, 25 to 60 s in. **"Babe, towel!"** (#93): half her showers and
+  baths from Saturday, as she gets out. Her window (BABE, WINE? / BABE, TOWEL!, 15 s, one pink answer): bring it, 12
+  or 10 s away from the PC (the away card says why: "Bringing her wine"), Goodwill +15 and her thank-you; ignore it
+  and she gets it herself, Mood +10, by way of your door in her towel, dripping (a Peek: catch rules apply). Back
+  early from the away card counts as ignoring her. One demand at a time: she asks only when nothing else has you.
+- **Her voice:** a new sound, `babe` (four lines: the tease's "babe?", "baaabe.", "babe, towel!", "babe, wine?"),
+  plus `bath` and `drain`, baked in `tools/sfx/make.py`.
+- A pill's tooltip now goes when the pill does (it stayed on her panel under a still pointer).
+- F1: Bath, Towel!, Wine? buttons. The good sim bot brings them (`asks`, `baths` in its summary); requests count as
+  demands.
+- **Sim fix:** `HOME=1` was always on (the shell's own `$HOME`), so from 0.79 Thursday to Sunday ran with every device
+  bought. Now only `HOME=1` buys them.
+- Sims (16 a night, good bot, without devices): seconds between demands Mon 102, Tue 92, Wed 57, Thu 42, Fri 40,
+  Sat 32, Sun 31 (0.81 with devices: 105, 98, 57, 40, 39, 36, 34); stars 3, no catches. A first try with the bath
+  as a second shelter (real life waiting as in the shower) took the weekend to 41 and 44 s, easier than Thursday.
+  Idle bot: unplugged every Saturday and Sunday.
+- Tests: `npx tsx test/asks.ts`, `python3 test/asks.py` (screens `test/shots/asks_*.png`).
+
 ## 0.81.0 (2026-11-26)
 
 - **Her tease visit** (fan-service step 1, #85). Weekends: 1 to 2 on Saturday, 2 to 3 on Sunday. No footsteps, just a

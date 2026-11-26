@@ -325,6 +325,7 @@ export const T = {
     toilet: { peek: 1 },
     phone:  { peek: 1 },
     shower: { cuddle: 2, peek: 1 },
+    bath:   { cuddle: 2, peek: 1 },
   } as Record<string, Record<string, number>>,
   END_CUE_SEC: 3.5,               // her activity ends with a sound this long before she moves
   SNACK_TAKE_SEC: 3, SNACK_HEAL: 0.2, SNACK_PASS_MOOD: -5, SNACK_IGNORE_MOOD: 3, SNACK_FAIL_MOOD: 8,   // fail = cans in sight: she takes one
@@ -363,9 +364,22 @@ export const T = {
   DOOR_NOISE_CHANCE: 0.005,       // + per point of Noise
   DOOR_RED_CHANCE: 0.2,
   SHOWER_FROM: 21 * 60 + 30, SHOWER_CHANCE: 0.25,
+  // The bath (#88): on the weekend her shower is a bath, from SHOWER_FROM, likelier (most weekend nights have one)
+  BATH_CHANCE: 0.5,               // at each of her activity ends after 21:30, until she has had it
+  BATH_DOOR_AJAR: 0.5,            // of her baths she leaves the door ajar for her music (you hear it better, lean in sees in, #77)
+  // "Babe, towel!" (#93) and "Babe, bring my wine?" (#88): her requests from the bathroom, worth taking either way
+  TOWEL_CHANCE: 0.5,              // of her showers and baths (from the night towelReq comes in): at the end, she forgot her towel
+  WINE_CHANCE: 0.5,               // of her baths: the wine, partway in...
+  WINE_AT_SEC: [25, 60] as [number, number],   // ...this long after she gets in
+  ASK_SEC: 15,                    // her window waits this long
+  TOWEL_AWAY_SEC: 10, WINE_AWAY_SEC: 12,   // away from the PC to bring it (the empty chair)
+  ASK_GOODWILL: 15,               // brought it
+  ASK_THANKS_SEC: 4,              // her thank-you in her window
+  ASK_IGNORE_MOOD: 10,            // ignored: she gets it herself, in a towel, dripping, by way of your door (a normal visit)
   // Noise by distance and masking: how much of your Noise reaches her. Never shown to the player.
   HEAR_DISTANCE: { next: 2, middle: 1, far: 0.5 } as Record<string, number>,
-  HEAR_MASK: { tv: 0.5, shower: 0 } as Record<string, number>,   // her activity covers your noise
+  HEAR_MASK: { tv: 0.5, shower: 0, bath: 0.35 } as Record<string, number>,   // her activity covers your noise (her bath music some of it)
+  BATH_AJAR_HEAR: 2,              // the bath's door ajar: she hears you this much better (and you her music)
   SCARE_SEC: 0.8,
   CAUGHT_HOLD_SEC: 3.2,           // after the scare her screen stays this long so the cost can be read; a click or a key ends it (V7)
 

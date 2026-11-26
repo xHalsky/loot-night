@@ -96,7 +96,8 @@ listening, so her sounds are the most important ones in the game.
 - **Her by distance:** each of her sounds plays from her room. Volume and a wall low-pass come from
   `ROOM_DISTANCE` (`APT_ROOM_GAIN`, `APT_ROOM_LOWPASS`), so the TV next door is clear and the bedroom is faint.
   It is the same distance table that decides how much of your Noise reaches her.
-- **Her activities:** a continuous loop while she is at it (TV, kettle rising towards the boil, shower), with
+- **Her activities:** a continuous loop while she is at it (TV, kettle rising towards the boil, shower, her bath music
+  through the door, louder ajar), with
   extras on top (the laugh track; her breathing when asleep). The loop stops when the end cue starts (see
   [her.md](her.md)), when she moves and during visits.
 - **Audio-first RPG events,** each recognisable with Excel covering the screen:
@@ -114,7 +115,7 @@ listening, so her sounds are the most important ones in the game.
 - **Where the sounds come from** (`tools/sfx/make.py`, `python3 tools/sfx/make.py [cue...]`):
   - Kenney CC0 recordings (`tools/sfx/kenney/`): steps, door, latch, creaks, plates, tins, coins, impacts.
   - Seeded synthesis in Python for the rest: two-voice TV babble, laugh track, credits, kettle, shower, hair
-    dryer, flush, tap, her voice and hums, phone vibration, the can, gulps, the dog, keys, the RPG cues.
+    dryer, flush, tap, her bath music and the drain, her voice ("babe?" and her calls from the bathroom) and hums, phone vibration, the can, gulps, the dog, keys, the RPG cues.
 - **Files:** mono MP3s, every one-shot loudness-matched so `MIX` is the mix. Through-wall sounds are 24 kHz
   / 32 kbps, the rest 32 kHz / 48 kbps. 72 files inlined into the build (about 560 KB of the 928 KB file).
   Loops carry 0.25 s of wrap-around on each side, so MP3 padding never makes a gap.

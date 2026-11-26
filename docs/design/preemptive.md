@@ -23,8 +23,9 @@ Home app).
   - *Time away from the PC* (Charge, `CHARGE_SEC` 15 s). Everything above, plus no input at all but the card: the
     right screen dims (it is what she would see), your gaming chair stands empty in front of the desk, its back to
     you, and in the webcam view, its front to the camera; a glass card over the monitor says why you are away
-    ("Charging your phone"), the seconds left and that the party is on autopilot, with a moss bar (✕ = come back
-    early, no effect) (grid doc 7k). If a visit lands while you are away she sees whatever is on screen: Excel = pass,
+    ("Charging your phone"; bringing her a towel or her wine from the bath, her.md: "Bringing her a towel"), the seconds
+    left and that the party is on autopilot, with a moss bar (✕ = come back early: no effect; with her towel or wine,
+    she gets it herself) (grid doc 7k). If a visit lands while you are away she sees whatever is on screen: Excel = pass,
     the game = caught.
   - *A condition on where she is.* Read when you start (you text her now, you walk over now). The tooltip is
     the cost and one sentence on what it does, with the condition when there is one (Text her: while she is busy

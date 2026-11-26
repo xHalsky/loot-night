@@ -1,7 +1,8 @@
 import { T } from '../config/tuning';
-import { rules, bedAt } from './week';
+import { rules, bedAt, on } from './week';
 import { S, N, type ActivityId, type Room } from '../core/state';
-import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE } from '../data/apartment';
+import { ACTIVITIES, ACT_BY_ID, ROOM_DISTANCE, wet } from '../data/apartment';
+import { askFree, startAsk } from './asks';
 import { rand, weighted, chance, clamp } from '../core/rng';
 import { moodZone, addMood } from './meters';
 import { toastAs } from '../core/fx';
@@ -56,20 +57,28 @@ function pickActivity() {
   const n = N();
   const a = n.apt;
   let id: ActivityId;
-  if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < bedAt() && chance(T.SHOWER_CHANCE)) { id = 'shower'; a.showerUsed = true; if (!n.headset) tip('shower'); }
+  const bath = on('bath');   // the weekend: her shower is a bath (#88)
+  if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < bedAt() && chance(bath ? T.BATH_CHANCE : T.SHOWER_CHANCE)) {
+    id = bath ? 'bath' : 'shower'; a.showerUsed = true; if (!n.headset && !bath) tip('shower');
+  }
   else {
     const pool = ACTIVITIES.filter(x => x.weight > 0 && x.id !== a.activity);
     id = pool[weighted(pool.map(x => x.weight))].id;
   }
   a.activity = id; a.room = ACT_BY_ID[id].room; a.t = rand(...ACT_BY_ID[id].dur);
   a.moving = T.APT_MOVE_SEC; a.soundT = 0.5; a.cued = false;
+  // her requests from the bathroom (#93, #88), decided as she goes in; the door ajar for her bath music
+  a.ajar = id === 'bath' && chance(T.BATH_DOOR_AJAR);
+  a.towelAsk = wet(id) && on('towelReq') && chance(T.TOWEL_CHANCE);
+  a.wineAt = id === 'bath' && on('wine') && chance(T.WINE_CHANCE) ? a.t - rand(...T.WINE_AT_SEC) : -1;
 }
 
 /** How much of your Noise reaches her, by room and what she is doing (never shown). Asleep: not used. */
 export function hearing(): number {
   const a = N().apt;
   const room = a.moving > 0 ? 'hallway' : a.room;
-  return T.HEAR_DISTANCE[ROOM_DISTANCE[room]] * (a.moving > 0 ? 1 : T.HEAR_MASK[a.activity] ?? 1) * sealNoise();
+  const ajar = a.activity === 'bath' && a.ajar && a.moving <= 0 ? T.BATH_AJAR_HEAR : 1;   // the bath's door ajar for her music
+  return T.HEAR_DISTANCE[ROOM_DISTANCE[room]] * (a.moving > 0 ? 1 : T.HEAR_MASK[a.activity] ?? 1) * ajar * sealNoise();
 }
 export const heardNoise = () => N().noise * hearing();
 
@@ -81,7 +90,7 @@ export function aptAmbience(): { cue: string; room: Room; level: number } | null
   if (!n || n.visit.stage !== 'idle' || n.lap || n.pre?.withHer || a.asleep || a.moving > 0 || a.cued) return null;
   const cue = ambienceFor(a.activity);
   if (!cue) return null;
-  const level = a.activity === 'tea' ? clamp(1.1 - a.t / 20, 0.5, 1) : 1;   // the kettle gets louder towards the boil
+  const level = a.activity === 'tea' ? clamp(1.1 - a.t / 20, 0.5, 1) : a.activity === 'bath' ? (a.ajar ? 1 : 0.55) : 1;   // the kettle gets louder towards the boil; her bath music through the door, or ajar
   return { cue, room: a.room, level };
 }
 
@@ -92,7 +101,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   a.calm = Math.max(0, a.calm - dt);
   if (a.calm <= 0) a.calmHard = false;
   if (a.calm > 0 && !a.calmHard && !a.asleep && heardNoise() > T.PRE_CALM_BREAK_NOISE) { a.calm = 0; a.forceDoor = true; hear(a.room, 'HUH?'); }   // too loud: the calm is over
-  if (n.pre?.withHer) return null;               // you brought her tea: she is with you, her routine waits
+  if (n.pre?.withHer || n.herAsk) return null;   // you're bringing her something, or she waits for it: her routine waits (#93, #88)
   if (a.moving > 0) {
     a.moving -= dt;
     a.soundT -= dt;
@@ -103,7 +112,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   const act = ACT_BY_ID[a.activity];
   a.soundT -= dt;
   if (a.soundT <= 0) {
-    a.soundT = act.id === 'shower' ? 1.5 : act.id === 'sleep' ? 3 : 2.5;
+    a.soundT = act.id === 'shower' ? 1.5 : act.id === 'sleep' ? 3 : 2.5;   // the bath's music: 2.5
     if (act.sound) { sfx.aptTick(act.id, a.room); hear(act.room, act.sound); }
   }
 
@@ -111,7 +120,10 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
 
   // High Noise makes her wrap up whatever she is doing (except the shower).
   // the door seal: she gets up less often; the week's visits (#56): she gets through her things faster (not the shower)
-  a.t -= dt * (heardNoise() > T.NOISE_HURRY ? 2 : 1) * sealPace() * (a.activity === 'shower' ? 1 : rules().visits);
+  a.t -= dt * (heardNoise() > T.NOISE_HURRY ? 2 : 1) * sealPace() * (wet(a.activity) ? 1 : rules().visits);
+  // from the bathroom: "Babe, bring my wine?" partway into her bath, "Babe, towel!" as she gets out (#88, #93)
+  if (a.activity === 'bath' && (a.wineAt ?? -1) >= 0 && a.t <= a.wineAt! && askFree()) { a.wineAt = -1; startAsk('wine'); return null; }
+  if (wet(a.activity) && a.towelAsk && a.t <= T.END_CUE_SEC) { a.towelAsk = false; if (askFree()) { startAsk('towel'); return null; } }
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
     a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end); if (!n.headset) tip('endcue');
   }

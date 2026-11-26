@@ -47,6 +47,7 @@ import type { DeviceId } from '../src/data/home';
 import type { Room } from '../src/core/state';
 import { CURIO_BY_ID } from '../src/data/curios';
 import { T } from '../src/config/tuning';
+import { takeAsk } from '../src/systems/asks';
 import { endNight } from '../src/systems/night';
 import { heroStats, heroBaseStats } from '../src/systems/stats';
 import { equipOn, clickBagSlot } from '../src/systems/bag';
@@ -97,7 +98,7 @@ function cityRound(): string[] {
 }
 void salvageYield;
 S.g = initialState();
-if (process.env.HOME) S.g.owned.push('vacuum', 'speaker', 'tv', 'seal');   // HOME=1 (#57): every device installed
+if (process.env.HOME === '1') S.g.owned.push('vacuum', 'speaker', 'tv', 'seal');   // HOME=1 (#57): every device installed
 S.g.day = Number(process.env.DAY ?? 0);   // the week (#56): DAY=n starts on that night (0 = Monday); the save's day carries over with NIGHTS
 for (let night = 1; night <= NIGHTS; night++) {
 let built: string[] = [];
@@ -123,7 +124,8 @@ const preUsed: Record<string, number> = {};
 const homeUsed: Record<string, number> = {};   // HOME=1: the devices used, charges, whether it died
 const calls: Record<string, number> = {};
 const wipeAt: number[] = [];
-let demands = 0, t01 = 0, teases = 0, lastTease = '';   // the week (#56): what real life asked of you before 01:00 (her visits, the phone, the dog) and when 01:00 came
+let demands = 0, t01 = 0, teases = 0, lastTease = '';
+const asks: Record<string, number> = {}; let baths = 0, lastAct = '';   // the week (#56): what real life asked of you before 01:00 (her visits, the phone, the dog) and when 01:00 came
 let epicFound = 0; let monsters = 0; let lastTired = 0; let texts = 0, wakes = 0, maxWake = 0, noiseSum = 0, noiseN = 0;
 while (S.g.screen === 'night' && t < 2000) {
   const n = N();
@@ -134,12 +136,13 @@ while (S.g.screen === 'night' && t < 2000) {
     const coming = v === 'far' || v === 'hall' || v === 'handle' || v === 'in';
     const a0 = n.apt;
     // HOME=1 (#57): before charging (15 s away) the bot puts Excel up, as before any time away
-    const goCharge = !!process.env.HOME && battOn() && v === 'idle' && battery() <= 25 && !n.pre && !n.game && !preBlocked('charge');
+    const goCharge = process.env.HOME === '1' && battOn() && v === 'idle' && battery() <= 25 && !n.pre && !n.game && !preBlocked('charge');
     const wantExcel = (coming && (k === 'peek' || k === 'chat')) || goCharge || !!n.pre?.away;
     if (coming && k === 'snack' && !n.game) hideCans();
     if (v === 'in' && n.visit.result === 'offer') takePlate();
     if (v === 'in' && n.visit.result === 'chat') chatAnswer(0);
     if (v === 'in' && n.visit.result === 'ask') cuddleAnswer(true);
+    if (n.herAsk && !n.game && !n.pre) { takeAsk(); asks[n.pre?.id ?? '?'] = (asks[n.pre?.id ?? '?'] ?? 0) + 1; }   // her towel, her wine (#93, #88): a good player brings it
     n.looking = v === 'in' && k === 'tease';   // her tease (#85): a good player looks at her (Eyes busy) till she blows the kiss
     if (k === 'tease' && n.visit.result && n.visit.result !== lastTease) teases += n.visit.result === 'kissed' ? 1 : 0;
     lastTease = k === 'tease' ? n.visit.result ?? '' : '';
@@ -190,7 +193,7 @@ while (S.g.screen === 'night' && t < 2000) {
     // HOME=1 (#57): every device installed; the bot uses them where they work (an upper bound: it knows where she is):
     // the TV cast at the credits, the vacuum in her room, the speakers when she is up, bubble tea, the seal while she
     // sleeps; it charges at 25% or under (Excel up first, above)
-    if (process.env.HOME && battOn() && v === 'idle' && !n.pre && !n.switching && !n.game) {
+    if (process.env.HOME === '1' && battOn() && v === 'idle' && !n.pre && !n.switching && !n.game) {
       const a1 = n.apt, up = !a1.asleep && a1.activity !== 'shower' && a1.moving <= 0, use = (id: DeviceId, room?: Room) => { if (!deviceBlocked(id) && useDevice(id, room)) homeUsed[id] = (homeUsed[id] ?? 0) + 1; };
       if (goCharge && n.monitor === 'excel') { startPre('charge'); homeUsed.charge = (homeUsed.charge ?? 0) + 1; }
       else if (a1.activity === 'tv' && a1.cued && up && (n.home.uses.tv ?? 0) < T.TV_MAX) use('tv');
@@ -211,10 +214,11 @@ while (S.g.screen === 'night' && t < 2000) {
     if (n.phase === 'mapChoice') choosePath(N().safest);
     if (n.dropPopup) skipDrop();
   }
+  if (n.apt.activity !== lastAct) { if (n.apt.activity === 'bath') baths++; lastAct = n.apt.activity; }
   const before = n.catches;
-  const vs = n.visit.stage, ni = n.interrupts.length, dogWas = n.dog.stage;
+  const vs = n.visit.stage, ni = n.interrupts.length, dogWas = n.dog.stage, askWas = !!n.herAsk;
   step(dt); t += dt;
-  if (S.g.night && N().clock < T.BEDTIME) { const m = N(); demands += ((vs === 'handle' || (vs === 'far' && m.visit.kind === 'tease')) && m.visit.stage === 'in' ? 1 : 0) + (m.interrupts.length > ni ? 1 : 0) + (dogWas === 'away' && m.dog.stage === 'up' ? 1 : 0); t01 = t; }   // as the week doc's model: visits she came in on, phone events, the dog
+  if (S.g.night && N().clock < T.BEDTIME) { const m = N(); demands += ((vs === 'handle' || (vs === 'far' && m.visit.kind === 'tease')) && m.visit.stage === 'in' ? 1 : 0) + (m.interrupts.length > ni ? 1 : 0) + (dogWas === 'away' && m.dog.stage === 'up' ? 1 : 0) + (!askWas && m.herAsk ? 1 : 0); t01 = t; }   // as the week doc's model: visits she came in on, phone events, the dog
   if (S.g.night && N().catches > before) { caught++; if (process.env.DBG) console.error('CAUGHT', N().visit.kind, N().visit.from, 'monitor', N().monitor, 'sw', !!N().switching, 'stage', vs, 'clock', Math.round(N().clock)); }
   if ((vs === 'handle' || (vs === 'far' && N().visit.kind === 'tease')) && S.g.night && N().visit.stage === 'in') { visits++; kinds[N().visit.kind] = (kinds[N().visit.kind] ?? 0) + 1; }
   if (S.g.night && N().visit.stage === 'in' && N().visit.t < 0.02 && N().visit.result) outcomes[N().visit.result] = 1 + (outcomes[N().visit.result] ?? 0);
@@ -229,5 +233,5 @@ const r = S.g.results!; const N0tired = lastTired;
 const gear = S.g.heroes.map(h => { const st = heroStats(h), b = heroBaseStats(h); return { atk: (st.atk - b.atk) / st.atk, hp: (st.hp - b.hp) / st.hp, slots: Object.values(h.gear).filter(Boolean).length, ilvl: Object.values(h.gear).reduce((a, it: any) => a + (it?.ilvl ?? 0), 0) }; });
 const gearStats = { equips, skipped, swapped, gearAtk: +(gear.reduce((a, x) => a + x.atk, 0) / gear.length).toFixed(2), gearHp: +(gear.reduce((a, x) => a + x.hp, 0) / gear.length).toFixed(2),
   slots: gear.reduce((a, x) => a + x.slots, 0), gearIlvl: +(gear.reduce((a, x) => a + x.ilvl, 0) / Math.max(1, gear.reduce((a, x) => a + x.slots, 0))).toFixed(1), wipeAt };
-console.log(JSON.stringify({ mode, night, day: dayName(r.day), home: homeUsed, battEnd: battOn() ? battery() : null, demands, teases, secApart: demands ? Math.round(t01 / demands) : null, q4: S.g.results?.q4 ?? 0, zl: Math.floor(S.g.zl), q4title: S.g.q4.rank, ...gearStats, built, bagValue, city: { ...S.g.furniture }, goldAfterCity, nextCost: next ? [next.gold, next.mats] : null, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, mats: S.g.mats, sell: S.g.bag.map(e => e.kind === 'item' ? Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)) : 15), bagRar: S.g.bag.map(e => e.kind === 'item' ? ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity) : -1), salvage: S.g.bag.reduce((a, e) => a + (e.kind === 'item' ? T.SALVAGE_YIELD[['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity)] : 0), 0), bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), party: S.g.heroes.map(h => h.id).join(','), lineFixes, nodesBought, trees: S.g.heroes.map(h => (S.g.trees?.[h.id] ?? []).length).join(','), runEnds, firstLegend, lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses, runs, banked, pace: { ...PACE, combat: Math.round(PACE.combat), encounter: +(PACE.encounterSum / Math.max(1, PACE.encounters)).toFixed(1), floor: +(PACE.floorSum / Math.max(1, PACE.floors)).toFixed(1) } }));
+console.log(JSON.stringify({ mode, night, day: dayName(r.day), home: homeUsed, battEnd: battOn() ? battery() : null, demands, teases, asks, baths, secApart: demands ? Math.round(t01 / demands) : null, q4: S.g.results?.q4 ?? 0, zl: Math.floor(S.g.zl), q4title: S.g.q4.rank, ...gearStats, built, bagValue, city: { ...S.g.furniture }, goldAfterCity, nextCost: next ? [next.gold, next.mats] : null, realSec: Math.round(t), ending: r.ending, stars: r.stars, depth: r.depth, endClock: r.endClock, mood: r.mood, visits, kinds, caught, wipes, texts, wakes, maxWake: Math.round(maxWake), monsters, tired: Math.round(N0tired), avgNoise: Math.round(noiseSum / noiseN), debt: r.debtAfter, gold: S.g.gold, mats: S.g.mats, sell: S.g.bag.map(e => e.kind === 'item' ? Math.round(e.item.value * (e.item.identified ? 1 : T.UNIDENTIFIED_VENDOR_MULT)) : 15), bagRar: S.g.bag.map(e => e.kind === 'item' ? ['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity) : -1), salvage: S.g.bag.reduce((a, e) => a + (e.kind === 'item' ? T.SALVAGE_YIELD[['common', 'uncommon', 'rare', 'epic', 'legendary'].indexOf(e.item.rarity)] : 0), 0), bag: S.g.bag.length, levels: S.g.heroes.map(h => h.level), party: S.g.heroes.map(h => h.id).join(','), lineFixes, nodesBought, trees: S.g.heroes.map(h => (S.g.trees?.[h.id] ?? []).length).join(','), runEnds, firstLegend, lvlAt, curioPicks, preUsed, calls, epicFound, rarePlus: S.g.bag.filter(e => e.kind === 'item' && ['rare', 'epic', 'legendary'].includes(e.item.rarity)).length, witched: S.g.bag.filter(e => e.kind === 'item' && e.item.witched).length, near: r.nearMisses, runs, banked, pace: { ...PACE, combat: Math.round(PACE.combat), encounter: +(PACE.encounterSum / Math.max(1, PACE.encounters)).toFixed(1), floor: +(PACE.floorSum / Math.max(1, PACE.floors)).toFixed(1) } }));
 }

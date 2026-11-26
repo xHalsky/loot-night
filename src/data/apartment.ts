@@ -9,8 +9,11 @@ export const ACTIVITIES: ActivityDef[] = [
   { id: 'toilet', room: 'bathroom', label: 'Bathroom', sound: 'FLUSH', end: 'TAP', dur: [8, 12], weight: 1 },
   { id: 'phone', room: 'bedroom', label: 'On her phone', sound: '', end: 'BYE LOVE YOU', dur: [15, 25], weight: 2 },
   { id: 'shower', room: 'bathroom', label: 'Shower', sound: 'SHOWER', end: 'HAIR DRYER', dur: [90, 120], weight: 0 },
+  { id: 'bath', room: 'bathroom', label: 'Bath', sound: 'MUSIC', end: 'DRAIN', dur: [120, 150], weight: 0 },   // the weekend (#88): her music through the door
   { id: 'sleep', room: 'bedroom', label: 'Asleep', sound: 'ZZZ', end: '', dur: [99999, 99999], weight: 0 },
 ];
+/** In the water: the shower or the bath (she can't come to your door, real life waits, the towel is hers to ask for). */
+export const wet = (id: string) => id === 'shower' || id === 'bath';
 export const ACT_BY_ID = Object.fromEntries(ACTIVITIES.map(a => [a.id, a])) as Record<ActivityId, ActivityDef>;
 export const ROOM_NAME: Record<Room, string> = { living: 'Living room', kitchen: 'Kitchen', bathroom: 'Bathroom', bedroom: 'Bedroom', hallway: 'Hallway' };
 // How far each room is from yours on the blueprint (docs/design/her.md, Noise by distance).

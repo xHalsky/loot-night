@@ -79,7 +79,7 @@ ok(S.g.monsters === T.MONSTER_PER_NIGHT && n.dog.next === 90 && n.friendsLeft ==
 n.clock = 24 * 60 + 1; n.apt.t = 0; n.apt.lastVisitEnd = n.threat; updateApartment(1 / 60); ok(!n.apt.asleep, 'Thursday: she stays up past midnight');
 n = night(4); n.clock = 24 * 60 + 1; n.apt.t = 0; n.apt.lastVisitEnd = n.threat; n.mood = 60; updateApartment(1 / 60); ok(n.apt.asleep, 'Friday: she goes to bed at 00:00');
 n = night(5); n.clock = 24 * 60 + 1; n.apt.t = 0; n.apt.lastVisitEnd = n.threat; n.mood = 60; updateApartment(1 / 60); ok(!n.apt.asleep, 'Saturday: not at 00:00...');
-n.clock = 25 * 60 + 1; n.apt.t = 0; n.apt.moving = 0; n.apt.lastVisitEnd = n.threat; updateApartment(1 / 60); ok(n.apt.asleep, '...at 01:00');
+n.clock = 25 * 60 + 1; n.apt.t = 0; n.apt.moving = 0; n.apt.towelAsk = false; n.apt.wineAt = -1; n.apt.lastVisitEnd = n.threat; updateApartment(1 / 60); ok(n.apt.asleep, '...at 01:00');
 
 // --- her pace: the gaps shrink with the night's visits ---
 // her odds never come up (random 0.99): she comes when the longest gap runs out, DOOR_MAX_GAP_SEC / the night's visits

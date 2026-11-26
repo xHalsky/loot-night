@@ -1,6 +1,7 @@
 // Her panel's view (V4, #69; grid doc 7b): what the renderer's her.js drawHerLive needs, read from the game. No rules
 // here, only reading; the texts are the ones her DOM panel had (docs/design/her.md, screen.md).
 import { eyesBusy } from '../systems/eyes';
+import { askAwaySec } from '../systems/asks';
 import { S, N } from '../core/state';
 import { T } from '../config/tuning';
 import { moodZone } from '../systems/meters';
@@ -39,6 +40,8 @@ function middle(hover: string) {
   }
   if (v.stage === 'idle' && S.g.day === 0 && n.apt.cued && !n.headset && END_HINT[n.apt.activity]) { label = 'listen'; body = END_HINT[n.apt.activity]; tone = 'warn'; }   // first night: name the tell
   if (v.kind === 'tease') return teaseWin();   // she wants you (#85, #89)
+  if (v.stage === 'idle' && n.herAsk) return askWin();       // "Babe, towel!", "Babe, bring my wine?" (#93, #88)
+  if (v.stage === 'idle' && n.herThanks && !n.pre) return thanksWin();
   if (v.stage === 'far' && !n.headset) { label = 'footsteps'; body = 'Footsteps... is she coming?'; tone = 'warn'; }
   if (v.stage === 'hall') { label = 'at the door'; body = S.g.day === 0 ? VISIT_CUE[v.kind] : 'Her shadow is at the door.'; tone = 'alarm'; }
   if (v.stage === 'handle') { label = 'door'; body = 'The handle is turning!'; tone = 'alarm'; }
@@ -46,6 +49,7 @@ function middle(hover: string) {
   if (v.stage === 'in') {
     label = 'she is in'; body = v.result === 'caught' ? 'Caught.' : v.result === 'look' ? '"Nothing. Just looking at you."' : v.checked ? 'She bought it.' : '"Still working, babe?"'; tone = v.result === 'caught' ? 'alarm' : 'warn';
     if (v.result === 'pass' && n.q4.asked) body = '"What are you working on?"';   // looking busy (#55): you sat idle in Excel
+    if (v.ask && v.result !== 'caught') body = v.ask === 'towel' ? 'In a towel, dripping: "Found one myself."' : 'In a towel, dripping: "Got my wine myself."';   // ignored her request (#93, #88)
     const secs = `${Math.max(0, Math.ceil(v.t))} s`;
     if (v.result === 'offer') return { win: { label: 'SNACK RUN', right: secs, line: '"Made you a plate. Eat something, babe."', warm: true, pills: [{ name: 'Take the plate', cost: `party +${Math.round(T.SNACK_HEAL * 100)}% HP`, act: 'takePlate', arg: '0', tip: 'plate' }] as Pill[] } };
     if (v.result === 'ask') return { win: { label: 'CUDDLE', right: secs, line: '"Come cuddle for a bit?"', pills: [{ name: 'Come here', cost: `${T.CUDDLE_SEC} s with her`, act: 'cuddle', arg: '1', tip: 'cuddleYes' }, { name: 'One sec, babe', cost: 'she sighs', act: 'cuddle', arg: '0', tip: 'cuddleNo' }] as Pill[] } };
@@ -73,6 +77,19 @@ function middle(hover: string) {
 
 /** Her tease in her window (grid doc 7m): the pink line, HER, three hearts for the looking she wants, her line, her
  *  time; come to bed with Coming, babe. */
+function askWin() {
+  const k = N().herAsk!, towel = k.kind === 'towel';
+  return { win: {
+    label: towel ? 'BABE, TOWEL!' : 'BABE, WINE?', pink: true, right: `${Math.max(0, Math.ceil(k.t))} s`,
+    line: towel ? '"I forgot my towel. Bring me one?"' : '"Bring my wine? It\'s on the counter."',
+    pills: [{ name: towel ? 'Bring her a towel' : 'Bring it to her', cost: `${askAwaySec(k.kind)} s away`, act: 'herAsk', arg: '1', tip: 'ask' }] as Pill[],
+  } };
+}
+function thanksWin() {
+  const k = N().herThanks!;
+  return { win: { label: 'HER', pink: true, look: 3, line: k.kind === 'towel' ? 'She opens the door in her towel, steam behind her. "My hero."' : 'Foam to her shoulders, she takes the glass. "Mmm. Thank you."' } };
+}
+
 function teaseWin() {
   const v = N().visit, bed = !!v.bed;
   const look = Math.min(3, Math.floor(((v.looked ?? 0) / T.TEASE_LOOK_SEC) * 3 + (v.result === 'kissed' ? 3 : 0)));
@@ -117,6 +134,7 @@ export function herTip(key: string): string {
     case 'noise': return `Your Noise.${n.apt.asleep ? ` Above ${T.WAKE_NOISE_FLOOR} it wakes her.` : ' How much reaches her depends on where she is.'}`;
     case 'wake': return `Waking up ${Math.round(n.apt.wake)}. At ${T.WAKE_TEXT} she texts you; full, she gets up.`;
     case 'plate': return 'Take it and say thanks: the party heals.';
+    case 'ask': return `Go and bring it. You're away from the PC for a few seconds; the party fights on. Ignore her and she gets it herself, by way of your door (Mood +${T.ASK_IGNORE_MOOD}).`;
     case 'coming': return 'Go to bed with her. The night ends here, like Sleep, and the morning is the best one. No Witching Hour tonight.';
     case 'cuddleYes': return 'Go to her. The party fights on without you.';
     case 'cuddleNo': return 'Stay. She will not be happy.';

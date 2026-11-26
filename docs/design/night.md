@@ -18,11 +18,11 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
 | Wednesday | The phone rings: the courier, Mom, the boss; Messages: Text her and Raid night? | x1.2 | stays up | dawn |
 | Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); the smart home: the battery, Charge, the Home app and its devices ([desk.md](desk.md)) | x1.2 | stays up | dawn |
 | Friday | She goes to bed: the waking meter, her texts, the good-night walk-by; the Witching Hour after 01:00; "come to bed" after 01:00 with Coming, babe ([her.md](her.md)) | x1.2 | 00:00 | dawn |
-| Saturday | The weekend: she's off and wants you: 1 to 2 tease visits (look at her, [her.md](her.md)) | x1.4 | 01:00 | dawn |
+| Saturday | The weekend: she's off and wants you: 1 to 2 tease visits (look at her); her shower is a bath, and not a break (the phone and the dog go on); "Babe, towel!" and "Babe, bring my wine?" ([her.md](her.md)) | x1.4 | 01:00 | dawn |
 | Sunday | The weekend, more: 2 to 3 tease visits | x1.6 | 01:00 | dawn |
 
 In the schedule already, so they come in on their night once built: lean in and the hall mirror (Tuesday; #77, #59),
-the sheet mask and her selfies (Friday; #59), the lap sit, "Babe, towel!", the bath and its wine (Saturday; #59).
+the sheet mask and her selfies (Friday; #59), the lap sit (Saturday; #59).
 - **Visits x** scales her odds at each activity's end, the shortest and longest gap between visits
   (`DOOR_MIN_GAP_SEC`, `DOOR_MAX_GAP_SEC` divided by it) and how fast she gets through her things (not the shower).
 - **Monday's 01:00** ends the night as a Sleep (the run banked, no sleep debt), mid-battle too; the feed warns
@@ -51,16 +51,18 @@ the dog before 01:00, as the week doc's model counts them):
 
 | | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
-| Demands before 01:00 | 3.7 | 4.2 | 7.0 | 10.8 | 9.5 | 10.6 | 11.4 |
-| Seconds apart (the model) | 105 (97) | 98 (81) | 57 (48) | 40 (34) | 39 (38) | 36 (27) | 34 (24) |
+| Demands before 01:00 | 3.9 | 3.6 | 6.7 | 10.1 | 11.1 | 11.8 | 12.8 |
+| Seconds apart (the model) | 102 (97) | 92 (81) | 57 (48) | 42 (34) | 40 (38) | 32 (27) | 31 (24) |
 | Good bot, one night: stars, caught | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 |
-| Good bot, the week in a row (`campaign.py 8 7`): stars | 3.00 | 2.88 | 3.00 | 2.75 | 2.62 | 2.75 | 2.62 |
-| Idle bot: caught, unplugged of 8 | 2.5, 2 | 4.0, 8 | 3.8, 8 | 1.0, 0 | 1.4, 2 | 1.9, 1 | 2.0, 1 |
+| Good bot, the week in a row (`campaign.py 8 7`, 0.80): stars | 3.00 | 2.88 | 3.00 | 2.75 | 2.62 | 2.75 | 2.62 |
+| Idle bot (0.80): caught, unplugged of 8 | 2.5, 2 | 4.0, 8 | 3.8, 8 | 1.0, 0 | 1.4, 2 | 1.9, 1 | 2.0, 1 |
 
-Monday to Friday sit within about 20% of the model (Tuesday 21%). The tease (0.81) took Saturday from 41 to 36 s apart and
-Sunday from 37 to 34 (1.3 and 1.6 looked-at teases a night; the rest fall past her bedtime); the weekend is still the
-model's bath and its requests short (#59). The good bot always answers her sweetly, and each sweet pass can buy 60 s of calm (her
-lean), which takes the edge off the weekend: without it Saturday and Sunday run x1.29 and x1.45 Monday's visits.
+Measured 0.82 (requests from the bathroom count as demands). Monday to Friday sit within about 20% of the model
+(Thursday 24%); the weekend is now the hardest stretch, 32 and 31 s apart against the model's 27 and 24: the tease
+(0.81, 1.3 and 1.7 looked-at teases a night) and the bath that is no break (0.82). Up to 0.81 the sim's `HOME=1`
+switch was always on (the shell's own `$HOME`), so Thursday on ran with every device bought; the table is without them.
+The good bot always answers her sweetly, and each sweet pass can buy 60 s of calm (her lean), which takes the edge off
+the weekend.
 Tests: `npx tsx test/week.ts`, `python3 test/week.py` (screens `test/shots/week_*.png`).
 
 **Two clocks.**

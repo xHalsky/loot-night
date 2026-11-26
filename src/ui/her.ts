@@ -362,6 +362,7 @@ export const OUTFIT_BY_ACTIVITY: Record<string, { outfit: Outfit; item: Item }> 
   toilet: { outfit: 'tank', item: 'none' },
   phone: { outfit: 'tank', item: 'phone' },
   shower: { outfit: 'towel', item: 'none' },
+  bath: { outfit: 'towel', item: 'none' },
   sleep: { outfit: 'pajama', item: 'none' },
   night: { outfit: 'bighoodie', item: 'none' },   // the walk-by: your gaming hoodie
 };

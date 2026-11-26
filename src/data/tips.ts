@@ -24,6 +24,7 @@ export const END_HINT: Record<string, string> = {
   tea: 'The kettle clicked off. Tea, then maybe a snack run.',
   toilet: 'The tap is running. She is almost out.',
   shower: 'Hair dryer. The shower is over.',
+  bath: 'The drain gurgles. Her bath is over.',
   phone: '"Ok, bye, love you." She is off the phone.',
 };
 

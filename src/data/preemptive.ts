@@ -35,5 +35,6 @@ export const HER_REPLIES: Record<string, string[]> = {
   toilet: ['busy lol', 'bathroom, gimme a sec', 'can\'t talk, bathroom'],
   moving: ['coming to you actually', 'omw to you', 'hold on, coming over'],
   shower: ['in the shower!! talk after'],
+  bath: ['in the bath ♥ talk after', 'bath. candles. wine. bliss'],
 };
 export const SUSPICIOUS_LINES = ['"Why are you being so nice? What did you do?"', '"Okay, this is suspicious."', '"Three times? What are you hiding in there?"'];

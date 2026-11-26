@@ -1,4 +1,6 @@
 import { T } from '../config/tuning';
+import { askLanded, askIgnored } from './asks';
+import { wet } from '../data/apartment';
 import { on, bedAt } from './week';
 import { S, N } from '../core/state';
 import { PRE_BY_ID, HER_REPLIES, SUSPICIOUS_LINES, type PreId } from '../data/preemptive';
@@ -47,7 +49,7 @@ export function startPre(id: PreId) {
   const a = n.apt;
   // Where she is right now decides the outcome.
   const moving = a.moving > 0 || a.room === 'hallway';
-  const outcome = id === 'text' ? (a.asleep ? 'asleep' : moving ? 'moving' : a.activity === 'shower' ? 'shower' : 'ok') : 'ok';
+  const outcome = id === 'text' ? (a.asleep ? 'asleep' : moving ? 'moving' : wet(a.activity) ? 'shower' : 'ok') : 'ok';
   const sec = id === 'charge' ? T.CHARGE_SEC : T.PRE_TEXT_SEC;
   n.pre = { id, stage: 'doing', t: sec, max: sec, away: !!def.away, withHer: false, mult, outcome };
   n.action = 'pre';
@@ -66,6 +68,7 @@ export function updatePre(dt: number) {
   if (!p) return;
   p.t -= dt;
   if (p.t > 0) return;
+  if (p.id === 'towel' || p.id === 'wine') { askLanded(p.id); return; }   // you're back from the bathroom door (#93, #88)
   land(p.id as PreId);
 }
 
@@ -84,7 +87,7 @@ function land(id: PreId) {
     finishPre(); herSay('r', 'what are you up to? ♥');
     if (p.outcome === 'asleep') { a.wake = clamp(a.wake + T.PRE_TEXT_WAKE, 0, T.WAKE_UP); toast('Your text buzzes on her nightstand. She stirs.', '#ff8a80'); return; }
     if (p.outcome === 'moving') { a.forceKind = 'chat'; a.forceDoor = true; a.t = Math.min(a.t, T.PRE_TEXT_SOON); reply('moving'); return; }
-    if (p.outcome === 'shower') { a.forceKind = 'chat'; a.forceDoor = true; reply('shower'); return; }
+    if (p.outcome === 'shower') { a.forceKind = 'chat'; a.forceDoor = true; reply(a.activity === 'bath' ? 'bath' : 'shower'); return; }
     a.calm += T.PRE_TEXT_CALM * p.mult; addMood(T.PRE_TEXT_MOOD * p.mult);   // pushes her next visit: adds up
     reply(a.activity);
     return;
@@ -100,9 +103,11 @@ function land(id: PreId) {
 
 /** Back to the desk early (the ✕): no effect, the use still counts. */
 export function cancelPre() {
-  if (!N().pre) return;
+  const p = N().pre;
+  if (!p) return;
   toast('You stop and get back to the desk.', '#a999bd');
   finishPre();
+  if (p.id === 'towel' || p.id === 'wine') askIgnored(p.id);   // back without it: she gets it herself
 }
 
 function finishPre() { const n = N(); n.pre = null; if (n.action === 'pre') n.action = 'none'; }

@@ -69,12 +69,13 @@ export interface VisitState {
   stage: VisitStage; t: number; nextAt: number; fake: boolean; checked: boolean; result: string; from?: string; lean?: boolean;
   safe?: boolean;   // the night's first chance (the week, #56): a catch on it is let go
   bed?: boolean; looked?: number; gw?: number; esc?: boolean;   // the tease (#85): come to bed (#89), seconds you looked, Goodwill it paid, escalated
+  ask?: 'towel' | 'wine';   // she came to get it herself (#93, #88)
   kind: VisitKind;
   chat?: ChatState | null;        // Chat: the questions she asks while you sit on Excel
 }
 
 export type Room = 'living' | 'kitchen' | 'bathroom' | 'bedroom' | 'hallway';
-export type ActivityId = 'tv' | 'tea' | 'toilet' | 'shower' | 'phone' | 'sleep';
+export type ActivityId = 'tv' | 'tea' | 'toilet' | 'shower' | 'bath' | 'phone' | 'sleep';   // bath: the weekend's shower (#88)
 export interface Apartment {
   room: Room; activity: ActivityId; t: number; moving: number; soundT: number;
   heard: Room | null; heardWhat: string; heardAt: number;
@@ -82,6 +83,7 @@ export interface Apartment {
   asleep: boolean; wake: number; textSent: boolean; cued: boolean;   // cued: the end-of-activity sound has played
   calm: number; forceKind: VisitKind | null;   // pre-emptive: seconds with no visit roll; the next visit's type
   calmHard?: boolean;   // the Raid pass: she knows you are raiding, Noise does not end this calm
+  ajar?: boolean; wineAt?: number; towelAsk?: boolean;   // the bath (#88): the door ajar for her music; when (her a.t) she asks for her wine; she asks for a towel at the end (#93)
 }
 
 // Everything that reaches you through the phone (one device on the desk).
@@ -204,7 +206,9 @@ export interface Night {
   game: MiniGame | null;
   q4: Q4Night;
   shopTonight: string[]; dogChew?: boolean;   // the Shop's one-use things bought tonight; a chew waiting for the dog's next visit (#55)
-  pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;   // pre-emptive actions (#19)
+  pre: PreState | null; preUses: Record<string, number>; preMenu: 'door' | 'phone' | null;
+  herAsk: { kind: 'towel' | 'wine'; t: number; max: number } | null;   // "Babe, towel!" (#93), "Babe, bring my wine?" (#88): her window, waiting for you
+  herThanks: { kind: 'towel' | 'wine'; t: number } | null;          // you brought it: her line for a moment   // pre-emptive actions (#19)
   phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop' | 'homeapp'; shopTab?: 'you' | 'her' | 'home'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
   seal: boolean;   // the door seal is on (the Home app, #57; it was the towel)
   home: import('../systems/home').HomeNight;   // the battery and the devices tonight (#57)

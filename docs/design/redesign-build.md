@@ -41,7 +41,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
   for the week (`docs/playtest.md`). The handoff is built: what is left of V12 and V13 goes with #59.
 - **#59 with V12 and V13's rest, before the playtests.** **0.81.0:** the tease and come to bed (V13's Eyes busy: the
   pointer on the webcam is looking, the eye cursor, EYES BUSY on the skill bar, his back turned; her pink window with
-  the dotted line and hearts from the page's `st.win`; her.md). Next: the bath, the towel and the wine; the lap sit
+  the dotted line and hearts from the page's `st.win`; her.md). **0.82.0:** the bath, the towel and the wine (her
+  window's BABE, TOWEL! and BABE, WINE?, the away card's reason, her thank-you). Next: the lap sit
   (She has the mouse); outfits, gifts and selfies; lean in (V12); mornings and the cuddle close-up.
 - **V11, the small pieces, 0.73.0 and 0.74.0:** pause, How to hide, the microsleep's lids, away from the PC (the empty
   chair, the card), the Goblin Fuel inspect window, then coach marks and tooltips in each world's look, all the

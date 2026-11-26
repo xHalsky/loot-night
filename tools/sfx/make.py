@@ -393,6 +393,76 @@ def _tap():
     write('tap', x, 'wall')
 
 
+@cue('bath')
+def _bath():
+    """Her bath (the weekend, #88): her music through the bathroom door, slow lo-fi chords and a soft beat, and now and
+    then the water moving. 8 s, a seamless loop."""
+    D.seed(820)
+    L, X = 8.0, 0.4
+    d = L + X + 0.2
+    x = np.zeros(secs(d))
+    prog = [['D4', 'F4', 'A4', 'C5'], ['G3', 'B3', 'D4', 'F4'], ['C4', 'E4', 'G4', 'B4'], ['A3', 'C4', 'E4', 'G4']]
+    bar = 2.0
+    for i in range(5):
+        ch = prog[i % 4]
+        place(x, D.fade(pad_chord([note(n) for n in ch], bar + 0.2, 0.55), 0.15, 0.3), i * bar)
+        place(x, D.osc(note(ch[0]) / 2, bar * 0.9, 'tri') * D.env_lin(bar * 0.9, [(0, 0), (0.05, 0.5), (bar * 0.8, 0.3), (bar * 0.9, 0)]), i * bar)
+        for b in range(4):   # a soft kick and a brushed snare
+            at = i * bar + b * bar / 4
+            place(x, D.osc(np.interp(tt(0.18), [0, 0.18], [90, 45]), 0.18) * D.env_exp(0.18, 0.06, 0.003) * 0.5, at)
+            if b % 2:
+                place(x, D.bp(D.white(0.15), 1500, 6000) * D.env_exp(0.15, 0.05) * 0.12, at)
+    for _ in range(5):   # the water moving: a slosh and a drip or two
+        at = float(D.rng.uniform(0, d - 0.6))
+        place(x, D.lp(D.pink(0.5), 900) * D.env_lin(0.5, [(0, 0), (0.12, 1), (0.5, 0)]) * 0.35, at)
+        place(x, D.bubble(float(D.rng.uniform(900, 1800)), 0.18), at + float(D.rng.uniform(0.3, 0.9)))
+    x = D.lp(x, 1400)                     # the door cuts the highs
+    x = D.reverb(x, 0.5, 0.3, 5000)        # a tiled bathroom
+    write('bath', D.rms_norm(D.make_loop(x, L, X), -21), 'wall', loop=L)
+
+
+@cue('drain')
+def _drain():
+    """The bath's end: the plug comes out and the water gurgles away (the bath's tell)."""
+    D.seed(830)
+    d = 2.8
+    t = tt(d)
+    swirl = D.lp(D.brown(d), 420) * (0.6 + 0.4 * D.smooth_rand(d, 5, -1, 1)) * np.interp(t, [0, 0.2, 2.2, d], [0, 1, 0.8, 0])
+    x = swirl * 0.8
+    place(x, D.click(0.03, 300, 2500, 0.006) * 0.8, 0.05)   # the plug
+    for _ in range(46):                                        # the gurgle
+        at = float(D.rng.uniform(0.2, 2.5))
+        place(x, D.bubble(float(D.rng.uniform(160, 520)), float(D.rng.uniform(0.2, 0.6)), cycles=8, rise=0.3), at)
+    x = D.reverb(x, 0.4, 0.25, 6000)
+    write('drain', D.fade(x, 0.005, 0.2), 'wall')
+
+
+@cue('babe')
+def _babe():
+    """Her voice, calling you: 0 a soft 'babe?' (the tease), 1 a drawn-out 'baaabe.' (again), 2 'babe, towel!' and
+    3 'babe, wine?' from the bathroom."""
+    B = (0.035, None, None, 0)
+    lines = [
+        ([B, (0.24, 'e', 'ei', 0.95), (0.04, None, None, 0), (0.05, 'm', 'm', 0.35)], [0.95, 1.0, 1.08, 1.3, 1.35], 236),
+        ([B, (0.62, 'a', 'ei', 1.0), (0.04, None, None, 0), (0.06, 'm', 'm', 0.35)], [1.12, 1.25, 1.08, 0.95, 0.9, 1.0], 230),
+        ([B, (0.2, 'e', 'ei', 1.0), (0.04, None, None, 0), (0.05, 'm', 'm', 0.3), (0.1, None, None, 0),
+          (0.03, None, None, 0), (0.15, 'uh', 'o', 1.0), (0.13, 'u', 'e', 0.9), (0.12, 'l', 'l', 0.6)],
+         [1.1, 1.2, 1.05, 1.0, 1.25, 1.3, 1.1, 0.95], 262),
+        ([B, (0.2, 'e', 'ei', 1.0), (0.04, None, None, 0), (0.05, 'm', 'm', 0.3), (0.1, None, None, 0),
+          (0.08, 'u', 'u', 0.5), (0.22, 'a', 'ai', 1.0), (0.1, 'n', 'n', 0.5)],
+         [1.1, 1.2, 1.05, 1.0, 1.05, 1.15, 1.35, 1.4], 250),
+    ]
+    for k, (plan, contour, f0) in enumerate(lines):
+        D.seed(1300 + k)
+        x = her_line(plan, contour, f0=f0, breath=0.3)
+        place(x, D.lp(D.white(0.02), 700) * D.env_exp(0.02, 0.005) * 0.3, 0.02)   # b
+        if k == 2:
+            at = sum(p[0] for p in plan[:6])
+            place(x, D.bp(D.white(0.03), 2500, 7000) * D.env_exp(0.03, 0.008) * 0.3, at)   # t
+        x = D.reverb(x, 0.35, 0.25, 6000)
+        write(f'babe_{k}', D.fade(x, 0.005, 0.06), 'wall')
+
+
 # ======================= her: voice =======================
 
 def her_line(plan, contour, f0=228, breath=0.25, jitter=0.012):

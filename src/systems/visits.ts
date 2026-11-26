@@ -1,4 +1,6 @@
 import { q4Look, q4Up } from './q4';
+import { updateAsks } from './asks';
+import { wet } from '../data/apartment';
 import { eyesBusy } from './eyes';
 import { realLifeFree } from './reallife';
 import { bedAt } from './week';
@@ -71,7 +73,7 @@ export function startVisit(woken = false, kind?: VisitKind) {
   if (v.stage !== 'idle') return;
   coach('steps');
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && !N().apt.forceKind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
-  v.bed = false; v.looked = 0; v.gw = 0; v.esc = false;
+  v.bed = false; v.looked = 0; v.gw = 0; v.esc = false; v.ask = undefined;
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
   if (!kind) N().apt.forceKind = null;
@@ -80,7 +82,7 @@ export function startVisit(woken = false, kind?: VisitKind) {
   v.lean = v.kind === 'peek' && !woken && !v.fake && moodZone(N().mood) === 'green' && chance(T.LEAN_CHANCE);
   if (v.kind === 'tease') {   // she wants you (#85): no footsteps, her soft call, then the doorway
     const n = N(); v.t = T.TEASE_CALL_SEC; v.fake = false; v.safe = false; v.lean = false;
-    n.apt.heard = 'hallway'; n.apt.heardWhat = 'BABE?'; n.apt.heardAt = n.threat; sfx.hum();
+    n.apt.heard = 'hallway'; n.apt.heardWhat = 'BABE?'; n.apt.heardAt = n.threat; sfx.babe(0);
     return;
   }
   if (v.kind === 'snack' && !v.fake && on('fuel') && hasLife('cans') && !N().cansHidden) { N().cansHidden = true; toast('Plates clinking. Your cans slide under the desk by themselves.', '#ff7ab8'); }
@@ -117,6 +119,7 @@ export function updateVisits(dt: number) {
   const amb = aptAmbience();
   ambience(amb?.cue ?? null, amb?.room, amb?.level);   // her TV, kettle or shower, while she is at it
   if (n.lap) return;                 // she is leaning in: the apartment waits
+  updateAsks(dt);                    // her requests from the bathroom (#93, #88)
   if (v.stage === 'idle') {
     const tz = teaseDue(dt);   // her tease, or come to bed (#85, #89): one demand at a time, like the rest of her
     if (tz) { startVisit(false, 'tease'); if (tz === 'bed') { v.bed = true; v.from = 'night'; n.apt.asleep = false; n.apt.wake = 0; n.apt.heardWhat = 'BABE?'; } return; }
@@ -183,9 +186,9 @@ function leave() {
  *  worst moments (a boss wind-up, a legendary on the floor). Come to bed: once, after 01:00, from her bed. */
 function teaseDue(dt: number): 'tease' | 'bed' | null {
   const n = N(), tz = n.tease, a = n.apt;
-  if (!realLifeFree(true) || S.g.realLifeOff) return null;   // one demand at a time, but a boss wind-up is fair game
+  if (!realLifeFree(true) || S.g.realLifeOff || n.herAsk) return null;   // one demand at a time, but a boss wind-up is fair game
   if (on('comeToBed') && !tz.bedDone && a.asleep && n.clock >= Math.max(tz.bedAt, T.BEDTIME)) { tz.bedDone = true; return 'bed'; }
-  if (!on('tease') || tz.left <= 0 || a.asleep || a.activity === 'shower' || a.moving > 0 || n.clock >= bedAt()) return null;
+  if (!on('tease') || tz.left <= 0 || a.asleep || wet(a.activity) || a.moving > 0 || n.clock >= bedAt()) return null;
   const hot = n.enemies.some(e => (e.wind ?? 0) > 0 && e.hp > 0) || n.floorLoot.some(l => l.entry.kind === 'item' && l.entry.item.rarity === 'legendary');
   if (n.threat < tz.next - (hot ? T.TEASE_HOT_EARLY_SEC : 0)) return null;   // due, or early for the worst moment
   tz.left--; tz.next = n.threat + rand(...T.TEASE_GAP_SEC);

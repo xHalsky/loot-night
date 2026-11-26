@@ -291,9 +291,10 @@ function drawHallway(c: CanvasRenderingContext2D, x: number, y: number, w: numbe
   fillPoly(c, bq, bath ? '#cdbfa6' : '#a99c88');
   const gl = wallQuad(185, 197, 0.28).map(([px, py], i) => [px, i < 2 ? py : py - (yBot(px) - yTop(px)) * 0.38] as [number, number]);   // the frosted glass panel
   fillPoly(c, gl, bath ? 'rgba(235,240,250,.9)' : '#8d8b95');
-  if (bath && act === 'shower') {
-    c.save(); c.beginPath(); gl.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.clip();
-    drawHerFrosted(c, 191, gl[0][1] + 2, 0.36); c.restore();
+  if (bath && (act === 'shower' || act === 'bath')) {   // the bath (#88): steam, no shape behind the glass (she's down in the tub)
+    if (act === 'shower') { c.save(); c.beginPath(); gl.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.clip();
+    drawHerFrosted(c, 191, gl[0][1] + 2, 0.36); c.restore(); }
+    else if (S.g.night?.apt.ajar) { c.fillStyle = 'rgba(255,190,110,.45)'; c.fillRect(196, yTop(196) + 4, 4, yBot(196) - yTop(196) - 4); }   // ajar for her music: candlelight in the gap
     for (let i = 0; i < 6; i++) { const k = (t * 0.35 + i / 6) % 1; c.fillStyle = `rgba(240,244,255,${0.32 * (1 - k)})`; c.beginPath(); c.arc(184 + Math.sin(t + i * 1.7) * 6 - k * 12, yTop(186) + 30 + i * 8 - k * 30, 5 + k * 9, 0, Math.PI * 2); c.fill(); }   // steam leaking out
   }
   if (bath) {   // light strip under the door, and its glow on the floor

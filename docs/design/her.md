@@ -17,6 +17,7 @@ through the flat doing activities, each with a room, a sound and a duration:
 | Bathroom | Bathroom | Flush (once, as she goes in) | 8 to 12 |
 | On her phone | Bedroom | silent | 15 to 25 |
 | Shower | Bathroom | Running water | 90 to 120, once per night after 21:30 (`SHOWER_CHANCE`): the safe window for greed |
+| Bath (the weekend, in the shower's place) | Bathroom | The tap as she fills it, then her music through the door (louder when it's ajar) | 120 to 150, once per night after 21:30 (`BATH_CHANCE` 0.5 at each activity end, so most nights have it by about 22:00). Not a safe window: see below |
 
 Moving takes `APT_MOVE_SEC` with quiet steps. At each activity end she heads to your door with
 `DOOR_BASE_CHANCE` + `DOOR_NOISE_CHANCE` per Noise point + `DOOR_RED_CHANCE` in red Mood
@@ -27,7 +28,7 @@ Mom call sends her to your door next.
 **Noise by distance and masking.** How much of your Noise reaches her depends on where she is
 (`ROOM_DISTANCE` in `src/data/apartment.ts`, `HEAR_DISTANCE` / `HEAR_MASK` in `tuning.ts`). Your room is at the
 hallway's end and shares walls with the kitchen and the living room (x2, the hallway too); the bathroom is
-further down the hallway (x1); the bedroom is at the far end (x0.5). The TV masks an extra x0.5; the shower masks everything (x0).
+further down the hallway (x1); the bedroom is at the far end (x0.5). The TV masks an extra x0.5; the shower masks everything (x0), her bath music x0.35, and with the bath's door ajar for her music (`BATH_DOOR_AJAR`, half her baths) she hears you twice as well as that.
 Moving between rooms counts as the hallway. This heard Noise drives her door chance and makes her wrap up
 early above 70. It is never shown; the player infers it from what they hear. `test/noise.ts`: a boss kill
 during her shower leaves the door chance at 35%; the same kill while she makes tea next door raises it to 85%.
@@ -78,6 +79,7 @@ living-room opening on the left, the bedroom door on the right) only when wide. 
 | Kitchen, tea | Warm light, kettle steam, her at the counter from behind | Narrow | No |
 | Bathroom | Closed door, light strip under it | Medium | No |
 | Shower | Steam leaking out, frosted silhouette in the door glass | Medium | No |
+| Bath | Steam leaking out; ajar, candlelight in the gap | Medium | No |
 | Bedroom, phone | Far door ajar, cold blue glow on the ceiling | Wide | No |
 | Asleep | Far door ajar, dark | Wide | No |
 | Living room, TV | Blue flicker in the opening and on the wall, her bare feet on the armrest | Wide | A little |
@@ -133,6 +135,20 @@ The activity's loop stops when its cue starts. Sounds and files: [screen.md](scr
 | Good night (green at bedtime, once) | Soft, sleepy steps | Nothing | Nothing to do | She stops at the door in your gaming hoodie, sleeves over her hands: "Night, babe." Mood `WALKBY_MOOD`, then she goes to bed ([eye-candy.md](eye-candy.md)) |
 | Tease (Saturday and Sunday) | No steps: her soft "babe?" (`TEASE_CALL_SEC`) | Nothing: she knows you're gaming | Look at her: the pointer on the webcam view with the game on screen (`TEASE_LOOK_SEC` in total) | Looking: Goodwill `TEASE_GOODWILL_PER_SEC` a second, Eyes busy, then a blown kiss. Ignored (`TEASE_SEC`): "Baaabe." once more (`TEASE_ESCALATE_SEC`), then she leaves pouting, Mood +`TEASE_IGNORE_MOOD`. Never a catch |
 | Come to bed (Friday on, after 01:00, once) | Her sleepy "babe...?" | Nothing | Look at her, or "Coming, babe" | As the tease, in your hoodie, half asleep: looking pays x`BED_TEASE_GOODWILL_MULT`, ignoring costs x`BED_TEASE_MOOD_MULT`. Coming, babe ends the night like Sleep at that hour and the morning is the green one whatever her Mood |
+
+**The bath and her requests** (fan-service steps 8 and 13, #93, #88). On Saturday and Sunday her shower is a bath
+(table above). While she is in the shower or the bath she can't come to your door; the shower is also your break
+(nothing from real life starts), the bath is not: the phone and the dog go on, and the doorbell waits till she's out.
+From the bathroom she asks for things, one demand at a time like the rest of real life (she waits if something else
+has you):
+
+| Request | When | Her window | Bring it | Ignore it (`ASK_SEC` 15) |
+|---|---|---|---|---|
+| "Babe, towel!" (`TOWEL_CHANCE` 0.5 of showers and baths, from Saturday) | As she gets out, in place of the hair dryer or the drain | BABE, TOWEL! "I forgot my towel. Bring me one?" | Bring her a towel: `TOWEL_AWAY_SEC` 10 away from the PC (the away card: Bringing her a towel). She opens the door in her towel, steam behind her: "My hero." Goodwill +`ASK_GOODWILL` 15; then the hair dryer or the drain | Mood +`ASK_IGNORE_MOOD` 10, "Fine. I'll get it myself.", and she comes to your door in her towel, dripping: a Peek, catch rules apply |
+| "Babe, bring my wine?" (`WINE_CHANCE` 0.5 of baths) | `WINE_AT_SEC` 25 to 60 s into her bath | BABE, WINE? "Bring my wine? It's on the counter." | Bring it to her: `WINE_AWAY_SEC` 12 away. "Mmm. Thank you." Goodwill +15; her bath goes on | As the towel: she gets out for it, by way of your door |
+
+Her routine waits while she asks and while you bring it. Back early from the away card (its close box) counts as
+ignoring her. Her voice is a sound of its own (`babe`: the tease's "babe?", "baaabe.", "babe, towel!", "babe, wine?").
 
 **The tease** (fan-service step 1, #85). On the weekend she comes to your doorway because she wants you, not to check
 on you: Saturday `teases` 1 to 2, Sunday 2 to 3 (the week's plan in `NIGHT_SCHEDULE`). The first is due
@@ -196,7 +212,7 @@ silence is meh. Two sweet: she kisses your cheek and leaves happy (Mood `LAP_HAP
 (a finger on her lips, twirling her hair, her chin on her fist). Guild chat reacts ("who is that??").
 
 **How she looks.** Outfit comes from what she was doing: TV = off-shoulder tee and shorts with the
-remote; tea = oversized hoodie and mug; phone or bathroom = tank top and shorts; shower = towel wrap and
+remote; tea = oversized hoodie and mug; phone or bathroom = tank top and shorts; shower or bath = towel wrap and
 turban with droplets; woken = sleep shirt and messy hair. Barefoot at the door, painted toenails, contact
 shadow on the hallway floor. Expressions follow the situation: suspicious while she looks, smile when she
 buys it, angry, then furious with an anger mark on later catches, pout when woken, blush and wink on lean
@@ -204,6 +220,15 @@ visits and when she leans in. A small reaction bubble (?, !, heart, ...) over he
 
 ## Decisions
 
+- **The bath is not a break** (0.82, #88): the shower's 90 to 120 s are the week's safe window (nothing from real life
+  starts), but the weekend is where she wants your attention, so in her bath the phone and the dog go on, she asks for
+  her wine and her towel, and only her own visits wait. With the bath as a second shelter Saturday and Sunday got easier
+  than Thursday (41 and 44 s between demands); as it is they run 32 and 31. The doorbell waits for her to get out (a
+  bubble tea pulled her out of the bath otherwise). Rejected: the bath as a shower with requests (the weekend easier),
+  and the towel request on weekday showers in week one (the schedule has it from Saturday).
+- **Ignoring her request is a visit, not a flat cost** (#93, #88): she gets it herself by way of your door, so the Mood
+  is the small part and the risk is the doorway (a Peek). Taking it costs 10 to 12 s away from the PC with the party on
+  autopilot. Back early from the away card counts as ignoring her: the close box has to mean something.
 - **The tease and come to bed are never a catch** (0.81, #85, #89): she isn't checking on you, so the game on screen is
   the point; ignoring her only costs Mood (x1.5 at bedtime). Looking is the pointer on the webcam with the game up, so
   it costs something real: Eyes busy (no skills, no Flow) while a fight goes on, and she comes early for a boss wind-up
