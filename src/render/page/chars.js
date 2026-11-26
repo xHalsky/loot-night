@@ -338,6 +338,14 @@ function rogue(cx, fy, s, b, t, carry, wp, swq) {
       return fold ? 0.02 : 0.07 + 0.08 * clamp((x - cx + 18) / 20);
     }, CL);
   for (const [k, l] of [[1, 3], [4, 4], [6, 2], [9, 3]]) { const [hx, hy] = hem[k]; line(hx, hy, hx - 1, hy + l, 0.12, CL); }
+  // a melee hit (#97): both daggers. The near hand cocks low and cuts up and forward; a beat later the far hand comes
+  // over the top from behind his hood and cuts down and forward, so the two smears cross in an X. Angles of the far
+  // cut run past 2 pi so it turns clockwise, over the top.
+  const KR = [[cx + 15, Y - 25, Math.atan2(-1, 5)], [cx + 12, Y - 21, 1.25], [cx + 22, Y - 36, -1.35]];
+  const KF = [[cx - 6, Y - 26, Math.PI], [cx - 3, Y - 51, 4.3], [cx + 19, Y - 31, 7.15]];
+  const swinging = swq != null && swq >= 0 && !carry && !walk, qf = swinging ? clamp((swq - 0.12) / 0.88) : 0;
+  const RS = swinging ? swingPose(swq, KR, 4) : null, FS = swinging ? swingPose(qf, KF, 5) : null;
+  if (!FS) {
   // far upper arm (left side), behind the body
   limb(FA.s[0], FA.s[1], FA.e[0], FA.e[1], 3.2, 2.8, 0.08, 0.24, LE);
   // far forearm, fist and dagger: hanging at his side behind the hip, the blade pointing straight back
@@ -345,6 +353,7 @@ function rogue(cx, fy, s, b, t, carry, wp, swq) {
   { const bx = Math.round((FA.e[0] + FA.h[0]) / 2), by = Math.round((FA.e[1] + FA.h[1]) / 2); rect(bx - 1, by - 1, 3, 2, 0.36, LE); }   // bracer
   rect(FA.h[0] - 1, FA.h[1] - 1, 3, 3, 0.2, LE); put(FA.h[0] + 1, FA.h[1] - 1, 0.4, LE);   // fist
   backBlade(FA);
+  }
   // far leg
   drawLeg(FL, false);
   // near leg, thigh knives
@@ -372,9 +381,15 @@ function rogue(cx, fy, s, b, t, carry, wp, swq) {
   { const tw = walk ? Math.round(-sw) : sh;
     poly([[cx - 2, Y - 33], [cx + 3, Y - 33], [cx + 3 + tw, Y - 20], [cx - 2 + tw, Y - 19]], (x) => 0.12 + 0.18 * clamp((x - cx + 2) / 5), LE);
     line(cx - 2 + tw, Y - 20, cx + 3 + tw, Y - 21, 0.55, M_LOOT); }
-  // a melee hit (#97): the near hand cocks low, then cuts up and forward at the enemy, the dagger in forward grip
-  const KR = [[cx + 15, Y - 25, Math.atan2(-1, 5)], [cx + 12, Y - 21, 1.25], [cx + 22, Y - 36, -1.35]];
-  const RS = swq != null && swq >= 0 && !carry && !walk ? swingPose(swq, KR, 4) : null;
+  // the far dagger's cut (a melee hit): over his torso, under the near arm, the capelet and the hood
+  if (FS) {
+    const ux = Math.cos(FS[2]), uy = Math.sin(FS[2]), hx = Math.round(FS[0]), hy = Math.round(FS[1]);
+    swingSmear(qf, KF, 5, 4, 16);
+    armTo(FA.s, [hx, hy], 10.5, -1, 3, 2.6, 0.1, 0.36, LE);
+    rect(hx - 1, hy - 1, 3, 3, 0.18, LE); put(hx + 1, hy - 1, 0.4, LE);             // fist
+    line(hx + ux * 2 - uy * 2, hy + uy * 2 + ux * 2, hx + ux * 2 + uy * 2, hy + uy * 2 - ux * 2, 0.6, M_STONE);   // guard
+    blade(hx + ux * 3, hy + uy * 3, hx + ux * 10, hy + uy * 10, 0.6);
+  }
   // near arm (right side): hanging long from the forward shoulder, a slight bend, the fist low and a little forward
   if (!RS) {
     limb(NA.s[0], NA.s[1], NA.e[0], NA.e[1], 3.4, 3, 0.16, 0.56, LE);

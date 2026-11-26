@@ -282,8 +282,10 @@ skill bar (portrait, HP tube, two skill wells and the ultimate's gilded well; co
 combo glow, "L3" on a skill still locked). Every action shows: slashes, claws, bolts, fire, frost, heal sparkles,
 Ward's and Taunt's rings. **Melee hits swing the weapon** (#97, `SWING_SEC`): the Knight's Slash and Bash take
 the sword off his shoulder, up behind the helm, over the top and down at the enemy, drawn over his shield; Garrote's
-Stab and Backstab cock the dagger low and cut up and forward. Both leave a bright crescent smear along the edge for
-the cut, bigger than Garrote's dagger so it reads from rank 2 over the Knight's back. Casts and the ranged heroes
+Stab and Backstab use both daggers (0.87.1, Paweł): the near hand cocks low and cuts up and forward, and a beat later
+the far hand comes over the top from behind his hood and cuts down and forward, so the two cuts cross in an X. Each
+cut leaves a bright crescent smear along the edge, Garrote's bigger than his daggers so they read from rank 2 over the
+Knight's back. Casts and the ranged heroes
 keep the lunge (`python3 test/swing.py`). It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The floor map is
 drawn by the same renderer; the town is still the old drawing (V2 continues).
 

@@ -3,6 +3,12 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.87.1 (2026-11-26)
+
+- **Garrote attacks with both daggers** (#97, Paweł): on Stab and Backstab the near hand cuts up and forward, and a
+  beat later the far hand comes over the top from behind his hood and cuts down and forward; the two smears cross in
+  an X. Drawing only, no rule changes. `test/swing.py` adds a close-up of him (`test/shots/swing_garrote.png`).
+
 ## 0.87.0 (2026-11-26)
 
 First playtest fixes (Paweł, Monday night).
