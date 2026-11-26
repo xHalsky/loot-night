@@ -38,7 +38,12 @@ async def main():
                 if await ev("g.screen") == 'results': return True
                 await pg.wait_for_timeout(50)
             return False
+        # a tester who played an earlier build (#58): the old save is gone, the title starts Monday
+        await pg.add_init_script("if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('lootnight.save.v2', JSON.stringify({ v: 1, nightsPlayed: 9, gold: 5000 })); }")
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
+        title = await pg.evaluate("()=>document.querySelector('.screen .card').innerText")
+        check(await pg.evaluate("()=>localStorage.getItem('lootnight.save.v2')") is None and 'Start Monday night' in title and 'PLAYTEST BUILD' in title, 'an old save is gone: the title starts Monday (the playtest build)')
+        await shot('00_title', 100)
         await go('newGame'); await pg.wait_for_timeout(600)
 
         # --- Monday: Danny's voice note first, on the phone in your hand; Esc; How to hide ---

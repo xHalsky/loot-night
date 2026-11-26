@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.80.0 (2026-11-26)
+
+- **The playtest build** (step 7, #58, the last step of the redesign handoff). The title says PLAYTEST BUILD, the
+  version and the night you are on; its pitch says the week ("one night at a time, Monday to Sunday") instead of
+  promising Mom, the boss and the dog on the first night.
+- **Fresh saves for testers:** the save key goes to `v3` and the old keys are cleared, so everyone starts on Monday,
+  also someone who played an earlier build (the `v2` key dated from 0.51, before the week, Q4 and the battery).
+- Debug stays off by default, and Real life off stays only in the F1 panel, never saved (both already so).
+- `docs/playtest.md` follows the week: Monday and Tuesday (about 20 minutes), what each night holds, the visit tally
+  as Peek, Snack run and Chat (cuddles come Thursday), "Start Tuesday night" on the morning.
+- `test/week.py` checks the title and that an old save is gone. No change to the game's rules: sims as 0.79.
+
 ## 0.79.0 (2026-11-25)
 
 - **The phone battery** (step 6, #57; grid doc 7j), from Thursday: 100% every night; each call or text you answer

@@ -4,7 +4,11 @@ import { HERO_NAME } from '../data/heroes';
 import { itemName, nameIsCurrent } from './loot';
 
 // localStorage save of persistent progress only (not a night in progress).
-const KEY = 'lootnight.save.v2';   // v2 (#52): the RPG's data changes a lot; old saves start fresh
+// v2 (#52, 0.51): the RPG's data changed a lot. v3 (#58, 0.80, the playtest build): every tester starts fresh on
+// Monday, also one who played a build from the redesign (before the week, Q4, the battery). Older keys are removed.
+const KEY = 'lootnight.save.v3';
+const OLD_KEYS = ['lootnight.save.v1', 'lootnight.save.v2'];
+try { OLD_KEYS.forEach(k => localStorage.removeItem(k)); } catch { /* no storage: nothing to clear */ }
 const PERSIST: (keyof GameState)[] = ['heroes', 'bag', 'bagSize', 'gold', 'mats', 'zl', 'furniture', 'sleepDebt', 'monsters', 'q4', 'owned', 'bestStars', 'record', 'nightsPlayed', 'day', 'mapPath', 'tipsSeen', 'pendingListings', 'pity', 'uid', 'autoSalvage', 'seen', 'curiosSeen', 'goodwill', 'floorCans', 'checkpoints', 'startFloor', 'drops', 'legendaryFound', 'orderSet', 'trees', 'autocast', 'carry', 'herThread', 'boysThread', 'herSeen'];
 
 export function save() {

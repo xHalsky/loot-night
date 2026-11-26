@@ -212,10 +212,10 @@ export function screenHtml(): string {
   const g = S.g;
   if (g.screen === 'title') {
     return `<div class="screen"><div class="card">
-      <div class="kicker">PROTOTYPE v${VERSION} · NIGHT 1 · MONDAY</div>
+      <div class="kicker">PLAYTEST BUILD v${VERSION} · ${(hasSave() ? dayName(savedDay()) : 'Monday').toUpperCase()}</div>
       <h1>Loot Night</h1>
       <p>Raid night. Your guild needs you, the loot is dropping, and your girlfriend thinks you are doing spreadsheets.</p>
-      <p class="dim">The RPG plays itself. Your job: listen, hide, and keep her, your mom, your boss and the dog happy until dawn.</p>
+      <p class="dim">The RPG plays itself. Your job: listen, hide, and keep her happy, one night at a time, Monday to Sunday.</p>
       <div class="row">${hasSave() ? btn('continue', `Continue · ${dayName(savedDay())}${savedDay() >= 7 ? `, week ${Math.floor(savedDay() / 7) + 1}` : ''}`, '', 'wide gold') + btn('newGame', 'New game', '', 'wide') : btn('newGame', 'Start Monday night', '', 'wide gold')}</div>
       <p class="dim">Turn the sound on: her footsteps are your early warning. <kbd>Esc</kbd> pause.</p>
     </div></div>`;

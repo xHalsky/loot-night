@@ -32,8 +32,8 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    4. #55 Q4, the Excel clicker (0.75), and the Shop app (0.76): done. Next, step 5 (#56).
    5. #56 The week (FNAF's nights): the schedule and the replay (0.77), Danny's voice note and the first chances
       (0.78): done. V13's remaining pieces go with #59.
-   6. #57 The smart home and the phone battery: done (0.79). Next, step 7 (#58).
-   7. #58 Before the playtest.
+   6. #57 The smart home and the phone battery: done (0.79).
+   7. #58 Before the playtest: done (0.80): the redesign handoff is built. Next, Paweł's RPG session (2).
 2. **Paweł's 15-minute RPG session** (real life off, F1), moved here from before step 3 (2026-11-24): the RPG
    alone needs number tuning first. Then the real-life-on night.
 3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every

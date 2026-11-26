@@ -118,7 +118,7 @@ S.g = initialState(); S.g.day = 8; startNight(); ok(!N().firstSafe, 'week two: n
 
 // --- a save from before the week ---
 S.g = initialState(); S.g.nightsPlayed = 3; S.g.day = 3; S.g.screen = 'title';
-store['lootnight.save.v2'] = JSON.stringify({ v: 1, nightsPlayed: 3, heroes: S.g.heroes, bag: [], gold: 100 });
+store['lootnight.save.v3'] = JSON.stringify({ v: 1, nightsPlayed: 3, heroes: S.g.heroes, bag: [], gold: 100 });   // the shape before the week
 S.g = initialState(); load(); ok(S.g.day === 3, `an old save picks up on night ${S.g.nightsPlayed + 1}: ${dayName()}`);
 
 // --- the night runs: a Monday with the real loop, 30 s ---

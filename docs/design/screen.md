@@ -122,8 +122,11 @@ listening, so her sounds are the most important ones in the game.
   `step_1.mp3` for variants) replaces that cue. The F1 debug panel has a sound board with every cue.
 - `python3 test/sound.py` (Chrome): every file decodes, loop points, loops following her, the headset.
 
-**Title screen** shows `PROTOTYPE v<version>` from `src/config/version.ts`, a two-line pitch and "turn the sound
-on", and Continue with the night you are on ("Continue · Tuesday", from the save). How to hide opens before the
+**Title screen** shows `PLAYTEST BUILD v<version>` from `src/config/version.ts` and the night you are on, a two-line
+pitch and "turn the sound on", and Continue with that night ("Continue · Tuesday", from the save) or, with no save,
+Start Monday night. **Saves** (`systems/save.ts`) keep progress only, never a night in progress, under
+`lootnight.save.v3`; the older keys are removed when the game loads. **Debug** is off by default: F1 opens the panel
+(speed, a button per night, Real life off, the sound board), and Real life off lives only there and is never saved. How to hide opens before the
 first Monday and any night with a new tile ([night.md](night.md), Onboarding).
 
 **Her panel is drawn by the renderer** (V4, #69; grid doc 7b): `drawHerLive` in `src/render/page/her.js`, from the
@@ -213,6 +216,11 @@ panel themselves (skills, heroes, plain lines). Items keep their DOM card: it co
 panel's item details.
 
 ## Decisions
+- **Fresh saves for the playtest** (0.80, step 7, #58): the save key goes to `v3`, so a tester who played a build from
+  the redesign starts on Monday too, and the old keys are cleared. The handoff's "Save key v2" was taken in 0.51 for
+  the RPG's change, so `v2` saves hold states from before the week, Q4 and the battery. Rejected: keeping `v2` and
+  migrating (a tester's old save would skip Monday's teaching); a version stamp checked on load (the same thing with
+  more code).
 
 - **Monitor first** (0.45, #49): the right RPG panel is gone and every RPG element lives on a bigger monitor, with a
   side panel inside the game screen (as in Loop Hero), so the game you hide is one thing on one screen, and Excel
