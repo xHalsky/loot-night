@@ -47,6 +47,37 @@ function star9(x, y, on) {   // a 7 x 7 star: gold with a plum edge when earned,
   }));
   if (on) putI(x + 3, y + 2, C9.moon);
 }
+// Breakfast: her at the stove in your shirt, from behind, the morning light through the window; a code stand-in in her
+// sixteen colours until Paweł draws it (the art list's Breakfast still). Framed as a photo, "Breakfast" under it.
+function breakfast9(F, x, y) {
+  const W = 100, H = 66, C = C9;
+  const bg = (i, j) => {
+    if (j < 40 && i > 62 && i < 96 && j > 4) return i === 63 || i === 95 || j === 5 || j === 39 || i === 79 ? C.tan : (i + j) % 7 === 0 ? C.beige : C.moon;   // the window, the light
+    if (j >= 44) return j === 44 ? C.beige : j < 50 ? C.tan : (i % 24 === 0 || j === 58) ? C.brown : C.tan;   // the counter, the cupboards
+    return (i + j) % 2 && i > 58 ? C.moon : C.beige;   // the wall, the light on it
+  };
+  const skin = { fill: C.skin, shade: C.beige, line: C.brown, cut: 0.35 }, hair = { fill: C.plum, shade: C.void, hi: C.purple, hiCut: -0.55, line: C.void };
+  const shirt = { fill: C.denim, shade: C.purple, hi: C.lilac, hiCut: -0.8, line: C.plum };
+  const I = PHONEOS.vPaint(W, H, bg, [
+    { ell: [74, 43, 13, 3.5], fill: C.void, shade: C.plum, line: C.void },                 // the pan
+    { cap: [87, 43, 97, 41, 1.2, 1], fill: C.void, line: C.void },                            // its handle
+    { ell: [70, 42, 4, 1.6], fill: C.moon, line: C.tan }, { ell: [78, 42.5, 4, 1.6], fill: C.moon, line: C.tan },   // two eggs
+    { cap: [37, 52, 36, 66, 3.6, 3], ...skin }, { cap: [46, 52, 47, 66, 3.6, 3], ...skin },  // her legs, bare
+    { poly: [[29, 20], [53, 20], [58, 54], [25, 54]], ...shirt },                              // your shirt, to mid-thigh
+    { cap: [53, 24, 66, 38, 3.4, 2.8], ...shirt }, { ell: [67, 39, 2.6, 2.2], ...skin },      // her arm to the pan
+    { poly: [[31, 4], [51, 4], [55, 18], [53, 40], [41, 44], [29, 40], [27, 18]], ...hair },  // her hair down her back
+    { ell: [41, 9, 9, 9], ...hair },                                                           // the back of her head
+  ]);
+  for (const [a, b] of [[0, -2], [2, 0], [1, 2], [-1, 2], [-2, 0]]) I[(7 + b) * W + 48 + a] = C.pink;   // the pink clip
+  I[7 * W + 48] = C.gold;
+  for (let k = 0; k < 7; k++) { const sx2 = 70 + Math.round(Math.sin(k * 1.7) * 3), sy2 = 36 - k * 4; if (sy2 > 0) I[sy2 * W + sx2] = C.moon; }   // steam
+  // the photo: a moon border, a shadow, the picture, a caption strip
+  for (let j = 0; j < H + 18; j++) for (let i = 0; i < W + 12; i++) { const X = x + i + 2, Y = y + j + 2; if (X < 640 && Y < 360) F.I[Y * 640 + X] = C.void; }
+  for (let j = 0; j < H + 18; j++) for (let i = 0; i < W + 12; i++) F.I[(y + j) * 640 + x + i] = C.moon;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) F.I[(y + 6 + j) * 640 + x + 6 + i] = I[j * W + i];
+  text('Breakfast', x + 6, y + H + 8, 'tiny', C.plum);
+  text('in your shirt', x + W + 6, y + H + 8, 'tiny', C.brown, { align: 'r' });
+}
 let MORNING_CANVAS = null, MORNING_BTN = null;   // the next-night button's rectangle, for the page's pointer
 function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   if (!MORNING_CANVAS) { MORNING_CANVAS = document.createElement('canvas'); MORNING_CANVAS.width = 640; MORNING_CANVAS.height = 360; }
@@ -108,6 +139,8 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   win9(sx + 7, by, sw - 14, 20, { fill: hov ? C9.rose : C9.pink, hi: C9.skin, lo: C9.rose, edge: C9.plum });
   text(data.next || (data.replay ? data.night + ', again' : 'Start ' + data.night + ' night'), sx + sw / 2, by + 7, 'tiny', C9.plum, { align: 'c' });
   spr(sx + sw - 21, by + 7, ['x..', 'xx.', 'xxx', 'xx.', 'x..'], { x: C9.plum });
+  // the Sweet star's Breakfast (fan-service 9, #94): its picture, a photo under the summary
+  if (!data.replay && data.stars.some((s) => s.name === 'Sweet' && s.got) && by + 28 + 86 <= 358) breakfast9(F, sx + sw / 2 - 56, by + 28);
   const ctx = MORNING_CANVAS.getContext('2d'), img = ctx.createImageData(640, 360), D = img.data;
   for (let i = 0; i < 640 * 360; i++) { const q = PC98_RGB[F.I[i] < 0 ? 0 : F.I[i]], p = i * 4; D[p] = q[0]; D[p + 1] = q[1]; D[p + 2] = q[2]; D[p + 3] = 255; }
   ctx.putImageData(img, 0, 0);

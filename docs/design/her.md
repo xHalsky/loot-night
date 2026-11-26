@@ -215,7 +215,8 @@ screen dimmed behind it). Her breath, a small heart in a ring that breathes with
 over `CUDDLE_SEC`; the heart's line is stitches ahead of her and fills pink behind, so it shows the time left. Keep
 your hand (the cursor, drawn over her window) inside the ring (`CUDDLE_RADIUS`): on it the ring goes solid and
 hearts float up. Warmth fills the big heart, a cold checker, then purple, then pink once past `CUDDLE_PASS`, and the
-bar at the foot with the pass mark's little heart. Warmth builds near the dot, drains when far, and drops fast when
+bar at the foot with the pass mark's little heart. In the field's corner her close-up (#87): her face on your shoulder,
+an expression per warmth step (calm below 30%, eyes closed to the pass, a blush and a smile, asleep from 85%, a z rising). Warmth builds near the dot, drains when far, and drops fast when
 the mouse moves faster than `CUDDLE_JERK` ("too fast!"). Warmth ≥ `CUDDLE_PASS` at the end: Mood
 `CUDDLE_PASS_MOOD`; below: +`CUDDLE_FAIL_MOOD`. The close X means pulling away for the game (refuse
 penalty). While cuddling, the party keeps the safe autopilot, Flow is frozen, and the phone and dog wait.

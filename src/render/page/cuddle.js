@@ -43,6 +43,33 @@ function cudHeart(rows, x, y, body, edge, shine) {
 let CUD_BUF = null, CUD_CANVAS = null;
 // st: { p: 0..1 round the heart, warmth: 0..1, mx, my: the cursor in window px (null: off the window), jerk: s left of
 // "too fast", near: cursor within the ring }. Hearts that float up are seeded from t, so a still is repeatable.
+// her close-up in the cuddle window (fan-service 11, #87): her face on your shoulder, one expression per warmth step:
+// calm, eyes closed, a blush and a smile, asleep. A code stand-in in her sixteen colours until Paweł draws the four.
+function cuddleFace9(x, y, wm, t) {
+  const W = 56, H = 62, C = C9, step = wm < 0.3 ? 0 : wm < CUD_PASS ? 1 : wm < 0.85 ? 2 : 3;
+  const hair = { fill: C.plum, shade: C.void, hi: C.purple, hiCut: -0.55, line: C.void }, skin = { fill: C.skin, shade: C.beige, line: C.brown, cut: 0.4 };
+  const I = PHONEOS.vPaint(W, H, (i, j) => ((i + j) & 1 ? C.plum : C.purple), [
+    { poly: [[0, 44], [22, 38], [56, 46], [56, 62], [0, 62]], fill: C.void, shade: C.void, line: C.void },   // your shoulder
+    { poly: [[10, 12], [40, 6], [52, 26], [50, 54], [34, 60], [16, 52]], ...hair },                         // her hair over it
+    { ell: [30, 30, 13, 15], ...skin },                                                                      // her face, tilted on you
+    { poly: [[14, 18], [24, 10], [38, 9], [46, 17], [44, 26], [38, 22], [33, 26], [28, 21], [22, 26], [17, 24]], ...hair },   // the bangs
+  ]);
+  const put = (i, j, c) => { if (i >= 0 && j >= 0 && i < W && j < H) I[j * W + i] = c; };
+  // eyes: open and soft, then closed, closed and smiling, asleep
+  for (const ex of [23, 34]) {
+    if (step === 0) { for (let i = 0; i < 5; i++) put(ex + i, 30, C.void); put(ex + 1, 31, C.moss); put(ex + 2, 31, C.void); put(ex + 3, 31, C.moss); put(ex + 2, 32, C.moss); }
+    else if (step === 3) { for (let i = 0; i < 5; i++) put(ex + i, 32 - (i === 0 || i === 4 ? 0 : 1) + 1, C.void); }
+    else { for (let i = 0; i < 5; i++) put(ex + i, 31 + (i === 0 || i === 4 ? 0 : 1), C.void); }
+  }
+  if (step >= 2) for (const ex of [22, 36]) for (let i = 0; i < 5; i += 2) { put(ex + i, 35, C.rose); put(ex + i + 1, 36, C.rose); }   // a blush
+  if (step === 2) { put(28, 39, C.rose); put(29, 40, C.rose); put(30, 40, C.rose); put(31, 39, C.rose); }   // a smile
+  else { put(29, 39, C.rose); put(30, 39, C.rose); }
+  for (const [a, b] of [[0, -2], [2, 0], [1, 2], [-1, 2], [-2, 0]]) put(44 + a, 14 + b, C.pink);   // the clip
+  put(44, 14, C.gold);
+  // frame it: a little lilac window, and "z" rising when she's asleep
+  for (let j = -1; j <= H; j++) for (let i = -1; i <= W; i++) { if (i === -1 || j === -1 || i === W || j === H) putI(x + i, y + j, C.lilac); else putI(x + i, y + j, I[j * W + i]); }
+  if (step === 3) { const k = Math.floor(t * 1.5) % 3; text('z', x + W - 10, y + 6 - k * 2, 'tiny', C.lilac); }
+}
 function cuddleWindow(st, t) {
   const { w, h } = CUD;
   if (!CUD_BUF) { CUD_BUF = mkBuf(w + 2, h + 12, true); CUD_CANVAS = document.createElement('canvas'); CUD_CANVAS.width = w + 2; CUD_CANVAS.height = h + 12; }
@@ -68,6 +95,7 @@ function cuddleWindow(st, t) {
     putI(x, y, tone === 0 ? (ck ? C9.purple : C9.plum) : tone === 1 ? C9.purple : (ck ? C9.rose : C9.purple));
   }
   for (let i = fx; i < fx + fw; i++) { putI(i, fy - 1, C9.purple); putI(i, fy + fh, C9.purple); }
+  cuddleFace9(fx + 4, fy + fh - 66, wm, t);   // her close-up (fan-service 11, #87): her face on your shoulder
   // the heart: a stitched line ahead of the dot; behind it the line fills in rose with a purple glow
   const n = CUD_PATH.length, at = Math.round(clamp(st.p) * (n - 1));
   for (let k = 0; k < n; k++) {

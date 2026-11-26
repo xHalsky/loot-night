@@ -30,6 +30,43 @@ explicit. A Steam game gets streamed and shown around.
 | Shower daydream (0.32, a thought bubble since 0.35): while she showers and you can hear it (headset off, no visit, not peeking), a thought bubble rises from his head in the webcam view: the frosted glass cabin, her blurred silhouette swaying, water streaks, steam, drips. The fog thickens through the shower; at the hair dryer cue the water stops and the glass clears bottom-up; it pops when she moves | Webcam view, over the door's left half | `drawShowerPanel`, `daydream` in door.ts |
 | Hoodie walk-by (0.32): green Mood at bedtime, she stops at your door in your dark gaming hoodie (guild logo, sleeves over her hands), sleepy: "Night, babe. Don't stay up too late." Mood −5, no check, once a night, then bed | Door | [her.md](her.md) visit table |
 
+| The morning's Breakfast (0.86, #94): with the Sweet star, a photo under the summary: her at the stove in your shirt, from behind | Morning screen | `breakfast9` in the page's morning.js |
+| Her in the cuddle break (0.86, #87): her face on your shoulder in the window's corner, one expression per warmth step (calm, eyes closed, a blush and a smile, asleep) | Cuddle window | `cuddleFace9` in the page's cuddle.js |
+
+## The content survey (#59)
+
+The bar (Paweł, 2026-11-19): the appeal of Steam's adult-tagged games with no 18+ requirement, so Steam's content
+survey stays at **General Mature Content** (suggestive themes) with no nudity and no sexual content; the RPG adds
+fantasy violence. Every moment above was checked against it:
+
+| Moment | What is shown | Outfit, pose | Survey answer |
+|---|---|---|---|
+| Her at your door, the lean visit, the tease, come to bed | Her head to toe in the doorway | The set by activity (blouse, knit sweater, your hoodie, the cream tee, pajama shorts, the towel wrap), her gifts; standing, leaning on the frame, blowing a kiss | General Mature (suggestive) |
+| Bare feet, socks, the light gap | Her feet, painted toenails | Barefoot or socks | General |
+| The towel (the shower, "Babe, towel!") | Wrapped from chest to thigh, the hair turban, droplets | Standing in the doorway | General Mature: covered, nothing below the towel |
+| The shower daydream, the hall mirror fogged | A blurred silhouette behind frosted glass, steam | No detail by design | General Mature: suggestion only |
+| The bath (lean in, door ajar) | The tub's foot end: her leg over the rim out of the foam, the wine, the candles; her head and shoulders | Foam to her shoulders | General Mature: the foam covers, never thins below the shoulders |
+| Lean in (yoga, the couch, the kitchen, the sheet mask) | Her through a slit, at the camera's size | Yoga set, knit sweater, your hoodie (the tee riding up when she reaches), pyjamas | General Mature (suggestive) |
+| "Enjoying the view?" | Her looking back, blushing | As above | General Mature |
+| The lap sit | The back of her head and her shoulder over the battle; her on his lap in the webcam | The cream tee | General Mature (suggestive, no contact beyond sitting) |
+| The cuddle break | Her face on your shoulder | Close-up | General |
+| Selfies | A mirror selfie in your jersey (or her gift), under the duvet | Your jersey to mid-thigh; the duvet to her nose | General Mature (suggestive) |
+| The mornings | Asleep under a thick duvet, her feet out; on the couch wrapped; the empty bed | Covered | General |
+| Breakfast | Her at the stove from behind | Your shirt to mid-thigh | General Mature (suggestive) |
+| Caught | Her portrait, head and shoulders | The cream tee | General |
+| The RPG | Heroes and enemies in fantasy armour, combat | Fantasy | Violence (fantasy, not realistic), no gore |
+
+**Holds everywhere:** fictional adults who read as adults; clothed or covered; suggestive only (poses, outfits,
+fades, fog, silhouettes); no nudity, no sexual acts, no exposed underwear; nothing in the RPG plays on real life
+(#44). New cloth sits on her panel's sixteen colours so nothing reads see-through after the dither (0.84).
+
+**Store-facing** (the capsule, key art and trailer, #60): the key art is the doorway with him in front (her in the
+light, him a silhouette at the PC, the RPG glowing on the monitor), the game's whole joke in one frame. Capsule
+alternatives: lean in through the slit (her yoga or the couch), the lap sit over the battle. Trailer beats: the
+footsteps and the Tab to Excel, the caught scream, "Enjoying the view?", the lap sit's "My turn!", "Coming, babe", the
+morning's feet under the duvet. Never in store art: the towel or the bath (the survey holds, but a store thumbnail is
+read without the game's context).
+
 ## Planned (#22)
 
 | Moment | Summary | Needs |

@@ -47,7 +47,8 @@ gameplay steps). This file says how the build gets there and where it stands. It
   selfies (the page's selfie art, gift variants, `photoWindow` as a modal). **0.85.0:** lean in (V12): the page's
   `drawLean` over the right screen from the game's state (her activity and stage, the lean, the slit, the closer framing,
   the mirror, her look and the bar), its coach marks and How to hide tile, the approved plan (`PLAN_PAGE`) and Home app
-  layout. V13 is complete. Next: mornings and the cuddle close-up.
+  layout. V13 is complete. **0.86.0:** the mornings' Breakfast picture and
+  her close-up in the cuddle window (stand-ins in the page's look). The fan-service pass is built.
 - **V11, the small pieces, 0.73.0 and 0.74.0:** pause, How to hide, the microsleep's lids, away from the PC (the empty
   chair, the card), the Goblin Fuel inspect window, then coach marks and tooltips in each world's look, all the
   renderer's (night.md, desk.md, preemptive.md, screen.md). Item tooltips keep the DOM card (the side panel's item

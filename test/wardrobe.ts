@@ -58,8 +58,8 @@ shopBuy('knee'); n = night(3, true); ok(wearing('knee') && !wearing('fluffy'), '
 let both = new Set<string>(); for (let i = 0; i < 30; i++) { n = night(4, true); both.add(n.wear.feet!); } ok(both.has('fluffy') && both.has('knee'), 'then one at random');
 // the Goblin Fury tee: a catch costs half
 shopBuy('fury'); n = night(2, true); ok(wearing('fury') && herLook('tv').outfit === 'fury' && herLook('night').outfit === 'bighoodie' && herLook('bath').outfit === 'towel', 'the Fury tee: over the set (not your hoodie, not the towel)');
-n.monitor = 'rpg'; n.clock = 22 * 60; triggerVisitNow('peek'); for (let i = 0; i < 60 * 12 && n.visit.stage !== 'in'; i++) updateVisits(1 / 60); const m0 = n.mood; updateVisits(1 / 60);
-ok(n.catches === 1 && n.mood - m0 === Math.round(T.CATCH_MOOD[0] * T.GIFT_FURY_CATCH_MOOD), `a catch: Mood +${Math.round(T.CATCH_MOOD[0] * T.GIFT_FURY_CATCH_MOOD)} (half)`);
+n.monitor = 'rpg'; n.clock = 22 * 60; S.g.goodwill = 0; triggerVisitNow('peek'); n.visit.lean = false; n.visit.safe = false; /* not a lean visit, no Goodwill to forgive it */ for (let i = 0; i < 60 * 12 && n.visit.stage !== 'in'; i++) updateVisits(1 / 60); const m0 = n.mood; updateVisits(1 / 60);
+ok(n.catches === 1 && n.mood - m0 === Math.round(T.CATCH_MOOD[0] * T.GIFT_FURY_CATCH_MOOD), `a catch: Mood +${Math.round(T.CATCH_MOOD[0] * T.GIFT_FURY_CATCH_MOOD)} (half) [${n.catches} ${n.mood - m0} ${n.visit.result} ${n.visit.kind}]`);
 // the pajama set: bed 30 min earlier, the waking meter faster
 S.g.owned = S.g.owned.filter(x => x !== 'fury'); shopBuy('pjset'); n = night(4, true);
 ok(wearing('pjset') && bedAt() === 24 * 60 - T.GIFT_PJ_BED_MIN, `the pajama set, Friday: bed at 23:${60 - T.GIFT_PJ_BED_MIN}`);

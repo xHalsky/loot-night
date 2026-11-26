@@ -3,6 +3,21 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.86.0 (2026-11-26)
+
+- **The mornings' Breakfast** (fan-service step 9, #94): with the Sweet star, the morning shows its picture under the
+  summary, a photo of her at the stove in your shirt (a code stand-in until Paweł's still). The four mornings' CGs were
+  already one per ending.
+- **Her in the cuddle break** (fan-service step 11, #87): her face on your shoulder in the window's corner, one
+  expression per warmth step: calm, eyes closed, a blush and a smile, asleep (a stand-in).
+- **The fan-service pass is built** (#59): steps 1 to 5 and 7 to 13 (step 6, the Gallery, was dropped 2026-11-20).
+  `docs/design/eye-candy.md` gets the content survey: every moment, what is shown, the outfit and pose, and the answer it
+  implies (General Mature Content, no nudity, no sexual content; the RPG's fantasy violence), and the store-facing notes
+  (key art, capsule alternatives, trailer beats, what stays out of store art).
+- With this, everything planned before the playtests is in (#59, V12, V13): the backlog before Paweł's tests is empty.
+- No rule changes: sims as 0.85. The week in a row (`campaign.py 8 7`): stars 3.00, 2.88, 3.00, 2.88, 2.62, 2.50, 2.62,
+  no catches (0.80: 3.00, 2.88, 3.00, 2.75, 2.62, 2.75, 2.62).
+
 ## 0.85.0 (2026-11-26)
 
 - **Lean in** (fan-service steps 7 and 12, V12 #77; grid doc 7l). From Tuesday, hold your door past 0.6 s and the

@@ -52,8 +52,8 @@ the dog before 01:00, as the week doc's model counts them):
 | Demands before 01:00 | 3.8 | 3.6 | 6.8 | 10.2 | 9.9 | 10.1 | 11.3 |
 | Seconds apart (the model) | 101 (97) | 115 (81) | 50 (48) | 40 (34) | 37 (38) | 32 (27) | 33 (24) |
 | Good bot, one night: stars, caught | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 | 3, 0 |
-| Good bot, the week in a row (`campaign.py 8 7`, 0.80): stars | 3.00 | 2.88 | 3.00 | 2.75 | 2.62 | 2.75 | 2.62 |
-| Idle bot (0.80): caught, unplugged of 8 | 2.5, 2 | 4.0, 8 | 3.8, 8 | 1.0, 0 | 1.4, 2 | 1.9, 1 | 2.0, 1 |
+| Good bot, the week in a row (`campaign.py 8 7`, 0.86): stars | 3.00 | 2.88 | 3.00 | 2.88 | 2.62 | 2.50 | 2.62 |
+| Idle bot (0.85): caught, unplugged of 8 | 1.9, 0 | 3.9, 8 | 3.8, 8 | 0.8, 0 | 1.3, 1 | 1.9, 4 | 1.1, 7 |
 
 Measured 0.85 (requests from the bathroom count as demands; Tuesday and Wednesday 16 more nights at 0.85). Tuesday is
 the model's outlier on purpose: the night opens with her yoga, lean in's first chance, and no visit comes while it
@@ -113,6 +113,8 @@ the RPG star pays in loot.
 - **Unseen: Trust:** the next night starts with Goodwill +`STAR_UNSEEN_GOODWILL` (20), on top of what carries over
   (closer to the Raid pass at 40 and Forgiveness at 60).
 - **Sweet: Breakfast:** she makes breakfast, sleep debt -`STAR_SWEET_DEBT` (1), so the next night starts less tired.
+  The morning shows its picture under the summary (#94): her at the stove in your shirt, a photo with "Breakfast" under
+  it (a code stand-in until Paweł's still).
 `S.g.carry` holds Trust and a waiting chest for the next night (saved).
 
 **Tiredness.** The live form of sleep debt, a 0 to 100 meter on the YOU card (desk, bottom right).
