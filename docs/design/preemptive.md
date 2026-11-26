@@ -79,11 +79,7 @@ Home app).
 | Action | Cost | Works when she is | Effect | Backfire |
 |---|---|---|---|---|
 | Text her | Phone, 3 s | Busy (TV, kitchen, bedroom) | Next visit +40 s, Mood −5; her reply lights the phone (a tell) | Idle or hallway: Chat visit within 10 s. Shower: Chat right after |
-| Make her tea | 15 s away | Living room or bedroom | Mood −15, no visits 2 min. TV: "stay for one episode?" (accept 60 s more away, 4 min calm; decline Mood +10, half effect) | Kitchen: instant Cuddle there. Hallway: she glances at your screen |
-| Queue next episode | Phone, 2 s, 2/night | Watching TV | TV extended by one episode, credits cue skipped | Elsewhere: the TV turns on loud, Peek within 15 s |
-| Order food | Phone, 1/night | Anywhere | Doorbell after 90 s, she eats in the living room 3 min (Mood −15), then a Snack run | 30%: courier calls *your* phone (+30 Noise unless answered in 5 s). Asleep: doorbell wakes her |
 | Meeting sign | 1 s, 1/night | Anywhere | No Peek, Chat or Snack run for 2 min (Cuddle and Help me ignore it) | A Noise spike above 40 she can hear: instant catch, Mood +20, sign gone for the night |
-| Towel under the door | 2 s toggle | Anywhere | Hides the monitor glow, outgoing Noise −40%, visit timer 30% slower | You lose the shadow under the door; her steps muffled 50%. She sees it: Mood +5 |
 | Empty the can bin | 12 s away | Not in the kitchen or hallway | Clears the bin tell (bin with 3+ cans becomes a tell) | Kitchen: catch. Hallway: 50% catch |
 | Do a chore | 25 s away, 2/night | Anywhere | Mood −20, next visit forced friendly (Cuddle or Snack run) | Only the autopilot risk: safe from the city, dangerous from a dungeon |
 | "Five more minutes" | Reply during a visit, 1/night | During a visit | She leaves, Mood −5, no visits for 5 in-game min (countdown on the phone) | She returns exactly on time: RPG on screen = Mood +30 and a catch; Excel 60+ = pass |
@@ -98,6 +94,9 @@ Decided 2026-11-16 (option A): Goodwill pays only for the Raid pass. Rejected: G
 action (snowballs, and turns "do I know where she is?" into "can I afford it?"); a separate Raid pass button
 outside the action menu (two places for one kind of decision). Forgiveness stays automatic and is not an action.
 
-Built: Text her, the Raid pass, Charge (rows above are the original ideas; the built versions are described under
-Now). Make her tea and the towel were built (0.27) and removed (0.79). The TV cast (the "Queue next episode" row) is
-the Home app's ([desk.md](desk.md)). Every other row is still a plan.
+Built: Text her, the Raid pass, Charge (the Text her row above is the original idea; the built versions are described
+under Now). Every other row is still a plan, unscheduled until the playtests show whether the layer needs more verbs.
+
+Dropped 2026-11-26 (Paweł): the ideas the Home app's devices replaced ([desk.md](desk.md)): Make her tea and the towel
+under the door (built 0.27, removed 0.79; bubble tea and the door seal), Queue next episode (the TV cast) and Order
+food (bubble tea's order and doorbell). Kept as rows they described a second way to buy the same thing.
