@@ -12,7 +12,7 @@ import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
 import { auraRegen } from './ranks';
-import { planCurios, curioDue, startCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
+import { planCurios, approachCurio, walkCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
 import { FEATURES, CONDITIONS, type PathCard, type FeatureId, type ConditionId } from '../data/routes';
 import { triggerDog } from './pets';
 import { tip } from './tips';
@@ -32,7 +32,7 @@ function startFloor(map: MapKind | 'plain', card?: PathCard) {
   if (n.feature && FEATURES[n.feature].map) map = FEATURES[n.feature].map!;   // Elite Pack, Goblin Den
   if (n.cond && CONDITIONS[n.cond].map) map = CONDITIONS[n.cond].map!;          // Cursed
   n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.phaseT = 0;
-  n.curio = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
+  n.curio = null; n.curioAt = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
   n.deepest = Math.max(n.deepest, n.floor);
   S.g.mapPath[n.floor] = map === 'plain' ? (n.floor % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'plain') : map;   // the dungeon map (#48)
   if (n.run) n.run.deepest = Math.max(n.run.deepest, n.floor);
@@ -125,12 +125,14 @@ export function updateDungeon(realDt: number) {
   auraRegen(realDt, maxHp);   // Healero's blessing on his neighbours (#52, 1.6)
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt;
-  if (n.phase === 'walk' && curioDue()) { startCurio(); return; }
   if (n.phase === 'walk') {   // the walk picks up the loot (#52, 1.3: no loot pause); it lasts at least WALK_SEC
-    const sp = n.floorLoot.length ? 75 : 40;     // hurry over to the loot
+    if (!n.curioAt && n.curioPlan.includes(n.battleIdx)) approachCurio();   // a curio comes into view (#99)
+    const c = n.curioAt, sp = n.floorLoot.length || c?.passed ? T.WALK_HURRY_PACE : c ? T.CURIO_PACE : T.WALK_PACE;   // hurry over to the loot, and on past a curio
     n.walkScroll += dt * sp;
-    moveFloorLoot(dt * sp * 0.7, dt);   // the camera's pace on the grid (render/rpgView.ts); the looter runs to it
-    if (n.phaseT >= T.WALK_SEC && !n.floorLoot.length && !n.looterDx) {   // until the pickup is done and he is back
+    moveFloorLoot(dt * sp * 0.7, dt);   // the camera's pace on the grid (render/rpgView.ts): the front hero walks over it (#95)
+    walkCurio(dt * sp * 0.7);
+    if (n.phase !== 'walk') return;   // the party stopped at the curio
+    if (n.phaseT >= T.WALK_SEC && !n.floorLoot.length && !n.curioAt) {   // until he has walked over all of it and the curio is behind; after the floor's last fight this is the walk out
       if (n.battleIdx >= T.BATTLES_PER_FLOOR) { floorEnd(); return; }
       spawnBattle(n.floor, isBossBattle(), n.floorMap === 'elite');
       n.phase = 'battle'; n.phaseT = 0;
@@ -168,7 +170,7 @@ function wipe() {
   n.noise = Math.min(100, n.noise + T.ECHO_SLAM_NOISE);   // echo: he slams the desk, the dog comes to see
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
   toast(`You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
-  n.floorLoot = []; n.looterDx = 0; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.goblin = null;
+  n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.goblin = null; n.curio = null; n.curioAt = null;
   loseRun();
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.atb = 0; h.queued = null; });
   n.clock += T.COST_TRAVEL_MIN;
@@ -202,7 +204,7 @@ export function returnToTown() {
   n.clock += T.COST_TRAVEL_MIN;
   sweepFloorLoot();
   bankRun();
-  n.location = 'town'; n.enemies = []; n.reserve = []; n.goblin = null; n.phase = 'walk';
+  n.location = 'town'; n.enemies = []; n.reserve = []; n.goblin = null; n.curio = null; n.curioAt = null; n.phase = 'walk';
   toast('Back in town (15 min)', '#8fb3ff');
 }
 

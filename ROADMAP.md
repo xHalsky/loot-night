@@ -36,8 +36,9 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    7. #58 Before the playtest: done (0.80): the redesign handoff is built.
    8. **#59 the fan-service pass, V12 (#77) lean in and V13's rest (#78)**, moved here before the playtests
       (Paweł, 2026-11-26: everything planned is in before he tests): done (0.81 to 0.86). Next, Paweł's RPG session (2).
-2. **Paweł's 15-minute RPG session** (real life off, F1), moved here from before step 3 (2026-11-24): the RPG
-   alone needs number tuning first. Then the real-life-on night.
+2. **Paweł's playtest** (2026-11-26, Monday night): first fixes in 0.87 (#95 the loot walk, #96 Garrote from night 1,
+   #97 melee swings, #98 the Tonight note, #99 curios in the corridor). Next, the rest of his notes; his 15-minute
+   RPG session (real life off, F1) and the real-life-on night.
 3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
    night, tools in `test/balance.py` and `test/campaign.py`). Next: playtests with `docs/playtest.md`, then tune
    from what they show. Repeat until three testers in a row pass.

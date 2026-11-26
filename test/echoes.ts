@@ -50,7 +50,7 @@ for (let k = 0; k < 400; k++) {
   const before = n.enemies.map(e => e.hp).reduce((a, b) => a + b, 0);
   S.g.heroes.forEach(h => { h.atb = 99.99; h.hp = 999; h.downed = false; }); n.fx = [];
   updateBattle(1 / 60);
-  const zzz = n.fx.filter(f => f.text === 'zzz').length; misses += zzz; hits += 3 - zzz;
+  const zzz = n.fx.filter(f => f.text === 'zzz').length; misses += zzz; hits += S.g.heroes.length - zzz;
   void before;
 }
 ok(Math.abs(misses / (misses + hits) - T.ECHO_DROWSY_MISS) < 0.03, `Tired 80: ${Math.round(misses / (misses + hits) * 100)}% of hero hits miss`);

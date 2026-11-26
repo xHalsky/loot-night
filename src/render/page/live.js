@@ -100,10 +100,18 @@ function liveBattleArea(ctx, vm, t) {
   const F = buf('live', BA_W, GS_H); clearFrame(F); bind(F);
   // the party in marching order, from the front (right)
   PARTY.length = 0;
-  for (const m of vm.party) PARTY.push({ id: m.id, x: m.x, ph: m.ph, hp: m.hp, lunge: m.lunge });
+  for (const m of vm.party) PARTY.push({ id: m.id, x: m.x, ph: m.ph, hp: m.hp, lunge: m.lunge, swing: m.swing });
   const battle = vm.mode === 'battle';
   const r = drawDungeon(F, t, {
     battle, live: { cam: vm.cam, walking: vm.walking }, cam: vm.cam, foreOff: battle ? 98 : undefined,
+    behind(F, t, lights) {
+      if (vm.curio && vm.curio.px) {   // the curio stands in the corridor, a row behind the party: ahead, then passed (#99)
+        const [w, h] = pxSize(vm.curio.px, 3), cx = vm.curio.x;
+        mulEllipse(cx, CART_Y, 20, 3, 0.3);
+        TAG = 8; pxSprite(vm.curio.px, Math.round(cx - w / 2), CART_Y - h, 3); TAG = 0;
+        lights.push({ x: cx - 10, y: CART_Y - 30, r: 80, i: vm.curio.passed ? 0.3 : 0.8, c: WARM });   // passed, its glow must not wash out the party walking in front of it
+      }
+    },
     enemies(F, t, lights) {
       vm.enemies.forEach((e, n) => {
         if (e.dead) return;
@@ -125,12 +133,6 @@ function liveBattleArea(ctx, vm, t) {
       // downed heroes: dark, out of the light
       vm.party.forEach((m, n) => { if (m.down) for (let i = 0; i < W * H; i++) if (F.T[i] === n + 1) { F.V[i] *= 0.3; F.G[i] *= 0.7; } });
       if (battle) lights.push({ beam: true, x: 232, y: 0, x1: 206, y1: 204, w: 66, i: 0.5, air: 0.04, c: COLD, r: 1 });
-      if (vm.curio && vm.curio.px) {   // the curio stands ahead of the party
-        const [w, h] = pxSize(vm.curio.px, 3), cx = vm.curio.x;
-        mulEllipse(cx, CART_Y, 20, 3, 0.3);
-        TAG = 4; pxSprite(vm.curio.px, Math.round(cx - w / 2), CART_Y - h, 3); TAG = 0;
-        lights.push({ x: cx - 10, y: CART_Y - 30, r: 80, i: 0.8, c: WARM });
-      }
       if (vm.goblin) {
         const [w, h] = pxSize(vm.goblin.px, 3), gx = vm.goblin.x, gy = CHAR_Y + 4;
         TAG = 9; pxSprite(vm.goblin.px, Math.round(gx - w / 2), gy - h, 3); TAG = 0;

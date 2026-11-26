@@ -45,7 +45,7 @@ export function startNight() {
   resetPacing();
   carryGoodwill();
   S.g.night = newNight();
-  ensureParty();   // Garrote joins on night 2; the marching order (#52, 1.6, 1.7)
+  ensureParty();   // an old save gets Garrote and the marching order (#52, 1.6; #96)
   S.g.heroes.forEach(h => { h.moving = undefined; h.from = undefined; });
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.queued = null; h.cd = [0, 0, 0, 0]; h.ult = 0; h.atb = Math.random() * 50; });
   initVisits();

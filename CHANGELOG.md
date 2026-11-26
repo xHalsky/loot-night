@@ -3,6 +3,34 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.87.0 (2026-11-26)
+
+First playtest fixes (Paweł, Monday night).
+
+- **The front hero walks over the loot** (#95): nobody runs ahead for it any more. The drops come toward the party
+  with the floor and whoever walks in front picks each one up at his feet; after the floor's last fight the party
+  still walks forward, out of the floor, over the drops, then the map. The looter's run (`LOOTER_RUN_PX`, 0.62.2) is
+  gone; the walk's paces are in tuning (`WALK_PACE`, `WALK_HURRY_PACE`).
+- **Garrote from night 1** (#96): the party is Knight, Garrote, Mage, Healer from Monday. A save without him gets him
+  at the next night (lowest level, second in line, a feed line). Tuesday's 'rogue' is gone and Danny's Tuesday note
+  opens with "no curfew tonight. play till you drop lol". Nobody's role line says "picks up the loot" now.
+- **Melee hits swing the weapon** (#97, `SWING_SEC` 0.42 s): the Knight's Slash and Bash take the sword off his
+  shoulder, over the top and down at the enemy; Garrote's Stab and Backstab cut up and forward with the dagger. Both
+  leave a bright smear. Casts and the ranged heroes keep the lunge.
+- **The Tonight note is readable, and a click takes it off** (#98): Tiny5 at 2x on a bigger note (134 × 66 grid px),
+  right of the lit skill keys; the ⏻ 23:00+ line went (the Sleep button says it). A click peels it off for good
+  (saved), its tooltip goes with it, the feed says the stars still count.
+- **Curios stand in the corridor** (#99): one comes into view off the right edge, the party walks up to it and stops,
+  and after the choice walks on past it (it goes by behind them, its glow dimmed) before the next fight. About 4 s a
+  curio (`CURIO_ENTER_X`, `CURIO_STOP_X`, `CURIO_GONE_X`, `CURIO_PACE`).
+- Sims, 12 nights a day, good bot, before → after: Monday depth 5.67 → 6.00, wipes 0.25 → 0, stars 3 → 3; Tuesday
+  depth 6.75 → 6.67, wipes 0.33 → 0.08. Idle bot: Monday caught 2.4 a night, Tuesday 4. The week (8 a day, good):
+  3 stars and no catches every day, seconds between demands 92, 115, 58, 44, 45, 31, 29. The week in a row
+  (`campaign.py 8 7`): stars 3.00, 2.75, 2.75, 3.00, 2.62, 2.62, 2.62, no catches, depth 5.6 to 12.9 (0.86: 3.00,
+  2.88, 3.00, 2.88, 2.62, 2.50, 2.62).
+- Tests: `test/walk.py` (was `looter.py`: the walk over the loot, the walk out, a curio coming up and going by),
+  `test/swing.py`, `test/note.py`; `ranks.ts`, `week.ts`, `week.py`, `loot.ts`, `echoes.ts` updated for four heroes.
+
 ## 0.86.0 (2026-11-26)
 
 - **The mornings' Breakfast** (fan-service step 9, #94): with the Sweet star, the morning shows its picture under the

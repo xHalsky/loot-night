@@ -29,7 +29,7 @@ for (let i = 0; i < 6000; i++) {
 for (const r of Object.keys(lines)) ok([...lines[r]].every(k => k === T.AFFIX_LINES[r]), `${r}: ${[...lines[r]].join('/')} affix lines (wants ${T.AFFIX_LINES[r]})`);
 ok(legends > 0 && legendOk === legends, `every legendary is a named one in its slot (${legendOk}/${legends})`);
 ok(Math.abs(sets / epics - T.SET_CHANCE) < 0.05 && setOk === sets, `set pieces: ${(100 * sets / epics).toFixed(0)}% of epics, all weapon, armor or trinket`);
-party(1);
+party(1); S.g.heroes = S.g.heroes.filter(h => h.id !== 'rogue');   // a party without him (he is in from night 1 now, #96)
 let rogueStuff = 0;
 for (let i = 0; i < 3000; i++) { const it = genItem(8, 3); if ((it.legend && LEGENDS.find(l => l.id === it.legend)!.hero === 'rogue') || (it.set && SETS.find(s => s.id === it.set)!.hero === 'rogue')) rogueStuff++; }
 ok(rogueStuff === 0, 'without Garrote, none of his legendaries or his set drop');

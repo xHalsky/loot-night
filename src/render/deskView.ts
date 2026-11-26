@@ -64,7 +64,7 @@ export function deskView(phoneHover = false) {
     you: { tired: on('tired'), zone: on('headset'), fuel },   // the YOU card shows what is in tonight (#56)
     tired: Math.round(n.tired), yawn: T.TIRED_YAWN, zone: n.headset ? Math.round(n.zone * 30) : 0, headset: n.headset,
     cans: g.monsters, hideCans, cansHidden: cansHidden && !hideCans, drinkAct: hideCans ? 'hideCans' : canDrink && !cansHidden ? 'openMonster' : '',
-    note: [n.deepest >= n.deepTarget ? 'y' : '!', n.everCaught ? 'x' : 'y', red ? '!' : 'y'], floorGoal: n.deepTarget,
+    note: g.noteOff ? null : [n.deepest >= n.deepTarget ? 'y' : '!', n.everCaught ? 'x' : 'y', red ? '!' : 'y'], floorGoal: n.deepTarget,   // peeled off for good (#98)
     feed: feedRows(),
     dog: dogDesk(),   // V6 (#71): the dog on the desk (render/dogView.ts)
     ...ph, hover: phoneHover && ph.phone === 'off' ? true : undefined,
@@ -75,7 +75,7 @@ export function deskView(phoneHover = false) {
 export function deskTip(key: string): string {
   const n = N();
   switch (key) {
-    case 'tonight': return "Tonight's three stars, counted when you log off. Each pays a reward in the morning.";
+    case 'tonight': return "Tonight's three stars, counted when you log off. Each pays a reward in the morning. Click to take the note off.";
     case 'tired': return `Tired ${Math.round(n.tired)}: from ${T.TIRED_YAWN} you yawn and nod off. Goblin Fuel or Sleep bring it down.`;
     case 'zone': return n.headset ? 'Zone fills while the headset is on: Flow and loot luck up, but you hear nothing.' : 'Zone: put the headset on (H). It empties the moment you take it off.';
     case 'drink': return S.g.monsters ? 'Goblin Fuel: drink one (G). While she is coming: hide the cans.' : 'No cans left. The Shop has more.';

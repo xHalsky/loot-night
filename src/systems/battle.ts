@@ -1,7 +1,7 @@
 import { T } from '../config/tuning';
 import { lapMouse } from './lapsit';
 import { eyesBusy } from './eyes';
-import { S, N, type Enemy, type Hero, type VfxKind, type MarkId } from '../core/state';
+import { S, N, type Enemy, type Hero, type HeroId, type VfxKind, type MarkId } from '../core/state';
 import { ENEMIES, BOSSES, ENEMY_BY_ID, bossFor, type EnemyDef } from '../data/enemies';
 import { ABILITIES, ULT_SLOT } from '../data/heroes';
 import { pick, rand, chance } from '../core/rng';
@@ -145,6 +145,8 @@ export function queueAbility(heroIdx: number, slot: number) {
   castAbility(h, slot);
 }
 
+/** The skill slot that is a melee hit with the weapon (#97): the Knight's Bash, Garrote's Backstab. */
+const MELEE_SKILL: Partial<Record<HeroId, number>> = { knight: 2, rogue: 1 };
 function castAbility(h: Hero, slot: number) {
   const n = N();
   const me = heroCenter(S.g.heroes.indexOf(h));
@@ -155,6 +157,7 @@ function castAbility(h: Hero, slot: number) {
   h.nextCrit = false;
   h.queued = null;
   attacker = h;
+  if (MELEE_SKILL[h.id] === slot) h.swing = T.SWING_SEC;   // Bash, Backstab: the weapon swings (#97)
   if (slot === ULT_SLOT) return castUlt(h, st, mult, me);
   const extraCd = (h.id === 'mage' && slot === 1 && rule('mage', 'inferno') ? T.RULE_INFERNO_CD : 0);
   h.cd[slot] = (ABILITIES[h.id][slot].cd + extraCd) * (1 - heroFx(h, 'cd')) * (h.id === 'rogue' && slot === 1 && rule('rogue', 'shiv') ? 1 - T.RULE_SHIV : 1) * auraCd(h) * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1) * partyCdMult();
@@ -347,6 +350,7 @@ function weakestEnemy(): Enemy | undefined { return [...N().enemies].filter(e =>
 function heroAct(h: Hero, skill = false) {
   const n = N();
   h.lunge = 0.3;
+  if (h.id === 'knight' || h.id === 'rogue') h.swing = T.SWING_SEC;   // Slash, Stab: melee swings the weapon (#97)
   const me = heroCenter(S.g.heroes.indexOf(h));
   if (!loudOnce) n.noise = Math.min(100, n.noise + T.NOISE_ACTION);
   const st = heroStats(h);

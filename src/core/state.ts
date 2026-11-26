@@ -37,6 +37,7 @@ export interface Hero {
   ult: number;           // the ultimate's charge, 0..1 (fills during fights, #52)
   queued: number | null; // ability slot queued for next turn
   lunge?: number;        // attack animation timer
+  swing?: number;        // a melee attack's weapon swing, seconds left (#97)
   moving?: number;       // seconds left changing rank (a swap, a Hook, a Shove): he doesn't act (#52, 1.6)
   from?: number;         // the rank he is moving from (0-based), for the walk between ranks
   nextCrit?: boolean;    // Nightglass (3 pieces): Smoke Bomb makes his next hit a crit (#52, 1.8)
@@ -156,6 +157,8 @@ export interface PreState { id: string; stage: 'doing'; t: number; max: number; 
 export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
+/** The curio standing in the corridor (#99): coming up (the party stops at it), or passed and going by behind them. x: grid px. */
+export interface CurioAt { id: string; x: number; passed: boolean }
 /** A timed party buff or debuff (curios, the friends' raid buff). floor: lasts until the next floor instead of t. */
 /** A line in a phone chat: hers or theirs (l), yours (r), a grey note (sys); when it was sent. */
 export interface ChatLine { s: 'l' | 'r' | 'sys' | 'photo'; text: string; night: number; clock: number; day?: number; at?: number; seen?: boolean }   // photo (#92): text = the photo's key; at: when she sent it (n.threat); seen: you opened it   // night: the sitting (nightsPlayed); day: the week's day (#56)
@@ -175,7 +178,6 @@ export interface Night {
   action: 'none' | 'miniGame' | 'pre';   // pre: busy with a pre-emptive action (systems/preemptive.ts)
   dropQueue: BagEntry[];
   floorLoot: { entry: BagEntry; x: number; t: number }[];   // drops lying on the dungeon floor (screen x)
-  looterDx?: number;             // the looter's run ahead of his rank to the loot and back (grid px, #52 1.3)
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
   lootFly: { x: number; text: string; color: string; t: number; max: number; delay: number; dx: number }[];   // picked-up loot: names flying up from the floor (#49)
   dropPopup: { entry: BagEntry; t: number } | null;
@@ -223,6 +225,7 @@ export interface Night {
   home: import('../systems/home').HomeNight;   // the battery and the devices tonight (#57)
   herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
+  curioAt?: CurioAt | null;      // the curio in the corridor, before and after the stop (#99)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   smoke: number; heist: number;   // seconds left of Garrote's Smoke Bomb and Heist (#52, 1.7)
@@ -273,6 +276,7 @@ export interface GameState {
   monsters: number;
   q4: Q4Save;           // Q4: lifetime zl and the macros (#55)
   owned: string[];      // the Shop's lasting things you bought (#55, 4.6)
+  noteOff?: boolean;             // the Tonight note on the monitor was clicked off, for good (#98)
   giftNew?: string[]; giftWorn?: string[];   // her gifts (#91): bought and not worn yet (she wears the newest next); worn at least once (the Goodwill)
   bestStars: number; record: number; nightsPlayed: number;
   day: number;          // the week (#56): the night being played, 0 = the first Monday; an unplugged night is played again
@@ -307,7 +311,8 @@ export function newHero(id: HeroId, name: string, role: string, hp: number): Her
 
 export function initialState(): GameState {
   return {
-    heroes: [newHero('knight', HERO_NAME.knight, 'Knight', 130), newHero('healer', HERO_NAME.healer, 'Healer', 90), newHero('mage', HERO_NAME.mage, 'Mage', 75)],   // night 1's marching order (#52, 1.6)
+    heroes: [newHero('knight', HERO_NAME.knight, 'Knight', 130), newHero('rogue', HERO_NAME.rogue, 'Rogue', 85), newHero('mage', HERO_NAME.mage, 'Mage', 75), newHero('healer', HERO_NAME.healer, 'Healer', 90)],   // the marching order (#52, 1.6); Garrote from night 1 (#96)
+    orderSet: true,
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,
     furniture: { training: 0, inn: 0, library: 0, treasury: 0 },

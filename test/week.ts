@@ -25,9 +25,9 @@ const night = (day: number) => { S.g = initialState(); S.g.day = day; startNight
 const names = [0, 1, 2, 3, 4, 5, 6].map(d => rulesFor(d).name).join(' ');
 ok(names === 'Monday Tuesday Wednesday Thursday Friday Saturday Sunday', `the nights: ${names}`);
 const has = (d: number, f: string) => rulesFor(d).on.includes(f);
-ok(['peek', 'snack', 'q4', 'shop'].every(f => has(0, f)) && !['chat', 'headset', 'tired', 'phone', 'messages', 'dog', 'cuddle', 'fuel', 'bed', 'witching', 'rogue'].some(f => has(0, f)),
+ok(['peek', 'snack', 'q4', 'shop'].every(f => has(0, f)) && !['chat', 'headset', 'tired', 'phone', 'messages', 'dog', 'cuddle', 'fuel', 'bed', 'witching'].some(f => has(0, f)),
   'Monday: her, peek and snack, Q4, the Shop; nothing else');
-ok(['chat', 'headset', 'rogue', 'tired', 'onDesk'].every(f => has(1, f) && !has(0, f)), 'Tuesday adds chat visits, the headset, Garrote, Tiredness, her on the desk');
+ok(['chat', 'headset', 'tired', 'onDesk'].every(f => has(1, f) && !has(0, f)), 'Tuesday adds chat visits, the headset, Tiredness, her on the desk');
 ok(['phone', 'messages'].every(f => has(2, f) && !has(1, f)), 'Wednesday: the phone rings, Messages');
 ok(['dog', 'cuddle', 'friends', 'fuel', 'home'].every(f => has(3, f) && !has(2, f)), 'Thursday: the dog, cuddles, the boys, the Goblin Fuel, the smart home and the battery');
 ok(['bed', 'witching'].every(f => has(4, f) && !has(3, f)), 'Friday: she goes to bed, the Witching Hour');
@@ -64,7 +64,7 @@ ok(S.g.day === 1 && dayName() === 'Tuesday', 'the next night is Tuesday');
 n = night(0); n.clock = 25 * 60 - T.BEDTIME_WARN_MIN; checkNightEnd(); ok(n.log.some(l => l.text.includes('Bedtime at 01:00')) || n.toasts.some(t => t.text.includes('Bedtime at 01:00')), 'a warning 15 minutes before');
 // Tuesday runs on past 01:00
 n = night(1); n.clock = 25 * 60 + 5; checkNightEnd(); ok(S.g.screen === 'night', 'Tuesday: the night goes on past 01:00');
-ok(S.g.heroes.some(h => h.id === 'rogue'), 'Tuesday: Garrote joins');
+ok(S.g.heroes.some(h => h.id === 'rogue'), 'Tuesday: Garrote is in the party (from night 1, #96)');
 n.clock = 23 * 60; updateTired(1, 30); ok(n.tired > 0, 'Tuesday: Tiredness');
 
 // --- the replay ---

@@ -19,10 +19,10 @@ import { STAT_LABEL } from '../data/items';
 import { maxHp } from '../systems/stats';
 import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
+import { CURIO_BY_ID } from '../data/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
 import { RANK_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
 import { unbanked } from '../systems/run';
-import { looterIndex } from '../systems/loot';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
 
 /** The live battle area replaces the old one whenever the party is in the dungeon (the floor map too), and in town
@@ -211,8 +211,8 @@ function pathsView(hov: number, hovT: number) {
 export interface PartyPointer { drag: { from: number; x: number; y: number; over: number } | null; hover: number }
 /** Where a hero stands now: his rank's x, or on the way there after a swap, a Hook or a Shove. */
 export function heroX(i: number): number {
-  const h = S.g.heroes[i], run = N()?.looterDx && i === looterIndex() ? Math.round(N().looterDx!) : 0;   // the looter's run (#52 1.3)
-  if (!h?.moving || h.from == null) return RANK_X[i] + run;
+  const h = S.g.heroes[i];
+  if (!h?.moving || h.from == null) return RANK_X[i];
   const k = 1 - h.moving / T.SWAP_SEC, e = k * k * (3 - 2 * k);
   return Math.round(RANK_X[h.from] + (RANK_X[i] - RANK_X[h.from]) * e);
 }
@@ -233,7 +233,7 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
   const order = g.heroes.map((h, i) => ({ h, i }));
   const party = order.map(({ h }, rank) => {
     const id = PAGE_ID[h.id];
-    return { id, x: heroX(rank), ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 && !h.moving ? 3 : 0 };
+    return { id, x: heroX(rank), ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 && !h.moving ? 3 : 0, swing: (h.swing ?? 0) > 0 && !h.downed ? 1 - h.swing! / T.SWING_SEC : null };
   });
   // the enemies: six ranks, fodder in two lanes, the boss or the lieutenant behind them; a newcomer slides in
   const enemies = n.enemies.map((e: Enemy) => {
@@ -337,8 +337,8 @@ function buffList() {
 
 // the curio's parchment card in the band, its two choices (the page's layout: 85 x 20 buttons)
 function curioView() {
-  const n = N();
-  if (n.phase !== 'curio' || !n.curio) return null;
+  const n = N(), at = n.curioAt;
+  if (n.phase !== 'curio' || !n.curio) { const d = at && CURIO_BY_ID[at.id]; return d ? { x: Math.round(at.x), px: d.sprite, card: null, passed: at.passed } : null; }   // coming up, or going by behind (#99)
   const c = n.curio, d = curioDef(c);
   if (!d) return null;
   const choices = c.stage === 'ask'
@@ -347,7 +347,7 @@ function curioView() {
       return { label: [[curioText(ch.label), why ? 'u4' : 'u6']], cost: [[fit(why || curioText(ch.cost), 19), why ? 'u4' : 'u5']], act: why ? '' : 'curio', arg: ch.id, tip: why || curioText(ch.cost) };
     })
     : [{ label: [[c.stage === 'pick' ? 'Picking the lock' : 'Sneaking', 'u6']], cost: [[`${Math.ceil(c.t)} s left`, 'u5']], act: '', arg: '', tip: '' }];
-  return { x: 236, px: d.sprite, card: { title: d.name, line: fit(d.line, 40), timer: c.stage === 'ask' ? Math.max(0, c.t / c.max) : 1 - Math.max(0, c.t / c.max), choices } };
+  return { x: Math.round(at?.x ?? T.CURIO_STOP_X), px: d.sprite, card: { title: d.name, line: fit(d.line, 40), timer: c.stage === 'ask' ? Math.max(0, c.t / c.max) : 1 - Math.max(0, c.t / c.max), choices } };
 }
 const fit = (s: string, n: number) => (s.length <= n ? s : s.slice(0, n - 3).trimEnd() + '...');
 

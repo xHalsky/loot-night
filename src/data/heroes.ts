@@ -8,8 +8,8 @@ export interface AbilityDef { name: string; short: string; cd: number; desc: str
  *  (Danny and Mike on the phone). Party and guild chat use these names, as an MMO would. */
 export const HERO_NAME: Record<HeroId, string> = { knight: 'Knightenstein', rogue: 'Garrote', mage: 'Magoo', healer: 'Healero' };
 export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
-  knight: { role: 'Tank. Stands in front, carries the torch, picks up loot.', auto: 'Slashes the front enemy.' },
-  rogue: { role: 'Damage. Crits, smokes, and picks up the loot.', auto: 'Stabs the front enemy.' },
+  knight: { role: 'Tank. Stands in front and carries the torch.', auto: 'Slashes the front enemy.' },
+  rogue: { role: 'Damage. Crits and smokes.', auto: 'Stabs the front enemy.' },
   mage: { role: 'Damage. Fragile, hits hard.', auto: 'Bolts the weakest enemy (finishes kills).' },
   healer: { role: 'Support. Keeps everyone alive.', auto: 'Heals an ally under 60% HP, otherwise smites the front enemy and Judges it (your skill hits on it heal).' },
 };
@@ -17,7 +17,7 @@ export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
 /** Home ranks (#52, 1.6): outside them a hero deals and heals OUT_OF_RANK_MULT. Rank 1 is the front. Data per hero, so
  *  tree nodes can change them later ("Fire at full power from rank 2"). */
 export const HOME_RANKS: Record<HeroId, [number, number]> = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], healer: [2, 4] };
-/** The marching order a party starts in: night 1 has three heroes; Garrote joins second in line. */
+/** The marching order a party starts in (Garrote is in it from night 1, #96; the three-hero one is for a save from before). */
 export const DEFAULT_ORDER: HeroId[][] = [['knight', 'healer', 'mage'], ['knight', 'rogue', 'mage', 'healer']];
 /** Auras (#52, 1.6): what each hero gives his neighbour (back: the one behind him; front: the one in front). */
 export const AURAS: Record<HeroId, { back?: boolean; front?: boolean; name: string; gives: string }> = {
@@ -27,11 +27,8 @@ export const AURAS: Record<HeroId, { back?: boolean; front?: boolean; name: stri
   healer: { front: true, back: true, name: 'Blessing', gives: `regenerates ${Math.round(T.AURA_PRIEST_REGEN * 100)}% HP per second` },
 };
 
-/** A hero's role line; from night 2 Garrote picks up the loot instead of the Knight (#52, 1.7). */
-export function heroRole(id: HeroId, rogueIn = true) {
-  const r = HERO_ROLE[id];
-  return id === 'knight' && rogueIn ? { ...r, role: 'Tank. Stands in front and carries the torch.' } : r;
-}
+/** A hero's role line. Whoever walks in front picks up the loot (#95), so no role says so. */
+export function heroRole(id: HeroId, _rogueIn = true) { return HERO_ROLE[id]; }
 
 export const HERO_BASE: Record<HeroId, Record<Stat, number>> = {
   knight: { hp: 130, atk: 9, armor: 6, speed: 9, crit: 5, luck: 0 },

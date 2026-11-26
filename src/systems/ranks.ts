@@ -1,5 +1,4 @@
 // Marching order (#52, 1.6; docs/design/dungeon.md): the party walks and fights in one line, rank 1 at the front.
-import { on } from './week';
 // A hero's rank is his place in S.g.heroes (index + 1), so everything that lists the party lists it in order.
 // Home ranks, auras, swaps, and the enemies that break the line (Hook, Shove). Rules only; no drawing.
 import { T } from '../config/tuning';
@@ -82,17 +81,17 @@ function floatOut(h: Hero) { floatText(RANK_X[S.g.heroes.indexOf(h)] ?? RANK_X[0
 /** Ticks the walk between ranks. */
 export function updateRanks(dt: number) { for (const h of S.g.heroes) if (h.moving) { h.moving = Math.max(0, h.moving - dt); if (!h.moving) { h.moving = undefined; h.from = undefined; } } }
 
-/** At the start of a night: Garrote joins on Tuesday (the week's 'rogue', #56), second in line; a save that never had a marching
- *  order gets the default one. */
+/** At the start of a night: a save from before Garrote was in the party from night 1 (#96) gets him, second in line; a
+ *  save that never had a marching order gets the default one. */
 export function ensureParty() {
   const g = S.g;
-  if (on('rogue') && !heroById('rogue')) {   // Tuesday (#56)
+  if (!heroById('rogue')) {
     const lv = Math.max(1, Math.min(...g.heroes.map(h => h.level)));
     const r = newHero('rogue', HERO_NAME.rogue, 'Rogue', HERO_BASE.rogue.hp);
     r.level = lv;
     g.heroes.push(r);
     g.orderSet = false;
-    toast('Garrote joined the party. He walks second and picks up the loot.', '#e8b07a');
+    toast('Garrote joined the party. He walks second.', '#e8b07a');
   }
   if (!g.orderSet) {
     const want = DEFAULT_ORDER[g.heroes.length >= 4 ? 1 : 0];

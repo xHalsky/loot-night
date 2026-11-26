@@ -224,6 +224,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgLapSit: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('chat'); n.visit.lapSit = true; },   // the lap sit (#86)
   dbgBedTease: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('tease'); n.visit.bed = true; n.visit.from = 'night'; n.apt.asleep = false; },   // come to bed (#89)
   hideCans: () => { hideCans(); },
+  noteOff: () => { S.g.noteOff = true; hover.key = ''; sfx.click(); toast('Note off. Tonight\'s stars still count.', '#a999bd'); },   // the Tonight note (#98); its tooltip goes with it
   takePlate: () => takePlate(),
   chatAnswer: a => chatAnswer(Number(a)),
   cuddle: a => cuddleAnswer(a === '1'),

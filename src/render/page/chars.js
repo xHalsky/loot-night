@@ -41,7 +41,45 @@ function pauldron(px, py, w, dir, d, guard = true, n = 3, trim = true, ch = 4.3)
   put(Math.round(px + dir * w * 0.25), Math.round(py), Math.min(1, 0.85 * d), M_UMBER);
 }
 
-function knight(cx, fy, s, b, t) {
+// ---- melee swings (#97): a weapon cut for the Knight's Slash and Bash and Garrote's Stab and Backstab. q runs 0..1
+// over T.SWING_SEC: wind-up, the cut (with a bright smear along the edge), a short hold, back to the guard.
+const ease3 = (u) => u * u * (3 - 2 * u);
+// pose(q) -> [hand x, hand y, blade angle]; keys: [rest, wind-up, strike], each [hx, hy, angle]; lift: the hand's arc up
+function swingPose(q, K, lift) {
+  const [R, W, S] = K, mix = (A, B, e, up) => [A[0] + (B[0] - A[0]) * e, A[1] + (B[1] - A[1]) * e - up * Math.sin(Math.PI * e), A[2] + (B[2] - A[2]) * e];
+  if (q < 0.25) return mix(R, W, ease3(q / 0.25), 0);
+  if (q < 0.5) return mix(W, S, ease3((q - 0.25) / 0.25), lift);
+  if (q < 0.62) return S;
+  return mix(S, R, ease3((q - 0.62) / 0.38), lift * 0.5);
+}
+// the smear: a crescent where the edge swept, from r0 to r1 out of the hand, over the cut so far: full at the blade,
+// thinning and fading behind it; it fades out after the strike
+function swingSmear(q, K, lift, r0, r1) {
+  if (q < 0.27 || q > 0.72) return;
+  const u1 = Math.min(q, 0.5), u0 = Math.max(0.25, u1 - 0.17), fade = q <= 0.5 ? 1 : 1 - (q - 0.5) / 0.22;
+  const n = Math.max(12, Math.ceil((u1 - u0) * 30 * r1));   // dense enough that the swept band has no gaps
+  for (let k = 0; k <= n; k++) {
+    const u = u0 + (u1 - u0) * k / n, [hx, hy, a] = swingPose(u, K, lift), rec = k / n, ux = Math.cos(a), uy = Math.sin(a);
+    const rIn = r1 - (r1 - r0) * (0.25 + 0.75 * rec);
+    for (let r = rIn; r <= r1; r += 0.6) {
+      const edge = (r - rIn) / Math.max(1, r1 - rIn), al = fade * rec * rec * (0.25 + 0.75 * edge);
+      if (al < 0.06) continue;
+      const x = Math.round(hx + ux * r), y = Math.round(hy + uy * r);
+      if (x < 0 || y < 0 || x >= BW || y >= BH) continue;
+      const i = y * BW + x; B.V[i] = B.V[i] + (0.98 - B.V[i]) * Math.min(1, al); B.A[i] = 1; B.T[i] = TAG;
+      if (al > 0.4) { B.M[i] = M_STONE; B.E[i] = 1; }
+    }
+  }
+}
+// an arm from shoulder S to hand H, upper and lower length L each, the elbow bent down and outward (side: +1 right)
+function armTo(S, H, L, side, w0, w1, lo, hi, mat) {
+  const dx = H[0] - S[0], dy = H[1] - S[1], d = Math.min(Math.hypot(dx, dy), 2 * L - 0.1), m = [S[0] + dx / 2, S[1] + dy / 2];
+  const off = Math.sqrt(Math.max(0, L * L - (d / 2) ** 2)), nx = -dy / (Math.hypot(dx, dy) || 1), ny = dx / (Math.hypot(dx, dy) || 1);
+  const sgn = (ny * 1 + nx * side * 0.3) >= 0 ? 1 : -1, E = [m[0] + nx * off * sgn, m[1] + ny * off * sgn];
+  limb(S[0], S[1], E[0], E[1], w0, w0 - 0.4, lo, hi, mat); limb(E[0], E[1], H[0], H[1], w1, w1 - 0.4, lo + 0.04, hi + 0.04, mat);
+}
+
+function knight(cx, fy, s, b, t, _carry, _wp, swq) {
   const Y = fy + b, sh = s >> 1, sw = Math.sin(t * 1.7) * 0.6;
   // ragged cape, hanging straight behind the far shoulder
   const hem = [];
@@ -78,33 +116,44 @@ function knight(cx, fy, s, b, t) {
   rect(cx - 5, Y - 31, 11, 2, 0.26, M_UMBER); rect(cx, Y - 31, 3, 2, 0.88, M_UMBER);
   // far pauldron (smaller, in shade)
   pauldron(cx - 10, Y - 47, 11, -1, 0.82, true, 2, false, 5);
-  // greatsword resting on the far shoulder: broad blade, drooping quillons, brass pommel
-  // bastard sword on the far shoulder: broad fullered blade, wide crossguard, hand-and-a-half grip, wheel pommel
-  const Gx = cx - 9, Gy = Y - 42, Tx = cx - 26, Ty = Y - 73, BL = Math.hypot(Tx - Gx, Ty - Gy), ax = (Tx - Gx) / BL, ay = (Ty - Gy) / BL;
+  // bastard sword on the far shoulder: broad fullered blade, wide crossguard, hand-and-a-half grip, wheel pommel.
+  // Swinging (#97) it leaves the shoulder: up behind the helm, over the top, the cut ends forward and down at the
+  // enemy, and it is drawn last, over the shield.
+  const KS = [[cx - 9, Y - 42, Math.atan2(-31, -17)], [cx - 13, Y - 50, -2.65], [cx + 9, Y - 45, 0.38]];
+  const SW = swq != null && swq >= 0 ? swingPose(swq, KS, 7) : null;
+  const BL = Math.hypot(17, 31), Gx = SW ? SW[0] : cx - 9, Gy = SW ? SW[1] : Y - 42, A_ = SW ? SW[2] : KS[0][2], ax = Math.cos(A_), ay = Math.sin(A_);
   const nx = -ay, ny = ax; // across the blade, pointing to the lit (right) side
   const hwAt = (q) => (q < 0.82 ? 2.6 - 0.5 * q : 2.19 * (1 - q) / 0.18);
-  const pts = [];
-  for (const q of [0, 0.82, 1]) pts.push([Gx + ax * BL * q + nx * hwAt(q), Gy + ay * BL * q + ny * hwAt(q)]);
-  for (const q of [1, 0.82, 0]) pts.push([Gx + ax * BL * q - nx * hwAt(q), Gy + ay * BL * q - ny * hwAt(q)]);
-  pts.splice(3, 1);
-  poly(pts, (x, y) => {
-    const px = x + 0.5 - Gx, py = y + 0.5 - Gy, q = clamp((px * ax + py * ay) / BL), r = (px * nx + py * ny) / Math.max(0.6, hwAt(q));
-    if (r > 0.5) return 0.98; if (r < -0.55) return 0.42; if (Math.abs(r) < 0.22 && q < 0.7) return 0.26; return 0.68;
-  }, M_STONE);
-  // grip (7 px, leather-wrapped), pommel
-  for (let k = 1; k <= 8; k++) { const x = Gx - ax * k, y = Gy - ay * k; put(x, y, k % 2 ? 0.34 : 0.2, M_UMBER); put(x + nx * 0.9, y + ny * 0.9, k % 2 ? 0.5 : 0.3, M_UMBER); }
-  ellipse(Gx - ax * 9.5 + 0.5, Gy - ay * 9.5 + 0.5, 1.9, 1.9, (x, y) => 0.55 + 0.4 * clamp((x - (Gx - ax * 9.5) + 1) / 3), M_UMBER); put(Gx - ax * 9.5, Gy - ay * 9.5, 0.3, M_UMBER);
-  // sword arm: elbow out, the gauntleted fist closed over the grip under the guard (drawn after the grip)
-  limb(cx - 12, Y - 41, cx - 16, Y - 33, 4.2, 3.6, 0.2, 0.52); limb(cx - 16, Y - 33, cx - 8, Y - 38, 3.6, 3.2, 0.26, 0.6);
-  poly([[cx - 18, Y - 35], [cx - 15, Y - 35], [cx - 14, Y - 32], [cx - 18, Y - 31]], (x) => 0.4 + 0.3 * clamp((x - cx + 18) / 4), M_STONE); put(cx - 19, Y - 33, 0.45, M_STONE);
-  rect(cx - 9, Y - 40, 3, 3, (x) => 0.42 + 0.3 * clamp((x - cx + 9) / 3), M_STONE); put(cx - 7, Y - 40, 0.82, M_STONE);
-  // crossguard: wide, quillons flaring toward the blade
-  const qx0 = Gx - nx * 6, qy0 = Gy - ny * 6, qx1 = Gx + nx * 6, qy1 = Gy + ny * 6;
-  line(qx0 - ax, qy0 - ay, qx1 - ax, qy1 - ay, 0.32, M_UMBER);
-  line(qx0, qy0, Gx, Gy, 0.62, M_UMBER); line(Gx, Gy, qx1, qy1, 0.94, M_UMBER);
-  put(qx0 + ax, qy0 + ay, 0.6, M_UMBER); put(qx1 + ax, qy1 + ay, 0.94, M_UMBER);
-  ellipse(Gx + 0.5, Gy + 0.5, 1.3, 1.3, 0.95, M_UMBER);
-  rect(Math.round(Gx - ax * 2.5) - 1, Math.round(Gy - ay * 2.5) - 1, 3, 3, (x) => x > Gx - ax * 2.5 ? 0.66 : 0.38, M_STONE);
+  const swordBlade = () => {
+    const pts = [];
+    for (const q of [0, 0.82, 1]) pts.push([Gx + ax * BL * q + nx * hwAt(q), Gy + ay * BL * q + ny * hwAt(q)]);
+    for (const q of [1, 0.82, 0]) pts.push([Gx + ax * BL * q - nx * hwAt(q), Gy + ay * BL * q - ny * hwAt(q)]);
+    pts.splice(3, 1);
+    poly(pts, (x, y) => {
+      const px = x + 0.5 - Gx, py = y + 0.5 - Gy, q = clamp((px * ax + py * ay) / BL), r = (px * nx + py * ny) / Math.max(0.6, hwAt(q));
+      if (r > 0.5) return 0.98; if (r < -0.55) return 0.42; if (Math.abs(r) < 0.22 && q < 0.7) return 0.26; return 0.68;
+    }, M_STONE);
+    // grip (7 px, leather-wrapped), pommel
+    for (let k = 1; k <= 8; k++) { const x = Gx - ax * k, y = Gy - ay * k; put(x, y, k % 2 ? 0.34 : 0.2, M_UMBER); put(x + nx * 0.9, y + ny * 0.9, k % 2 ? 0.5 : 0.3, M_UMBER); }
+    ellipse(Gx - ax * 9.5 + 0.5, Gy - ay * 9.5 + 0.5, 1.9, 1.9, (x, y) => 0.55 + 0.4 * clamp((x - (Gx - ax * 9.5) + 1) / 3), M_UMBER); put(Gx - ax * 9.5, Gy - ay * 9.5, 0.3, M_UMBER);
+  };
+  const swordGuard = () => {
+    // crossguard: wide, quillons flaring toward the blade; the gauntlet on the grip under it
+    const qx0 = Gx - nx * 6, qy0 = Gy - ny * 6, qx1 = Gx + nx * 6, qy1 = Gy + ny * 6;
+    line(qx0 - ax, qy0 - ay, qx1 - ax, qy1 - ay, 0.32, M_UMBER);
+    line(qx0, qy0, Gx, Gy, 0.62, M_UMBER); line(Gx, Gy, qx1, qy1, 0.94, M_UMBER);
+    put(qx0 + ax, qy0 + ay, 0.6, M_UMBER); put(qx1 + ax, qy1 + ay, 0.94, M_UMBER);
+    ellipse(Gx + 0.5, Gy + 0.5, 1.3, 1.3, 0.95, M_UMBER);
+    rect(Math.round(Gx - ax * 2.5) - 1, Math.round(Gy - ay * 2.5) - 1, 3, 3, (x) => x > Gx - ax * 2.5 ? 0.66 : 0.38, M_STONE);
+  };
+  if (!SW) {
+    swordBlade();
+    // sword arm: elbow out, the gauntleted fist closed over the grip under the guard (drawn after the grip)
+    limb(cx - 12, Y - 41, cx - 16, Y - 33, 4.2, 3.6, 0.2, 0.52); limb(cx - 16, Y - 33, cx - 8, Y - 38, 3.6, 3.2, 0.26, 0.6);
+    poly([[cx - 18, Y - 35], [cx - 15, Y - 35], [cx - 14, Y - 32], [cx - 18, Y - 31]], (x) => 0.4 + 0.3 * clamp((x - cx + 18) / 4), M_STONE); put(cx - 19, Y - 33, 0.45, M_STONE);
+    rect(cx - 9, Y - 40, 3, 3, (x) => 0.42 + 0.3 * clamp((x - cx + 9) / 3), M_STONE); put(cx - 7, Y - 40, 0.82, M_STONE);
+    swordGuard();
+  }
   // gorget, small hounskull helm with a beaked visor, swept-back plume
   rect(cx - 4, Y - 51, 8, 5, (x) => 0.08 + 0.2 * clamp((x - cx + 4) / 8), M_STONE);
   const ph = Math.sin(t * 2.3) * 0.8;
@@ -130,6 +179,11 @@ function knight(cx, fy, s, b, t) {
   ellipse(ex + 0.5, ey + 0.5, 3.1, 3.1, 0.95, M_UMBER); put(ex, ey, 0.7, M_UMBER);
   for (const [qx, qy] of [[x0 + 2, y0 + 4], [x1 - 2, y0 + 4], [x0 + 2, y1 - 2], [x1 - 2, y1 - 2], [mid, tip - 3]]) put(qx, qy, 0.98, M_UMBER);
   rect(x1 - 6, y0 + 5, 1, 7, 0.88, M_UMBER); rect(x1 - 5, y0 + 6, 1, 5, 0.72, M_UMBER); ellipse(x1 - 5.5, y0 + 4.5, 1.7, 1.7, 0.5, M_DUSK); put(x1 - 6, y0 + 4, 0.75, M_DUSK);
+  if (SW) {   // the swing, over the shield: the smear, the arm from the far shoulder, the sword, the fist and guard
+    swingSmear(swq, KS, 7, BL * 0.55, BL * 1.04);
+    armTo([cx - 7, Y - 45], [Gx - ax * 2.5, Gy - ay * 2.5], 9, 1, 4, 3.6, 0.22, 0.6, M_STONE);
+    swordBlade(); swordGuard();
+  }
 }
 
 function mage(cx, fy, s, b, t) {
@@ -221,7 +275,7 @@ function priest(cx, fy, s, b, t) {
 // Draw order, back to front: cloak, far arm and its dagger (hanging at his side), far leg, near leg, torso, tabard,
 // near arm and its dagger, capelet, hood.
 const ROGUE_WALK = { T: 1.0, frames: 12, stride: 5, lift: 3, thigh: 17.5, shin: 13.5 };
-function rogue(cx, fy, s, b, t, carry, wp) {
+function rogue(cx, fy, s, b, t, carry, wp, swq) {
   const walk = wp != null, TAU = Math.PI * 2, W_ = ROGUE_WALK, CL = M_DUSK, LE = M_UMBER;
   const bob = walk ? -Math.round(0.5 - 0.5 * Math.cos(TAU * 2 * wp)) : 0;
   const Y = walk ? fy + 1 + bob : fy + b;
@@ -318,14 +372,28 @@ function rogue(cx, fy, s, b, t, carry, wp) {
   { const tw = walk ? Math.round(-sw) : sh;
     poly([[cx - 2, Y - 33], [cx + 3, Y - 33], [cx + 3 + tw, Y - 20], [cx - 2 + tw, Y - 19]], (x) => 0.12 + 0.18 * clamp((x - cx + 2) / 5), LE);
     line(cx - 2 + tw, Y - 20, cx + 3 + tw, Y - 21, 0.55, M_LOOT); }
+  // a melee hit (#97): the near hand cocks low, then cuts up and forward at the enemy, the dagger in forward grip
+  const KR = [[cx + 15, Y - 25, Math.atan2(-1, 5)], [cx + 12, Y - 21, 1.25], [cx + 22, Y - 36, -1.35]];
+  const RS = swq != null && swq >= 0 && !carry && !walk ? swingPose(swq, KR, 4) : null;
   // near arm (right side): hanging long from the forward shoulder, a slight bend, the fist low and a little forward
-  limb(NA.s[0], NA.s[1], NA.e[0], NA.e[1], 3.4, 3, 0.16, 0.56, LE);
-  limb(NA.e[0], NA.e[1], NA.h[0], NA.h[1], 3, 2.6, 0.2, 0.6, LE);
-  put(NA.e[0] + 1, NA.e[1], 0.66, LE);                                                // the point of the elbow, lit
-  { const bx = Math.round((NA.e[0] + NA.h[0]) / 2), by = Math.round((NA.e[1] + NA.h[1]) / 2) + 1; rect(bx - 1, by - 1, 3, 2, 0.5, LE); put(bx + 1, by - 1, 0.72, LE); }   // bracer
+  if (!RS) {
+    limb(NA.s[0], NA.s[1], NA.e[0], NA.e[1], 3.4, 3, 0.16, 0.56, LE);
+    limb(NA.e[0], NA.e[1], NA.h[0], NA.h[1], 3, 2.6, 0.2, 0.6, LE);
+    put(NA.e[0] + 1, NA.e[1], 0.66, LE);                                              // the point of the elbow, lit
+    { const bx = Math.round((NA.e[0] + NA.h[0]) / 2), by = Math.round((NA.e[1] + NA.h[1]) / 2) + 1; rect(bx - 1, by - 1, 3, 2, 0.5, LE); put(bx + 1, by - 1, 0.72, LE); }   // bracer
+  }
+  if (RS) {
+    const ux = Math.cos(RS[2]), uy = Math.sin(RS[2]), hx = Math.round(RS[0]), hy = Math.round(RS[1]);
+    swingSmear(swq, KR, 4, 4, 17);   // bigger than the dagger: from rank 2 it has to read over the Knight's back
+    armTo(NA.s, [hx, hy], 10.5, 1, 3.2, 2.8, 0.18, 0.6, LE);
+    rect(hx - 1, hy - 1, 3, 3, 0.24, LE); put(hx + 1, hy - 1, 0.5, LE);             // fist
+    line(hx + ux * 2 - uy * 2, hy + uy * 2 + ux * 2, hx + ux * 2 + uy * 2, hy + uy * 2 - ux * 2, 0.7, M_STONE);   // guard
+    blade(hx + ux * 3, hy + uy * 3, hx + ux * 10, hy + uy * 10, 0.7);
+  }
   const nh = NA.h;
-  rect(nh[0] - 1, nh[1] - 1, 3, 3, 0.24, LE); put(nh[0] + 1, nh[1] - 1, 0.5, LE);         // fist
-  if (carry) backBlade(NA);
+  if (!RS) { rect(nh[0] - 1, nh[1] - 1, 3, 3, 0.24, LE); put(nh[0] + 1, nh[1] - 1, 0.5, LE); }   // fist
+  if (RS) { /* swinging: the arm and dagger are drawn above */ }
+  else if (carry) backBlade(NA);
   else {                                                                            // forward grip: guard, blade at the enemy
     put(nh[0] - 2, nh[1], 0.64, LE);
     line(nh[0] + 2, nh[1] - 2, nh[0] + 2, nh[1] + 2, 0.7, M_STONE); put(nh[0] + 2, nh[1] - 2, 0.95, M_STONE);

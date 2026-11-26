@@ -65,7 +65,7 @@ export function updateMeters(dt: number) {
   n.fx = n.fx.filter(f => f.t > 0);
   for (const v of n.vfx) v.t += dt;
   n.vfx = n.vfx.filter(v => v.t < v.dur);
-  for (const h of S.g.heroes) if (h.lunge) h.lunge = Math.max(0, h.lunge - dt);
+  for (const h of S.g.heroes) { if (h.lunge) h.lunge = Math.max(0, h.lunge - dt); if (h.swing) h.swing = Math.max(0, h.swing - dt); }
   for (const e of n.enemies) if (e.lunge) e.lunge = Math.max(0, e.lunge - dt);
   for (const b of n.beams) b.t -= dt;
   n.beams = n.beams.filter(b => b.t > 0);

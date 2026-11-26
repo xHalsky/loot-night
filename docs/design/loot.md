@@ -29,8 +29,8 @@ Epics and legendaries drop **unidentified** until the Appraiser reveals them.
 
 **Legendaries change a rule** (`src/data/legendaries.ts`, rules in `src/systems/battle.ts`). Every legendary is one
 of eight named items, the name is the whole name ("Frostbinder", or "Frostbinder of Stealth" with a special). Each
-belongs to one hero: its rule works only while he wears it, and it drops only while he is in the party (none of
-Garrote's on night 1). Its stats work on anyone.
+belongs to one hero: its rule works only while he wears it, and it drops only while he is in the party (all four are
+from night 1, #96). Its stats work on anyone.
 
 | Legendary | Slot | Hero | Rule |
 |---|---|---|---|
@@ -90,12 +90,13 @@ while active.
 **Loot on the floor.** Drops land where each enemy fell (spread out when several share a spot) and
 bounce once. Each shows a bundle with a gleam, an additive beam in its rarity colour (taller and wider
 for better rarities) with a soft halo, a glow pool, rising sparkles and a pool of light in the darkness.
-Drops fall where the enemy died; there is no loot pause. On the walk after the fight **the looter** (Garrote once he
-has joined, the Knight before; whoever is standing in front if Garrote is down) runs ahead of his rank to the nearest
-drop at `LOOTER_RUN_PX` (150 grid px/s), grabs it, goes on to the next, and runs back into rank. The walk lasts until
-every drop is picked up and he is back (at least `WALK_SEC`), the party walking faster (75 px/s instead of 40) while
-loot is on the floor; what reaches his rank on its own is picked up there. (0.62.2; before it the front hero just
-walked over the drops, which hid who loots. `test/looter.py` shoots the run.) A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
+Drops fall where the enemy died; there is no loot pause. On the walk after the fight the drops come toward the party
+with the floor and **whoever walks in front** (the first standing hero in the marching order) picks each one up as he
+walks over it (`LOOTER_REACH`, in front of his feet; #95). Nobody runs ahead for it. The walk lasts until every drop
+is picked up (at least `WALK_SEC`), at `WALK_HURRY_PACE` (75) instead of `WALK_PACE` (40) while loot lies ahead; after
+the floor's last fight this is the walk out of the floor, over the drops, before the map. (0.62.2 to 0.86 a looter ran
+ahead of his rank to each drop and back; the playtest read it as the Knight breaking ranks. Decision in
+[dungeon.md](dungeon.md). `python3 test/walk.py` shoots it.) A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
 shines with NEW (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
 leave by portal or the floor ends. Everything picked up in a run is unbanked (a dashed mark on its bag cell) until
 the town portal banks it; a wipe loses it ([dungeon.md](dungeon.md), runs).

@@ -29,7 +29,7 @@ export const T = {
   // devices and the battery (step 6, #57).
   NIGHT_SCHEDULE: [
     { day: 'Monday', adds: ['her', 'peek', 'snack', 'q4', 'shop'], visits: 1, bed: 0, end: 25 * 60, dog: null, friends: 0 },
-    { day: 'Tuesday', adds: ['chat', 'headset', 'onDesk', 'rogue', 'tired', 'lean', 'mirror'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0, first: 'chat' },
+    { day: 'Tuesday', adds: ['chat', 'headset', 'onDesk', 'tired', 'lean', 'mirror'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0, first: 'chat' },
     { day: 'Wednesday', adds: ['phone', 'messages'], visits: 1.2, bed: 0, end: 0, dog: null, friends: 0 },
     { day: 'Thursday', adds: ['dog', 'cuddle', 'friends', 'fuel', 'home'], visits: 1.2, bed: 0, end: 0, dog: [90, 120, 180], friends: 1, first: 'snack' },
     { day: 'Friday', adds: ['bed', 'witching', 'mask', 'comeToBed', 'selfies'], visits: 1.2, bed: 24 * 60, end: 0, dog: [90, 120, 180], friends: 1 },
@@ -145,12 +145,14 @@ export const T = {
   BATTLES_PER_FLOOR: 3,
   CHECKPOINT_EVERY: 5,
   WALK_SEC: 4,
+  SWING_SEC: 0.42,                // a melee hit's weapon swing (the Knight, Garrote; #97): wind-up, the cut, back to the guard
+  WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))
   PACK_HP_MULT: 1.25,              // a pack member's HP and attack against a lone enemy's (*start*, tuned to 8 to 12 s fights)
   PACK_ATK_MULT: 0.7,
   STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free rank (it doesn't attack meanwhile)
-  // Drops per kill (#52, 1.3): they fall where the enemy died; the looter picks them up during the walk
+  // Drops per kill (#52, 1.3): they fall where the enemy died; the front hero walks over them on the next walk (#95)
   DROP_CHANCE: 0.35,              // each kill drops an item; elites always; bosses BOSS_DROPS
   LEGENDARY_FIRST_BY: 40,         // the first legendary of a save drops within its first 40 drops (night 1 has 45 to 75)
   // Runs (#52, 1.4): from the town portal until the town portal (banked) or a wipe (lost)
@@ -240,7 +242,6 @@ export const T = {
   BAG_SIZE: 18,
   TREASURY_ROW: 6,                // the bag's last row: the Treasury opens 2 slots per level; the rest show a lock (#49)
   BAG_NEW_SEC: 1.5,               // a fresh item's bag slot shines with NEW this long
-  LOOTER_RUN_PX: 150,   // grid px/s: the looter (Garrote, or the Knight on night 1) runs ahead to each drop and back (#52 1.3)
   LOOT_FLY_SEC: 1.6, LOOT_FLY_LEGENDARY_SEC: 2.6, LOOT_FLY_STAGGER_SEC: 0.3,   // picked-up loot: its name flies up from the floor (#49)
   POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots
   POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag
@@ -269,6 +270,8 @@ export const T = {
   // Curios in the corridor (docs/design/dungeon.md, #30). Content: data/curios.ts.
   CURIO_PER_FLOOR: [1, 2] as [number, number],   // on battle floors; none on vault or shrine floors
   CURIO_WAIT_SEC: 7,              // real seconds the party waits at a curio before walking past
+  CURIO_ENTER_X: 355, CURIO_STOP_X: 210, CURIO_GONE_X: -24,   // grid px (core/arena.ts): it comes in off the right edge, the party stops with it here, walks on until it is off the left edge (#99)
+  CURIO_PACE: 55,                 // the walk's pace while a curio comes up
   CURIO_AWAY_RECKLESS: 0.5,       // away when the party reaches one: this often they do the loud thing, else walk past
   CURIO_PICK_SEC: 8, CURIO_SMASH_NOISE: 25, CURIO_BOX_DROPS: 2,
   CURIO_GROAN_NOISE: 5, CURIO_MAIL_GOLD: 20, CURIO_MAIL_ODDS: [0.5, 0.3] as [number, number],   // coffin: gold, rare; the rest a curse

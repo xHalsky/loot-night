@@ -11,6 +11,6 @@ export const ENEMY_SLOTS: EnemySlot[] = [
 ];
 export const MID_SLOT = 5;
 export const FLOOR_Y = 201;            // where drops lie
-export const LOOTER_REACH = 8;         // the looter picks up what lies this close in front of the front rank
+export const LOOTER_REACH = 8;         // the front hero picks up what lies this close in front of his feet (#95)
 /** Over a unit's head (numbers float up from here). */
 export const HEAD_Y = 150;

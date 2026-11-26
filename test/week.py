@@ -1,7 +1,7 @@
 # The week (#56) in the browser, with the real mouse and keys: a new game is Monday (How to hide with three tiles, no
 # YOU card, no buttons on her panel, H and G do nothing, the phone has the Shop with Q4's keys and Flowers, her chat
 # without Text her); 01:00 ends Monday as a Sleep ("01:00: bedtime"); the morning says "Tue 07:40" and "Start Tuesday
-# night"; Tuesday opens How to hide with the headset new, the Tired and Zone bars on the YOU card, Garrote in the
+# night"; Tuesday opens How to hide with the headset new, the Tired and Zone bars on the YOU card, Garrote still in the
 # party; the plug on Tuesday: the replay morning ("UNPLUGGED", "Tuesday, again") and Tuesday once more; the title
 # says "Continue · Tuesday". Screenshots test/shots/week_*.png and test/shots/week_sheet.png.
 import asyncio, os
@@ -83,7 +83,7 @@ async def main():
         await pg.mouse.click(*spot); await pg.wait_for_timeout(700)
 
         # --- Tuesday: the voice note (Got it with the mouse), then How to hide with the headset new ---
-        check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.lines[0].startsWith(\"garrote\")"), 'Tuesday: Danny\'s note says Garrote joins')
+        check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.lines[0].startsWith(\"no curfew\")"), 'Tuesday: Danny\'s note: no curfew')
         await pg.wait_for_timeout(400)
         check(await tap('voiceOk'), 'Got it on the phone')
         check(await ev("g.day") == 1 and await ev("g.howto && !g.voice"), 'Tuesday: How to hide, the headset new')
@@ -93,7 +93,7 @@ async def main():
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(900)
         hits = await pg.evaluate("()=>(window.__lootnight.deskHits||[]).map(h=>h.tip||h.act)")
         check('tired' in hits and 'zone' in hits and 'drink' not in hits, 'Tuesday: Tired and Zone on the YOU card, no Drink yet')
-        check(await ev("g.heroes.some(h=>h.id==='rogue')"), 'Tuesday: Garrote joined')
+        check(await ev("g.heroes.some(h=>h.id==='rogue')"), 'Tuesday: Garrote in the party')
         await pg.keyboard.press('h'); await pg.wait_for_timeout(300); check(await ev("n.headset"), 'Tuesday: H puts the headset on')
         await shot('8_tuesday_desk')
         # she pulls the plug: Tuesday, again

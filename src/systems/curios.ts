@@ -27,13 +27,8 @@ export function planCurios() {
   n.curioPlan = idx.slice(0, count);
 }
 
-/** During a walk: is it time to stop at a curio? Halfway through the walk before a planned battle. */
-export function curioDue(): boolean {
-  const n = N();
-  return n.phase === 'walk' && n.curioPlan.includes(n.battleIdx) && n.phaseT >= T.WALK_SEC * 0.5 && !n.floorLoot.length && !n.looterDx;
-}
-
-export function startCurio() {
+/** The walk before a planned battle: a curio comes into view (#99). It stands in the corridor, off the right edge. */
+export function approachCurio() {
   const n = N();
   n.curioPlan = n.curioPlan.filter(i => i !== n.battleIdx);
   const recent = new Set(S.g.curiosSeen.slice(-3));   // avoid repeats within the last few
@@ -41,6 +36,22 @@ export function startCurio() {
   const def = feat && !n.featureMet ? CURIO_BY_ID[feat] : pick(CURIOS.filter(c => !recent.has(c.id) && !FEATURE_ONLY.has(c.id)));
   if (feat) n.featureMet = true;
   S.g.curiosSeen = [...S.g.curiosSeen, def.id].slice(-6);
+  n.curioAt = { id: def.id, x: T.CURIO_ENTER_X, passed: false };
+}
+/** The walk moved the corridor dx grid px: the curio comes up to the party (who stop at it once the loot is picked
+ *  up), or, passed, goes by behind them until it is off the left edge. */
+export function walkCurio(dx: number) {
+  const n = N(), c = n.curioAt;
+  if (!c) return;
+  c.x -= dx;
+  if (c.passed) { if (c.x < T.CURIO_GONE_X) n.curioAt = null; return; }
+  if (c.x <= T.CURIO_STOP_X && !n.floorLoot.length) startCurio();
+}
+
+/** The party stops at the curio: your choice. */
+export function startCurio() {
+  const n = N(), def = CURIO_BY_ID[n.curioAt?.id ?? ''];
+  if (!def) return;
   n.curio = { id: def.id, stage: 'ask', t: T.CURIO_WAIT_SEC, max: T.CURIO_WAIT_SEC };
   n.phase = 'curio';
   sfx.click();
@@ -125,16 +136,17 @@ function bless(id: BlessingId) {
 function trollFight() {
   const n = N();
   n.noise = Math.min(100, n.noise + T.CURIO_ROAR_NOISE);
-  n.curio = null; n.curioFight = true;
+  n.curio = null; n.curioFight = true; n.curioAt = null;   // he gets up: the troll is in the fight now
   spawnCurioFight(TROLL);
   n.phase = 'battle'; n.phaseT = 0;
   sfx.windup();
 }
 
-/** Walk on (the walk resumes halfway, as it was). */
+/** Walk on: the curio stays where it stands and the party walks past it (#99). */
 export function endCurio() {
   const n = N();
   n.curio = null;
+  if (n.curioAt) n.curioAt.passed = true;
   if (n.phase === 'curio') n.phase = 'walk';
 }
 

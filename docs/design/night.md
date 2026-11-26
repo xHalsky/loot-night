@@ -13,8 +13,8 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
 
 | Night | Comes in | Visits | She goes to bed | The night ends |
 |---|---|---|---|---|
-| Monday | Her routine; peeks and snack runs (a plate: no cans to find yet); Q4; picking up the phone: the Shop (Silent keys, Flowers), her chat | x1 | stays up | 01:00, as a Sleep (no Tiredness yet) |
-| Tuesday | Chat visits; the headset (Zone); her leaning into your face after a pass; Garrote; Tiredness, and the night runs past 01:00; the Ergo chair; **lean in**, her yoga (the night opens with it) and the hall mirror in the Shop ([her.md](her.md)) | x1.2 | stays up | dawn |
+| Monday | Her routine; the party of four (Garrote from night 1, [dungeon.md](dungeon.md)); peeks and snack runs (a plate: no cans to find yet); Q4; picking up the phone: the Shop (Silent keys, Flowers), her chat | x1 | stays up | 01:00, as a Sleep (no Tiredness yet) |
+| Tuesday | Chat visits; the headset (Zone); her leaning into your face after a pass; Tiredness, and the night runs past 01:00; the Ergo chair; **lean in**, her yoga (the night opens with it) and the hall mirror in the Shop ([her.md](her.md)) | x1.2 | stays up | dawn |
 | Wednesday | The phone rings: the courier, Mom, the boss; Messages: Text her and Raid night? | x1.2 | stays up | dawn |
 | Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); the smart home: the battery, Charge, the Home app and its devices ([desk.md](desk.md)) | x1.2 | stays up | dawn |
 | Friday | She goes to bed: her sheet mask before it, the waking meter, her texts (one in three with a selfie), the good-night walk-by; the Witching Hour after 01:00; "come to bed" after 01:00 with Coming, babe ([her.md](her.md)) | x1.2 | 00:00 | dawn |
@@ -144,10 +144,16 @@ happening.
   hide your cans and a cuddle), 4 Headset from Tuesday (the Zone, but you are deaf to her). Tonight's new ones are
   framed gold with "new tonight": the headset on Tuesday, Answer her on Thursday. The pause menu reopens it.
 - **Tonight, a sticky note** (#42; drawn on the desk since 0.66, `tonightNote` in `render/page/desk.js`): stuck on
-  the monitor's bottom edge over the middle of the taskbar (#49), always visible in the game and in Excel. Three handwritten lines, the night's goals, with a live mark each and no star ladder: "floor N"
+  the monitor's bottom edge over the middle of the taskbar (#49), right of the lit skill keys, visible in the game and
+  in Excel. "Tonight" and three lines, the night's goals, with a live mark each and no star ladder: "floor N"
   (! until a run reaches it, then ✓ for good), "don't get caught" (✓, ✗ once caught), "keep her happy" (✓ green or
-  yellow, ! red); and when Sleep opens (⏻ 23:00+). Hover: each is a star that pays in the morning. Before this the stars first appeared on the results
-  screen, so a new player knew the rules but not what a good night was.
+  yellow, ! red). Written big enough to read (#98, 0.87): Tiny5 at 2x on a 134 × 66 note (it was Tiny5 at 1x, sheared
+  into a slant, and unreadable at 1280 × 720). Hover: each is a star that pays in the morning, and a click takes the
+  note off. **A click peels it off for good** (`noteOff`, saved; the feed says the stars still count): it is a
+  tutorial note and the desk needs the room. Sleep's time is on the taskbar's Sleep button, so the note no longer
+  repeats it. Before the note the stars first appeared on the results screen, so a new player knew the rules but not
+  what a good night was. Rejected: a smaller 2x note with shorter lines ("not caught": the star's own words read
+  better), the handwriting's slant at 2x (Tiny5's 2x2 pixels break up), bringing it back each night.
 - **Coach marks for the core loop** (`COACH` in `src/data/tips.ts`, `src/systems/coach.ts`, #42): the first
   footsteps, her first time in the doorway, the first phone, the first loot and the first boss wind-up get a
   callout next to the thing itself, and the game crawls at `COACH_SLOW` (a quarter speed). The renderer draws them
@@ -204,8 +210,8 @@ happening.
   week of RPG growth); one `SATURDAY_VISIT_MULT` (the handoff's: the week doc wants a ramp).
 - **Taught the night it unlocks** (0.78, #56; the week doc 2b, grid doc 7m). Danny's voice note is on the phone, in
   The Boys' chat, because everything on the phone happens inside it (decided 2026-11-24); it comes before How to hide
-  so the night opens with a friend's voice and the card only shows when there is a new tile. Tuesday's note names
-  what is built (Garrote, the headset, chat visits); the page's lean-in lines wait for lean in. The first chance is a
+  so the night opens with a friend's voice and the card only shows when there is a new tile. Tuesday's note opens
+  with the night that runs to dawn ("no curfew tonight", since Garrote is in from night 1, #96), then lean in. The first chance is a
   scripted first visit of the night's new type, and safe as a let-go catch, so the first chat visit teaches by
   happening and a slow Tab can't cost the night. Rejected: a transcript bubble by the desk phone (the handoff's:
   outside the phone); a note in week two (nothing new to say); making the whole first visit a crawl (the coach

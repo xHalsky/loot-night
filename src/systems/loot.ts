@@ -200,20 +200,14 @@ export function sweepFloorLoot() { const n = N(); n.floorLoot.forEach(l => markR
 /** Picked up during a run: unbanked until the town portal (#52, 1.4). */
 function markRun(e: BagEntry) { if (!N().run) return; e.run = true; if (e.kind === 'item') e.item.run = true; }
 
-/** Who picks up the loot (#52 1.3): Garrote once he is in the party and standing, else the hero in front. */
-export function looterIndex(): number {
-  const g = S.g, r = g.heroes.findIndex(h => h.id === 'rogue' && !h.downed);
-  return r >= 0 ? r : Math.max(0, g.heroes.findIndex(h => !h.downed));
-}
-/** Walking moves floor loot toward the party; the looter runs ahead to the nearest drop, grabs it and runs back into
- * his rank. What reaches his rank on its own is picked up there. */
+/** Who picks up the loot (#95): the first standing hero in the marching order, by walking over it. */
+export function looterIndex(): number { return Math.max(0, S.g.heroes.findIndex(h => !h.downed)); }
+/** Walking moves floor loot toward the party with the floor; whoever walks in front picks up what reaches his feet
+ *  (#95: nobody runs ahead for it). */
 export function moveFloorLoot(dx: number, dt: number) {
   const n = N(), home = RANK_X[looterIndex()];
   for (const l of n.floorLoot) { l.x -= dx; l.t += dt; }   // grid px (core/arena.ts)
-  const at = home + (n.looterDx ?? 0), next = n.floorLoot.reduce<typeof n.floorLoot[number] | null>((a, l) => (!a || l.x < a.x ? l : a), null);
-  const goal = next ? Math.max(0, next.x - home) : 0, step = T.LOOTER_RUN_PX * dt, d = goal - (n.looterDx ?? 0);
-  n.looterDx = Math.abs(d) <= step ? goal : (n.looterDx ?? 0) + Math.sign(d) * step;
-  const got = n.floorLoot.filter(l => l.x <= Math.max(home, at) + LOOTER_REACH);
+  const got = n.floorLoot.filter(l => l.x <= home + LOOTER_REACH);
   if (!got.length) return;
   n.floorLoot = n.floorLoot.filter(l => !got.includes(l));
   const waiting = n.lootFly.filter(f => f.t < f.delay).length;

@@ -319,6 +319,7 @@ function drawDungeon(F, t, o = {}) {
     lights.push({ x: sx - 25, y: CART_Y - 36, r: 90, i: 0.9, c: WARM });
   }
   T0 = tick('props', T0);
+  if (o.behind) o.behind(F, t, lights);   // the game's curio (#99): on the cart row, behind the party as they walk past
   // party
   PARTY.forEach((m, n) => {
     const f = walking ? Math.floor(t * 8 + m.ph * 1.3) % 4 : 0;
@@ -327,7 +328,7 @@ function drawDungeon(F, t, o = {}) {
     TAG = n + 1;
     // out of battle Garrote carries his daggers reverse-gripped; walking, he runs his own gait (phase quantized to 8 frames)
     const wp = walking ? Math.floor((((t / ROGUE_WALK.T) + m.ph * 0.2) % 1) * ROGUE_WALK.frames) / ROGUE_WALK.frames : null;
-    PARTY_DRAW[m.id](m.x + (m.lunge || 0), CHAR_Y, s, b, t, !o.battle, wp);
+    PARTY_DRAW[m.id](m.x + (m.lunge || 0), CHAR_Y, s, b, t, !o.battle, wp, walking ? null : m.swing);
     TAG = 0; MAT = M_STONE;
   });
   lights.push({ x: CX, y: 292, r: 190, i: 0.42, c: COLD, sy: 1.6 });

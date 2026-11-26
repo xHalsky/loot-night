@@ -2,12 +2,12 @@
 
 ## Now
 
-**Party.** Three heroes on Monday, four from Tuesday (the week, [night.md](night.md)), persistent across nights (data: `src/data/heroes.ts`,
-`HERO_NAME`): Knightenstein (Knight, tank, in front, carries the torch: you), Magoo (Mage) and Healero (Healer), the
-characters of your friends Danny and Mike, and from Tuesday (`NIGHT_SCHEDULE` 'rogue') **Garrote** (Rogue, #52 1.7), who
-joins second in line at the party's lowest level with a feed line. From then on he is the looter (the Knight's role
-line drops "picks up loot"). Party and guild chat use the character names, as an MMO would; the friends' phone calls
-use their real names. Garrote's colour is ember (`#c16229`); Z, X and C light up ember on the desk keyboard.
+**Party.** Four heroes from night 1 (#96), persistent across nights (data: `src/data/heroes.ts`,
+`HERO_NAME`): Knightenstein (Knight, tank, in front, carries the torch: you), **Garrote** (Rogue, #52 1.7), Magoo
+(Mage) and Healero (Healer), the characters of your friends Danny and Mike. A save from before Garrote was in from
+night 1 gets him at the next night, second in line, at the party's lowest level, with a feed line. Whoever walks in
+front picks up the loot by walking over it (#95; see Loot drops in [loot.md](loot.md)), so no role line says it.
+Party and guild chat use the character names, as an MMO would; the friends' phone calls use their real names. Garrote's colour is ember (`#c16229`); Z, X and C light up ember on the desk keyboard.
 Stats: HP, attack, armor, speed, crit, luck; level and XP; six gear slots (weapon, helm, armor, boots,
 ring, trinket). Old saves are renamed on load.
 
@@ -92,8 +92,8 @@ crit 12, luck 5. Pickpocket is not in the kit: Heist covers its ground (decision
 
 **Marching order** (#52, 1.6; grid doc §5d; rules `src/systems/ranks.ts`). The party walks and fights in one line,
 rank 1 at the front (right in the picture, left in the skill bar); a hero's rank is his place in the party. Defaults:
-Monday Knight, Healer, Mage; from Tuesday Knight, Garrote, Mage, Healer. An old save gets the default once
-(`orderSet`); after that the order is the player's and carries over from night to night.
+Knight, Garrote, Mage, Healer. An old save gets the default once (`orderSet`; and again when Garrote joins it);
+after that the order is the player's and carries over from night to night.
 - **Home ranks** (`HOME_RANKS`, data per hero so tree nodes can change them): Knight 1 to 2, Garrote 1 to 3, Mage 3 to
   4, Healer 2 to 4. Outside them a hero deals and heals `OUT_OF_RANK_MULT` (x0.7); a crimson "x0.7" tab sits on his
   portrait, and "out of position" floats over him when he lands there.
@@ -120,15 +120,20 @@ Monday Knight, Healer, Mage; from Tuesday Knight, Garrote, Mage, Healer. An old 
 - **Hovering a hero** opens his card over his head: "Healero · rank 1", a crimson line for what is wrong ("Out of
   position: heals at 70%. His ranks are 2 to 4."), a moss line for what his aura gives and to whom, and a note
   ("Drag him back. Away, the line stays broken."). The side panel's hero tooltip says the same.
-- `npx tsx test/ranks.ts` checks the defaults, Garrote joining, home ranks, the auras, swaps, Hook and Shove,
+- `npx tsx test/ranks.ts` checks the default order, an old save getting Garrote, home ranks, the auras, swaps, Hook and Shove,
   EXECUTE by rank, Smoke Bomb, Heist, Backstab and when the breakers come; `python3 test/ranks.py` shoots it.
 
 **Curios in the corridor** (#30, the RPG's third verb; content `src/data/curios.ts`, rules
-`src/systems/curios.ts`, numbers `CURIO_*`). On a battle floor, `CURIO_PER_FLOOR` (1 or 2) of the walks stop
-halfway at a curio (none on vault or shrine floors, no repeats among the last three). A parchment card names
-it and offers two choices, each with its real-life cost on the button, so the question is "can I afford
-this right now, given where she is?". The party waits `CURIO_WAIT_SEC` (7 real seconds), then walks past;
-the ✕ or "walk past" leaves at once. Curio time is your time: the night clock runs, the battle does not.
+`src/systems/curios.ts`, numbers `CURIO_*`). On a battle floor, `CURIO_PER_FLOOR` (1 or 2) of the walks have a curio
+(none on vault or shrine floors, no repeats among the last three). It stands in the corridor (#99): it comes into
+view off the right edge as the walk starts (`CURIO_ENTER_X`), the party walks up to it at `CURIO_PACE` and stops with
+it at `CURIO_STOP_X` once the loot ahead is picked up. A parchment card names it and offers two choices, each with
+its real-life cost on the button, so the question is "can I afford this right now, given where she is?". The party
+waits `CURIO_WAIT_SEC` (7 real seconds), then walks past; the ✕ or "walk past" leaves at once. Curio time is your
+time: the night clock runs, the battle does not. After the choice the curio stays where it stands and the party
+walks on past it at the hurry pace (`WALK_HURRY_PACE`); it goes by behind them (drawn on its row behind the party,
+its glow dimmed) and the next fight starts once it is off the left edge (`CURIO_GONE_X`). The troll gets up into the
+fight instead. `python3 test/walk.py` checks and shoots it.
 
 | Curio | Choice A | Choice B |
 |---|---|---|
@@ -275,7 +280,11 @@ art. Over the scene: HP bars, mark tags, the cast's name with its bar, floating 
 light with the beam, the names flying up; the corner (where, Flow in yellow), the town portal plate, the buffs, the
 skill bar (portrait, HP tube, two skill wells and the ultimate's gilded well; cooldown sweeps, the answer pulse, the
 combo glow, "L3" on a skill still locked). Every action shows: slashes, claws, bolts, fire, frost, heal sparkles,
-Ward's and Taunt's rings. It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The floor map is
+Ward's and Taunt's rings. **Melee hits swing the weapon** (#97, `SWING_SEC`): the Knight's Slash and Bash take
+the sword off his shoulder, up behind the helm, over the top and down at the enemy, drawn over his shield; Garrote's
+Stab and Backstab cock the dagger low and cut up and forward. Both leave a bright crescent smear along the edge for
+the cut, bigger than Garrote's dagger so it reads from rank 2 over the Knight's back. Casts and the ranged heroes
+keep the lunge (`python3 test/swing.py`). It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The floor map is
 drawn by the same renderer; the town is still the old drawing (V2 continues).
 
 **Away from the game** (`src/systems/autopilot.ts`, #52 1.2). When you *chose* to leave the game (Excel up,
@@ -321,8 +330,12 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   so you can see it coming; rejected: a random chance per action (unreadable). Night 1 now starts Knight, Healer,
   Mage: the Mage's home ranks are 3 to 4. Healero's blessing works in the whole dungeon, walks included (between
   fights is where regeneration matters, and it eases the Blood pact for his neighbours).
-- **Garrote** (0.56, #52 1.7) joins at the party's lowest level: at level 1 he would be dead weight on night 2's
-  deeper floors. Two skills and Heist (Pickpocket was dropped with the other second unlocks, decisions 2026-11-20).
+- **Garrote from night 1** (0.87, #96; Paweł after the first playtest: three heroes on Monday read as one missing).
+  He joined on Tuesday (0.56 to 0.86, #56) so each night added one thing; Tuesday still has chat visits, the headset,
+  Tiredness, the night past 01:00 and lean in, so it lost little. Monday with four (12 nights each, good bot): depth
+  5.7 to 6.0, wipes 0.25 to 0; the idle bot is still caught (2.4 a night). Rejected: keeping him for Tuesday with a
+  bigger entrance. A save that lacks him gets him at the party's lowest level: at level 1 he would be dead weight on
+  the deeper floors. Two skills and Heist (Pickpocket was dropped with the other second unlocks, decisions 2026-11-20).
   Stand-ins until Paweł's art: the Ghoul on the zombie rig, the Brute is the old Ogre sprite at fodder size.
 
 - **The RPG plays it straight** (0.43, #44): plain fantasy names (WoW and D&D tropes) for the party, enemies,
@@ -365,7 +378,16 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 - **Tooltips over a manual** (0.19): the RPG is half of a split-attention game, so skills are taught at the
   point of use (hover, and the pulsing answers during a wind-up) rather than in a help screen.
 - **No auto-attack button.** It was always on, so the button was noise. Keys start at 1 / Q / A.
-- **Knight in front with the torch**, so the light leads the party and the front hero picks up loot.
+- **Knight in front with the torch**, so the light leads the party, and the front hero picks up the loot.
+- **The front hero walks over the loot** (0.87, #95; Paweł after the first playtest). From 0.53 a looter (Garrote, or
+  the Knight on night 1) ran ahead of his rank to each drop and back; it read as the Knight breaking ranks after every
+  fight. Now the drops scroll in with the floor and the first standing hero picks up what reaches his feet; after the
+  floor's last fight the party still walks forward, out of the floor, over the drops. Rejected: a pickup pause, and
+  the drops flying to the bag on their own (nobody walks over anything).
+- **Curios stand in the corridor** (0.87, #99; Paweł after the first playtest): they used to pop up halfway through
+  the walk and vanish after the choice. Walking up to one and past it costs about 4 s a curio; the hurry pace on the
+  way past keeps it short. Rejected: starting the next fight while it is still behind the party (it would stand
+  frozen at the left edge for the whole fight).
 - **Floor choice on a map** instead of a list in the right panel: the choice reads as a route.
 - **The whole descent on parchment** (0.44, #48; replaced by the route choice in 0.55): the old node map showed only the next row, upward, so it
   never felt like going down and forgot where you had been. Rows of five ending in the boss match the
