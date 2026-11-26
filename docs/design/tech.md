@@ -42,9 +42,19 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
 **Input.** One action at a time (`n.action`); `n.switching` blocks input during alt-tab via a capture
 listener; microsleeps swallow the first input.
 
-**Save.** `localStorage` key `lootnight.save.v2` (v1 saves start fresh since 0.51): progress only (heroes, bag, gold, scraps, zł, buildings,
-sleep debt, cans, stars, record, pending listings, auto-salvage). Saved at night end, morning and on
-building. A night in progress is not saved.
+**Save.** `localStorage` key `lootnight.save.v3` (since 0.80; the game removes the v1 and v2 keys when it loads):
+progress only (heroes, bag, gold, scraps, zł, buildings, sleep debt, cans, stars, record, pending listings,
+auto-salvage). Saved at night end, morning and on building. A night in progress is not saved. **During the friends'
+playtest the key and the URL stay as they are** (#100): a new key, a save-format change that needs a new key, or a
+new address resets every friend's progress, so none of them happens without telling Paweł first. `localStorage`
+belongs to the origin, `https://xhalsky.github.io`, which every Pages site of the account shares: the key's
+`lootnight.` prefix keeps it apart.
+
+**Hosting** (#100). The playtest build is on GitHub Pages: https://xhalsky.github.io/loot-night/.
+`.github/workflows/pages.yml` runs on a push to the `playtest` branch (and by hand, workflow_dispatch): checkout,
+Node 22, `npm ci`, `npx tsc`, `npm run build`, then it uploads `dist/` and deploys it. Main never deploys. **To
+release a build**, fast-forward `playtest` to main and push it (`git push origin main:playtest`, which refuses
+anything that is not a fast-forward). The claude.ai artifact stays the in-session preview.
 
 **Debug overlay** (F1): live state, time scale, Real life on/off (#52: nobody home, no Tiredness, Noise, Mood or night
 clock), live pacing numbers (`systems/pacing.ts`), spawn buttons for visits, interrupts and drops, meter setters,
@@ -70,7 +80,11 @@ and "Redesign frame": the mockup's frame (Dungeon, Battle, Map, Town, Q4) drawn 
 
 - **No engine.** A browser gift that opens from one file; DOM is fine for menus, canvas for scenes.
 - **Rules never draw, UI never owns rules**, so the headless bot can play the real game code.
-- **One self-contained HTML file** so the build can be shared as an artifact link.
+- **One self-contained HTML file** so the build can be shared as an artifact link, and Pages needs no Vite base path.
+- **Pages deploys from `playtest`, not main** (#100): main holds a round in the middle of its work, and friends must
+  never get a half-done build. Releasing is a fast-forward, so the deployed build is always a commit that was on main.
+  Rejected: deploying every push to main; a separate public repo that only holds `dist/` (the repo goes public
+  instead, Paweł 2026-11-26; its full history was scanned for secrets before that: clean).
 - **The redesign's renderer is the mockup's own code** (V1, 0.50): the page was approved state by state, so its
   drawing code is the spec. It comes in nearly verbatim and is wired to game state through the facade, area by area
   (V2 onward). Rejected: redrawing every screen in TypeScript (weeks of work to reach what the page already draws);

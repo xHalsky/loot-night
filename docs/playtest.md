@@ -2,8 +2,18 @@
 
 One person who has not seen the game, two nights (Monday and Tuesday), about 20 minutes. You watch; you do not explain.
 
+## The link (close friends)
+
+**https://xhalsky.github.io/loot-night/** (GitHub Pages, from the `playtest` branch; how a build gets there:
+[tech.md](design/tech.md), Hosting). Send it with:
+
+> Send the version number from the title screen with every bug report.
+
+Saves live in the browser, tied to this address: the same browser on the same computer keeps the week going. The
+address and the save key stay as they are for the whole playtest (changing either resets everyone's progress).
+
 ## Before
-- A laptop with sound, headphones off (they need to hear her). Open the published build (the title says PLAYTEST
+- A laptop with sound, headphones off (they need to hear her). Open the link above (the title says PLAYTEST
   BUILD and the version), Start Monday night. Saves from older builds are gone, so everyone starts on Monday.
 - Say only: "It's a game I'm making. Play it like you would at home. I can't help you."
 - F1 is the debug panel: don't open it in front of them.

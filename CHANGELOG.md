@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.87.2 (2026-11-26)
+
+- **The playtest build on GitHub Pages** (#100): https://xhalsky.github.io/loot-night/ for close friends. A push to
+  the `playtest` branch builds and deploys it (`.github/workflows/pages.yml`: Node 22, `npm ci`, `npx tsc`,
+  `npm run build`, deploy `dist/`); main never deploys. To release, fast-forward `playtest` to main.
+- Before the repo goes public, its full history (116 commits) was scanned for secrets with gitleaks 8.28 and a grep
+  of every diff: nothing (gitleaks' 3 hits are the save key names).
+- `docs/playtest.md`: the link and "send the version number from the title screen with every bug report".
+  `tech.md` had the save key as v2: it is `lootnight.save.v3` (since 0.80), and it stays that way during the playtest.
+- No game changes.
+
 ## 0.87.1 (2026-11-26)
 
 - **Garrote attacks with both daggers** (#97, Paweł): on Stab and Backstab the near hand cuts up and forward, and a

@@ -1,0 +1,45 @@
+# The playtest build on GitHub Pages (#100): https://xhalsky.github.io/loot-night/
+# Deploys from the `playtest` branch only, never from main, so friends never get a half-done round.
+# To release: fast-forward playtest to main and push (docs/playtest.md, "Releasing a build").
+# The build is one self-contained dist/index.html, so Vite needs no base path.
+name: Pages
+
+on:
+  push:
+    branches: [playtest]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
