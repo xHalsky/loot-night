@@ -60,7 +60,8 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   paused; the night's clock waits all through it. The beats: Windows 98 and the Age of Judgment icon (the broken halo)
   double-clicked (0 to 3.2 s); the engine's start-up lines (to 6.2); **Halsky Labs**, the publisher, its mark Paweł's
   logo as a two-tone pixel mark (`HALSKY_MARK`, `tools/halsky_mark.py` from `design/v2/assets/`; to 10.6);
-  **Procrastination Studios**, the developer, whose logo is late (to 15); the title, rain and lightning over the fallen
+  **Procrastination Studios**, the developer (to 15; both logos redrawn for #133: each holds once it is in and the
+  next screen fades in over it, dithered, `LAUNCH_XFADE` in `aoj.js`); the title, rain and lightning over the fallen
   angel, the halo forged, JUDGMENT struck (to 23); the login, "dutch" and nine stars typed, Log in (to 31); logging in
   and the world loading (to 38). Then the town fades in from black (dithered, 0.9 s, `LAUNCH_FADE_SEC`) and the feed
   gets "Welcome to Age of Judgment. Have fun, don't get caught." (empty before). **The whole launch on the first Monday
@@ -230,6 +231,14 @@ happening.
   (each coach mark, the crawl, clearing, the bump; screens: `test/coach_*.png`).
 
 ## Decisions
+
+- **The studio logos hold, and the next screen fades in over them** (0.100.0, #133; Paweł, 2026-11-27): a logo that
+  animates out spends its last second taking itself apart; one that holds lets you read it, and the dithered fade
+  carries you to the next. Halsky Labs was redrawn with an 80s Japanese studio-gear flair (a wide heavy face in banded
+  chrome, a red rule and a LABS badge like a rack unit's, a power-on line, a raster scan, a fly-in that locks with an
+  orchestra stab), Procrastination Studios made professional and sleek (a thin ring and hourglass, a spaced
+  SemiBold wordmark, a copper rule): its joke stays in the name, the tagline and one late letter, not in a wobbly
+  badge. Rejected: keeping Sora and Fredoka (too soft for either), a real brand's lettering or stripes (original only).
 
 - **The launch has its own clock, and holds the night** (#127, Paweł's v2 redesign, approved 2026-11-27): one T for the
   monitor, the chat and the sound, started when the chat comes up, stopped by pause, running in real seconds (not the

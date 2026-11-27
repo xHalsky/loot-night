@@ -8,8 +8,8 @@
    Halsky Labs' word, Procrastination Studios' word */
 @font-face { font-family: czd; src: url(./assets/fonts/cinzel-decorative-900.woff2) format('woff2'); }
 @font-face { font-family: cz; src: url(./assets/fonts/cinzel-900.woff2) format('woff2'); }
-@font-face { font-family: sora; src: url(./assets/fonts/sora-800.woff2) format('woff2'); }
-@font-face { font-family: fred; src: url(./assets/fonts/fredoka-700.woff2) format('woff2'); }
+@font-face { font-family: sync; src: url(./assets/fonts/syncopate-700.woff2) format('woff2'); }   /* Halsky Labs (#133; Apache 2.0) */
+@font-face { font-family: outf; src: url(./assets/fonts/outfit-600.woff2) format('woff2'); }   /* Procrastination Studios (#133; OFL) */
 *{ box-sizing: border-box; }
 html, body{ margin: 0; height: 100%; background: #050407; overflow: hidden; }
 body{ display: flex; align-items: center; justify-content: center; font-family: 'Pixelify Sans', monospace; color: #f2e9d8; user-select: none; -webkit-user-select: none; }

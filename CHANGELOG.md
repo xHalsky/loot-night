@@ -3,6 +3,26 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.100.0 (2026-11-27)
+
+- **The two studio logos redrawn; they hold, and the next screen fades in over them** (#133, Paweł; for his review).
+  - **Halsky Labs**, with an 80s Japanese studio-gear flair (original): Paweł's mark beside HALSKY in Syncopate Bold,
+    wide and heavy, in banded chrome (hard steps, no dither), a red rule ending in a crimson LABS badge like a rack
+    unit's model badge, "presents". In: a red power-on line; the mark rasters in behind a bright scanline; HALSKY
+    flies in on speed lines and locks with a flash, a lens streak and a glint; the badge flickers on like a panel LED.
+  - **Procrastination Studios**, professional and sleek, the name and "est. eventually" kept: a thin ring with an
+    hourglass (copper sand), PROCRASTINATION in Outfit SemiBold, spaced, a copper rule, STUDIOS. In: the ring draws
+    itself, the hourglass appears and runs, the letters rise one after another and the last N arrives a beat late,
+    the tagline types itself, the hourglass turns over once.
+  - **No animation out:** each holds, and the next screen fades in over it (a dithered crossfade, 0.5 s,
+    `LAUNCH_XFADE`). Sora and Fredoka are gone from the build; Syncopate (Apache 2.0) and Outfit (OFL) are in.
+  - **Their sound, redone:** Halsky Labs is an 80s sting (a filter sweep for the line, a data chirp for the scan, a
+    whoosh into the lock, a sampler orchestra stab with a gated snare and an FM bell chord, LED blips, an FM chime);
+    Procrastination Studios stays light (a glassy rise, a glass chime and sand, an airy swell into a plucked chord, a
+    pluck for the late N, ticks for the tagline, a soft whoosh and knock for the turn). 56 cues; the beats, the music
+    and the chat are where they were. Review: `design/v2/review/logos-133.png`, the launch's audio in
+    `design/v2/audio/`.
+
 ## 0.99.3 (2026-11-27)
 
 - **The launch's sound, approved as a placeholder, with two fixes** (#127, Paweł): the hard drive's chatter between

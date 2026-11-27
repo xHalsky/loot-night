@@ -2,7 +2,7 @@
 LAUNCH_MUSIC in src/render/page/aoj.js). Registered into make.py:
 
     python3 tools/sfx/make.py aoj_theme          # the theme alone
-    python3 tools/sfx/make.py hl_land aoj_strike  # any cue
+    python3 tools/sfx/make.py hl_hit aoj_strike   # any cue
 
 The real PC's sounds stay clean (mouse, crt, cdspin, kb_clack; the hard drive's chatter, hdd, is no longer on the
 cue sheet: Paweł, #127). Every other cue is the game's
@@ -268,142 +268,170 @@ def register(cue, write, level, kenney, out_dir):
         D.seed(5400)
         write('bootline', trim_tail(game(tick(1760, 0.05, 0.8), 1.2, 0.15)), 'desk')
 
-    # ------------------------------------------------ Halsky Labs
-    @cue('hl_point')
-    def _hl_point():
-        D.seed(5500)
-        x = bellish(2093, 2.0, [(1, 1, 0.9), (2.32, 0.5, 0.35), (4.25, 0.25, 0.15), (6.1, 0.1, 0.06)])
-        x = x * np.clip(tt(2.0) / 0.002, 0, 1)
-        write('hl_point', trim_tail(game(x * 0.6, 2.4, 0.35)), 'desk')
+    # ------------------------------------------------ Halsky Labs (#133: an 80s studio-gear sting)
+    def sweep_saw(f, d, fc0, fc1, bw=0.9, n=40):
+        """A saw through a resonant filter sweeping from fc0 to fc1 (additive: each harmonic weighted by the filter)."""
+        t = tt(d)
+        fc = fc0 * (fc1 / fc0) ** np.clip(t / d, 0, 1)
+        y = np.zeros(len(t))
+        for h in range(1, n + 1):
+            if h * f > 9000:
+                break
+            g = 1 / (1 + ((h * f / fc) ** 4)) + 1.6 * np.exp(-((np.log(h * f / fc)) / (0.18 * bw)) ** 2)
+            y += np.sin(2 * np.pi * h * f * t + h * 0.7) / h * g
+        return y
 
-    @cue('hl_trace')
-    def _hl_trace():
-        D.seed(5600)
-        d = 0.75
+    def fm(fc, ratio, d, i0, tau_i, tau_a, attack=0.002):
+        """A two-operator FM voice, the 80s bell and electric piano."""
+        t = tt(d)
+        idx = i0 * np.exp(-t / tau_i)
+        return np.sin(2 * np.pi * fc * t + idx * np.sin(2 * np.pi * fc * ratio * t)) * np.exp(-t / tau_a) * np.clip(t / attack, 0, 1)
+
+    def pluck(f, d, tau=0.35, bright=1.0):
         t = tt(d)
         y = np.zeros(len(t))
-        for f0, f1, ph in ((659, 988, 0.0), (988, 1319, 1.7)):
-            f = f0 * (f1 / f0) ** (t / d) * (1 + 0.006 * np.sin(2 * np.pi * 6 * t + ph))
-            saw = D.osc(f, d, 'saw')
-            y += D.bp(saw, 600, 5000) * 0.5
-            y += 0.25 * np.sin(2 * np.pi * np.cumsum(f * 3) / SR) * (0.5 + 0.5 * np.sin(2 * np.pi * 13 * t + ph))
-        env = np.clip(t / 0.2, 0, 1) * np.clip((d - t) / 0.12, 0, 1)
-        write('hl_trace', trim_tail(game(y * env * 0.5, 2.0, 0.35)), 'desk')
+        for h in range(1, 14):
+            y += np.sin(2 * np.pi * h * f * t) / h ** (1.2 / bright) * np.exp(-t / (tau / h ** 0.6))
+        return y * np.clip(t / 0.002, 0, 1)
 
-    @cue('hl_seal')
-    def _hl_seal():
-        D.seed(5700)
-        x = np.zeros(secs(0.5))
-        place(x, D.osc(np.interp(tt(0.14), [0, 0.14], [120, 58]), 0.14) * D.env_exp(0.14, 0.05, 0.002), 0, 1.0)
-        place(x, D.lp(D.click(0.01, 400, 3000, 0.002), 2500), 0, 0.5)
-        write('hl_seal', trim_tail(game(x, 1.4, 0.25)), 'desk')
-
-    @cue('hl_develop')
-    def _hl_develop():
-        D.seed(5800)
-        d = 0.82
-        t = tt(d)
-        x = np.zeros(len(t))
-        rate = 30 + 600 * (t / d) ** 2   # crackles per second, thickening
-        for i in range(len(t)):
-            if D.rng.random() < rate[i] / SR:
-                place(x, D.click(0.004, 1000, 7000, 0.0006) * D.rng.uniform(0.2, 0.7), i / SR)
-        swell = (np.sin(2 * np.pi * 55 * t) + 0.5 * np.sin(2 * np.pi * 82.4 * t) + 0.25 * D.lp(D.white(d), 200)) * (t / d) ** 2 * 0.6
-        write('hl_develop', trim_tail(game(x * 0.7 + swell, 1.6, 0.25)), 'desk')
-
-    @cue('hl_land')
-    def _hl_land():
-        D.seed(5900)
-        d = 3.0
-        t = tt(d)
-        boom = np.sin(2 * np.pi * np.cumsum(55 + 25 * np.exp(-t / 0.08)) / SR) * np.exp(-t / 0.9)
-        thump = D.lp(D.white(d), 180, 2) * np.exp(-t / 0.12) * 0.8
-        pad = (np.sin(2 * np.pi * 110 * t) + 0.7 * np.sin(2 * np.pi * 164.8 * t) + 0.4 * np.sin(2 * np.pi * 220 * t)) * np.exp(-t / 0.8) * np.clip(t / 0.03, 0, 1) * 0.22
-        x = boom + thump + pad
-        write('hl_land', trim_tail(game(x, 2.8, 0.35)), 'desk')
-
-    @cue('hl_slide')
-    def _hl_slide():
-        D.seed(6000)
-        d = 0.5
-        t = tt(d)
-        nz = D.white(d)
+    def swept_noise(d, f0, f1, env, q=0.6):
+        nz, t = D.white(d), tt(d)
         y = np.zeros(len(t))
         blk = secs(0.01)
-        for j in range(0, len(t), blk):
-            fc = 500 + 2200 * (j / len(t))
-            y[j:j + blk] = D.bp(nz[max(0, j - blk * 4):j + blk], fc * 0.6, fc * 1.6)[-len(nz[j:j + blk]):]
-        env = np.sin(np.pi * t / d) ** 2
-        write('hl_slide', trim_tail(game(y * env * 0.7, 1.2, 0.2)), 'desk')
+        for j0 in range(0, len(t), blk):
+            fc = f0 * (f1 / f0) ** (j0 / len(t))
+            seg = D.bp(nz[max(0, j0 - blk * 4):j0 + blk], fc * (1 - q / 2), fc * (1 + q))
+            y[j0:j0 + blk] = seg[-len(nz[j0:j0 + blk]):]
+        return y * env
 
-    @cue('hl_labs')
-    def _hl_labs():
-        for k, f in enumerate((1568, 1760, 1976, 2349)):
-            D.seed(6100 + k)
-            x = (dsine(f, 0.12, 0.03) + 0.3 * dsine(f * 2, 0.12, 0.015)) * np.clip(tt(0.12) / 0.002, 0, 1)
-            write(f'hl_labs_{k}', trim_tail(game(x * 0.6, 1.0, 0.2)), 'desk')
-
-    @cue('hl_out')
-    def _hl_out():
-        D.seed(6200)
-        d = 0.42
-        t = tt(1.0)
-        src = (np.sin(2 * np.pi * 110 * t) + 0.6 * np.sin(2 * np.pi * 165 * t) + 0.5 * D.bp(D.white(1.0), 300, 3000)) * np.exp(-t / 0.25)
-        rev = src[::-1][-secs(d):]
-        write('hl_out', trim_tail(game(rev * 0.7, 1.0, 0.15)), 'desk')
-
-    @cue('hl_blink')
-    def _hl_blink():
-        D.seed(6300)
-        write('hl_blink', trim_tail(game(dsine(3136, 0.06, 0.012) * 0.6, 1.0, 0.2)), 'desk')
-
-    # ------------------------------------------------ Procrastination Studios (light, never loud)
-    @cue('ps_wait')
-    def _ps_wait():
-        D.seed(6400)
-        x = np.zeros(secs(0.8))
-        for k in range(10):
-            place(x, tick(2600 + 80 * (k % 2), 0.03, 0.5), k * 0.072)
-        write('ps_wait', trim_tail(game(x, 0.8, 0.1)), 'desk')
-
-    @cue('ps_pop')
-    def _ps_pop():
-        D.seed(6500)
-        d = 0.4
+    @cue('hl_line')
+    def _hl_line():
+        D.seed(5510)
+        d = 0.9
         t = tt(d)
-        f = 300 + 600 * (1 - np.exp(-t / 0.025)) + 140 * np.sin(2 * np.pi * 14 * t) * np.exp(-t / 0.07)
-        x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.11) * np.clip(t / 0.003, 0, 1)
-        place(x, D.click(0.008, 800, 5000, 0.0015) * 0.6, 0)
-        write('ps_pop', trim_tail(game(x * 0.7, 0.9, 0.12)), 'desk')
+        y = sweep_saw(110, d, 220, 5200) * np.clip(t / 0.01, 0, 1) * np.exp(-np.clip(t - 0.42, 0, None) / 0.18) * 0.5
+        y += 0.6 * sweep_saw(220.5, d, 200, 4000) * np.clip(t / 0.01, 0, 1) * np.exp(-np.clip(t - 0.42, 0, None) / 0.18) * 0.3
+        place(y, dsine(2637, 0.4, 0.09) * 0.25, 0.42)   # it settles on a bright ping
+        write('hl_line', trim_tail(game(y * 0.6, 1.4, 0.18)), 'desk')
 
-    @cue('ps_move')
-    def _ps_move():
-        D.seed(6600)
-        d = 0.25
+    @cue('hl_scan')
+    def _hl_scan():
+        D.seed(5610)
+        d = 0.78
+        x = np.zeros(secs(d))
+        at = 0.0
+        while at < d - 0.03:   # data: square blips hopping between tones, like a tape loader, soft
+            f = float(D.rng.choice([1200, 1600, 2400, 3200]))
+            seg = D.osc(f, 0.018, 'square', 0.5) * 0.25 * np.clip(tt(0.018) / 0.001, 0, 1)
+            place(x, seg, at, D.rng.uniform(0.5, 1.0))
+            at += D.rng.uniform(0.016, 0.03)
+        x = D.bp(x, 700, 5000) * np.clip(tt(d) / 0.05, 0, 1) * np.clip((d - tt(d)) / 0.12, 0, 1)
+        write('hl_scan', trim_tail(game(x * 0.7, 0.8, 0.12)), 'desk')
+
+    @cue('hl_fly')
+    def _hl_fly():
+        D.seed(5710)
+        d = 0.44
         t = tt(d)
-        y = D.bp(D.white(d), 800, 3500) * np.sin(np.pi * t / d) ** 2
-        write('ps_move', trim_tail(game(y * 0.5, 0.8, 0.1)), 'desk')
+        env = (t / d) ** 1.6 * np.clip((d - t) / 0.02, 0, 1)
+        y = swept_noise(d, 400, 4200, env)
+        write('hl_fly', trim_tail(game(y * 0.8, 0.8, 0.12)), 'desk')
 
-    @cue('ps_letters')
-    def _ps_letters():
-        D.seed(6700)
-        x = np.zeros(secs(0.8))
-        for k in range(14):
-            place(x, woodtap(900 + 160 * D.rng.random() + 12 * k, 0.08, 0.8), k * 0.042)
-        write('ps_letters', trim_tail(game(x, 0.8, 0.12)), 'desk')
+    @cue('hl_hit')
+    def _hl_hit():
+        D.seed(5810)
+        d = 2.6
+        x = np.zeros(secs(d))
+        # the stab: a sampler's orchestra hit, a D minor chord of brass saws and strings, a sharp attack, short
+        st = tt(0.5)
+        env = np.clip(st / 0.004, 0, 1) * np.exp(-st / 0.14)
+        stab = np.zeros(len(st))
+        for f, a in ((73.4, 1.0), (146.8, 0.9), (220, 0.8), (293.7, 0.7), (349.2, 0.6), (440, 0.5), (587.3, 0.35)):
+            stab += sweep_saw(f, 0.5, 3000, 900, 1.2, 30) * a
+        place(x, stab * env * 0.3, 0.0)
+        # a gated reverb snare under it (the 80s)
+        sn = D.bp(D.white(0.3), 900, 7000) * np.exp(-tt(0.3) / 0.07) + 0.6 * dsine(190, 0.3, 0.05)
+        sn = D.reverb(sn, 0.6, 0.6)[:secs(0.3)] * np.clip((0.3 - tt(0.3)) / 0.02, 0, 1)
+        place(x, sn * 0.5, 0.0)
+        place(x, dsine(55, 0.6, 0.18) * 0.6, 0.0)
+        # then an FM bell chord ringing on
+        for f in (587.3, 698.5, 880.0):
+            place(x, fm(f, 3.5, 2.2, 2.2, 0.25, 0.9) * 0.16, 0.03)
+            place(x, fm(f / 2, 1.0, 2.2, 1.4, 0.4, 1.1) * 0.1, 0.03)
+        write('hl_hit', trim_tail(game(x, 1.6, 0.2)), 'desk')
+
+    @cue('hl_badge')
+    def _hl_badge():
+        D.seed(5910)
+        x = np.zeros(secs(0.45))
+        for at, l in ((0.0, 0.035), (0.1, 0.035), (0.2, 0.09)):
+            b = D.osc(1975, l, 'square', 0.5) * np.clip(tt(l) / 0.001, 0, 1) * np.clip((l - tt(l)) / 0.004, 0, 1)
+            place(x, D.lp(b, 6000) * 0.35, at)
+        write('hl_badge', trim_tail(game(x, 0.7, 0.12)), 'desk')
+
+    @cue('hl_presents')
+    def _hl_presents():
+        D.seed(6010)
+        x = np.zeros(secs(1.8))
+        place(x, fm(880, 2.0, 1.4, 1.2, 0.2, 0.6) * 0.3, 0.0)
+        place(x, fm(1174.7, 2.0, 1.4, 1.0, 0.2, 0.7) * 0.25, 0.16)
+        write('hl_presents', trim_tail(game(x, 1.4, 0.25)), 'desk')
+
+    @cue('hl_glint')
+    def _hl_glint():
+        D.seed(6110)
+        d = 0.9
+        x = np.zeros(secs(d))
+        for k in range(9):
+            f = 3000 + 3200 * k / 8 + D.rng.uniform(-150, 150)
+            place(x, dsine(f, 0.18, 0.05) * 0.18 * np.sin(np.pi * (k + 0.5) / 9), 0.05 + k * 0.065)
+        place(x, swept_noise(0.7, 3000, 9000, np.sin(np.pi * tt(0.7) / 0.7) ** 2) * 0.12, 0.0)
+        write('hl_glint', trim_tail(game(x, 1.0, 0.2)), 'desk')
+
+    # ------------------------------------------------ Procrastination Studios (#133: sleek, light and never loud)
+    @cue('ps_arc')
+    def _ps_arc():
+        D.seed(6410)
+        d = 0.7
+        t = tt(d)
+        f = 660 * (990 / 660) ** np.clip(t / 0.6, 0, 1)
+        ph = 2 * np.pi * np.cumsum(f) / SR
+        y = (np.sin(ph) + 0.25 * np.sin(2 * ph) + 0.1 * np.sin(3 * ph)) * np.sin(np.pi * np.clip(t / d, 0, 1)) ** 1.5
+        write('ps_arc', trim_tail(game(y * 0.35, 1.0, 0.2)), 'desk')
+
+    @cue('ps_glass')
+    def _ps_glass():
+        D.seed(6510)
+        x = np.zeros(secs(2.0))
+        place(x, bellish(880, 1.2, [(1, 1, 0.5), (2.76, 0.3, 0.15), (5.4, 0.12, 0.06)]) * 0.35, 0.0)
+        place(x, bellish(1174.7, 1.2, [(1, 1, 0.55), (2.76, 0.3, 0.15), (5.4, 0.12, 0.06)]) * 0.3, 0.14)
+        st = tt(1.6)
+        sand = D.hp(D.white(1.6), 4000) * 0.05 * np.clip(st / 0.2, 0, 1) * np.exp(-st / 0.8) * (0.6 + 0.4 * D.smooth_rand(1.6, 40, 0, 1))
+        place(x, sand, 0.2)
+        write('ps_glass', trim_tail(game(x, 1.2, 0.2)), 'desk')
+
+    @cue('ps_word')
+    def _ps_word():
+        D.seed(6610)
+        x = np.zeros(secs(1.6))
+        sw = 0.55
+        place(x, swept_noise(sw, 1500, 5000, (tt(sw) / sw) ** 2) * 0.12, 0.0)
+        for k, f in enumerate((293.7, 349.2, 440.0)):
+            place(x, pluck(f, 1.0, 0.4, 0.8) * 0.18, sw + k * 0.012)
+        write('ps_word', trim_tail(game(x, 1.0, 0.2)), 'desk')
 
     @cue('ps_late')
     def _ps_late():
-        D.seed(6800)
-        x = np.zeros(secs(0.6))
-        t = tt(0.18)
-        place(x, D.bp(D.white(0.18), 1500, 5000) * (t / 0.18) ** 2 * 0.5, 0.0)
-        sk = tt(0.12)
-        squeak = np.sin(2 * np.pi * np.cumsum(2600 - 900 * sk / 0.12) / SR) * 0.25 + D.bp(D.white(0.12), 1800, 4000) * 0.3
-        place(x, squeak * np.sin(np.pi * sk / 0.12), 0.16)
-        place(x, woodtap(700, 0.1, 1.0), 0.26)
-        place(x, woodtap(760, 0.08, 0.4), 0.33)
-        write('ps_late', trim_tail(game(x * 0.7, 0.8, 0.12)), 'desk')
+        D.seed(6810)
+        write('ps_late', trim_tail(game(pluck(659.3, 0.9, 0.35, 0.9) * 0.25, 1.0, 0.2)), 'desk')
+
+    @cue('ps_rule')
+    def _ps_rule():
+        D.seed(6910)
+        d = 0.42
+        t = tt(d)
+        y = swept_noise(d, 2500, 6000, np.sin(np.pi * t / d) ** 2) * 0.1 + np.sin(2 * np.pi * np.cumsum(1320 - 220 * t / d) / SR) * np.sin(np.pi * t / d) ** 2 * 0.06
+        write('ps_rule', trim_tail(game(y, 0.8, 0.15)), 'desk')
 
     @cue('ps_type')
     def _ps_type():
@@ -415,16 +443,12 @@ def register(cue, write, level, kenney, out_dir):
 
     @cue('ps_flip')
     def _ps_flip():
-        D.seed(7000)
-        d = 1.4
-        x = np.zeros(secs(d))
-        ct = tt(0.36)
-        rate = 40 + 30 * np.sin(np.pi * ct / 0.36)
-        creak = D.bp(D.osc(rate, 0.36, 'saw'), 400, 1600) * np.sin(np.pi * ct / 0.36) * 0.6
-        place(x, creak, 0)
-        st = tt(1.2)
-        sand = D.hp(D.white(1.2), 3000) * 0.12 * np.clip(st / 0.15, 0, 1) * np.exp(-st / 0.7) * (0.7 + 0.3 * D.smooth_rand(1.2, 40, 0, 1))
-        place(x, sand, 0.3)
+        D.seed(7010)
+        x = np.zeros(secs(1.6))
+        place(x, swept_noise(0.36, 600, 1800, np.sin(np.pi * tt(0.36) / 0.36) ** 2) * 0.3, 0.0)
+        place(x, woodtap(520, 0.12, 0.6), 0.38)
+        st = tt(1.1)
+        place(x, D.hp(D.white(1.1), 4000) * 0.05 * np.clip(st / 0.15, 0, 1) * np.exp(-st / 0.6), 0.42)
         write('ps_flip', trim_tail(game(x * 0.8, 0.9, 0.12)), 'desk')
 
     # ------------------------------------------------ the title: the heavy part

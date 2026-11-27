@@ -5,7 +5,7 @@
 // palette: a chiselled bevel lit from the upper left, a metal gradient on the face, outlines and a drop shadow.
 // Everything here writes palette indices to the UI layer (putI), so it is exact; glows go into the lit scene.
 // ===========================================================================
-const LG_FONTS = { czd: 'cinzel-decorative-latin-900-normal', cz: 'cinzel-latin-900-normal', sora: 'sora-latin-800-normal', fred: 'fredoka-latin-700-normal' };
+const LG_FONTS = { czd: 'cinzel-decorative-latin-900-normal', cz: 'cinzel-latin-900-normal', sync: 'syncopate-latin-700-normal', outf: 'outfit-latin-600-normal' };
 let LGC = null, LGX = null; const LGCACHE = new Map();
 function lgCtx() { if (!LGC) { LGC = document.createElement('canvas'); LGC.width = 1024; LGC.height = 360; LGX = LGC.getContext('2d', { willReadFrequently: true }); } return LGX; }
 const eIO = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
@@ -237,132 +237,138 @@ const HALSKY_MARK = [
   '...................rrrrr...................................................'];
 
 // ---------------------------------------------------------------------------
-// HALSKY LABS: Paweł's mark (HALSKY_MARK, a stippled face on a white sticker, void and moon only). A point of light;
-// the sticker's rim traces itself both ways round from the top; the face develops inside it, brightest first, and
-// lands with a shockwave; the mark slides left and HALSKY comes out from behind it, LABS pops up under it; the face's
-// grain lives while it holds. Then it reverses: the word slides back in, the face fades darkest first, the rim
-// retracts to the point, which blinks out. Timings as before (4.4 s, out from 3.72).
+// HALSKY LABS (#133, Paweł 2026-11-27: sleeker, an 80s Japanese studio-gear flair; original, no real brand's shapes).
+// Paweł's mark (HALSKY_MARK, a stippled face on a white sticker, void and moon only) with HALSKY in a wide, heavy
+// face (Syncopate Bold) in brushed chrome, a red rule ending in a LABS badge like a model badge on a rack unit,
+// "presents" under it. In: a red power-on line sweeps across; the mark rasters in top to bottom behind a bright
+// scanline; HALSKY flies in from the right on speed lines and locks with a flash and a lens streak; the badge lights
+// like a panel LED (two flickers); "presents"; a glint across the chrome. Then it holds (the face's grain alive) until
+// the next screen fades in over it: no animation out.
 // ---------------------------------------------------------------------------
-let HM = null;   // the mark's pixels, once: [x, y, kind, level, rim angle from the top]
+let HM = null;   // the mark's pixels, once: [x, y, kind (0 void, 1 face, 2 rim)]
 function halskyMarkPx() {
   if (HM) return HM;
-  const rows = HALSKY_MARK, mh = rows.length, mw = rows[0].length; let sx = 0, sy = 0, n = 0;
-  for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) if (rows[y][x] !== '.') { sx += x; sy += y; n++; }
-  const ox = sx / n, oy = sy / n, px = [];
-  for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) {
-    const ch = rows[y][x]; if (ch === '.') continue;
-    px.push([x, y, ch === 'r' ? 2 : ch === '0' ? 0 : 1, ch === 'r' || ch === '0' ? 0 : +ch, Math.abs(Math.atan2(x - ox, -(y - oy))) / Math.PI]);
-  }
-  HM = { px, mw, mh, ox, oy }; return HM;
+  const rows = HALSKY_MARK, mh = rows.length, mw = rows[0].length, px = [];
+  for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) { const ch = rows[y][x]; if (ch === '.') continue; px.push([x, y, ch === 'r' ? 2 : ch === '0' ? 0 : 1, ch === 'r' || ch === '0' ? 0 : +ch]); }
+  HM = { px, mw, mh }; return HM;
 }
+const HL_T = { line: 0.2, lineLen: 0.42, scan: 0.45, scanLen: 0.75, fly: 1.0, flyLen: 0.42, badge: 1.6, presents: 2.15, glint: 2.7, glintLen: 0.7 };
+const eOut3 = (k) => 1 - (1 - k) ** 3;
 function halskyLabs(u, len, cx, cy) {
-  const M = halskyMarkPx(), out = clamp((u - 3.72) / 0.5);
-  // the lockup: the mark, then HALSKY over L A B S
-  const WMk = typeMask('HALSKY', '30px sora', { ls: 1 }), wordW = WMk.tw;
-  const lockW = M.mw + 14 + wordW, markX1 = cx - lockW / 2 + M.mw / 2;
-  const slide = eIO(clamp((u - 2.05) / 0.6)) * (1 - eIO(clamp((out - 0.02) / 0.4)));
-  const mx = Math.round(lerp(cx, markX1, slide)), my = cy, x0 = mx - Math.round(M.ox), y0 = my - Math.round(M.oy);
-  // the rim traces round from the top (0 = top, 1 = bottom), and retracts on the way out
-  const trace = eIO(clamp((u - 0.42) / 0.68)) * (1 - eIO(clamp((out - 0.5) / 0.36)));
-  // the face develops brightest first, lands at 1.95, and fades darkest first on the way out
-  const dev = eIO(clamp((u - 1.15) / 0.8)), undev = eIO(clamp((out - 0.06) / 0.44)), landed = u > 1.95;
-  const grainF = Math.floor(u * 8);
-  for (const [x, y, kind, L, ang] of M.px) {
-    const X = x0 + x, Y = y0 + y, h = hash(x, y, 9711);
-    if (kind === 2) {   // the rim
-      if (ang > trace || trace <= 0) continue;
-      putI(X, Y, trace < 1 && ang > trace - 0.04 ? P.d6 : P.moon); continue;
+  const M = halskyMarkPx(), WF = '36px sync', WMk = typeMask('HALSKY', WF, { ls: 2 }), wordW = WMk.tw, cap = WMk.cap;
+  const gap = 16, lockW = M.mw + gap + wordW, lx0 = Math.round(cx - lockW / 2);
+  const mx0 = lx0, my0 = Math.round(cy - M.mh / 2), wx = lx0 + M.mw + gap, base = Math.round(cy + 6);
+  const BW = 31, BH = 11, bx = wx + wordW - BW, by = base + 5, ruleY = by + 5;
+  // 1. the red power-on line, under where the word will stand, ending at the badge
+  const lp = eIO(clamp((u - HL_T.line) / HL_T.lineLen)), rx1 = Math.round(lerp(wx - 2, bx - 3, lp));
+  if (lp > 0) { for (let x = wx - 2; x <= rx1; x++) { putI(x, ruleY, P.crimson); putI(x, ruleY + 1, P.wine); } if (lp < 1) { putI(rx1 + 1, ruleY, P.pale); putI(rx1 + 2, ruleY, P.moon); putI(rx1 + 1, ruleY + 1, P.crimson); } }
+  // 2. the mark rasters in, top to bottom, behind a bright scanline; its grain lives while it holds
+  const sp = clamp((u - HL_T.scan) / HL_T.scanLen), row = sp * (M.mh + 2), grainF = Math.floor(u * 8), held = sp >= 1;
+  if (sp > 0) for (const [x, y, kind, L] of M.px) {
+    const X = mx0 + x, Y = my0 + y;
+    if (y > row) continue;
+    if (!held && y > row - 1.5) { putI(X, Y, kind === 0 ? P.d6 : P.moon); continue; }   // the scanline
+    if (!held && y > row - 4 && kind !== 0 && ((y + x) & 1)) { putI(X, Y, P.d6); continue; }   // its afterglow
+    let on = kind !== 0;
+    if (held && kind === 1 && L <= 6 && hash(x, y, 9712 + grainF) < 0.07) on = false;
+    putI(X, Y, on ? P.moon : P.void);
+  }
+  // 3. HALSKY flies in from the right on speed lines (ghosts trailing), and locks
+  const fp = clamp((u - HL_T.fly) / HL_T.flyLen), dx = Math.round((1 - eOut3(fp)) * 230), locked = u >= HL_T.fly + HL_T.flyLen;
+  const flash = locked && u < HL_T.fly + HL_T.flyLen + 0.08;
+  const gl = u > HL_T.glint && u < HL_T.glint + HL_T.glintLen ? (u - HL_T.glint) / HL_T.glintLen : null;
+  const chrome = (sx, sy) => {   // 80s banded chrome, hard steps on the ramp's nodes (no dither): bright top, a dark horizon
+    const r = (sy - (base - cap)) / cap;   // just above the middle, then the lower half brightening toward the floor's reflection
+    return r < 0.24 ? 1 : r < 0.44 ? 0.8 : r < 0.52 ? 0.2 : r < 0.66 ? 0.4 : r < 0.84 ? 0.6 : 0.8;
+  };
+  if (fp > 0) {
+    if (!locked) for (const [k, col] of [[2, P.s2], [1, P.s3]]) {   // ghosts
+      const gx = wx + dx + k * Math.round(14 * (1 - fp)); if (k * (1 - fp) < 0.15) continue;
+      shadeMask(WMk, gx - WMk.pad, base + WMk.oy, { ramp: [col, col], B: 0, face: () => 1 });
     }
-    if (trace < 0.02) continue;
-    if (kind === 0 || dev <= 0) { if (ang <= trace) putI(X, Y, P.void); continue; }
-    const thr = (9 - L) / 9 * 0.72 + h * 0.26;   // develop order: bright first, a little noise
-    const back = L / 9 * 0.72 + h * 0.26;         // fade order on the way out: dark first
-    let on = dev > thr && undev < 1 - back * 0.98;
-    const front = !landed && dev > thr && dev < thr + 0.07;
-    // the grain while it holds: a few mid-tone dots blink at 8 fps
-    if (landed && out === 0 && L <= 6 && hash(x, y, 9712 + grainF) < 0.07) on = false;
-    putI(X, Y, on ? (front ? P.d6 : P.moon) : P.void);
-  }
-  // the tracing heads
-  if (trace > 0.01 && trace < 0.995) for (const sgn of [-1, 1]) {
-    let best = null, bd = 9; for (const [x, y, kind, , ang] of M.px) if (kind === 2 && Math.sign(x - M.ox || 1) === sgn && Math.abs(ang - trace) < bd) { bd = Math.abs(ang - trace); best = [x, y]; }
-    if (best) for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) putI(x0 + best[0] + dx, y0 + best[1] + dy, dx || dy ? P.d6 : P.moon);
-  }
-  // the point of light at the top: it appears, the trace leaves it; on the way out it comes back and blinks out
-  const topX = x0 + Math.round(M.ox), topY = y0 + 1;
-  const dotR = u < 0.15 ? 0 : u < 0.5 ? 3 * eBack(clamp((u - 0.15) / 0.3)) : 0, endR = out > 0.86 && out < 1 ? 2.5 * (1 - (out - 0.86) / 0.14) : 0;
-  for (const r of [dotR, endR]) if (r > 0) for (let j = -4; j <= 4; j++) for (let i = -4; i <= 4; i++) { const d = Math.hypot(i, j); if (d <= r) putI(topX + i, topY + j, d < r * 0.5 ? P.moon : P.d6); }
-  // the face lands: a shockwave rings out
-  const sw = clamp((u - 1.95) / 0.5);
-  if (sw > 0 && sw < 1) { const R = 30 + 70 * eIO(sw); for (let a = 0; a < 720; a++) { const an = a / 720 * Math.PI * 2, x = Math.round(mx + Math.cos(an) * R * 0.92), y = Math.round(my + Math.sin(an) * R); if (lgBay(x, y) < 1 - sw) putI(x, y, sw < 0.4 ? P.d6 : P.arcane); } }
-  // the wordmark comes out from behind the mark (clipped at its right edge), L A B S pops in under it
-  const markR = mx + M.mw / 2 + 4, wx = Math.round(cx - lockW / 2 + M.mw + 14), wy = Math.round(cy + 2);
-  if (slide > 0) {
-    shadeMask(WMk, wx - WMk.pad, wy + WMk.oy, { ramp: [P.s6, P.moon], B: 0, show: (sx) => (sx > markR ? 0 : false), face: () => 1,
-      add: u > 2.6 && u < 3.3 ? (sx, sy) => { const g = (sx - wx) / wordW - (u - 2.6) / 0.6 * 1.4 + 0.2 + (sy - wy) * 0.02; return Math.abs(g) < 0.03 ? -0.75 : 0; } : null });
-    const LM = [...'LABS'].map((ch) => typeMask(ch, '12px sora')), tot = LM.reduce((q, m) => q + m.tw, 0), gap = (wordW - tot) / 3;
-    let lx = wx;
-    for (let k = 0; k < 4; k++) {
-      const LMk = LM[k], p = clamp((u - 2.35 - k * 0.07) / 0.2) * (1 - clamp((out - 0.02 - (3 - k) * 0.05) / 0.12));
-      if (p > 0) { const ly = wy + 17 + Math.round((1 - eBack(p, 2)) * 5); shadeMask(LMk, Math.round(lx) - LMk.pad, ly + LMk.oy, { ramp: [P.arcane, P.d6, P.moon], B: 0, show: (sx) => (sx > markR ? 0 : false), face: () => (p < 0.7 ? 1 : 0.5) }); }
-      lx += LMk.tw + gap;
+    shadeMask(WMk, wx + dx - WMk.pad, base + WMk.oy, { ramp: [P.s2, P.s3, P.s4, P.s5, P.s6, P.moon], B: 0, o1: P.void, face: flash ? () => 1.2 : chrome,
+      add: gl != null ? (sx, sy) => { const g = (sx - wx) / wordW - (gl * 1.5 - 0.25) - (sy - base) * 0.025; return Math.abs(g) < 0.035 ? 0.6 : Math.abs(g) < 0.07 ? 0.25 : 0; } : null });
+    if (!locked) for (const [yy, col, l0] of [[base - cap + 3, P.crimson, 60], [base - Math.round(cap * 0.55), P.s5, 90], [base - 3, P.crimson, 44], [base - Math.round(cap * 0.3), P.s3, 70]]) {   // speed lines
+      const x1 = wx + dx + wordW + 4, L = Math.round(l0 * (1 - fp) + 6);
+      for (let x = x1; x < x1 + L; x++) if (x < W && ((x - x1) < L * 0.7 || lgBay(x, yy) < 0.5)) putI(x, yy, col);
     }
   }
-  return { mx, my, glow: (sw > 0 && sw < 1 ? 1 - sw : 0) * 0.8 + (u > 1.2 && out < 0.9 ? 0.3 * dev : 0) };
+  // the lock: a lens streak through the word, and a four-point glint at its top right
+  const st = locked ? clamp((u - HL_T.fly - HL_T.flyLen) / 0.45) : 0;
+  if (st > 0 && st < 1) {
+    const yy = base - Math.round(cap * 0.62), half = Math.round(20 + 150 * eOut3(st)), mid = wx + wordW / 2;
+    for (let x = Math.round(mid - half); x <= Math.round(mid + half); x++) { const f = 1 - Math.abs(x - mid) / half; if (lgBay(x, yy) < f * (1 - st)) putI(x, yy, f > 0.6 ? P.moon : P.s6); }
+    const sx = wx + wordW - 3, sy = base - cap - 1, r = Math.round(6 * (1 - st));
+    for (let k = -r; k <= r; k++) { putI(sx + k, sy, Math.abs(k) < 2 ? P.moon : P.s6); putI(sx, sy + k, Math.abs(k) < 2 ? P.moon : P.s6); }
+  }
+  // 4. the LABS badge lights like a panel LED: two flickers, then on
+  const bu = u - HL_T.badge, bon = bu >= 0 && !(bu > 0.05 && bu < 0.1) && !(bu > 0.15 && bu < 0.2);
+  if (bu >= 0) {
+    if (bon) { rectI(bx, by, BW, BH, P.crimson); rectI(bx, by, BW, 1, P.pale); rectI(bx, by + BH - 1, BW, 1, P.wine); text('LABS', bx + BW / 2 + 1, by + 2, 'silkb', P.void, { align: 'c' }); }
+    else { frameI(bx, by, BW, BH, P.wine); }
+  }
+  // 5. "presents", dithered in
+  const pr = clamp((u - HL_T.presents) / 0.4);
+  if (pr > 0) text('presents', cx, base + 34, 'tiny', fadeIdx(pr, [P.void, P.s2, P.s3, P.s4]), { align: 'c', ls: 2 });
+  return { mx: wx + wordW / 2, my: base - cap / 2, glow: flash ? 1 : st > 0 ? 0.6 * (1 - st) : 0 };
 }
 
 // ---------------------------------------------------------------------------
-// PROCRASTINATION STUDIOS: the logo is late. A spinner, then the badge (an hourglass on a sunset tile) pops in in a
-// hurry, the letters drop in, the last one arrives late, "est. eventually"; the hourglass is turned over for more time.
+// PROCRASTINATION STUDIOS (#133, Paweł: the name and the tagline stay; more professional and sleek). A stacked lockup:
+// a thin ring with an hourglass inside (copper sand), PROCRASTINATION in Outfit SemiBold, spaced, a copper rule,
+// S T U D I O S, the tagline. In: the ring draws itself from the top; the hourglass fades in and its sand starts; the
+// letters rise from behind the baseline one after another, all but the last N, which arrives a beat late; the rule
+// opens from the middle; STUDIOS; "est. eventually" types itself, late; the hourglass turns over once. Then it holds
+// until the title fades in over it.
 // ---------------------------------------------------------------------------
-const R_SUN = [P.wine, P.copper, P.gold, P.pale];
-function hourglassBadge(bx, by, sc, rot, sand, o = {}) {
-  const HS = 24, RAD = 11, c = Math.cos(-rot), s2 = Math.sin(-rot), ext = Math.ceil(HS * 1.5 * sc) + 3;
-  const sdBox = (x, y) => { const qx = Math.abs(x) - (HS - RAD), qy = Math.abs(y) - (HS - RAD); return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - RAD; };
-  const topL = -12 + 11 * sand, botL = 12 - 9 * sand;
-  for (let j = -ext; j <= ext; j++) for (let i = -ext; i <= ext; i++) {
-    const X = Math.round(bx) + i, Y = Math.round(by) + j, px = (i + 0.5) / sc, py = (j + 0.5) / sc, lx = px * c - py * s2, ly = px * s2 + py * c;
-    const d = sdBox(lx, ly); if (d > 1.2 / sc) continue;
-    if (d > 0) { putI(X, Y, P.void); continue; }
-    // the tile: a sunset gradient that turns with it, a lit top lip
-    let idx = rampI(R_SUN, 0.92 - (ly + HS) / (HS * 2) * 0.9, X, Y, 3);
-    if (d > -1.3 / sc && ly < 0) idx = ly < -HS + 4 ? P.pale : idx;
-    // the hourglass: caps, the glass, the sand
-    const ax = Math.abs(lx), ay = Math.abs(ly);
-    const inCap = ay >= 13 && ay <= 16 && ax <= 11.5, wGlass = 1.2 + 9.5 * (ay / 12.5), inGlass = ay < 13 && ax <= wGlass, rim = inGlass && ax > wGlass - 1.6;
-    if (inCap) idx = ay > 15 ? P.wine : P.void;
-    else if (inGlass) {
-      idx = rim ? P.void : P.wine;
-      if (!rim) { if (ly < 0 && ly > topL) idx = P.pale; if (ly > 0 && ly > botL + Math.abs(lx) * 0.55) idx = P.gold; if (ly > -0.5 && sand < 0.98 && ax < 0.8 && ly < botL && o.stream) idx = P.pale; if (ly > 0 && ly > botL + Math.abs(lx) * 0.55 && ly < botL + Math.abs(lx) * 0.55 + 1.2) idx = P.pale; }
-    }
-    putI(X, Y, idx);
+const PS_T = { ring: 0.3, ringLen: 0.6, glass: 0.75, word: 1.1, late: 2.05, rule: 2.2, type: 2.8, flip: 3.55, flipLen: 0.4 };   // the ring starts during the fade in
+function psHourglass(cx, cy, rot, sand, stream, vis) {
+  // in local coords: caps at y = +-12, two glass triangles meeting at the centre; sand: 0 all on top, 1 all below
+  const c = Math.cos(rot), s2 = Math.sin(rot), topL = -11 + 10 * Math.sqrt(sand), botL = 11 - 10 * Math.sqrt(1 - (1 - sand));
+  for (let j = -14; j <= 14; j++) for (let i = -14; i <= 14; i++) {
+    const X = cx + i, Y = cy + j; if (vis < 1 && lgBay(X, Y) >= vis) continue;
+    const lx = (i + 0.5) * c + (j + 0.5) * s2, ly = -(i + 0.5) * s2 + (j + 0.5) * c, ax = Math.abs(lx), ay = Math.abs(ly);
+    if (ay >= 11.6 && ay <= 13 && ax <= 8.5) { putI(X, Y, P.moon); continue; }   // the caps
+    const half = 0.6 + 7 * (ay / 11.6); if (ay >= 11.6 || ax > half + 0.5) continue;
+    if (ax > half - 0.6) { putI(X, Y, P.s5); continue; }   // the glass, a fine line
+    if (ly < 0 && ly > topL) { putI(X, Y, P.copper); continue; }   // the sand still on top, draining
+    if (ly > 0 && ly > botL + ax * 0.6) { putI(X, Y, P.copper); continue; }   // the pile below
+    if (stream && ax < 0.7 && ly > -1 && ly < botL + 0.5) { putI(X, Y, P.copper); continue; }
   }
 }
 function procrastinationStudios(u, len, cx, cy) {
-  const WORD = 'Procrastination', font = '24px fred', g = lgCtx(); g.font = font; g.letterSpacing = '0px';
-  const ww = g.measureText(WORD).width, lockW = 48 + 14 + ww, bx = Math.round(cx - lockW / 2 + 24), wx = Math.round(cx - lockW / 2 + 62), wy = cy + 6;
-  // 1. nothing yet: a little spinner where the logo should be
-  if (u < 0.92) {
-    if (u > 0.2) for (let k = 0; k < 10; k++) { const an = k / 10 * Math.PI * 2 - Math.PI / 2, on = (Math.floor(u * 14) - k + 100) % 10, x = Math.round(cx + Math.cos(an) * 8), y = Math.round(cy + Math.sin(an) * 8); if (on > 4) continue; const idx = on === 0 ? P.moon : on < 2 ? P.u6 : on < 4 ? P.u4 : P.u2; putI(x, y, idx); if (on < 2) { putI(x + 1, y, idx); putI(x, y + 1, idx); putI(x + 1, y + 1, idx); } }
-    return { bx: cx, by: cy, glow: 0 };
+  const mcx = cx, mcy = cy - 30, R = 19, base = cy + 10;
+  // 1. the ring draws itself clockwise from the top, a bright head
+  const rp = eIO(clamp((u - PS_T.ring) / PS_T.ringLen));
+  if (rp > 0) for (let a = 0; a < 240; a++) { const q = a / 240; if (q > rp) break; const an = q * Math.PI * 2 - Math.PI / 2; putI(Math.round(mcx + Math.cos(an) * R - 0.5), Math.round(mcy + Math.sin(an) * R - 0.5), rp < 1 && q > rp - 0.03 ? P.moon : P.s5); }
+  // 2. the hourglass fades in (dithered); its sand runs; it turns over once and starts again
+  const gv = clamp((u - PS_T.glass) / 0.4), fl = clamp((u - PS_T.flip) / PS_T.flipLen);
+  if (gv > 0) {
+    const s0 = clamp((u - PS_T.glass - 0.15) / 2.6), sAtFlip = clamp((PS_T.flip - PS_T.glass - 0.15) / 2.6);
+    const sand = fl <= 0 ? s0 : fl < 1 ? sAtFlip : clamp(1 - sAtFlip + (u - PS_T.flip - PS_T.flipLen) / 2.6);
+    psHourglass(mcx, mcy, Math.PI * eIO(fl), sand, fl <= 0 || fl >= 1, gv);
   }
-  // 2. the badge pops in, in a hurry (overshoot, a tilt that rights itself), and moves into place
-  const pop = clamp((u - 0.92) / 0.34), sc = eBack(pop, 2.4), tilt = -0.5 * (1 - eBack(clamp((u - 0.92) / 0.5), 1.4));
-  const move = eIO(clamp((u - 1.15) / 0.4)), bxx = lerp(cx, bx, move);
-  const flip = clamp((u - 3.3) / 0.42), rot = tilt + Math.PI * eBack(flip, 1.3), sand = clamp((u - 1.3) / 2.0) * (flip > 0 ? 0 : 1) + (flip > 0 ? clamp((3.3 - 1.3) / 2.0) : 0);
-  hourglassBadge(bxx, cy, Math.max(0.05, sc), rot, sand, { stream: flip === 0 && u > 1.3 });
-  if (u < 1.2) for (let k = 0; k < 4; k++) { const an = k * Math.PI / 2 + 0.4, r = 30 + (u - 0.92) * 70; if (u > 1.0) putI(Math.round(cx + Math.cos(an) * r), Math.round(cy + Math.sin(an) * r), P.gold); }
-  // 3. the letters drop in one by one; the last n is late and hurries in from the right
+  // 3. PROCRASTINATION: each letter rises from behind the baseline, one after another; the last N a beat late
+  const WORD = 'PROCRASTINATION', font = '18px outf', LS = 3, g = lgCtx(); g.font = font; g.letterSpacing = LS + 'px';
+  const ww = g.measureText(WORD).width - LS, wx = Math.round(cx - ww / 2);
   for (let k = 0; k < WORD.length; k++) {
-    const ch = WORD[k], late = k === WORD.length - 1; g.font = font; const lx = wx + g.measureText(WORD.slice(0, k)).width;
-    const M = typeMask(ch, font);
-    let dx = 0, dy = 0;
-    if (!late) { const p = clamp((u - 1.4 - k * 0.04) / 0.3); if (p <= 0) continue; dy = Math.round(-14 * (1 - eBack(p, 2.2))); }
-    else { const p = clamp((u - 2.42) / 0.26); if (p <= 0) continue; dx = Math.round(70 * (1 - eBack(p, 1.6))); if (p < 1) for (let s3 = 1; s3 <= 3; s3++) for (let q = 0; q < 10 + s3 * 4; q++) putI(Math.round(lx + dx + M.tw + 3 + q), wy - 4 - s3 * 4, q % 3 === 2 ? P.void : P.copper); }
-    shadeMask(M, Math.round(lx + M.ox) + dx, wy + M.oy + dy, { ramp: [P.u6, P.moon], B: 0, o1: P.void, shadow: [1, 2], shadowSolid: true, face: (sx, sy) => (sy > wy + dy - 3 ? 0 : 1) });
+    const late = k === WORD.length - 1, p = clamp((u - (late ? PS_T.late : PS_T.word + k * 0.035)) / 0.28); if (p <= 0) continue;
+    g.font = font; g.letterSpacing = LS + 'px'; const lx = wx + g.measureText(WORD.slice(0, k)).width;
+    const Mk = typeMask(WORD[k], font), dy = Math.round((1 - eOut3(p)) * 9);
+    shadeMask(Mk, Math.round(lx + Mk.ox), base + Mk.oy + dy, { ramp: [P.s6, P.moon], B: 0, face: () => 1, show: (sx, sy) => (sy <= base ? 0 : false) });
   }
-  // 4. STUDIOS spaced out under it, then the tagline types itself
-  if (u > 1.95) { const p = clamp((u - 1.95) / 0.4); text('S T U D I O S', wx + 1, wy + 6, 'tiny', fadeIdx(p, [P.void, P.wine, P.copper, P.gold])); }
-  if (u > 2.85) { const tag = 'est. eventually', n = Math.min(tag.length, Math.floor((u - 2.85) / 0.045)); text(tag.slice(0, n) + (n < tag.length || Math.floor(u * 3) % 2 ? '_' : ''), wx + 1, wy + 16, 'tiny', P.s4); }
-  return { bx: bxx, by: cy, glow: clamp(sc) };
+  // 4. the copper rule opens from the middle; S T U D I O S under it
+  const rl = eIO(clamp((u - PS_T.rule) / 0.4)), half = Math.round(rl * 46);
+  if (half > 0) for (let x = cx - half; x <= cx + half; x++) putI(x, base + 6, P.copper);
+  const so = clamp((u - PS_T.rule - 0.05) / 0.4);
+  if (so > 0) text('S T U D I O S', cx + 1, base + 11, 'tiny', fadeIdx(so, [P.void, P.s2, P.s4, P.s5]), { align: 'c' });
+  // 5. the tagline types itself, late
+  if (u > PS_T.type) {
+    const tag = 'est. eventually', n = Math.min(tag.length, Math.floor((u - PS_T.type) / 0.045)), done = n >= tag.length;
+    const caret = !done || (u - PS_T.type - tag.length * 0.045 < 0.6 && Math.floor(u * 3) % 2 === 0);
+    const tw = measure(tag, 'tiny'), tx = Math.round(cx - tw / 2);
+    text(tag.slice(0, n), tx, base + 24, 'tiny', P.s4);
+    if (caret) text('_', tx + measure(tag.slice(0, n), 'tiny') + 1, base + 24, 'tiny', P.s4);
+  }
+  return { bx: mcx, by: mcy, glow: 0.5 * gv };
 }

@@ -7,7 +7,7 @@ let PK_READY = null;
 function pkInit() {
   if (PK_READY) return PK_READY;
   PK_READY = (async () => {
-    await Promise.all([document.fonts.load('60px czd'), document.fonts.load('16px cz'), document.fonts.load('30px sora'), document.fonts.load('24px fred'), document.fonts.load('8px silkb'), document.fonts.load('8px tiny5'), document.fonts.load('11px m5'), document.fonts.load('13px jb9'), document.fonts.load(`${1400 / 75}px j10`), HER_READY, CAUGHT_READY, MORNING_READY]);
+    await Promise.all([document.fonts.load('60px czd'), document.fonts.load('16px cz'), document.fonts.load('30px sync'), document.fonts.load('18px outf'), document.fonts.load('8px silkb'), document.fonts.load('8px tiny5'), document.fonts.load('11px m5'), document.fonts.load('13px jb9'), document.fonts.load(`${1400 / 75}px j10`), HER_READY, CAUGHT_READY, MORNING_READY]);
     TC = document.createElement('canvas'); TC.width = 600; TC.height = 64; TX = TC.getContext('2d', { willReadFrequently: true });
     setRes(334, 232); buildDungeon(); cryptTells();   // the crypt's tells (#129): the ribs, the iron angel, the halo banner
   })();

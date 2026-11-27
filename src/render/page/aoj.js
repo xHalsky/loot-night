@@ -490,24 +490,22 @@ const LAUNCH_SOUND = [
   // the engine
   [3.25, 'cdspin', 'pc: the CD drive spins up under the start-up lines (2.6 s, quiet)'],
   ...[0, 1, 2, 3, 4, 5, 6].map((n) => [3.45 + n * 0.34, 'bootline', 'the engine: a soft tick per start-up line']),
-  // Halsky Labs (publisher), u = T - 6.2
-  [6.35, 'hl_point', 'a point of light: a high glass ting, a long tail'],
-  [6.62, 'hl_trace', 'the rim draws itself round both ways: a rising bowed shimmer, one voice per side (0.68 s)'],
-  [7.3, 'hl_seal', 'the rim closes at the bottom: a soft low click-thump'],
-  [7.35, 'hl_develop', 'the face develops: grain crackling thicker over a low swell (0.8 s), into'],
-  [8.15, 'hl_land', 'the face lands with the shockwave: a deep warm boom, a long tail (the sting\'s one big beat)'],
-  [8.25, 'hl_slide', 'the mark slides left, HALSKY comes out: a soft whoosh'],
-  ...[0, 1, 2, 3].map((k) => [8.55 + k * 0.07, 'hl_labs', 'L A B S: a tiny bright pip per letter, rising']),
-  [9.93, 'hl_out', 'the word slides back, the face fades: a reversed swell drawing in (0.42 s)'],
-  [10.35, 'hl_blink', 'the point blinks out: a tiny high blip'],
-  // Procrastination Studios (developer), u = T - 10.6
-  [10.8, 'ps_wait', 'the spinner: a quick soft ticking (0.72 s)'],
-  [11.52, 'ps_pop', 'the badge pops in, in a hurry: a bouncy pop that overshoots and settles'],
-  [11.75, 'ps_move', 'it moves into place: a short whoosh'],
-  [12.0, 'ps_letters', 'Procrastination drops in a letter at a time: a run of 14 soft wooden taps (0.6 s)'],
-  [13.02, 'ps_late', 'the last n is late: it hurries in from the right, skids, bumps into place'],
-  [13.45, 'ps_type', '"est. eventually" types itself: 15 soft ticks (0.7 s)'],
-  [13.9, 'ps_flip', 'the hourglass is turned over: a wooden creak, the sand starts to hiss'],
+  // Halsky Labs (publisher), u = T - 6.2 (#133: an 80s studio-gear sting; it holds, the next screen fades in over it)
+  [6.4, 'hl_line', 'the red power-on line sweeps across: an analog synth sweeping up through its filter, settling on a tone (0.45 s)'],
+  [6.65, 'hl_scan', 'the mark rasters in behind its scanline: a soft digital data chirp (0.75 s)'],
+  [7.2, 'hl_fly', 'HALSKY flies in from the right: a whoosh rising into the lock (0.42 s)'],
+  [7.62, 'hl_hit', 'HALSKY locks with the flash and the lens streak: a sampler orchestra stab with a gated reverb and an FM bell chord ringing on (the sting\'s one big beat)'],
+  [7.8, 'hl_badge', 'the LABS badge lights like a panel LED: three short digital blips (two flickers, then on)'],
+  [8.35, 'hl_presents', '"presents": a soft FM chime, two notes'],
+  [8.9, 'hl_glint', 'the glint runs across the chrome: a thin bright shimmer (0.7 s)'],
+  // Procrastination Studios (developer), u = T - 10.6 (#133: sleek; it fades in over Halsky Labs and holds)
+  [10.9, 'ps_arc', 'the ring draws itself from the top: a soft glassy tone rising (0.6 s)'],
+  [11.35, 'ps_glass', 'the hourglass appears and its sand starts: a soft two-note glass chime over a quiet trickle'],
+  [11.7, 'ps_word', 'PROCRASTINATION rises letter by letter: an airy swell settling on a soft plucked chord'],
+  [12.65, 'ps_late', 'the last N arrives a beat late: one soft pluck, a fifth above'],
+  [12.8, 'ps_rule', 'the copper rule opens from the middle: a soft tonal swish'],
+  [13.4, 'ps_type', '"est. eventually" types itself: 15 soft ticks (0.7 s)'],
+  [14.15, 'ps_flip', 'the hourglass turns over: a soft whoosh, a gentle wooden knock as it lands, the sand again'],
   // the title, u = T - 15
   [15.9, 'thunder_near', 'the first bolt shows the angel: a crack on the flash, a roll for 3 s'],
   [17.2, 'aoj_ring', 'the halo forged round from its gap: iron dragged round under strain, rising, a forge\'s hiss (1 s); it closes at 18.2 and rings out like a cracked bell (2.5 s)'],
@@ -603,22 +601,35 @@ function launchEngine(u) {
   if (Math.floor(u * 3) % 2 === 0) rectI(14, 14 + (Math.min(shown, ENGINE_LINES.length - 1) + 1) * 10 + 6, 4, 6, P.s5);
   return launchOut(F, [], [1, 1, 1], false);
 }
-// ---- 3. the publisher: Halsky Labs (logos.js)
+// ---- 3. the publisher: Halsky Labs (logos.js). It holds once it is in; the developer's screen fades in over it.
 function launchPublisher(u, len) {
   const F = launchBuf(), cx = 237, cy = 100;
-  rect(0, 0, W, H, 0.03, M_MAGIC);
-  const r = halskyLabs(u, len, cx, cy), out = clamp((u - 3.72) / 0.5);
-  if (u > 2.9 && out < 0.33) text('presents', cx, cy + 58, 'tiny', fadeIdx(clamp((u - 2.9) / 0.4) * (1 - clamp(out * 3)), [P.void, P.s2, P.s3, P.s4]), { align: 'c', ls: 1 });
-  return launchOut(F, [{ x: r.mx, y: r.my, r: 110, i: 0.9 * r.glow, c: [1.05, 0.7, 1.6] }], [0.3, 0.3, 0.4]);
+  rect(0, 0, W, H, 0.02, M_STONE);
+  const r = halskyLabs(u, len, cx, cy);
+  return launchOut(F, [{ x: r.mx, y: r.my, r: 120, i: 0.8 * r.glow, c: [1.2, 1.15, 1.3] }], [0.3, 0.3, 0.4]);
 }
-// ---- 4. the developer: Procrastination Studios (logos.js); it fades out dithered
+// ---- 4. the developer: Procrastination Studios (logos.js), faded in over Halsky Labs; it holds, the title fades in
 function launchDeveloper(u, len) {
+  if (u < LAUNCH_XFADE) { const prev = snapLaunch(launchPublisher(LAUNCH_LEN.publisher, LAUNCH_LEN.publisher)); return ditherFrom(developerFrame(u, len), prev, u / LAUNCH_XFADE); }
+  return developerFrame(u, len);
+}
+function developerFrame(u, len) {
   const F = launchBuf(), cx = 237, cy = 100;
-  rect(0, 0, W, H, 0.03, M_UMBER);
+  rect(0, 0, W, H, 0.025, M_DUSK);
   const r = procrastinationStudios(u, len, cx, cy);
-  const c = launchOut(F, [{ x: r.bx, y: r.by, r: 100, i: 0.7 * r.glow, c: [1.4, 0.9, 0.55] }], [0.3, 0.3, 0.4]);
-  ditherBlack(c, clamp((u - (len - 0.55)) / 0.45));
-  return c;
+  return launchOut(F, [{ x: r.bx, y: r.by, r: 80, i: 0.45 * r.glow, c: [1.4, 0.9, 0.55] }], [0.3, 0.3, 0.4]);
+}
+// The studio logos hold and the next screen fades in over them (#133, Paweł: no animation out): a palette-exact
+// dithered crossfade over LAUNCH_XFADE seconds. snapLaunch copies a frame aside (every screen draws into one canvas).
+const LAUNCH_XFADE = 0.5, LAUNCH_LEN = { publisher: 4.4 - 1e-3, developer: 4.4 - 1e-3 };
+let LAUNCH_SNAP = null;
+function snapLaunch(c) { if (!LAUNCH_SNAP || LAUNCH_SNAP.width !== c.width || LAUNCH_SNAP.height !== c.height) { LAUNCH_SNAP = document.createElement('canvas'); LAUNCH_SNAP.width = c.width; LAUNCH_SNAP.height = c.height; } const g = LAUNCH_SNAP.getContext('2d'); g.clearRect(0, 0, c.width, c.height); g.drawImage(c, 0, 0); return LAUNCH_SNAP; }
+// over c, keep the old frame where the Bayer value is at or above k (k: 0 all old, 1 all new)
+function ditherFrom(c, old, k) {
+  if (k >= 1) return c;
+  const g = c.getContext('2d'), A = g.getImageData(0, 0, c.width, c.height), B = old.getContext('2d').getImageData(0, 0, c.width, c.height), D = A.data, E = B.data;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (BAYER8[((y & 7) << 3) | (x & 7)] >= k) { const o = (y * c.width + x) * 4; D[o] = E[o]; D[o + 1] = E[o + 1]; D[o + 2] = E[o + 2]; }
+  g.putImageData(A, 0, 0); return c;
 }
 // ---- 5. the title: black and rain, lightning shows the fallen angel; the halo is forged round, its spark lights,
 // "Judgment" is struck out from the centre, a second bolt as it lands; "AGE OF"; a glint runs across the gilt
@@ -632,6 +643,10 @@ function titleLogo(u) {
   return { ring, spark, burst, word, heat, shake, gl, flash, ageOf: clamp((u - 4.55) / 0.7) };
 }
 function launchTitle(u) {
+  if (u < LAUNCH_XFADE) { const prev = snapLaunch(developerFrame(LAUNCH_LEN.developer, LAUNCH_LEN.developer)); return ditherFrom(titleFrame(u), prev, u / LAUNCH_XFADE); }
+  return titleFrame(u);
+}
+function titleFrame(u) {
   const vis = u < 0.9 ? 0.04 : u < 1.18 ? 1 : lerp(0.25, 1, clamp((u - 1.3) / 1.8));
   const L = titleLogo(u), flash = u > 0.9 && u < 1.18 ? (u < 0.98 || u > 1.08 ? 1 : 0.5) : L.flash * 0.7;
   const [cx, cy] = LOGO_BIG;
