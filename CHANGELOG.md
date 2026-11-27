@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.96.0 (2026-11-27)
+
+- **Ravenhold in rain** (#128, W2 of the v2 redesign; aoj-world §5): it always rains over the town (about 340 slanted
+  streaks, splashes on the ground) but never over its UI; puddles on the streets, the plaza and the court, each lantern
+  and fire bowl reflected down the wet stones; two pairs of iron ribs arch in over the Dungeon Portal with a crimson
+  heart-light where they meet; the fountain's statue is the broken halo; a colder night (`TOWN_AMB` [0.56, 0.6, 0.84],
+  was [0.72, 0.72, 0.9]). The samples page's `ravenholdIron` and `townRain` ported as they are (`render/page/aoj.js`):
+  the build's town has the page's map (the portal at x 167, the fire bowls at 121 and 212, the lanterns, the fountain),
+  so nothing needed refitting. The ribs and puddles go into the layer once, rebuilt with it when a level changes; the
+  rain runs after the town's life and before its UI, so the signs, the hover outline and the cards stay dry, and every
+  building reads and clicks as before (`test/town.py`). Matches `design/v2/stills/world-ravenhold-rain`. Visual only.
+
 ## 0.95.0 (2026-11-27)
 
 - **The launch on the first Monday** (#127, W1 of the v2 redesign, Age of Judgment; spec `docs/design/aoj-world.md`

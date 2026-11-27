@@ -11,7 +11,17 @@ building for now (#81). Dark medieval with a gothic edge: thick stone
 houses under slate roofs on a grid of cobbled streets that meet at right angles (three east to west, two north to
 south, an avenue south from the plaza). In the middle a square plaza of pale flagstones with a fountain; above it
 the court in front of the Dungeon Portal, cut into the cliff at the top centre: a pointed arch with skulls and
-chains, a violet vortex turning inside it, violet braziers, a few graves. The night clock stops here; city actions
+chains, a violet vortex turning inside it, violet braziers, a few graves. **In the v2 redesign's world** (#128,
+[aoj-world.md](aoj-world.md) §5) the town stands in a fallen iron angel's ribcage, and **it always rains**: about 340
+slanted streaks over everything (150 to 240 px a second) and splashes on the ground, never over its UI (the signs, the
+hovered building's outline, the cards and the panel are the UI layer, drawn after). The streets, the plaza and the
+court shine with puddles (dark mirrors with a pale rim on their far edge), and every lantern and fire bowl throws a
+shimmering reflection down the wet stones. Two pairs of iron ribs rise out of the court and arch in over the Dungeon
+Portal like a gothic arch, a crimson heart-light pulsing where they meet; the fountain's statue is the broken halo in
+iron with its crimson spark. A colder night: `TOWN_AMB` [0.56, 0.6, 0.84] (was [0.72, 0.72, 0.9]). The puddles, ribs
+and halo go into the town's layer once when it is built (`ravenholdIron` in `render/page/aoj.js`, with the layer's
+rebuild for a new building level); the reflections, the heart-light and the rain every frame after the town's life
+(`townRain`). The night clock stops here; city actions
 cost fixed minutes (`COST_IDENTIFY_MIN`, `COST_FURNITURE_MIN`, `COST_LIST_MIN`, `COST_TRAVEL_MIN`). Threat time
 keeps running, so she and the phone still come.
 

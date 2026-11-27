@@ -761,7 +761,7 @@ function buildTownLayer() {
   return (TOWN_LAYER = L);
 }
 let TOWN_LAYER = null;
-let TOWN_AMB = [0.72, 0.72, 0.9];
+let TOWN_AMB = [0.56, 0.6, 0.84];   // a colder night (#128, the v2 redesign: Ravenhold in rain; was [0.72, 0.72, 0.9])
 let TOWN_DITHER = 0.03; // the town is hand-textured pixel art: almost no ordered dither
 
 // ---------------------------------------------------------------- frame
@@ -770,13 +770,14 @@ function screenTown(ctx, t, o = {}) {
   // the live town is rebuilt (and its lights re-baked) only when a building's level changes
   const lv = o.live?.levels ? { library: o.live.levels.library | 0, treasury: o.live.levels.treasury | 0, training: o.live.levels.training | 0, inn: o.live.levels.inn | 0 } : null, key = lv ? JSON.stringify(lv) : '';
   if (key !== TOWN_KEY) { TOWN_LV = lv; TOWN_KEY = key; TOWN_LAYER = null; }
-  const L = TOWN_LAYER || buildTownLayer();
+  if (!TOWN_LAYER) ravenholdIron(buildTownLayer());   // Ravenhold in the angel's chest (#128): the puddles, the ribs over the portal, the halo fountain
+  const L = TOWN_LAYER;
   const F = buf('ba', BA_W, GS_H); bind(F); CLIP = null;
   F.V.set(L.V); F.M.set(L.M); F.E.set(L.E); F.A.set(L.A); F.T.fill(0); F.DX.fill(0); F.I.set(L.I); F.G.fill(1); F.X.fill(0); F.LM = L.LM;
   MAT = M_STONE; EMI = 0; TAG = 0;
   const lights = [];
   if (o.preview) { const LMs = F.LM, ds = VIEW.strength; VIEW.strength = TOWN_DITHER; F.LM = null; composeInto(ctx, F, { lights, ambient: [0.85, 0.85, 0.9], tint: 0, vig: 0 }, 0); F.LM = LMs; VIEW.strength = ds; return; }
-  if (!o.noLife) townLife(F, t, lights, o);
+  if (!o.noLife) { townLife(F, t, lights, o); townRain(F, t, lights); }   // it always rains (#128): over the town, under its UI
   if (!o.noUI) townUI(F, t, lights, o);
   const ds = VIEW.strength; VIEW.strength = TOWN_DITHER;
   composeInto(ctx, F, { lights, ambient: TOWN_AMB, tint: 0.26, vig: 0 }, 0);

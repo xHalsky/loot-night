@@ -55,6 +55,77 @@ function rustPatch(x, y, w, h, seed, k = 0.62) { for (let j = 0; j < h; j++) for
 let LAUNCH_C = null;
 function launchCanvas() { if (!LAUNCH_C) { LAUNCH_C = document.createElement('canvas'); LAUNCH_C.width = GS_W; LAUNCH_C.height = GS_H; } return LAUNCH_C; }
 
+// ---------------------------------------------------------------- Ravenhold, AoJ: rain, wet streets, the iron gate, the halo (W2, #128)
+// In the build: town.js screenTown runs ravenholdIron on its layer once, when it is built (and rebuilt for a building's
+// new level), and townRain every frame after the town's life, under its UI (signs and outlines are the UI layer).
+// The approved 16-bit town, plus: it rains, the streets shine with puddles and lantern reflections, the portal is
+// framed by two pairs of colossal iron ribs rising out of the court (the town sits in the angel's chest, a crimson
+// heart-light where they meet), and the fountain's statue is a broken iron halo standing in the basin.
+const STREETS = () => [...TW.ew.map(([y, h]) => [0, y, W, h]), ...TW.ns.map(([x, w]) => [x, 10, w, H]), [TW.ave[0], 131, TW.ave[1], H], TW.plaza, TW.court];
+function ravenholdIron(L) {
+  bind(L); MAT = M_STONE; EMI = 0; TAG = 0; CLIP = null;
+  // puddles on the streets: dark mirrors with a pale rim on their far edge
+  const SR = STREETS();
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (!SR.some(([rx, ry, rw, rh]) => x >= rx && x < rx + rw && y >= ry && y < ry + rh)) continue;
+    const i = y * W + x; if (L.BT && L.BT[i]) continue;
+    const n = vnoise(x / 9, y / 4, 811) * 0.7 + vnoise(x / 3, y / 2, 812) * 0.3; if (n < 0.6) continue;
+    const up = vnoise(x / 9, (y - 1) / 4, 811) * 0.7 + vnoise(x / 3, (y - 1) / 2, 812) * 0.3;
+    L.V[i] = up < 0.6 ? 0.62 : 0.2 + 0.08 * vnoise(x / 5, y, 813); L.M[i] = M_STONE; L.E[i] = 0; L.DX[i] = 0;
+  }
+  // the iron ribs: two pairs rising out of the court, arching in over the portal
+  DXV = 6;
+  const rib = (side, x0, y0, x1, y1, bend, w) => {
+    const n = 160; let prev = null;
+    for (let s = 0; s <= n; s++) {
+      const q = s / n, x = x0 + (x1 - x0) * q ** 2.2, y = y0 + (y1 - y0) * Math.sin(q * Math.PI / 2) - bend * Math.sin(q * Math.PI) * 0;
+      if (prev) { const dx = x - prev[0], dy = y - prev[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
+        for (let o = -w / 2; o <= w / 2; o += 0.5) {
+          const u = (o + w / 2) / w, lu = side < 0 ? u : 1 - u;   // lu: 0 at the lit (outer) edge
+          let v = lu < 0.14 ? 0.62 : lu < 0.3 ? 0.34 : lu > 0.86 ? 0.04 : 0.16 + 0.06 * Math.sin(lu * Math.PI);
+          if (s % 9 === 0 && lu > 0.3 && lu < 0.75) v = 0.78;
+          if (s % 9 === 1 && lu > 0.3 && lu < 0.75) v = 0.06;
+          put(Math.round(x + nx * o), Math.round(y + ny * o), v, M_STONE, 0);
+        } }
+      prev = [x, y];
+    }
+  };
+  rib(-1, 133, 58, 165, 3, 6, 5); rib(1, 201, 58, 169, 3, 6, 5);
+  rib(-1, 121, 66, 165, -4, 12, 8); rib(1, 213, 66, 169, -4, 12, 8);
+  for (const [x, y] of [[124, 64], [210, 64], [133, 58], [201, 58]]) { ellipse(x + 0.5, y + 1.5, 4, 2, 0.08, M_STONE, 0); }
+  ellipse(167.5, 2.5, 4, 3.5, 0.2, M_STONE, 0); eyeLight(167, 2, 0, 1, true);
+  // the fountain's statue: a broken iron halo standing in the basin
+  const [fx, fy] = TW.fountain;
+  for (let y = fy - 22; y <= fy - 8; y++) for (let x = fx - 10; x <= fx + 10; x++) { const i = y * W + x; if (L.M[i] === M_STONE && L.V[i] < 0.75 && Math.abs(x - fx) > 1) { /* keep the basin */ } }
+  for (let k = 0; k < 90; k++) {
+    const an = (k / 90) * Math.PI * 2 - Math.PI; let d = an + Math.PI / 4; d = Math.atan2(Math.sin(d), Math.cos(d)); if (Math.abs(d) < 0.38) continue;
+    const lit = 0.55 + 0.4 * Math.cos(an + 2.4);
+    for (const [r, f] of [[11, 1], [10, 0.7], [9, 0.4]]) put(Math.round(fx + Math.cos(an) * r * 0.9), Math.round(fy - 19 + Math.sin(an) * r), lit * f, M_STONE, 0);
+  }
+  rect(fx - 1, fy - 9, 3, 9, (x) => (x === fx - 1 ? 0.7 : 0.4), M_STONE, 0);
+  eyeLight(Math.round(fx + Math.cos(-Math.PI / 4) * 9), Math.round(fy - 19 + Math.sin(-Math.PI / 4) * 10), 0, 2, true);
+  DXV = 0;
+}
+function townRain(F, t, lights) {
+  // lantern and brazier reflections on the wet stones: shimmering streaks below each light
+  const refl = (lx, ly, len, v) => { for (let j = 2; j < len; j++) { const y = ly + j, x = lx + Math.round(Math.sin(t * 3 + j * 0.9 + lx) * 0.7), i = y * W + x; if (y >= H || F.T[i]) continue; if (BAYER8[((y & 7) << 3) | (x & 7)] < (1 - j / len) * 0.8) put(x, y, v - j * 0.03, M_UMBER, 1); } };
+  for (const [lx, ly] of LANTERNS) refl(lx, ly - 6, 13, 0.82);
+  for (const [bx, by] of [[121, 84], [212, 84], [121, 125], [212, 125]]) { refl(bx, by + 1, 11, 0.86); refl(bx - 1, by + 1, 8, 0.7); refl(bx + 1, by + 1, 8, 0.7); }
+  // the heart-light where the ribs meet
+  lights.push({ x: 167, y: 4, r: 30, i: 0.5 + 0.2 * Math.sin(t * 2.2), c: [1.7, 0.45, 0.55] });
+  // rain: slanted streaks over everything, splashes on the ground
+  for (let k = 0; k < 340; k++) {
+    const sp = 150 + hash(k, 2, 801) * 90, y0 = ((t * sp + hash(k, 3, 801) * 900) % (H + 24)) - 12, x0 = hash(k, 1, 801) * (W + 60) - 30 + y0 * 0.22, len = 3 + (k % 3);
+    for (let s = 0; s < len; s++) { const x = Math.round(x0 + s * 0.22), y = Math.round(y0 + s); if (x < 0 || y < 0 || x >= W || y >= H) continue; const i = y * W + x; F.V[i] = Math.max(F.V[i] * 0.6, 0.5 + 0.2 * (s / len)); F.M[i] = M_STONE; F.E[i] = 1; }
+  }
+  for (let k = 0; k < 70; k++) {
+    const ph = (t * 5 + hash(k, 4, 802) * 7), cyc = Math.floor(ph), f = ph - cyc; if (f > 0.35) continue;
+    const x = Math.floor(hash(k, cyc, 803) * W), y = Math.floor(hash(k, cyc, 804) * H), r = f < 0.15 ? 0 : 1;
+    if (y >= H - 1 || F.T[y * W + x]) continue;
+    put(x, y, 0.8, M_STONE, 1); if (r) { put(x - 1, y - 1, 0.6, M_STONE, 1); put(x + 1, y - 1, 0.6, M_STONE, 1); }
+  }
+}
+
 // ---------------------------------------------------------------- the boot screen: Age of Judgment launching on the PC
 // Rain over Ravenhold at night. Behind the town, the fallen angel: its ribs rise out of the hills and arch over the
 // rooftops; its broken halo stands in the sky with the spark in its gap. Lightning now and then shows the whole of it.
