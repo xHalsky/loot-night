@@ -26,14 +26,14 @@ ring, trinket). Old saves are renamed on load.
 (`BATTLES_PER_FLOOR`, 3). Every `CHECKPOINT_EVERY` (5th) floor is a boss floor: two encounters, then the boss.
 **An encounter is a pack:** `PACK_MIN` + floor / 2 enemies (5 on floor 1, at most `PACK_MAX` 12), six on screen
 (`src/core/arena.ts`): fodder in two close lanes (front x 186, 226, 266; back x 205, 245, darker), a boss or a caster
-(the Shaman) behind them on the party's lane. The rest wait off screen and step into a free rank as the front ones
+(the Shaman) behind them on the party's lane. The rest wait off screen and step into a free position as the front ones
 die (`STEP_IN_SEC`, 0.6 s, sliding in). A pack member has `PACK_HP_MULT` (1.25) of a lone enemy's HP and
 `PACK_ATK_MULT` (0.7) of its attack (tuned in 0.59, #52 1.9: the good bot's fights take 9 to 12 s against the 8 to 12 s
 target, and its night-1 runs end on floors 5 to 10, the Ogre on floor 5 now a real wall).
 Enemies compound per floor (1.2); levels add `HERO_LEVEL_SCALE` (+4%) and the gear has to keep up
 ([loot.md](loot.md), #49). **Who they hit:** Taunt takes everything (everything hits the Knight, wherever he
-stands); otherwise melee hits the front living hero (70%) or the next, the Shaman hits ranks 3 and 4, bats hit anyone
-(ranks: the marching order below). Monday's dungeon is the Shadow Crypt
+stands); otherwise melee hits the front living hero (70%) or the next, the Shaman hits positions 3 and 4, bats hit anyone
+(positions: the marching order below). Monday's dungeon is the Shadow Crypt
 (`src/data/enemies.ts`). When a boss dies, the enemies still standing run. Enemy ids are older than their
 names (`collector` = Orc, `auditor` = Shaman, `shelter` = Guardian, `junk` = Imps, `bailiff` = Ogre, `shark` =
 Warlock, `landlord` = Black Knight; boss moves `slam`, `loan`, `evict`); saves and tests key on the ids.
@@ -61,7 +61,7 @@ that answer it pulsing red. The floor map names the boss in the margin note of t
 |---|---|---|
 | The Ogre (1700 / 28) | SMASH, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
 | The Warlock (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s SUMMON: a friend (Shaman or Imps) joins; a friend still standing is EMPOWERed instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next summon: Fire, Cataclysm, Frost on the Shaman |
-| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the rank of the most hurt hero ("Execute · rank 4"): whoever stands in that rank when it lands loses `EVICT_PCT` (90%) of max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, swap a sturdier hero into that rank, Last Stand or Miracle after; Bash the shield off again |
+| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the position of the most hurt hero ("Execute · position 4"): whoever stands in that position when it lands loses `EVICT_PCT` (90%) of max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, swap a sturdier hero into that position, Last Stand or Miracle after; Bash the shield off again |
 
 **Boss big attack: SMASH** (the Ogre). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
 a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
@@ -101,12 +101,12 @@ automatically. 4, R and F stay dark.
 Hixx's auto attack (Stab) hits the front enemy. His stats (*start*): HP 85, attack 12, armor 3, speed 13,
 crit 12, luck 5. Pickpocket is not in the kit: Heist covers its ground (decisions 2026-11-20).
 
-**Marching order** (#52, 1.6; grid doc §5d; rules `src/systems/ranks.ts`). The party walks and fights in one line,
-rank 1 at the front (right in the picture, left in the skill bar); a hero's rank is his place in the party. Defaults:
+**Marching order** (#52, 1.6; grid doc §5d; rules `src/systems/positions.ts`). The party walks and fights in one line,
+position 1 at the front (right in the picture, left in the skill bar); a hero's position is his place in the party. Defaults:
 Knight, Rogue, Mage, Priest. An old save gets the default once (`orderSet`; and again when the rogue joins it);
 after that the order is the player's and carries over from night to night.
-- **Home ranks** (`HOME_RANKS`, data per hero so tree nodes can change them): Knight 1 to 2, Hixx 1 to 3, Mage 3 to
-  4, Healer 2 to 4. Outside them a hero deals and heals `OUT_OF_RANK_MULT` (x0.7); a crimson "x0.7" tab sits on his
+- **Home positions** (`HOME_POSITIONS`, data per hero so tree nodes can change them): Knight 1 to 2, Hixx 1 to 3, Mage 3 to
+  4, Healer 2 to 4. Outside them a hero deals and heals `OUT_OF_POSITION_MULT` (x0.7); a crimson "x0.7" tab sits on his
   portrait, and "out of position" floats over him when he lands there.
 - **Auras** (a neighbour's buff; a downed hero gives none). Shown as glyphs on the skill bar's pilasters in the
   giver's class colour, and on the hero's card.
@@ -125,16 +125,16 @@ after that the order is the player's and carries over from night to night.
   the same in the dungeon). A click without a drag selects the hero.
 - **Enemies that break the line** (from floor `LINE_BREAK_FROM`, 6; `LINE_BREAK_CHANCE` 35% of encounters, never
   with a boss): a Ghoul or a Brute joins the pack. Its move comes on its 2nd action and then every 4th, after a
-  `LINE_BREAK_WINDUP_SEC` (1 s) cast that names the rank: **Hook · rank 4** (a chain drags the last hero to the
-  front, the others step back one) and **Shove · rank 1** (the front hero is knocked back, swapping with rank 2).
+  `LINE_BREAK_WINDUP_SEC` (1 s) cast that names the position: **Hook · position 4** (a chain drags the last hero to the
+  front, the others step back one) and **Shove · position 1** (the front hero is knocked back, swapping with position 2).
   Everyone who moved walks for `SWAP_SEC`. Away, the line stays broken: fixing it is a reason to look.
 - **Hovering a hero** opens his card over his head: his name ("Arkbishop"), his class under it in the class colour
-  ("Priest"), a crimson line for what is wrong ("Out of position: heals at 70%. His ranks are 2 to 4."), a moss line
+  ("Priest"), a crimson line for what is wrong ("Out of position: heals at 70%. His positions are 2 to 4."), a moss line
   for what his aura gives and to whom ("Dutch (Knight), behind him, regenerates 1% HP per second."), and a note with
-  his rank ("Rank 1. Drag him back. Away, the line stays broken."). The side panel's hero tooltip (a portrait) says the
-  same: name, class, role, rank and home ranks.
-- `npx tsx test/ranks.ts` checks the default order, an old save getting the rogue, home ranks, the auras, swaps, Hook and Shove,
-  EXECUTE by rank, Smoke Bomb, Heist, Backstab and when the breakers come; `python3 test/ranks.py` shoots it.
+  his position ("Position 1. Drag him back. Away, the line stays broken."). The side panel's hero tooltip (a portrait) says the
+  same: name, class, role, position and home positions.
+- `npx tsx test/positions.ts` checks the default order, an old save getting the rogue, home positions, the auras, swaps, Hook and Shove,
+  EXECUTE by position, Smoke Bomb, Heist, Backstab and when the breakers come; `python3 test/positions.py` shoots it.
 
 **Curios in the corridor** (#30, the RPG's third verb; content `src/data/curios.ts`, rules
 `src/systems/curios.ts`, numbers `CURIO_*`). On a battle floor, `CURIO_PER_FLOOR` (1 or 2) of the walks have a curio
@@ -284,7 +284,7 @@ rare or better.
 redesign's renderer (`src/render/page/live.js` from the view model in `src/render/rpgView.ts`) on the 334 × 232
 grid: a 64 px band where the curio card opens, the 142 px picture, the 26 px skill bar. The dark baroque ossuary in
 Moonwell 32, Bayer-dithered: far catacomb, the ossuary arcade, a perspective floor, ground mist, a foreground pillar
-pinned to the left edge in battle, warm candles against cold moonlight. The party walks in rank, front on the right
+pinned to the left edge in battle, warm candles against cold moonlight. The party walks in position, front on the right
 (knight x 126, then 35 px apart); actors get the separation pass (fill light, rim, outline, halo). Enemies stand in
 the front lane (x 186, 226, 266), a boss behind them on the party's lane. The page's rigs stand in for the skeleton,
 the guardian (skeleton with helm and shield), the orc (zombie with a sword) and the shaman (necromancer); bats, imps,
@@ -297,7 +297,7 @@ Ward's and Taunt's rings. **Melee hits swing the weapon** (#97, `SWING_SEC`): th
 the sword off his shoulder, up behind the helm, over the top and down at the enemy, drawn over his shield; Hixx's
 Stab and Backstab use both daggers (0.87.1, Paweł): the near hand cocks low and cuts up and forward, and a beat later
 the far hand comes over the top from behind his hood and cuts down and forward, so the two cuts cross in an X. Each
-cut leaves a bright crescent smear along the edge, Hixx's bigger than his daggers so they read from rank 2 over the
+cut leaves a bright crescent smear along the edge, Hixx's bigger than his daggers so they read from position 2 over the
 Knight's back. Casts and the ranged heroes
 keep the lunge (`python3 test/swing.py`). It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The floor map is
 drawn by the same renderer; the town is still the old drawing (V2 continues).
@@ -342,14 +342,18 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   portal, so the last run of the night carried no risk, just when real life is most dangerous); only the portal banks
   (every night would end "portal, then Sleep", a chore rather than a choice); the run waits for the next night (it
   clashes with each night opening in town and one dungeon a night, #3).
-- **Marching order** (0.56, #52 1.6; Paweł approved the mockups on 2026-11-20). A hero's rank is his place in the
-  party list, so the picture, the skill bar and the rules read one order. Rejected: a rank field per hero (two
-  orders to keep in step). **EXECUTE names a rank, not a hero:** whoever stands there when it lands takes it, so a
+- **Positions, not ranks** (0.90.1, #110; Paweł: "rank" made no sense for the order in the formation): every
+  tooltip, cast, feed line and the code say position (Position 1 is the front; "Hook · position 4", "Home positions 2
+  to 4"). Rejected: "slot" (the gear and the skill wells already have slots). The Q4 job ladder keeps its own
+  "rank" (a title, saved).
+- **Marching order** (0.56, #52 1.6; Paweł approved the mockups on 2026-11-20). A hero's position is his place in the
+  party list, so the picture, the skill bar and the rules read one order. Rejected: a position field per hero (two
+  orders to keep in step). **EXECUTE names a position, not a hero:** whoever stands there when it lands takes it, so a
   swap is an answer, as in Darkest Dungeon (following the hero would make the swap pointless). **A swap costs 1 s
   without acting** for both heroes (and everyone a Hook or Shove moves), so fixing the line is a choice in a fight,
-  not a free click. The breakers act on a schedule (2nd action, then every 4th) after a 1 s cast that names the rank,
+  not a free click. The breakers act on a schedule (2nd action, then every 4th) after a 1 s cast that names the position,
   so you can see it coming; rejected: a random chance per action (unreadable). Night 1 now starts Knight, Healer,
-  Mage: the Mage's home ranks are 3 to 4. Arkbishop's blessing works in the whole dungeon, walks included (between
+  Mage: the Mage's home positions are 3 to 4. Arkbishop's blessing works in the whole dungeon, walks included (between
   fights is where regeneration matters, and it eases the Blood pact for his neighbours).
 - **The rogue from night 1** (0.87, #96; Paweł after the first playtest: three heroes on Monday read as one missing).
   He joined on Tuesday (0.56 to 0.86, #56) so each night added one thing; Tuesday still has chat visits, the headset,
@@ -384,7 +388,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   not as a fourth corner line: on the grid there is no room under Flow above the plate, and the portal is what
   banks it (Paweł kept it there, 2026-11-24, with the plate widened: at 54 px "bank 12 · 1240 g" spilled over
   its edges and the gradient's dither ran under the second line; the trip's 15 min moves to the tooltip while
-  the run holds something). Rank targeting (melee on ranks 1 and 2) came early with the packs: six attackers hitting at random wiped
+  the run holds something). Position targeting (melee on positions 1 and 2) came early with the packs: six attackers hitting at random wiped
   the back row.
 - **Real-time combat, three slots, ultimates on charge** (0.51, #52 1.2). The ATB turns were already timers; now
   each unit attacks on `BASE_ATTACK_SEC` × 10 / speed, about 2.8x the old pace, and turn counts are seconds. The
@@ -401,7 +405,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 - **No auto-attack button.** It was always on, so the button was noise. Keys start at 1 / Q / A.
 - **Knight in front with the torch**, so the light leads the party, and the front hero picks up the loot.
 - **The front hero walks over the loot** (0.87, #95; Paweł after the first playtest). From 0.53 a looter (the rogue, or
-  the Knight on night 1) ran ahead of his rank to each drop and back; it read as the Knight breaking ranks after every
+  the Knight on night 1) ran ahead of his place to each drop and back; it read as the Knight breaking ranks after every
   fight. Now the drops scroll in with the floor and the first standing hero picks up what reaches his feet; after the
   floor's last fight the party still walks forward, out of the floor, over the drops. Rejected: a pickup pause, and
   the drops flying to the bag on their own (nobody walks over anything).

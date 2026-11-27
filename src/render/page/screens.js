@@ -88,8 +88,8 @@ const FOES = [
 const FOE = Object.fromEntries(FOES.map((f) => [f.id, f]));
 const LOOT_AT = [160, 201]; // the Grave Ring on the bone pile, in front of the knight
 function screenBattle(ctx, t) {
-  // marching order, swaps, the Hook and run blessings stage the scene (ranks.js)
-  const RS = typeof rankStage === 'function' ? rankStage(t) : null, savedX = PARTY.map((m) => m.x), savedTags = FOES.map((f) => f.tag);
+  // marching order, swaps, the Hook and run blessings stage the scene (positions.js)
+  const RS = typeof positionStage === 'function' ? positionStage(t) : null, savedX = PARTY.map((m) => m.x), savedTags = FOES.map((f) => f.tag);
   if (RS) { PARTY.forEach((m) => (m.x = RS.x[m.id])); if (RS.hideTags) FOES.forEach((f) => (f.tag = null)); }
   setRes(BA_W, GS_H, BAR_Y); CX = 167;
   const F = buf('ba', BA_W, GS_H); clearFrame(F); bind(F);
@@ -119,7 +119,7 @@ function screenBattle(ctx, t) {
       const backT = new Set(FOES.map((f, n) => (f.lane === 'back' ? 11 + n : 0)).filter(Boolean));
       for (let i = 0; i < W * H; i++) if (backT.has(F.T[i])) { F.G[i] *= 0.62; if (F.E[i] === 0) F.V[i] *= 0.9; }
       lights.push({ x: EFX.necro[0], y: EFX.necro[1], r: 70, i: 0.55, c: [1.0, 0.8, 1.6] });
-      // cold shaft over the front rank, the brazier's warm pool over the back of the mob
+      // cold shaft over the front position, the brazier's warm pool over the back of the mob
       lights.push({ beam: true, x: 232, y: 0, x1: 206, y1: 204, w: 66, i: 0.62, air: 0.05, c: COLD, r: 1 });
       lights.push({ x: bx, y: by - 18, r: 95, i: 0.95 + 0.1 * Math.sin(t * 9), c: [1.2, 1.0, 0.74] });
       lights.push({ x: EFX.staff[0], y: EFX.staff[1], r: 90, i: 0.7, c: [1.0, 0.82, 1.55] });
@@ -149,7 +149,7 @@ function screenBattle(ctx, t) {
         if (pulse > 0.72) { put(IX, IY - 5, 0.95, M_STONE, 1); put(IX - 2, IY - 3, 0.85, M_STONE, 1); put(IX + 2, IY - 3, 0.85, M_STONE, 1); }
         lights.push({ x: IX, y: IY - 3, r: 34, i: 0.5 + 0.15 * pulse, c: [0.8, 1.0, 1.3] });
       }
-      // bile spat by the taunted zombie in the back lane, arcing over the front rank onto the knight's shield
+      // bile spat by the taunted zombie in the back lane, arcing over the front position onto the knight's shield
       if (q > 3.0 && q < 3.5) {
         const [mx, my] = EFX.spit, pos = (k) => [lerp(mx, SPL[0], k), lerp(my, SPL[1], k) - Math.sin(k * Math.PI) * 34];
         for (let j = 5; j >= 1; j--) { const [x, y] = pos(clamp((q - 3.0) / 0.5 - j * 0.04)); put(Math.round(x), Math.round(y), 0.5 - j * 0.06, M_MOSS, 1); }

@@ -10,7 +10,7 @@ import { sfx } from '../ui/audio';
 import { coach } from './coach';
 import { noteDrop, rareWhy, setRareWhy } from './pacing';
 import { blessPow } from './run';
-import { ENEMY_SLOTS, RANK_X, LOOTER_REACH } from '../core/arena';
+import { ENEMY_SLOTS, POS_X, LOOTER_REACH } from '../core/arena';
 import { LEGENDS, SETS, SET_SLOTS } from '../data/legendaries';
 import { legendOn } from './gear';
 import { boysSay, isUpgradeForSomeone } from './boys';
@@ -206,7 +206,7 @@ export function looterIndex(): number { return Math.max(0, S.g.heroes.findIndex(
 /** Walking moves floor loot toward the party with the floor; whoever walks in front picks up what reaches his feet
  *  (#95: nobody runs ahead for it). */
 export function moveFloorLoot(dx: number, dt: number) {
-  const n = N(), home = RANK_X[looterIndex()];
+  const n = N(), home = POS_X[looterIndex()];
   for (const l of n.floorLoot) { l.x -= dx; l.t += dt; }   // grid px (core/arena.ts)
   const got = n.floorLoot.filter(l => l.x <= home + LOOTER_REACH);
   if (!got.length) return;

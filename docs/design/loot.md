@@ -95,7 +95,7 @@ with the floor and **whoever walks in front** (the first standing hero in the ma
 walks over it (`LOOTER_REACH`, in front of his feet; #95). Nobody runs ahead for it. The walk lasts until every drop
 is picked up (at least `WALK_SEC`), at `WALK_HURRY_PACE` (75) instead of `WALK_PACE` (40) while loot lies ahead; after
 the floor's last fight this is the walk out of the floor, over the drops, before the map. (0.62.2 to 0.86 a looter ran
-ahead of his rank to each drop and back; the playtest read it as the Knight breaking ranks. Decision in
+ahead of his place to each drop and back; the playtest read it as the Knight breaking ranks. Decision in
 [dungeon.md](dungeon.md). `python3 test/walk.py` shoots it.) A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
 shines with NEW (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
 leave by portal or the floor ends. Everything picked up in a run is unbanked (a dashed mark on its bag cell) until

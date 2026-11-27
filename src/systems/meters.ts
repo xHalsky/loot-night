@@ -1,4 +1,4 @@
-import { updateRanks } from './ranks';
+import { updatePositions } from './positions';
 import { eyesBusy } from './eyes';
 import { isWitching } from './affixes';
 import { T } from '../config/tuning';
@@ -56,7 +56,7 @@ export function updateMeters(dt: number) {
   n.goodDog = Math.max(0, n.goodDog - dt);
   n.ward = Math.max(0, n.ward - dt);
   n.smoke = Math.max(0, n.smoke - dt); n.heist = Math.max(0, n.heist - dt); n.sanctuary = Math.max(0, (n.sanctuary ?? 0) - dt);
-  updateRanks(dt);   // heroes walking to a new rank (#52, 1.6)
+  updatePositions(dt);   // heroes walking to a new position (#52, 1.6)
   n.guilt = Math.max(0, n.guilt - dt);
   n.monitorOff = Math.max(0, n.monitorOff - dt);
 

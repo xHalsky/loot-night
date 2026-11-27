@@ -399,7 +399,7 @@ function rogue(cx, fy, s, b, t, carry, wp, swq) {
   }
   if (RS) {
     const ux = Math.cos(RS[2]), uy = Math.sin(RS[2]), hx = Math.round(RS[0]), hy = Math.round(RS[1]);
-    swingSmear(swq, KR, 4, 4, 17);   // bigger than the dagger: from rank 2 it has to read over the Knight's back
+    swingSmear(swq, KR, 4, 4, 17);   // bigger than the dagger: from position 2 it has to read over the Knight's back
     armTo(NA.s, [hx, hy], 10.5, 1, 3.2, 2.8, 0.18, 0.6, LE);
     rect(hx - 1, hy - 1, 3, 3, 0.24, LE); put(hx + 1, hy - 1, 0.5, LE);             // fist
     line(hx + ux * 2 - uy * 2, hy + uy * 2 + ux * 2, hx + ux * 2 + uy * 2, hy + uy * 2 - ux * 2, 0.7, M_STONE);   // guard

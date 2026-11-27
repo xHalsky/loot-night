@@ -20,7 +20,7 @@ the config object and tune them with the debug overlay.
 - **Save:** the data changes a lot (scraps, trees, runs, zł use). Bump the save key to `lootnight.save.v2`;
   old saves start fresh.
 - **Art:** `claude/loot-night-rpg-grid.md` assumes 3 heroes, 3 enemies and 3 skill wells per hero. The new
-  layout is 4 heroes with 4 wells each, enemy ranks, swaps, path-card features and conditions, run-blessing
+  layout is 4 heroes with 4 wells each, enemy positions, swaps, path-card features and conditions, run-blessing
   icons, the tree screen, the Q4 screen and the phone apps. Keep the Moonwell 32 look, the grid and the
   meaning colours; lay the new parts out on the same grid. Code-drawn stand-ins are fine until the art pass.
   The PC (taskbar, windows, Excel, dialogs) looks like Windows 98/XP. The phone is a touch smartphone: mouse
@@ -52,7 +52,7 @@ the redesign is in, once the numbers are tuned (decided 2026-11-24), so it no lo
   only fills during fights, never between them). Always manual, never autocast. The 4th well in the skill bar
   (now a locked placeholder) becomes the ultimate.
 - **Keys, one keyboard row per hero, ultimate on the 4th key:** Knight 1 2 3 + 4, Mage Q W E + R,
-  Priest A S D + F, Rogue Z X C + V. Keys belong to the hero, not to the rank.
+  Priest A S D + F, Rogue Z X C + V. Keys belong to the hero, not to the position.
 - **Away:** when the RPG is not on screen (Excel, switching, monitor off, hands busy), manual skills and
   ultimates are not cast. Only bought autocasts fire (step 2). Remove the old autopilot skill use
   (`AUTOPILOT_HEAL_BELOW`, `AUTOPILOT_NO_TANK` and the rest of that logic); the party still fights with auto
@@ -69,12 +69,12 @@ the redesign is in, once the numbers are tuned (decided 2026-11-24), so it no lo
 - **Packs:** an encounter is a pack, six on screen: fodder in two close lanes, bosses, sub-bosses and lieutenants
   behind them on the party's own lane. Pack size `= min(PACK_MAX, PACK_MIN +
   floor(f / 2))` (*start* `PACK_MIN` 5, `PACK_MAX` 12). The rest wait off screen on the right and step into
-  the free rank as the front ones die. Imp swarms stay as they are (one swarm fills one rank).
+  the free position as the front ones die. Imp swarms stay as they are (one swarm fills one position).
 - **Keep the walk** (`WALK_SEC` stays) and the Diablo pickup. Drops fall where the enemy died, in their
   rarity light with the beam, as now.
 - **Remove the loot pause** (`LOOT_PAUSE_SEC`). The pickup happens during the walk: the looter runs ahead to
   each item, grabs it (the name flies up, the bag slot glows NEW, the LOOT feed line), and runs back into
-  rank. The walk lasts until the pickup is done, but at least `WALK_SEC`. The looter is the Knight on night 1
+  position. The walk lasts until the pickup is done, but at least `WALK_SEC`. The looter is the Knight on night 1
   and the Rogue from night 2.
 - **More drops:** each kill drops an item with `DROP_CHANCE` (*start* 0.35); elites always drop; bosses drop
   `BOSS_DROPS` (3). Keep the rarity weights, the per-floor shift and the epic pity. Add
@@ -170,13 +170,13 @@ No blessing cards. The choice at the end of a floor is the route, on the parchme
 | Ritual Circle (new) | Join the chant | Souls +50% | Enemies +20% HP |
 
 ### 1.6 Marching order (Darkest Dungeon style)
-- The party walks and fights in one line: rank 1 at the front, rank 4 at the back. Defaults: night 1 (3
+- The party walks and fights in one line: position 1 at the front, position 4 at the back. Defaults: night 1 (3
   heroes) Knight, Priest, Mage; from night 2 Knight, Rogue, Mage, Priest.
-- **Home ranks:** a hero outside them deals and heals `OUT_OF_RANK_MULT` (*start* 0.7) of normal. Knight 1–2,
+- **Home positions:** a hero outside them deals and heals `OUT_OF_POSITION_MULT` (*start* 0.7) of normal. Knight 1–2,
   Rogue 1–3, Mage 3–4, Priest 2–4. Show "out of position" as a small mark on the hero's skill-bar portrait.
-- **Enemies hit ranks:** melee enemies hit rank 1 (70%) or 2 (30%); archers and casters hit ranks 3–4; some
-  casters hit any rank. Taunt overrides all of it (everything hits the Knight). Boss wind-ups name their
-  target rank: "EXECUTE · rank 4".
+- **Enemies hit positions:** melee enemies hit position 1 (70%) or 2 (30%); archers and casters hit positions 3–4; some
+  casters hit any position. Taunt overrides all of it (everything hits the Knight). Boss wind-ups name their
+  target position: "EXECUTE · position 4".
 - **Auras (neighbour buffs).** Downed heroes give none. Show them on hover over a hero and as a tiny icon
   between the skill-bar portraits.
 
@@ -190,10 +190,10 @@ No blessing cards. The choice at the end of a floor is the route, on the parchme
 - **Swap:** drag a hero (the sprite or the skill-bar portrait) onto another to swap them. Both stop acting for
   `SWAP_SEC` (*start* 1) while they pass each other. In town, change the order freely at no cost.
 - **Enemies that break the line** (from floor 6, about one every few encounters, with a 1 s wind-up icon):
-  - **Hook:** pulls the hero in rank 4 to rank 1; the others shift back one.
-  - **Brute:** knocks rank 1 back, swapping it with rank 2.
+  - **Hook:** pulls the hero in position 4 to position 1; the others shift back one.
+  - **Brute:** knocks position 1 back, swapping it with position 2.
   - While you're away the line stays broken. Fixing it is a reason to watch.
-- Tree nodes may later change home ranks (for example "Fire at full power from rank 2"); keep home ranks as
+- Tree nodes may later change home positions (for example "Fire at full power from position 2"); keep home positions as
   data per hero.
 
 ### 1.7 The Rogue (4th hero)
@@ -292,7 +292,7 @@ Each tree has 15 nodes; the player can buy up to 12 (three pairs). "Req" = requi
 |---|---|---|---|
 | Hold the Line / Thorns | rule pair | Taunt also gives the Knight +30% armor / Taunted enemies take 30% of their hits back | none |
 | Bash | unlock | Unlocks Bash | none |
-| Cleaving Bash / Concussion | rule pair | Bash hits the enemies in ranks 1 and 2 / Bash stuns twice as long | Bash |
+| Cleaving Bash / Concussion | rule pair | Bash hits the enemies in positions 1 and 2 / Bash stuns twice as long | Bash |
 | Iron Skin | stat | +10% HP | none |
 | Rally | unlock | Unlocks Rally | Bash |
 | War Cry / Second Wind | rule pair | Rally also clears debuffs / Rally lasts twice as long | Rally |

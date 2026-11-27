@@ -38,8 +38,8 @@ export interface Hero {
   queued: number | null; // ability slot queued for next turn
   lunge?: number;        // attack animation timer
   swing?: number;        // a melee attack's weapon swing, seconds left (#97)
-  moving?: number;       // seconds left changing rank (a swap, a Hook, a Shove): he doesn't act (#52, 1.6)
-  from?: number;         // the rank he is moving from (0-based), for the walk between ranks
+  moving?: number;       // seconds left changing position (a swap, a Hook, a Shove): he doesn't act (#52, 1.6)
+  from?: number;         // the position he is moving from (0-based), for the walk between positions
   nextCrit?: boolean;    // Nightglass (3 pieces): Smoke Bomb makes his next hit a crit (#52, 1.8)
 }
 
@@ -47,7 +47,7 @@ export interface Enemy {
   uid: number; defId: string; name: string; hp: number; maxHp: number;
   atk: number; armor: number; speed: number; atb: number;
   aliveSec: number; stunned: number; boss: boolean; flash: number; lunge?: number;   // stunned: seconds left
-  slot: number; elite?: boolean; enter?: number;   // where it stands (core/arena.ts); seconds left stepping into its rank
+  slot: number; elite?: boolean; enter?: number;   // where it stands (core/arena.ts); seconds left stepping into its position
   marks?: Partial<Record<MarkId, number>>;          // seconds left per ability mark (docs/design/dungeon.md)
   shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
   burn?: number; burnDps?: number;                   // Wildfire (a tree rule, #53): seconds left burning, damage a second

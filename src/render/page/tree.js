@@ -9,7 +9,7 @@ let TREE_HERO = 'knight';
 const TREES = {
   knight: { auto: 'Slash', s1: 'taunt', s2: 'cleave', ult: 'shield', neb: M_STONE,
     r1: [['Hold the Line', 'Taunt also gives the Knight +30% armor.'], ['Thorns', 'Taunted enemies take 30% of their hits back.']],
-    r2: [['Cleaving Bash', 'Bash hits the enemies in ranks 1 and 2.'], ['Concussion', 'Bash stuns twice as long.']],
+    r2: [['Cleaving Bash', 'Bash hits the enemies in positions 1 and 2.'], ['Concussion', 'Bash stuns twice as long.']],
     st: { g1: ['Veteran', '+8% damage.'], g2: ['Brute', '+10% damage.'], p1: ['Bulwark', '+10% armor.'], q1: ['Iron Skin', '+10% HP.'], p2: ['Crushing', 'Bash deals +20% damage.'], q2: ['Hardened', 'Healing on him +15%.'], m1: ['Stalwart', '+15% HP.'], m2: ['Tower Shield', '+15% armor.'], m3: ['Shield Brother', 'His aura: the hero behind him takes 35% less damage (from 25%).'] },
     ultFx: 'For 6 s, no hero can drop below 1 HP.', s2Fx: 'A heavy blow that staggers the front enemy.',
     bought: ['g1', 'g2', 's2', 'p2', 'r2a'] },

@@ -8,7 +8,7 @@ import { travelToDungeon } from '../src/systems/dungeon';
 import { genItem } from '../src/systems/loot';
 import { spawnBattle, queueAbility, updateBattle } from '../src/systems/battle';
 import { heroStats, maxHp } from '../src/systems/stats';
-import { ensureParty, heroById } from '../src/systems/ranks';
+import { ensureParty, heroById } from '../src/systems/positions';
 import { LEGENDS, SETS, type LegendId, type SetId } from '../src/data/legendaries';
 
 let fail = 0;

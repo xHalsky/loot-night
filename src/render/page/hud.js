@@ -212,7 +212,7 @@ function skillBar(st, t) {
   for (const rx of [3, W - 7]) bossU(rx, y0, 4);
   // four heroes, 76 px each (portrait, HP tube, two skills and the gilded ultimate), a carved pilaster between
   const gx = [6, 88, 170, 252];
-  // groups follow the marching order (rank 1 on the left); keys stay with the hero (ranks.js)
+  // groups follow the marching order (position 1 on the left); keys stay with the hero (positions.js)
   const order = st.order || [0, 1, 2, 3];
   order.forEach((hi, n) => {
     const hero = HEROES[hi], x = gx[n], sel = st.selected === n, hp = st.hp[hi];
@@ -227,7 +227,7 @@ function skillBar(st, t) {
     }
     hero.skills.forEach((sk, k) => skillSlot(x + 28 + k * 16, y0 + 6, sk, hero.keys[k], st, t, k === 2));
     if (n < HEROES.length - 1) pilasterU(x + 79, y0 + 7, y0 + 23);
-    if (typeof rankMarks === 'function') rankMarks(x, y0, hero.id, n, st, t);
+    if (typeof positionMarks === 'function') positionMarks(x, y0, hero.id, n, st, t);
   });
   if (typeof auraGlyphs === 'function' && st.auras !== false) auraGlyphs(order.map((hi) => HEROES[hi].id), order.map((hi) => st.hp[hi]), gx, y0);
   if (st.blocked) {

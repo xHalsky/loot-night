@@ -1,4 +1,4 @@
-import { ensureParty } from './ranks';
+import { ensureParty } from './positions';
 import { chooseWear, giftFirstNote, wearing } from './wardrobe';
 import { bankRun, loseRun, unbanked } from './run';
 import { resetPacing } from './pacing';

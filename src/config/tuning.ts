@@ -157,7 +157,7 @@ export const T = {
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))
   PACK_HP_MULT: 1.25,              // a pack member's HP and attack against a lone enemy's (*start*, tuned to 8 to 12 s fights)
   PACK_ATK_MULT: 0.7,
-  STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free rank (it doesn't attack meanwhile)
+  STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free position (it doesn't attack meanwhile)
   // Drops per kill (#52, 1.3): they fall where the enemy died; the front hero walks over them on the next walk (#95)
   DROP_CHANCE: 0.35,              // each kill drops an item; elites always; bosses BOSS_DROPS
   LEGENDARY_FIRST_BY: 40,         // the first legendary of a save drops within its first 40 drops (night 1 has 45 to 75)
@@ -208,8 +208,8 @@ export const T = {
   // the rogue (Hixx), the fourth hero (#52, 1.7): in the party from night 1 (#96)
   SMOKE_SEC: 4, SMOKE_MISS: 0.5,  // Smoke Bomb: enemies miss this share of their attacks
   HEIST_SEC: 8,                   // Heist (ultimate): every kill drops an item for this long
-  // Marching order (#52, 1.6; docs/design/dungeon.md): rank 1 is the front
-  OUT_OF_RANK_MULT: 0.7,          // damage and healing of a hero outside his home ranks
+  // Marching order (#52, 1.6; docs/design/dungeon.md): position 1 is the front
+  OUT_OF_POSITION_MULT: 0.7,          // damage and healing of a hero outside his home positions
   SWAP_SEC: 1,                    // a swap: both heroes stop acting while they pass each other (Hook and Shove too)
   AURA_KNIGHT_TAKEN: 0.25,        // Knight: the hero directly behind takes this much less damage
   AURA_ROGUE_CRIT: 10,            // the rogue: the hero directly in front gets this much crit

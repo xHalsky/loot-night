@@ -1,14 +1,14 @@
 // ===========================================================================
-// Marching order (handoff 1.6, #52) and run blessings (1.5b): ranks, home ranks, auras, the swap,
-// the Hook that breaks the line, and the tooltips. Rank 1 is the front (right in the picture,
-// left in the skill bar). Keys belong to the hero, not to the rank.
+// Marching order (handoff 1.6, #52) and run blessings (1.5b): positions, home positions, auras, the swap,
+// the Hook that breaks the line, and the tooltips. Position 1 is the front (right in the picture,
+// left in the skill bar). Keys belong to the hero, not to the position.
 // ===========================================================================
 let BATTLE_STATE = 'fight';
-const RANK_X = [126, 87, 56, 21];
+const POS_X = [126, 87, 56, 21];
 const HOME = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], priest: [2, 4] };
 const HNAME = { knight: 'Dutch', rogue: 'Hixx', mage: 'Hudzor', priest: 'Arkbishop' };
 const HIDX = { knight: 0, rogue: 1, mage: 2, priest: 3 };
-const outOfRank = (id, r) => r < HOME[id][0] || r > HOME[id][1];
+const outOfPosition = (id, r) => r < HOME[id][0] || r > HOME[id][1];
 // auras: a 5x5 glyph in the giver's class colour, sitting between giver and receiver in the skill bar
 const AURA = {
   knight: { back: true, g: ['55555', '56M65', '56665', '.565.', '..5..'], line: 'takes 25% less damage' },
@@ -30,7 +30,7 @@ function auraGlyphs(ids, hps, gx, y0) {
   }
 }
 // marks on a hero's group: out of position (crimson tab under the portrait), stopped while swapping
-function rankMarks(x, y0, id, n, st, t) {
+function positionMarks(x, y0, id, n, st, t) {
   if (st.outpos && st.outpos.includes(id)) {
     const tx = x + 3, ty = y0 + 21;
     rectI(tx, ty, 16, 7, P.crimson); rectI(tx, ty + 6, 16, 1, P.wine);
@@ -81,9 +81,9 @@ const BLESS = {
 
 // ---------------------------------------------------------------- per-state staging of the battle screen
 // returns the party's x by hero, the bar's order and marks, and a draw() for the overlays
-function rankStage(t) {
+function positionStage(t) {
   const S = { order: [0, 1, 2, 3], x: { knight: 126, rogue: 87, mage: 56, priest: 21 }, outpos: [], stopped: [], dropOn: -1, hideTags: false, noSummon: false, draw: null, buffs: null };
-  const setRanks = (ids) => { ids.forEach((id, r) => (S.x[id] = RANK_X[r])); S.order = ids.map((id) => HIDX[id]); S.outpos = ids.filter((id, r) => outOfRank(id, r + 1)); };
+  const setPositions = (ids) => { ids.forEach((id, r) => (S.x[id] = POS_X[r])); S.order = ids.map((id) => HIDX[id]); S.outpos = ids.filter((id, r) => outOfPosition(id, r + 1)); };
   if (BATTLE_STATE === 'bless') {
     const q = t % 8, hovering = q > 1.2;
     S.buffs = [{ picon: 'altar', label: 'run', run: true }, { picon: 'moonwell', label: 'run', run: true }, { icon: 'can', label: '61s' }, { icon: 'ward', label: '4s', sweep: 0.75 }];
@@ -103,9 +103,9 @@ function rankStage(t) {
       if (q >= 0.4) S.dropOn = 2;
       S.draw = () => { if (q >= 0.4) ghostPortrait('rogue', Math.round(cx - 11), BAR_Y + 1 - 6); cursorAt(cx, cy); floorRing(S.x.rogue, t); if (q >= 0.4) floorRing(S.x.mage, t); };
     } else {
-      // the drop: they pass each other, both stop acting for 1 s; Hudzor lands in rank 2, out of his home ranks
+      // the drop: they pass each other, both stop acting for 1 s; Hudzor lands in position 2, out of his home positions
       const k = clamp((q - 1.6) / 1.0), e = k * k * (3 - 2 * k);
-      setRanks(['knight', 'mage', 'rogue', 'priest']);
+      setPositions(['knight', 'mage', 'rogue', 'priest']);
       S.x.rogue = Math.round(lerp(87, 56, e)); S.x.mage = Math.round(lerp(56, 87, e));
       if (q < 2.6) S.stopped = ['rogue', 'mage'];
       S.draw = () => {
@@ -119,12 +119,12 @@ function rankStage(t) {
     S.hideTags = true; S.noSummon = true;
     if (q < 1.6) {
       S.draw = () => {
-        windup(HK.x - 2, 104, 'Hook · rank 4', clamp(q / 1.2));
+        windup(HK.x - 2, 104, 'Hook · position 4', clamp(q / 1.2));
         if (q > 1.2) chain(hx, hy, lerp(hx, 21 + 6, (q - 1.2) / 0.4), 178);
       };
     } else {
       const k = clamp((q - 1.6) / 0.8), e = k * k;
-      setRanks(['priest', 'knight', 'rogue', 'mage']);
+      setPositions(['priest', 'knight', 'rogue', 'mage']);
       for (const [id, a] of [['priest', 21], ['knight', 126], ['rogue', 87], ['mage', 56]]) S.x[id] = Math.round(lerp(a, S.x[id], id === 'priest' ? e : k * (2 - k)));
       const tip = q > 3.2;
       S.draw = () => {
@@ -132,7 +132,7 @@ function rankStage(t) {
         if (q > 2.3 && q < 3.6) floater('out of position', S.x.priest, Math.round(108 - (q - 2.3) * 6), P.crimson);
         if (tip) {
           // hovering the hero himself: the card opens above his head
-          tipCard(S.x.priest - 70, 34, 150, [['h', 'Arkbishop', null], ['c', 'Priest', null], ['-', 'Out of position: heals at 70%. His ranks are 2 to 4.'], ['+', 'Dutch (Knight), behind him, regenerates 1% HP per second.'], ['n', 'Rank 1. Drag him back. Away, the line stays broken.']]);
+          tipCard(S.x.priest - 70, 34, 150, [['h', 'Arkbishop', null], ['c', 'Priest', null], ['-', 'Out of position: heals at 70%. His positions are 2 to 4.'], ['+', 'Dutch (Knight), behind him, regenerates 1% HP per second.'], ['n', 'Position 1. Drag him back. Away, the line stays broken.']]);
           cursorAt(S.x.priest + 2, 150);
         }
       };

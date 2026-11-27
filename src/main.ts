@@ -40,7 +40,7 @@ import { dogStroked, DOG_SPOTS } from './render/dogView';
 import { GRID_W, GRID_H, STAGE_K, gridScale } from './render/grid';
 import { drawPreview, setPreview, previewScene, type PreviewScene } from './render/preview';
 import { maxHp } from './systems/stats';
-import { swapHeroes, ensureParty, hookLine, shoveLine } from './systems/ranks';
+import { swapHeroes, ensureParty, hookLine, shoveLine } from './systems/positions';
 import { toggleAutocast, buyNode, respec } from './systems/tree';
 import type { NodeId } from './data/trees';
 import type { HeroId } from './core/state';
@@ -364,7 +364,7 @@ el('spArea').addEventListener('pointerdown', ev => {
   // an item: pick it up (drag to equip or unequip, as the DOM bag did); a click without a drag selects it
   if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
   if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
-  // a party card: a click picks the hero, a drag onto another card swaps their ranks (the town had no reorder before)
+  // a party card: a click picks the hero, a drag onto another card swaps their positions (the town had no reorder before)
   if (h.act === 'heroTab') { inv = { key: `hero:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
   actions[h.act]?.(h.arg);
 });

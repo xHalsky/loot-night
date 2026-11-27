@@ -441,7 +441,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 #ui.cv .cvtop.cvtown{ height: 246px; }
 #ui.cv .sp-pop{ pointer-events: auto; }
 #spBag{ position: absolute; left: 676px; top: 248px; width: 268px; height: 136px; pointer-events: none; }   /* where the bag is on the panel's canvas: coach marks point at it */
-/* a party card picked up in the side panel (drag onto another card to swap ranks) */
+/* a party card picked up in the side panel (drag onto another card to swap positions) */
 #ghost .ghost-hero small{ font-size: 11px; opacity: .85; }
 #ghost .ghost-hero{ display: inline-block; padding: 3px 7px; font: 14px 'Pixelify Sans', sans-serif; color: #f4e4c1; background: #1d1424; border: 2px solid; white-space: nowrap; }
 #ghost.hero{ width: auto; height: auto; border: 0; background: none; }

@@ -8,7 +8,7 @@ import { startNight } from '../src/systems/night';
 import { travelToDungeon } from '../src/systems/dungeon';
 import { spawnBattle, queueAbility, updateBattle, abilityUnlocked, wardTaken } from '../src/systems/battle';
 import { heroStats, maxHp } from '../src/systems/stats';
-import { ensureParty, heroById, swapHeroes, auraTaken } from '../src/systems/ranks';
+import { ensureParty, heroById, swapHeroes, auraTaken } from '../src/systems/positions';
 import { buyNode, nodeState, nodeCost, respec, owns, autocastOn, toggleAutocast } from '../src/systems/tree';
 import type { NodeId } from '../src/data/trees';
 

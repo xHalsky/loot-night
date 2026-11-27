@@ -1,5 +1,5 @@
 // Skill trees (#53; docs/design/heroes.md, grid doc §6c): buying nodes with Souls, respec, what a hero owns, and the
-// autocast switches. Rules only; the effects are read where they act (battle, stats, ranks, run).
+// autocast switches. Rules only; the effects are read where they act (battle, stats, positions, run).
 import { T } from '../config/tuning';
 import { S, type Hero, type HeroId } from '../core/state';
 import { NODES, TREES, type NodeId, type RuleId, type StatFx } from '../data/trees';

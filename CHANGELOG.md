@@ -3,6 +3,16 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.90.1 (2026-11-27)
+
+- **Position, not rank** (#110; Paweł: it is the order in the formation): the hero tooltips ("Position 1", "Home
+  positions 2 to 4", "Position 1, out of position"), the hero card over a sprite, the enemy casts ("Hook · position 4",
+  "Shove · position 1", "EXECUTE · position 4"), the EXECUTE feed line, the Brute's first-meet line ("back one
+  position"), Cleaving Bash's rule ("positions 1 and 2"), and the code: `systems/positions.ts`, the page's
+  `positions.js`, `HOME_POSITIONS`, `OUT_OF_POSITION_MULT`, `POS_X`, `positionOf`, `outOfPosition`, `positionMult`;
+  `test/positions.ts` and `test/positions.py` (were `ranks`). The Q4 job ladder keeps its saved `rank` (a title). No
+  change to play or to saves.
+
 ## 0.90.0 (2026-11-27)
 
 - **The boys' voices and lines** (#109; Paweł): Billy loud and panicky (the 20:00 message, the replay, the call),

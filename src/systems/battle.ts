@@ -17,9 +17,9 @@ import { MARKS } from '../data/marks';
 import { overtimeGold } from './affixes';
 import { curioDmgMult, curioSpeedMult, partyCrit, partyCdMult } from './curios';
 import { coach } from './coach';
-import { RANK_X, ENEMY_SLOTS, MID_SLOT, HEAD_Y } from '../core/arena';
+import { POS_X, ENEMY_SLOTS, MID_SLOT, HEAD_Y } from '../core/arena';
 import { dropFromKill } from './loot';
-import { rankMult, auraTaken, auraCrit, auraCd, heroById, hookLine, shoveLine } from './ranks';
+import { positionMult, auraTaken, auraCrit, auraCd, heroById, hookLine, shoveLine } from './positions';
 import { legendOn, setOn } from './gear';
 import { skillOwned, rule, heroFx, autocastOn } from './tree';
 import { boysSay, boysNoteDown } from './boys';
@@ -29,8 +29,8 @@ let enemyUid = 1;
 let loudOnce = false, critHeard = false;
 
 // Visual effects on the battle area, in grid px (core/arena.ts; docs/design/dungeon.md: every action must be visible).
-// Party ranks are the heroes' order (marching order, #52 1.6: rank 1 is S.g.heroes[0]).
-export const heroCenter = (i: number) => ({ x: RANK_X[Math.max(0, i)], y: HEAD_Y + 20 });
+// Party positions are the heroes' order (marching order, #52 1.6: position 1 is S.g.heroes[0]).
+export const heroCenter = (i: number) => ({ x: POS_X[Math.max(0, i)], y: HEAD_Y + 20 });
 export function enemyCenter(e: Enemy) { const sl = ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0]; return { x: sl.x, y: e.boss ? HEAD_Y + 6 : HEAD_Y + 22 }; }
 /** Where numbers float up from: over the HP bar. */
 const heroNumY = 108;
@@ -81,7 +81,7 @@ export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
   if (elite) { const lt = n.enemies.find(e => e.slot === MID_SLOT) ?? n.enemies[0]; if (lt) lt.elite = true; }
   if (isAway()) autopilotPull();
 }
-/** The rank a newcomer takes: a boss or a caster behind the mob, fodder in the front lane, then the back lane. */
+/** The position a newcomer takes: a boss or a caster behind the mob, fodder in the front lane, then the back lane. */
 function freeSlot(d: EnemyDef): number {
   const used = new Set(N().enemies.filter(e => e.hp > 0).map(e => e.slot));
   if ((d.boss || d.role === 'healer') && !used.has(MID_SLOT)) return MID_SLOT;
@@ -89,7 +89,7 @@ function freeSlot(d: EnemyDef): number {
   for (const k of [0, 1, 2, 3, 4]) if (!used.has(k)) return k;
   return used.has(MID_SLOT) ? -1 : MID_SLOT;
 }
-/** A waiting enemy steps into a rank the dead left free. */
+/** A waiting enemy steps into a position the dead left free. */
 function stepIn() {
   const n = N();
   while (n.reserve.length) {
@@ -266,8 +266,8 @@ function castUlt(h: Hero, st: ReturnType<typeof heroStats>, mult: number, me: { 
 
 /** Who is acting right now (for crit damage from his tree). */
 let attacker: Hero | null = null;
-/** The priest's healing power: his rank, Dawnward, Grace and Mercy. */
-const healPow = (h: Hero) => rankMult(h) * dawnward() * (1 + heroFx(h, 'healOut'));
+/** The priest's healing power: his position, Dawnward, Grace and Mercy. */
+const healPow = (h: Hero) => positionMult(h) * dawnward() * (1 + heroFx(h, 'healOut'));
 /** How long a Chill lasts: Lingering Chill doubles it, Elementalist adds 25%. */
 const chillSec = () => T.MARK_SEC * (rule('mage', 'lingering') ? T.RULE_LINGER : 1) * (1 + heroFx(heroById('mage'), 'elemDur'));
 /** Damage taken under Ward: Bastion makes it soak more. */
@@ -300,7 +300,7 @@ const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / max
 
 function heroDamageMult(h?: Hero): number {
   const n = N();
-  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * curioDmgMult() * blessPow('shrine', T.BLESS_SHRINE_DMG) * (h ? rankMult(h) : 1) * (1 + heroFx(h, 'dmg'))
+  return n.flow * (n.guilt > 0 ? 1 - T.GUILT_DMG : 1) * curioDmgMult() * blessPow('shrine', T.BLESS_SHRINE_DMG) * (h ? positionMult(h) : 1) * (1 + heroFx(h, 'dmg'))
     * (h?.id === 'mage' && n.sulk > 0 ? 1 - T.CURIO_SULK_DMG : 1);   // the mage read the guild bank log
 }
 
@@ -398,8 +398,8 @@ function enemyAct(e: Enemy) {
   for (let k = 0; k < hits; k++) attackHero(e, e.atk);
 }
 
-/** One enemy hit on a hero. Taunt overrides everything (everything hits the Knight); melee hits the front rank (70%)
- *  or the next; casters hit ranks 3 and 4; fliers hit anyone (#52, 1.6: ranks are the marching order). */
+/** One enemy hit on a hero. Taunt overrides everything (everything hits the Knight); melee hits the front position (70%)
+ *  or the next; casters hit positions 3 and 4; fliers hit anyone (#52, 1.6: positions are the marching order). */
 function attackHero(e: Enemy, atk: number) {
   const n = N();
   const alive = aliveHeroes();
@@ -455,11 +455,11 @@ function bossMove(e: Enemy): boolean {
     toast(friend ? `${e.name} empowers the ${friend.name}! Kill it first!` : `${e.name} summons help. Fire it!`, '#ff8a80'); sfx.windup();
     return true;
   }
-  if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {   // EXECUTE names a rank: whoever stands there takes it
+  if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {   // EXECUTE names a position: whoever stands there takes it
     const v = mostHurt();
     if (!v) return false;
     e.evict = S.g.heroes.indexOf(v); e.wind = e.windMax = T.EVICT_WINDUP_SEC;
-    toast(`${e.name}: EXECUTE on rank ${e.evict + 1} (${HERO_NAME[v.id]})! Taunt, Ward, or swap him out.`, '#ff8a80'); sfx.windup();   // name alone: no room for the class
+    toast(`${e.name}: EXECUTE on position ${e.evict + 1} (${HERO_NAME[v.id]})! Taunt, Ward, or swap him out.`, '#ff8a80'); sfx.windup();   // name alone: no room for the class
     return true;
   }
   if ((move === 'hook' || move === 'shove') && S.g.heroes.length > 1 && (e.acts === T.LINE_BREAK_FIRST || (e.acts > T.LINE_BREAK_FIRST && (e.acts - T.LINE_BREAK_FIRST) % T.LINE_BREAK_EVERY === 0))) {
@@ -475,7 +475,7 @@ function landMove(e: Enemy) {
   if (move === 'slam') return bossSlam(e);
   if (move === 'loan') return loanFriend(e);
   if (move === 'evict') return eviction(e);
-  if (move === 'hook') { e.lunge = 0.3; sfx.handle(); hookLine(); vfx('chain', { x: RANK_X[0], y: 178 }, { x: enemyCenter(e).x - 8, y: 178 }, T.SWAP_SEC); return; }
+  if (move === 'hook') { e.lunge = 0.3; sfx.handle(); hookLine(); vfx('chain', { x: POS_X[0], y: 178 }, { x: enemyCenter(e).x - 8, y: 178 }, T.SWAP_SEC); return; }
   if (move === 'shove') { e.lunge = 0.3; sfx.slam(); return shoveLine(); }
 }
 
@@ -610,7 +610,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
     e.aliveSec += dt;
     if ((e.wind ?? 0) > 0) { e.wind! -= dt; if (e.wind! <= 0) { e.wind = 0; landMove(e); } continue; }   // winding up: no normal attacks
     if (e.stunned > 0) { e.stunned = Math.max(0, e.stunned - dt); continue; }
-    if ((e.enter ?? 0) > 0) { e.enter = Math.max(0, e.enter! - dt); continue; }   // still stepping into its rank
+    if ((e.enter ?? 0) > 0) { e.enter = Math.max(0, e.enter! - dt); continue; }   // still stepping into its position
     e.atb += atbRate(e.speed) * dt;
     if (e.atb >= 100) { e.atb -= 100; enemyAct(e); }
   }

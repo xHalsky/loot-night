@@ -6,9 +6,9 @@ import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
 import {  S, N, type BagEntry, type Item, type Hero, type HeroId } from '../core/state';
 import { PK } from 'virtual:pagekit';
-import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, HERO_CLASS, heroLabel, ULT_SLOT } from '../data/heroes';
+import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_POSITIONS, AURAS, HERO_NAME, HERO_CLASS, heroLabel, ULT_SLOT } from '../data/heroes';
 import { autocastBought, autocastOn } from '../systems/tree';
-import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
+import { positionOf, outOfPosition, aurasOn } from '../systems/positions';
 import { LEGEND_BY_ID, SET_BY_ID } from '../data/legendaries';
 import { legendOn, setPieces } from '../systems/gear';
 import { pacingLine } from '../systems/pacing';
@@ -103,11 +103,11 @@ export function tooltipHtml(): string {
     if (!h) return '';
     const st = heroStats(h);
     if (parts[0] === 'hero') {
-      const r = heroRole(h.id, S.g.heroes.some(x => x.id === 'rogue')), [a0, b0] = HOME_RANKS[h.id], out = outOfRank(h);
+      const r = heroRole(h.id, S.g.heroes.some(x => x.id === 'rogue')), [a0, b0] = HOME_POSITIONS[h.id], out = outOfPosition(h);
       const gives = aurasOn(h).map(g => `${AURAS[g].name} from ${heroLabel(g)}: ${AURAS[g].gives}.`).join(' ');
-      // name on line 1, the class on line 2 in the class colour (cast of 2026-11-27); the rank moved to the note
+      // name on line 1, the class on line 2 in the class colour (cast of 2026-11-27); the position moved to the note
       body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name}</div><div class="tt-class" style="color:${clsHex(h.id)}">${HERO_CLASS[h.id]}</div><div>${r.role}</div>
-        <div class="tt-sub" ${out ? 'style="color:#ff8a80"' : ''}>${out ? `Out of position at rank ${rankOf(h)}: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_RANK_MULT * 100)}%. ` : `Rank ${rankOf(h)}. `}Home ranks ${a0} to ${b0}. Drag to swap.</div>${gives ? `<div class="tt-sub" style="color:#9fe08a">${gives}</div>` : ''}`;
+        <div class="tt-sub" ${out ? 'style="color:#ff8a80"' : ''}>${out ? `Position ${positionOf(h)}, out of position: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_POSITION_MULT * 100)}%. ` : `Position ${positionOf(h)}. `}Home positions ${a0} to ${b0}. Drag to swap.</div>${gives ? `<div class="tt-sub" style="color:#9fe08a">${gives}</div>` : ''}`;
     } else {
       const si = Number(parts[2]); const a = ABILITIES[h.id][si];
       const unlocked = abilityUnlocked(h, si);

@@ -33,11 +33,11 @@ export const ENEMIES: EnemyDef[] = [
     meet: 'New: Guardian. Takes 75% less damage until Bash breaks his shield.' },
   { id: 'junk', name: 'Imps', hp: 75, atk: 4, armor: 0, speed: 11, sprite: IMP, role: 'swarm', stacks: 5, from: 4,
     meet: 'New: Imps. One imp per hit, and each one bites. Fire burns them all.' },
-  // Enemies that break the line (#52, 1.6): one may join an encounter from LINE_BREAK_FROM; 1 s wind-up names the rank
+  // Enemies that break the line (#52, 1.6): one may join an encounter from LINE_BREAK_FROM; 1 s wind-up names the position
   { id: 'ghoul', name: 'Ghoul', hp: 95, atk: 8, armor: 2, speed: 8, sprite: orc, move: 'hook', breaker: true,
     meet: 'New: Ghoul. Its Hook drags your last hero to the front. Drag him back.' },
   { id: 'brute', name: 'Brute', hp: 150, atk: 12, armor: 4, speed: 6, sprite: ogre, move: 'shove', breaker: true,
-    meet: 'New: Brute. Its Shove knocks your front hero back a rank. Drag him back.' },
+    meet: 'New: Brute. Its Shove knocks your front hero back one position. Drag him back.' },
 ];
 // One boss per checkpoint floor, in this order, then around again (floors 5, 10, 15, 20...).
 export const BOSSES: EnemyDef[] = [

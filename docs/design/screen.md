@@ -48,7 +48,7 @@ building opens 2 per level, the rest show a lock). A cell: the rarity light, the
 green ▲ when it is an upgrade for someone, dashes when it is unbanked, a gold frame when picked. The footer: gold ·
 Souls, and the deepest floor ever. In town three tabs over it (Town: the build list, the way down and the bag, or
 the open service's page, [city.md](city.md); Inventory: as in the dungeon, and drag a party card onto another to
-swap their ranks; Skill Tree: [trees.md](trees.md)). The town map itself is drawn on the battle area (0.62). Drag from the bag onto a gear slot or a card to
+swap their positions; Skill Tree: [trees.md](trees.md)). The town map itself is drawn on the battle area (0.62). Drag from the bag onto a gear slot or a card to
 equip, from a slot onto the bag to unequip; right-click equips on the selected hero (or unequips); hover for the
 tooltip; L locks. HP shows only on the battle sprites and the skill-bar portraits.
 

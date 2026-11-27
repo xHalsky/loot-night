@@ -5,8 +5,8 @@ import { S, N, RARITIES, type Enemy, type Hero, type HeroId, type Item, type Bag
 import { ENEMY_BY_ID, bossFor } from '../data/enemies';
 import { MAP_INFO, RARITY_COLOR } from '../data/items';
 import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
-import { ULT_SLOT, ABILITIES, HOME_RANKS, AURAS, HERO_NAME, HERO_CLASS, heroLabel } from '../data/heroes';
-import { outOfRank } from '../systems/ranks';
+import { ULT_SLOT, ABILITIES, HOME_POSITIONS, AURAS, HERO_NAME, HERO_CLASS, heroLabel } from '../data/heroes';
+import { outOfPosition } from '../systems/positions';
 import { boughtCount, autocastBought, autocastOn, nodeState, nodeCost } from '../systems/tree';
 import { NODES, TREES, BUYABLE, type NodeId } from '../data/trees';
 import { heroPower, xpNeeded, heroStats, heroBaseStats, itemPower } from '../systems/stats';
@@ -21,7 +21,7 @@ import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/bat
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { CURIO_BY_ID } from '../data/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
-import { RANK_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
+import { POS_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
 import { unbanked } from '../systems/run';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
 
@@ -208,12 +208,12 @@ function pathsView(hov: number, hovT: number) {
 
 /** The pointer's business with the party (marching order, #52 1.6): a hero being dragged, the one under the pointer. */
 export interface PartyPointer { drag: { from: number; x: number; y: number; over: number } | null; hover: number }
-/** Where a hero stands now: his rank's x, or on the way there after a swap, a Hook or a Shove. */
+/** Where a hero stands now: his position's x, or on the way there after a swap, a Hook or a Shove. */
 export function heroX(i: number): number {
   const h = S.g.heroes[i];
-  if (!h?.moving || h.from == null) return RANK_X[i];
+  if (!h?.moving || h.from == null) return POS_X[i];
   const k = 1 - h.moving / T.SWAP_SEC, e = k * k * (3 - 2 * k);
-  return Math.round(RANK_X[h.from] + (RANK_X[i] - RANK_X[h.from]) * e);
+  return Math.round(POS_X[h.from] + (POS_X[i] - POS_X[h.from]) * e);
 }
 
 // ---- the town (V2, #53; grid doc §6): Ravenhold, the hovered building's halo and card; a service holds its halo
@@ -228,13 +228,13 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
   if (n.location === 'town' && n.townTab === 'tree') return { tree: treeView(treeHov ?? n.treeSel ?? null) };
   if (n.location === 'town') return { town: townView(townHov) };
   if (n.phase === 'mapChoice' && n.paths) return { paths: pathsView(hov, hovT) };
-  // the party in marching order, front first (#52, 1.6): rank 1 is S.g.heroes[0]
+  // the party in marching order, front first (#52, 1.6): position 1 is S.g.heroes[0]
   const order = g.heroes.map((h, i) => ({ h, i }));
-  const party = order.map(({ h }, rank) => {
+  const party = order.map(({ h }, position) => {
     const id = PAGE_ID[h.id];
-    return { id, x: heroX(rank), ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 && !h.moving ? 3 : 0, swing: (h.swing ?? 0) > 0 && !h.downed ? 1 - h.swing! / T.SWING_SEC : null };
+    return { id, x: heroX(position), ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 && !h.moving ? 3 : 0, swing: (h.swing ?? 0) > 0 && !h.downed ? 1 - h.swing! / T.SWING_SEC : null };
   });
-  // the enemies: six ranks, fodder in two lanes, the boss or the lieutenant behind them; a newcomer slides in
+  // the enemies: six positions, fodder in two lanes, the boss or the lieutenant behind them; a newcomer slides in
   const enemies = n.enemies.map((e: Enemy) => {
     const d = ENEMY_BY_ID[e.defId], sl = ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0];
     const boss = e.boss, lane = sl.lane, x = sl.x + Math.round((e.enter ?? 0) / T.STEP_IN_SEC * 50);
@@ -277,13 +277,13 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
     drag, heroCard: !pp.drag && pp.hover >= 0 ? heroCard(pp.hover) : null };
 }
 
-/** The card over a hovered hero (grid doc §5d): his rank, what is wrong, what his aura gives and to whom. */
+/** The card over a hovered hero (grid doc §5d): his position, what is wrong, what his aura gives and to whom. */
 function heroCard(i: number) {
   const h = S.g.heroes[i];
   if (!h) return null;
-  const [a, b] = HOME_RANKS[h.id];
+  const [a, b] = HOME_POSITIONS[h.id];
   const lines: [string, string][] = [['h', HERO_NAME[h.id]], ['c', HERO_CLASS[h.id]]];   // name, then the class in its colour (cast of 2026-11-27)
-  if (outOfRank(h)) lines.push(['-', `Out of position: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_RANK_MULT * 100)}%. His ranks are ${a} to ${b}.`]);
+  if (outOfPosition(h)) lines.push(['-', `Out of position: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_POSITION_MULT * 100)}%. His positions are ${a} to ${b}.`]);
   const A = AURAS[h.id], to: string[] = [];
   const front = S.g.heroes[i - 1], back = S.g.heroes[i + 1];
   if (A.front && front) to.push(`${heroLabel(front.id)}, in front of him,`);
@@ -291,7 +291,7 @@ function heroCard(i: number) {
   if (h.downed) lines.push(['-', 'Down: his aura is gone.']);
   else if (to.length) lines.push(['+', `${to.join(' and ')} ${to.length > 1 ? A.gives.replace(/^\w+/, w => PLURAL[w] ?? w) : A.gives}.`]);
   else lines.push(['n', `Nobody stands where his aura reaches.`]);
-  lines.push(['n', `Rank ${i + 1}. ${outOfRank(h) ? 'Drag him back. Away, the line stays broken.' : 'Drag him onto another hero to swap.'}`]);
+  lines.push(['n', `Position ${i + 1}. ${outOfPosition(h) ? 'Drag him back. Away, the line stays broken.' : 'Drag him onto another hero to swap.'}`]);
   return { x: heroX(i), lines };
 }
 const PLURAL: Record<string, string> = { takes: 'take', gets: 'get', regenerates: 'regenerate' };
@@ -299,9 +299,9 @@ const PLURAL: Record<string, string> = { takes: 'take', gets: 'get', regenerates
 function windLabel(e: Enemy): string {
   const m = moveOf(e) ?? '';
   const base = MOVE_LABEL[m] ?? 'Wind-up';
-  if (m === 'evict' && e.evict != null) return `${base} · rank ${e.evict + 1}`;   // EXECUTE names a rank (#52, 1.6)
-  if (m === 'hook') return `${base} · rank ${S.g.heroes.length}`;
-  if (m === 'shove') return `${base} · rank 1`;
+  if (m === 'evict' && e.evict != null) return `${base} · position ${e.evict + 1}`;   // EXECUTE names a position (#52, 1.6)
+  if (m === 'hook') return `${base} · position ${S.g.heroes.length}`;
+  if (m === 'shove') return `${base} · position 1`;
   return base;
 }
 function rarityIdxOf(color: string): string {
@@ -379,7 +379,7 @@ function barView(heroes: Hero[]) {
     });
   });
   return { order: heroes.map(h => PAGE_ID[h.id]), heroIdx: heroes.map((_, i) => i), selected: n.heroTab, hp, cooldown, ult, answer, combo, queued: null, autocast, blocked: abilitiesLocked() && n.location === 'dungeon' ? abilitiesLocked() : null,
-    outpos: heroes.filter(outOfRank).map(h => PAGE_ID[h.id]), stopped: heroes.filter(h => h.moving).map(h => PAGE_ID[h.id]), outLabel: `x${T.OUT_OF_RANK_MULT}`, dropOn: -1 };
+    outpos: heroes.filter(outOfPosition).map(h => PAGE_ID[h.id]), stopped: heroes.filter(h => h.moving).map(h => PAGE_ID[h.id]), outLabel: `x${T.OUT_OF_POSITION_MULT}`, dropOn: -1 };
 }
 /** A mark on the field that this skill cashes in (docs/design/dungeon.md, ability marks): the well glows gold. */
 function comboLabel(id: HeroId, si: number): string {

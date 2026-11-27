@@ -1,6 +1,6 @@
 // Marching order (#52, 1.6) and Hixx (1.7) acceptance test: default orders and Hixx joining on night 2, home
-// ranks, the four auras, swaps (1 s without acting), Hook and Shove, EXECUTE by rank, Smoke Bomb, Heist, Backstab, and
-// when the line breakers come. npx tsx test/ranks.ts
+// positions, the four auras, swaps (1 s without acting), Hook and Shove, EXECUTE by position, Smoke Bomb, Heist, Backstab, and
+// when the line breakers come. npx tsx test/positions.ts
 (globalThis as any).localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 import { T } from '../src/config/tuning';
 import { S, N, initialState, type Hero } from '../src/core/state';
@@ -9,7 +9,7 @@ import { travelToDungeon } from '../src/systems/dungeon';
 import { updateBattle, spawnBattle, queueAbility } from '../src/systems/battle';
 import { updateMeters } from '../src/systems/meters';
 import { maxHp } from '../src/systems/stats';
-import { swapHeroes, hookLine, shoveLine, outOfRank, rankMult, auraTaken, auraCrit, auraCd, auraRegen, ensureParty, heroById } from '../src/systems/ranks';
+import { swapHeroes, hookLine, shoveLine, outOfPosition, positionMult, auraTaken, auraCrit, auraCd, auraRegen, ensureParty, heroById } from '../src/systems/positions';
 
 let fail = 0;
 const ok = (c: boolean, what: string) => { console.log((c ? 'ok   ' : 'FAIL ') + what); if (!c) fail++; };
@@ -27,12 +27,12 @@ ok(order() === 'knight,rogue,mage,healer' && H('rogue').level === 2, `an old sav
 ok(N().log.some(l => l.text.startsWith('Hixx (Rogue) joined')), 'an old save: a feed line says Hixx joined');
 swapHeroes(2, 3); ensureParty(); ok(order() === 'knight,rogue,healer,mage', `after that the order is the player's: ${order()}`);
 
-// home ranks and the 0.7
+// home positions and the 0.7
 night(2);
-ok(!S.g.heroes.some(outOfRank), 'the default order is in position');
+ok(!S.g.heroes.some(outOfPosition), 'the default order is in position');
 swapHeroes(0, 2);   // in town: free, no walk
 ok(order() === 'mage,rogue,knight,healer' && !S.g.heroes.some(h => h.moving), `a swap in town is free: ${order()}`);
-ok(outOfRank(H('mage')) && rankMult(H('mage')) === T.OUT_OF_RANK_MULT && outOfRank(H('knight')), 'mage at rank 1 and knight at rank 3 are out of position (x0.7)');
+ok(outOfPosition(H('mage')) && positionMult(H('mage')) === T.OUT_OF_POSITION_MULT && outOfPosition(H('knight')), 'mage at position 1 and knight at position 3 are out of position (x0.7)');
 swapHeroes(0, 2);
 
 // auras
@@ -40,7 +40,7 @@ ok(auraTaken(H('rogue')) === 1 - T.AURA_KNIGHT_TAKEN && auraTaken(H('mage')) ===
 ok(auraCrit(H('knight')) === T.AURA_ROGUE_CRIT && auraCrit(H('mage')) === 0, "Hixx's crit goes to the hero in front of him");
 ok(auraCd(H('rogue')) === 1 - T.AURA_MAGE_CD && auraCd(H('knight')) === 1, "Hudzor's haste goes to the hero in front of him");
 H('mage').hp = 10; H('knight').hp = 10; auraRegen(10, maxHp);
-ok(H('mage').hp > 10 && H('knight').hp === 10, "Arkbishop's blessing: the mage in front regenerates, the knight two ranks up does not");
+ok(H('mage').hp > 10 && H('knight').hp === 10, "Arkbishop's blessing: the mage in front regenerates, the knight two positions up does not");
 H('rogue').downed = true; ok(auraCrit(H('knight')) === 0, 'a downed hero gives no aura'); H('rogue').downed = false;
 
 // a swap in the dungeon: both walk for SWAP_SEC and don't act
@@ -49,21 +49,21 @@ const k = H('knight'), r = H('rogue');
 swapHeroes(0, 1);
 ok(k.moving === T.SWAP_SEC && r.moving === T.SWAP_SEC && !H('mage').moving, 'a swap: both heroes walk for SWAP_SEC, the others stay');
 const atb0 = k.atb; queueAbility(S.g.heroes.indexOf(k), 1);
-ok(N().taunt === 0, 'a hero walking to his rank cannot cast'); tick(0.5); ok(k.atb === atb0, 'nor attack');
+ok(N().taunt === 0, 'a hero walking to his position cannot cast'); tick(0.5); ok(k.atb === atb0, 'nor attack');
 tick(0.6); ok(!k.moving && !r.moving, 'after SWAP_SEC they are in place');
 
 // Hook and Shove
 night(2); fight();
 hookLine(); ok(order() === 'healer,knight,rogue,mage' && S.g.heroes.every(h => h.moving), `Hook: the last to the front, the others back one: ${order()}`);
 night(2); fight();
-shoveLine(); ok(order() === 'rogue,knight,mage,healer', `Shove: rank 1 and 2 trade places: ${order()}`);
+shoveLine(); ok(order() === 'rogue,knight,mage,healer', `Shove: position 1 and 2 trade places: ${order()}`);
 
-// EXECUTE names a rank: whoever stands there takes it
+// EXECUTE names a position: whoever stands there takes it
 night(2); for (const h of S.g.heroes) h.level = 8; travelToDungeon(); N().floor = 15; spawnBattle(15, true, false); N().phase = 'battle';
 const bk = N().enemies.find(e => e.boss)!;
 H('healer').hp = 20;   // the most hurt
 bk.acts = T.EVICT_EVERY - 1; bk.atb = 99.9; tick(0.1);
-ok(bk.evict === 3 && (bk.wind ?? 0) > 0, `EXECUTE targets rank ${(bk.evict ?? -1) + 1} (Arkbishop's)`);
+ok(bk.evict === 3 && (bk.wind ?? 0) > 0, `EXECUTE targets position ${(bk.evict ?? -1) + 1} (Arkbishop's)`);
 swapHeroes(3, 2);   // Arkbishop out, Hudzor in
 const mageHp = H('mage').hp; tick(T.EVICT_WINDUP_SEC + 0.1);
 ok(H('mage').hp < mageHp - maxHp(H('mage')) * 0.2, 'swapped in, Hudzor takes the EXECUTE');

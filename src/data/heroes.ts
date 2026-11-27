@@ -18,9 +18,9 @@ export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
   healer: { role: 'Support. Keeps everyone alive.', auto: 'Heals an ally under 60% HP, otherwise smites the front enemy and Judges it (your skill hits on it heal).' },
 };
 
-/** Home ranks (#52, 1.6): outside them a hero deals and heals OUT_OF_RANK_MULT. Rank 1 is the front. Data per hero, so
- *  tree nodes can change them later ("Fire at full power from rank 2"). */
-export const HOME_RANKS: Record<HeroId, [number, number]> = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], healer: [2, 4] };
+/** Home positions (#52, 1.6): outside them a hero deals and heals OUT_OF_POSITION_MULT. Position 1 is the front. Data per hero, so
+ *  tree nodes can change them later ("Fire at full power from position 2"). */
+export const HOME_POSITIONS: Record<HeroId, [number, number]> = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], healer: [2, 4] };
 /** The marching order a party starts in (the rogue is in it from night 1, #96; the three-hero one is for a save from before). */
 export const DEFAULT_ORDER: HeroId[][] = [['knight', 'healer', 'mage'], ['knight', 'rogue', 'mage', 'healer']];
 /** Auras (#52, 1.6): what each hero gives his neighbour (back: the one behind him; front: the one in front). */

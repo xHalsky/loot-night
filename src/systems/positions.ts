@@ -1,20 +1,20 @@
-// Marching order (#52, 1.6; docs/design/dungeon.md): the party walks and fights in one line, rank 1 at the front.
-// A hero's rank is his place in S.g.heroes (index + 1), so everything that lists the party lists it in order.
-// Home ranks, auras, swaps, and the enemies that break the line (Hook, Shove). Rules only; no drawing.
+// Marching order (#52, 1.6; docs/design/dungeon.md): the party walks and fights in one line, position 1 at the front.
+// A hero's position is his place in S.g.heroes (index + 1), so everything that lists the party lists it in order.
+// Home positions, auras, swaps, and the enemies that break the line (Hook, Shove). Rules only; no drawing.
 import { T } from '../config/tuning';
 import { S, N, newHero, type Hero, type HeroId } from '../core/state';
-import { HOME_RANKS, AURAS, DEFAULT_ORDER, HERO_NAME, HERO_CLASS, HERO_BASE, heroLabel } from '../data/heroes';
+import { HOME_POSITIONS, AURAS, DEFAULT_ORDER, HERO_NAME, HERO_CLASS, HERO_BASE, heroLabel } from '../data/heroes';
 import { toastAs, floatText } from '../core/fx';
-import { RANK_X } from '../core/arena';
+import { POS_X } from '../core/arena';
 import { sfx } from '../ui/audio';
 import { fx } from './tree';
 const toast = toastAs('PARTY');
 
-export const rankOf = (h: Hero) => S.g.heroes.indexOf(h) + 1;
+export const positionOf = (h: Hero) => S.g.heroes.indexOf(h) + 1;
 export const heroById = (id: HeroId) => S.g.heroes.find(h => h.id === id);
-/** Outside his home ranks: deals and heals OUT_OF_RANK_MULT. */
-export function outOfRank(h: Hero): boolean { const r = rankOf(h), [a, b] = HOME_RANKS[h.id]; return r < a || r > b; }
-export const rankMult = (h: Hero) => (outOfRank(h) ? T.OUT_OF_RANK_MULT : 1);
+/** Outside his home positions: deals and heals OUT_OF_POSITION_MULT. */
+export function outOfPosition(h: Hero): boolean { const r = positionOf(h), [a, b] = HOME_POSITIONS[h.id]; return r < a || r > b; }
+export const positionMult = (h: Hero) => (outOfPosition(h) ? T.OUT_OF_POSITION_MULT : 1);
 
 /** Who gives this hero an aura: the living neighbour in front (if his aura goes back) and behind (if it goes forward). */
 export function aurasOn(h: Hero): HeroId[] {
@@ -38,7 +38,7 @@ export function auraRegen(dt: number, maxHp: (h: Hero) => number) {
   for (const h of S.g.heroes) if (!h.downed && has(h, 'healer')) h.hp = Math.min(maxHp(h), h.hp + maxHp(h) * auraVal('healer', T.AURA_PRIEST_REGEN) * dt);
 }
 
-/** Moves heroes into a new order. In the dungeon, everyone whose rank changed walks there for SWAP_SEC and doesn't act. */
+/** Moves heroes into a new order. In the dungeon, everyone whose position changed walks there for SWAP_SEC and doesn't act. */
 function reorder(next: Hero[]) {
   const n = S.g.night, inDungeon = n?.location === 'dungeon';
   const tabHero = n ? S.g.heroes[n.heroTab] : undefined;
@@ -57,29 +57,29 @@ export function swapHeroes(a: number, b: number) {
   reorder(hs);
   sfx.click();
   if (S.g.night?.location !== 'dungeon') return;
-  floatText(Math.round((RANK_X[a] + RANK_X[b]) / 2), 104, 'swap', '#e2d6c0');
-  for (const h of [hs[a], hs[b]]) if (outOfRank(h)) floatOut(h);
+  floatText(Math.round((POS_X[a] + POS_X[b]) / 2), 104, 'swap', '#e2d6c0');
+  for (const h of [hs[a], hs[b]]) if (outOfPosition(h)) floatOut(h);
 }
-/** Hook: the hero in the last rank is dragged to the front; the others step back one. */
+/** Hook: the hero in the last position is dragged to the front; the others step back one. */
 export function hookLine() {
   const hs = [...S.g.heroes], last = hs.pop()!;
   reorder([last, ...hs]);
   toast(`${last.name} is hooked to the front!`, '#ff8a80');
-  if (outOfRank(last)) floatOut(last);
+  if (outOfPosition(last)) floatOut(last);
 }
-/** Shove: rank 1 is knocked back, swapping with rank 2. */
+/** Shove: position 1 is knocked back, swapping with position 2. */
 export function shoveLine() {
   const hs = [...S.g.heroes];
   if (hs.length < 2) return;
   [hs[0], hs[1]] = [hs[1], hs[0]];
   reorder(hs);
   toast(`${hs[1].name} is shoved back!`, '#ff8a80');
-  for (const h of hs.slice(0, 2)) if (outOfRank(h)) floatOut(h);
+  for (const h of hs.slice(0, 2)) if (outOfPosition(h)) floatOut(h);
 }
-/** "out of position" floats up over a hero who landed outside his home ranks. */
-function floatOut(h: Hero) { floatText(RANK_X[S.g.heroes.indexOf(h)] ?? RANK_X[0], 108, 'out of position', '#ff5a5a'); }
-/** Ticks the walk between ranks. */
-export function updateRanks(dt: number) { for (const h of S.g.heroes) if (h.moving) { h.moving = Math.max(0, h.moving - dt); if (!h.moving) { h.moving = undefined; h.from = undefined; } } }
+/** "out of position" floats up over a hero who landed outside his home positions. */
+function floatOut(h: Hero) { floatText(POS_X[S.g.heroes.indexOf(h)] ?? POS_X[0], 108, 'out of position', '#ff5a5a'); }
+/** Ticks the walk between positions. */
+export function updatePositions(dt: number) { for (const h of S.g.heroes) if (h.moving) { h.moving = Math.max(0, h.moving - dt); if (!h.moving) { h.moving = undefined; h.from = undefined; } } }
 
 /** At the start of a night: a save from before the rogue was in the party from night 1 (#96) gets him, second in line; a
  *  save that never had a marching order gets the default one. */

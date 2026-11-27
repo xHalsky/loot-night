@@ -1,5 +1,5 @@
 # Marching order (#52, 1.6) and Hixx (1.7): the four in a fight with auras, a hovered hero's card after a Hook,
-# a drag in progress, Shove's wind-up. Writes test/shots/ranks_*.png (the battle area at x2).
+# a drag in progress, Shove's wind-up. Writes test/shots/positions_*.png (the battle area at x2).
 import asyncio, os
 from playwright.async_api import async_playwright
 GO = "a=>{const e=document.createElement('button'); e.dataset.act=a; document.getElementById('stage').appendChild(e); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); e.remove()}"
@@ -22,26 +22,26 @@ async def main():
             await pg.wait_for_timeout(250)
         await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; n.enemies.forEach(e=>{e.hp=e.maxHp=99999; e.atk=1})}")
         await pg.wait_for_timeout(600)
-        await pg.screenshot(path='test/shots/ranks_four.png', clip=clip)
+        await pg.screenshot(path='test/shots/positions_four.png', clip=clip)
         # a Hook: Arkbishop to the front, then hover him
         await pg.evaluate(GO, 'dbgHook'); await pg.wait_for_timeout(450)
-        await pg.screenshot(path='test/shots/ranks_hooked.png', clip=clip)
+        await pg.screenshot(path='test/shots/positions_hooked.png', clip=clip)
         await pg.wait_for_timeout(900)
         await pg.mouse.move(*at(126, 175)); await pg.wait_for_timeout(400)
-        await pg.screenshot(path='test/shots/ranks_card.png', clip=clip)
-        # drag Arkbishop's portrait (rank 1, bar x 6) onto the last group's portrait (x 252)
+        await pg.screenshot(path='test/shots/positions_card.png', clip=clip)
+        # drag Arkbishop's portrait (position 1, bar x 6) onto the last group's portrait (x 252)
         await pg.mouse.move(*at(17, 219)); await pg.mouse.down()
         await pg.mouse.move(*at(120, 219), steps=6); await pg.mouse.move(*at(262, 219), steps=8); await pg.wait_for_timeout(300)
-        await pg.screenshot(path='test/shots/ranks_drag.png', clip=clip)
+        await pg.screenshot(path='test/shots/positions_drag.png', clip=clip)
         await pg.mouse.up(); await pg.wait_for_timeout(400)
-        await pg.screenshot(path='test/shots/ranks_swap.png', clip=clip)
+        await pg.screenshot(path='test/shots/positions_swap.png', clip=clip)
         order = await pg.evaluate("()=>window.__lootnight.S.g.heroes.map(h=>h.id).join(',')")
         print('order after drag:', order)
         await pg.mouse.move(5, 5); await pg.wait_for_timeout(1200)
         # Shove wind-up on an enemy
         await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; const e=n.enemies.find(e=>e.hp>0&&!e.boss); e.defId='brute'; e.name='Brute'; e.wind=e.windMax=1; }")
         await pg.wait_for_timeout(500)
-        await pg.screenshot(path='test/shots/ranks_shove.png', clip=clip)
+        await pg.screenshot(path='test/shots/positions_shove.png', clip=clip)
         await pg.wait_for_timeout(1500)
         order2 = await pg.evaluate("()=>window.__lootnight.S.g.heroes.map(h=>h.id).join(',')")
         print('order after shove:', order2, 'errors:', errs[:3] or 'none'); await b.close()

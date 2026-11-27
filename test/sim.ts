@@ -1,5 +1,5 @@
 import { queueAbility, abilityUnlocked } from '../src/systems/battle';
-import { swapHeroes, outOfRank } from '../src/systems/ranks';
+import { swapHeroes, outOfPosition } from '../src/systems/positions';
 import { buyNode, nodeState, owns } from '../src/systems/tree';
 import { DEFAULT_ORDER } from '../src/data/heroes';
 // the good bot puts the line back after a Hook or a Shove (#52, 1.6)
@@ -15,7 +15,7 @@ function buyTrees() {
 }
 function fixLine() {
   const want = DEFAULT_ORDER[S.g.heroes.length >= 4 ? 1 : 0];
-  if (!S.g.heroes.some(outOfRank) || S.g.heroes.some(h => h.moving)) return;
+  if (!S.g.heroes.some(outOfPosition) || S.g.heroes.some(h => h.moving)) return;
   const i = S.g.heroes.findIndex((h, k) => h.id !== want[k]);
   if (i < 0) return;
   swapHeroes(i, S.g.heroes.findIndex(h => h.id === want[i])); lineFixes++;

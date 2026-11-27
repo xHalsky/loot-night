@@ -12,7 +12,7 @@ import { chance, pick } from '../core/rng';
 import { sfx } from '../ui/audio';
 import { MAP_INFO } from '../data/items';
 import { isAway } from './autopilot';
-import { auraRegen } from './ranks';
+import { auraRegen } from './positions';
 import { planCurios, approachCurio, walkCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
 import { FEATURES, CONDITIONS, type PathCard, type FeatureId, type ConditionId } from '../data/routes';
 import { triggerDog } from './pets';
