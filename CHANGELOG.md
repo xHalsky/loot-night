@@ -3,6 +3,22 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.101.1 (2026-11-27)
+
+- **The boot chat ends 3 s before the town, and the phone goes down by itself** (#135, Paweł).
+  - Mike's "steps in the hall = tab to excel" is gone from the first Monday's chat: the How-to cards teach it. Eight
+    bubbles now, at 2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 27.6 and 35.0 s: Lance's "nine stars. strong password" lands just
+    after the password is typed (before Log in), Billy's "11 sharp" is last.
+  - Every launch's chat ends at 35.0 s, 3 s before the town comes in (`CHAT_LOGIN_TO` 35.4 to 35.0: the later nights'
+    three bubbles at 25.4, 30.2 and 35.0).
+  - At 38 s, as Ravenhold comes in, the phone goes down by itself (`chatDown` in `systems/week.ts`, called by the
+    launch's clock; skipping with F1 does the same): the chat stays in The Boys', the How-to cards come up on a night
+    that has them, else the night starts. Let's go no longer exists in the launch.
+- Tests: `test/launch.ts` (the 3 s gap on both launches, no Tab tip, the phone down at 38 s and after a skip),
+  `test/launch.py` and `test/week.py` (the phone down by itself instead of Let's go), `test/small.py` starts by
+  skipping the launch (it had pressed Let's go mid-launch since 0.95; four later checks still fail, unrelated: #136).
+  Seeded sims identical: no balance change.
+
 ## 0.101.0 (2026-11-27)
 
 - **Both studio logos are cracktros now** (#133, round two, Paweł; for his review): the feel of the intros the pirate

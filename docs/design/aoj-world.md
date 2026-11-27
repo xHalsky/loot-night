@@ -229,14 +229,15 @@ the phone in hand, and each step on its own, with a timeline strip that also sho
 | 15 to 23 | **The title:** black and rain; lightning shows the angel; the scene comes up out of the dark. The logo (section 6): the halo forged round from its gap, the spark ignites, JUDGMENT struck out from the centre, white-hot and cooling, a second bolt and a shake as it lands, AGE OF, a glint across the gilt, "The realm of Ravenhold"; rain in front of it. |
 | 23 to 31 | **The login screen:** the logo shrinks to the top as the scene dims, and the iron panel slides up: Account and Password wells, Remember ticked, Log in in gold. The pointer types "dutch" and nine stars, presses Log in (copper, down a pixel), turns to the hourglass. Options, Credits, Quit; the version and the realm in the corners. |
 | 31 to 38 | **Logging in:** the logo stays at the top; the panel becomes a status line with the halo turning: Connecting to Ravenhold, Authenticating, Account verified (moss). Then the world loads: "Ravenhold" in blackletter, "Entering the world", a tip, the bar and what it loads (the town, your party, the night). A dithered fade to black. |
-| 38 | **Ravenhold** fades in (dithered), the town panel beside it; the feed gets "Welcome to Age of Judgment. Have fun, don't get caught." |
+| 38 | **Ravenhold** fades in (dithered), the town panel beside it; the feed gets "Welcome to Age of Judgment. Have fun, don't get caught."; the phone goes down by itself (#135) and the How-to cards come up. |
 
 - **The boys' first chat is paced to it** (`FIRST_CHAT`): the phone rises into your hand at 20:00 and the bubbles come
-  one at a time after their typing dots (1.6 s), arriving at **2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 26.4, 30.6 and 35.4 s**
-  (nine since #133: Paweł asked for more to read while it boots, four mood lines; none from 15 to 21 s so the title's
-  sounds stand alone, §7b); the last lands as the world finishes loading. Until then the pill reads **"Age of Judgment is loading"**
-  with the percentage (dim); **at 38 s it turns gold, "Let's go"**, the night starts as now. This replaces Monday's
-  `CHAT_FIRST_SEC` / `CHAT_TYPE_*` pacing (about 6 s for six).
+  one at a time after their typing dots (1.6 s), arriving at **2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 27.6 and 35.0 s**
+  (#133: Paweł asked for more to read while it boots, four mood lines; none from 15 to 21 s so the title's sounds stand
+  alone, §7b; #135: Mike's Tab tip dropped, the How-to cards teach it, and the last lands 3 s before the town comes in).
+  Until 38 s the pill reads **"Age of Judgment is loading"** with the percentage (dim); **at 38 s, as Ravenhold comes in,
+  the phone goes down by itself** (#135) and the How-to cards follow. This replaces Monday's `CHAT_FIRST_SEC` /
+  `CHAT_TYPE_*` pacing (about 6 s for six).
 - All fades are palette-exact (a Bayer-dithered fade to and from the void colour), never a blend.
 - **The studios are Halsky Labs (publisher) and Procrastination Studios (developer)** (Paweł). Both get a trademark
   check before the Steam page. The engine's start-up lines name Procrastination Studios. **Halsky Labs' mark is Paweł's
@@ -246,8 +247,8 @@ the phone in hand, and each step on its own, with a timeline strip that also sho
   included, and week two's nights): the last 15 s of the launch, T 23 to 38, opening with a 0.6 s dithered fade in
   from black: the logo shrinking to the top, the panel sliding up, "dutch" and the stars typed, Log in, logging in, the
   world loading, then Ravenhold. Its sound is the cue sheet from T 23 (§7b). That night's 20:00 chat is paced to it:
-  its bubbles spread evenly from 25.4 to 35.4 s (three bubbles: 25.4, 30.4 and 35.4 s), each after its 1.6 s of typing
-  dots; the pill reads "Age of Judgment is loading" until 38 s, then Let's go.
+  its bubbles spread evenly from 25.4 to 35.0 s (three bubbles: 25.4, 30.2 and 35.0 s), each after its 1.6 s of typing
+  dots; the pill reads "Age of Judgment is loading" until 38 s, then the phone goes down by itself (#135).
 
 ## 7b. The launch's sound and music (Paweł, 2026-11-27)
 

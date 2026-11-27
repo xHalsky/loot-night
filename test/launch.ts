@@ -52,27 +52,33 @@ ok(Math.abs(launchT() - 0.5) < 0.02 && launchHolds(), 'its clock runs from when 
 const n = N(), clock0 = n.clock;
 S.g.paused = true; run(3); S.g.paused = false;
 ok(Math.abs(launchT() - 0.5) < 0.02, 'pause stops it');
-// the chat paced to it: nine bubbles (#133: four more to read while it boots), each after 1.6 s of the typing dots, none
-// while the title's heavy sounds play (15 to 21 s)
+// the chat paced to it: eight bubbles (#133: four to read while it boots; #135: Mike's Tab tip gone, the How-to cards
+// teach it), each after 1.6 s of the typing dots, none while the title's heavy sounds play (15 to 21 s), the last 3 s
+// before the town comes in (#135)
 const at = T.CHAT_LAUNCH_AT;
-ok(at.length === FIRST_CHAT.length && at.join() === '2.6,5,8.4,10.2,12.8,21.4,26.4,30.6,35.4' && T.CHAT_LAUNCH_TYPING === 1.6, 'one arrival time per bubble');
+ok(at.length === FIRST_CHAT.length && at.join() === '2.6,5,8.4,10.2,12.8,21.4,27.6,35' && T.CHAT_LAUNCH_TYPING === 1.6, 'one arrival time per bubble');
 ok(at.every((a2, k) => k === 0 || a2 - T.CHAT_LAUNCH_TYPING >= at[k - 1]), 'each one types after the one before has landed');
 ok(!at.some(a2 => a2 > 15 && a2 - T.CHAT_LAUNCH_TYPING < 21.4 - T.CHAT_LAUNCH_TYPING), 'nothing lands on the title (15 to 21 s)');
+ok(Math.abs(T.LAUNCH_SEC - at[at.length - 1] - 3) < 1e-9 && Math.abs(T.LAUNCH_SEC - T.CHAT_LOGIN_TO - 3) < 1e-9, 'the chat ends 3 s before the town comes in (the first Monday and the login nights)');
+ok(!FIRST_CHAT.some(c => /tab to excel/i.test(c[1])) && FIRST_CHAT[FIRST_CHAT.length - 1][1].startsWith('11 sharp'), 'no Tab tip (the How-to cards have it); Billy\'s 11 sharp is the last');
 const shownAt = (s: number) => launchChatAt(FIRST_CHAT, s);
 ok(shownAt(0.9).shown === 0 && shownAt(0.9).typing === null && shownAt(1.1).typing === 'Billy' && shownAt(2.61).shown === 1, 'Billy types from 1.0 s, his bubble lands at 2.6');
 ok(shownAt(4.0).typing === 'Mike' && shownAt(12.81).shown === 5, 'four lines to read while it boots, all in by 12.8 s');
 ok(shownAt(20).shown === 5 && shownAt(20).typing === 'Lance' && shownAt(21.41).shown === 6, 'Lance\'s at 21.4, clear of the title\'s sounds');
-ok(shownAt(35.39).shown === 8 && shownAt(35.41).shown === 9 && shownAt(37).typing === null, 'Mike\'s lands at 35.4, the last');
+ok(shownAt(26.5).typing === 'Lance' && shownAt(27.61).shown === 7, 'Lance types while the nine stars go in (25.9 to 26.9 s), lands at 27.6');
+ok(shownAt(34.99).shown === 7 && shownAt(35.01).shown === 8 && shownAt(36).typing === null, 'Billy\'s lands at 35.0, the last');
 run(37.4);
 ok(launchT() > 37.85 && launchT() < 38 && launchHolds() && !!S.g.voice, 'just before 38 s: still loading, the chat still up');
 ok(n.clock === clock0, 'the night\'s clock waits all through it');
 ok(!n.log.some(l => l.text.startsWith('Welcome to Age of Judgment')), 'no welcome line before the town is in');
 run(0.2);
-ok(!launchHolds() && n.log.some(l => l.text.startsWith('Welcome to Age of Judgment') && l.tag === 'GAME'), 'at 38 s: Let\'s go, and the welcome in the feed');
+ok(!launchHolds() && n.log.some(l => l.text.startsWith('Welcome to Age of Judgment') && l.tag === 'GAME'), 'at 38 s: the welcome in the feed');
+ok(!S.g.voice && S.g.howto === true && S.g.boysThread?.length === FIRST_CHAT.length + 1 && S.g.boysThread[1].text === "Billy: yo. realm's up", 'and the phone goes down by itself: the chat in The Boys\', the How-to cards next (#135)');
 // the skip (F1)
 S.g = initialState(); S.g.day = 0; startNight(); run(5);
 skipLaunch();
-ok(launchT() >= T.LAUNCH_SEC && !launchHolds() && launchSkipped(), 'Skip the launch: straight to its end');
+run(1 / 60);
+ok(launchT() >= T.LAUNCH_SEC && !launchHolds() && launchSkipped() && !S.g.voice, 'Skip the launch: straight to its end, the phone down');
 
 // --- every night after the first Monday: from the login (Paweł, 2026-11-27): the replays and week two too ---
 const fromLogin = (setup: () => void) => { setup(); startNight(); run(1 / 60); return S.g.voice; };
@@ -80,19 +86,19 @@ let v = fromLogin(() => { S.g = initialState(); S.g.day = 0; startNight(); S.g.h
 ok(!!v && v.launch === 'login' && v.date === 'Monday, again' && launchT() >= T.LAUNCH_LOGIN_AT && launchT() < T.LAUNCH_LOGIN_AT + 0.1, 'Monday\'s replay: the replay\'s chat, the launch from the login (T 23)');
 ok([1, 2, 3, 4, 5, 6].every(d => { const w = fromLogin(() => { S.g = initialState(); S.g.day = d; }); return w?.launch === 'login' && w.chat.length === 3 && launchT() >= 23 && launchT() < 23.1; }), 'Tuesday to Sunday: their three bubbles with the launch from the login');
 v = fromLogin(() => { S.g = initialState(); S.g.day = 7; });
-ok(!!v && v.launch === 'login' && v.chat.length === 0, 'week two: the login plays (no news from the boys, only the loading pill and Let\'s go)');
-// the chat spread evenly from 25.4 to 35.4 s, each after 1.6 s of typing
+ok(!!v && v.launch === 'login' && v.chat.length === 0, 'week two: the login plays (no news from the boys, only the loading pill)');
+// the chat spread evenly from 25.4 to 35.0 s, each after 1.6 s of typing
 S.g = initialState(); S.g.day = 1; startNight(); run(1 / 60);
 const chat3 = S.g.voice!.chat, at3 = (s: number) => launchChatAt(chat3, s, T.LAUNCH_LOGIN_AT);
 ok(at3(23.5).shown === 0 && at3(23.9).typing === chat3[0][0] && at3(25.41).shown === 1, 'the first lands at 25.4 (typing from 23.8)');
-ok(at3(30.39).shown === 1 && at3(30.41).shown === 2 && at3(35.39).shown === 2 && at3(35.41).shown === 3, 'then 30.4 and 35.4');
+ok(at3(30.19).shown === 1 && at3(30.21).shown === 2 && at3(34.99).shown === 2 && at3(35.01).shown === 3, 'then 30.2 and 35.0');
 const rep = ['a', 'b', 'c', 'd'].map(x => [x, x] as [string, string]);
-ok(Math.abs(launchChatTime(1, 4, 23) - (25.4 + 10 / 3)) < 1e-9 && launchChatTime(3, 4, 23) === 35.4, 'the replay\'s four: 25.4, 28.7, 32.1 and 35.4');
-ok(launchChatAt(rep, 35.41, 23).shown === 4, 'all in by 35.4');
+ok(Math.abs(launchChatTime(1, 4, 23) - (25.4 + 9.6 / 3)) < 1e-9 && launchChatTime(3, 4, 23) === 35.0, 'the replay\'s four: 25.4, 28.6, 31.8 and 35.0');
+ok(launchChatAt(rep, 35.01, 23).shown === 4, 'all in by 35.0');
 const lc0 = N().clock; run(14.9);
 ok(launchHolds() && launchT() < T.LAUNCH_SEC && N().clock === lc0, 'it holds the night until 38 s, the clock waiting');
 run(0.2);
-ok(!launchHolds() && N().log.some(l => l.text.startsWith('Welcome to Age of Judgment')), 'at 38 s: Let\'s go and the welcome');
+ok(!launchHolds() && N().log.some(l => l.text.startsWith('Welcome to Age of Judgment')) && !S.g.voice && S.g.howto === true, 'at 38 s: the welcome, the phone down by itself, How to hide next (Tuesday\'s new tile)');
 // its sound: nothing before T 23 fires (the stepper starts at the login's T)
 fired = []; for (t = 23; t < 39; t += 1 / 60) stepLaunchSheet(sorted, t, t + 1 / 60, (at, cue) => fired.push([at, cue]));
 ok(fired.length > 0 && fired.every(([at2]) => at2 > 23) && fired.length === sheet.sound.filter(([at2]) => at2 > 23).length, `from the login: the ${fired.length} cues after 23 s fire, none before`);

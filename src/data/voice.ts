@@ -5,16 +5,15 @@
 // their lines). Monday the realm of Age of Judgment ("aoj") is up (FIRST_CHAT); from Tuesday they name tonight's new
 // thing (NIGHT_CHAT); after the plug, the replay's (replayChat).
 // Week one has one a night. Tuesday's are lean in's (#77).
-export const FIRST_CHAT: [string, string][] = [   // paced to the launch (CHAT_LAUNCH_AT); four of them set the mood while it boots (#133)
-  ['Billy', "yo. realm's up"],
+export const FIRST_CHAT: [string, string][] = [   // paced to the launch (CHAT_LAUNCH_AT); four of them set the mood while it boots (#133);
+  ['Billy', "yo. realm's up"],                       // Mike's Tab tip went with #135 (the How-to cards teach it)
   ['Mike', "launching. still can't skip the intro"],
   ['Lance', "good. it's the best part"],
   ['Billy', 'patch notes are forty pages, i read zero'],
   ['Billy', 'this intro looks like an old crack intro lol'],
   ['Lance', 'would you like to know more?'],
-  ['Billy', '11 sharp. and careful with her tonight, they mostly come at night'],
   ['Lance', 'nine stars. strong password'],
-  ['Mike', 'steps in the hall = tab to excel. BEFORE the door opens'],
+  ['Billy', '11 sharp. and careful with her tonight, they mostly come at night'],
 ];
 /** Tonight's new thing in their chat, week one from Tuesday: one bubble each, the three of them in turn. */
 export const NIGHT_CHAT: Record<string, [string, string][]> = {

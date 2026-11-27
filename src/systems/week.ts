@@ -1,6 +1,7 @@
 import { NIGHT_CHAT, FIRST_CHAT, replayChat } from '../data/voice';
 import { T, type NightPlan } from '../config/tuning';
 import { S } from '../core/state';
+import { boysLog } from './messages';
 
 // The week (#56; docs/design/night.md, the week). Nights are weekdays: Monday to Friday each bring something new,
 // the weekend brings her (and more of her). The schedule is data (T.NIGHT_SCHEDULE); this turns it into tonight's
@@ -62,11 +63,18 @@ export function howtoTiles(): { ids: string[]; isNew: string[]; answer: 'mon' | 
 }
 /** How to hide opens before the night: the first Monday, and any night with a new tile. */
 export const howtoOpens = () => rules().day === 0 || howtoTiles().isNew.length > 0;
+/** The boys' 20:00 chat goes down: it stays in The Boys' chat until the next call (#102); How to hide next on a night
+ *  that has it, else the night starts. The launch does it as the town comes in (#135); Let's go did it before. */
+export function chatDown() {
+  const v = S.g.voice; if (!v) return;
+  if (v.chat.length) boysLog([['sys', v.date], ...v.chat.map(([w, s]) => ['l', `${w}: ${s}`] as ['l', string])]);
+  S.g.voice = null; S.g.howto = howtoOpens();
+}
 
 /** The boys at 20:00 (grid doc 7m), always in their chat (#108): the first Monday they're stoked (#102); after that
  *  tonight's new thing, week one only; after the plug, the replay's. Age of Judgment launches with it (#127): the whole
  *  launch on the first Monday, from the login every night after (replays and week two included; week two has no news
- *  from the boys, so its phone shows only the loading pill and Let's go). */
+ *  from the boys, so its phone shows only the loading pill). The phone goes down by itself as the town comes in (#135). */
 export function voiceNote(): { date: string; chat: [string, string][]; launch?: 'full' | 'login' } | null {
   const r = rules(), res = S.g.results;
   if (res?.ending === 'unplugged' && res.day === r.day) return { date: `${r.name}, again`, chat: replayChat(r.name), launch: 'login' };

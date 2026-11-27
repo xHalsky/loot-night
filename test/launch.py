@@ -29,7 +29,7 @@ async def main():
         for key in ('Escape', 'Enter', ' '):
             await pg.keyboard.press(key); await pg.wait_for_timeout(80)
         await pg.evaluate(GO, 'voiceOk'); await pg.wait_for_timeout(80)
-        check(await ev("!!g.voice && g.howto"), 'Esc, Enter, Space and Let\'s go do nothing while it loads')
+        check(await ev("!!g.voice && g.howto"), 'Esc, Enter, Space and the pill do nothing while it loads')
         check(await pg.evaluate("()=>getComputedStyle(document.getElementById('phClose')).visibility") == 'hidden', 'no close box on the phone while it loads')
         check(await ev("n.threat") < 0.5, 'the night has not started')
         # pause holds the clock
@@ -67,8 +67,7 @@ async def main():
         await pg.keyboard.press('F1')
         await pg.wait_for_timeout(500)
         await pg.screenshot(path='test/shots/launch_after_skip.png')
-        await pg.evaluate(GO, 'voiceOk'); await pg.wait_for_timeout(300)
-        check(await ev("!g.voice"), "after it: Let's go works")
+        check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'after it: the phone went down by itself, the How-to cards next (#135)')
         check(await ev("n.log.some(l=>l.text.startsWith('Welcome to Age of Judgment'))"), 'the welcome line in the feed')
         print('ERRORS', errs); check(not errs, 'no page errors')
         await b.close()

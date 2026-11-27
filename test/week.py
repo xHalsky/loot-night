@@ -50,12 +50,11 @@ async def main():
         check(await ev("g.day") == 0 and await ev("!!g.voice && g.howto"), 'a new game is Monday: the boys\' chat first, the night waits')
         check(await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'block', 'the phone is in your hand')
         await shot('0_monday_chat', 7000)   # Billy, Mike and Lance typing, a bubble at a time, paced to the launch (#127)
-        check(await ev("g.voice.chat.length") == 9 and await ev("n.threat") < 0.5, 'Monday\'s chat; the night has not started')
+        check(await ev("g.voice.chat.length") == 8 and await ev("n.threat") < 0.5, 'Monday\'s chat; the night has not started')
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
         check(await ev("!!g.voice"), 'Esc does nothing while Age of Judgment launches (test/launch.py has the rest)')
-        await ev("L.launch.skip(); 0"); await pg.wait_for_timeout(200)
-        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
-        check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'Esc puts the phone down; How to hide next')
+        await ev("L.launch.skip(); 0"); await pg.wait_for_timeout(300)
+        check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'the town comes in and the phone goes down by itself (#135); How to hide next')
         check(await ev("g.boysThread && g.boysThread[1].text.startsWith(`Billy: yo. realm's up`)"), 'the chat stays in The Boys\' chat')
         await shot('1_monday_party')   # the first Monday's four cards, one area each (#124): the party, How to hide, the job, tonight's stars
         for k, name in enumerate(['1a_monday_howto', '1b_monday_job', '1c_monday_stars']):
@@ -94,9 +93,9 @@ async def main():
         check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.chat[0][1].startsWith(\"no curfew\")"), 'Tuesday: the boys\' chat: no curfew')
         await pg.wait_for_timeout(3000)
         await shot('6b_tuesday_chat')   # from the login (#127): the first bubble at 25.4 s, the monitor on the login
-        check(23 < await ev("L.launch.t()") < 27.5 and not await tap('voiceOk'), 'Tuesday: Age of Judgment from the login (T 23), Let\'s go not yet')
+        check(23 < await ev("L.launch.t()") < 27.5 and not await tap('voiceOk'), 'Tuesday: Age of Judgment from the login (T 23), the phone stays up')
         await ev("L.launch.skip(); 0"); await pg.wait_for_timeout(300)
-        check(await tap('voiceOk'), "Let's go on the phone")
+        check(await ev("!g.voice"), "the phone goes down by itself as the town comes in (#135)")
         check(await ev("g.day") == 1 and await ev("g.howto && !g.voice"), 'Tuesday: How to hide, the headset new')
         check(await ev("n.apt.forceKind") == 'chat' and await ev("n.firstSafe") == 'chat', 'Tuesday: her first visit will be a chat, and safe')
         await shot('7_tuesday_howto')

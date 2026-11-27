@@ -2,7 +2,7 @@ import './style.css';
 import { launchHolds, skipLaunch, launchT, launchSeek } from './systems/launch';
 import { stopLaunchSound, updateLaunchSound, launchFired } from './ui/launchSound';
 import { fmtClock } from './core/fx';
-import { on, rules, dayName, howtoTiles, howtoOpens } from './systems/week';
+import { on, rules, dayName, howtoTiles, chatDown } from './systems/week';
 import './ios.css';
 import { T } from './config/tuning';
 import {  S, N, initialState } from './core/state';
@@ -54,7 +54,7 @@ import { PK } from 'virtual:pagekit';
 import { phoneShown, phoneView, shopFlashed, voiceUp } from './render/phoneView';
 import { deskView, deskTip } from './render/deskView';
 import { herView, herTip } from './render/herView';
-import { herRead, phoneScroll, boysLog } from './systems/messages';
+import { herRead, phoneScroll } from './systems/messages';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
@@ -839,9 +839,8 @@ let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt =
  *  next call; How to hide next on a night with a new tile, else the night starts. */
 function voiceOk() {
   const v = S.g.voice;
-  if (!v || launchHolds()) return;   // nothing starts the night before Age of Judgment has loaded (#127)
-  if (v.chat.length) boysLog([['sys', v.date], ...v.chat.map(([w, s]) => ['l', `${w}: ${s}`] as ['l', string])]);   // their chat stays in The Boys (#102)
-  S.g.voice = null; S.g.howto = howtoOpens(); sfx.click();
+  if (!v || launchHolds()) return;   // nothing starts the night before Age of Judgment has loaded (#127); at 38 s it goes down by itself (#135)
+  chatDown(); sfx.click();
 }
 // The cards before the night (#124): the first Monday (and the pause menu's How to play) shows all four, one area
 // each: the party, How to hide, the job, tonight's stars. A later night with a new tile shows How to hide and the
