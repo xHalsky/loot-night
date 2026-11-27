@@ -95,7 +95,9 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   call (her line, the beat bar, mhm / really?! / wow, misses, End); the courier and the boys (their line, the time,
   the goal, three replies, a wine "She can hear it" strip on speaker). Every screen can be left (Decline, Put down,
   End, the back chevron, the home bar, the close box at the top-right corner, a click outside); leaving counts as
-  ignoring. A bubble that would be cut is left out (#45). **The close box** (#104) is the grey disc with the red cross
+  ignoring. A bubble that would be cut is left out (#45). **A chat bubble is up to 92 px wide** (`BUB_W`, 82% of the
+  screen's 112; #137, Paweł: at 74 they read cramped), theirs on the left and yours on the right, so a line wraps
+  less; the call screens' single lines keep their own widths. **The close box** (#104) is the grey disc with the red cross
   drawn by the renderer at the grid's pixel (12 × 12, `PK.closeBox`, lighter when pointed at), not the old iOS DOM
   button. **A click outside the phone closes it** as the close box does, unless it lands on the RPG (the monitor) or on
   something that does something there (a button, a desk thing with an action, her panel's buttons, the door in the
@@ -104,7 +106,7 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   with her unread count, and the Shop; from Thursday the battery widget instead of the clock, and Home, below). **Messages** lists Babe and The Boys (3).
   **Her chat is kept for good** (`S.g.herThread`, `systems/messages.ts`): her texts, your answers, Text her and her
   replies, across the nights, with a grey separator per sitting (the day, "Today 23:12", the time after a gap); the
-  wheel scrolls it a bubble at a time, a chip goes back to the newest; Text her at the bottom (dim, with a lock and
+  wheel scrolls it a bubble at a time, a chip goes back to the newest (scrolled back, the thread stops above it); Text her at the bottom (dim, with a lock and
   why, when it can't). **The Boys' chat** shows the last call's exchange (their lines, your replies, how it ended)
   until the next, and their lines between the calls ([night.md](night.md), #109), with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
   message into the chat (hands busy), then Delivered.

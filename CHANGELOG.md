@@ -3,6 +3,15 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.101.2 (2026-11-27)
+
+- **Wider chat bubbles on the phone** (#137, Paweł: they read cramped): every chat bubble can be up to 92 px wide
+  (`BUB_W` in `render/page/phone.js`, 82% of the screen's 112; was 74, 66%), theirs still on the left and yours on
+  the right, so a message wraps to fewer lines (Billy's "11 sharp" is four lines, was five). Her chat, The Boys' chat
+  and the minigames' threads; the call screens keep their own widths. Scrolled back in her chat, the thread now stops
+  above the way-down chip (a wide bubble ran under it).
+- Tests: `test/phone.py`, `test/selfies.py`, `test/week.py` pass; no rules touched.
+
 ## 0.101.1 (2026-11-27)
 
 - **The boot chat ends 3 s before the town, and the phone goes down by itself** (#135, Paweł).

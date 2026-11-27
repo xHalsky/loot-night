@@ -6,6 +6,8 @@
 // ===========================================================================
 const PHONEOS = (() => {
 const PH = { w: 124, h: 252, sx: 6, sy: 6, sw: 112, sh: 240 };
+// a chat bubble's widest: 92 of the screen's 112 (82%; Paweł, #137: they read cramped at 74), still on its own side
+const BUB_W = 92;
 let OX = PH.sx, OY = PH.sy;   // the screen's origin in the bound buffer (the desk draws avatars at absolute spots)
 const PHX = (x) => OX + x, PHY = (y) => OY + y;
 // ---------------------------------------------------------------- small kit (screen coordinates)
@@ -120,7 +122,7 @@ function avatarBody(kind, cx, cy, r) {
 }
 // a chat bubble; returns its height
 function bubble(str, side, y, o = {}) {
-  const maxW = o.maxW ?? 74, lines = wrapT(str, maxW - 8), w = Math.max(...lines.map((l) => mw(l))) + 9, h = lines.length * 8 + 5;
+  const maxW = o.maxW ?? BUB_W, lines = wrapT(str, maxW - 8), w = Math.max(...lines.map((l) => mw(l))) + 9, h = lines.length * 8 + 5;
   const x = side === 'r' ? PH.sw - 7 - w : 7, fill = o.fill ?? (side === 'r' ? P.pale : P.s2), ink = o.ink ?? (side === 'r' ? P.s1 : P.moon);
   rrI(x, y, w, h, 4, fill);
   if (o.tail !== false) { if (side === 'r') { px(x + w - 1, y + h - 1, fill); px(x + w, y + h - 1, fill); } else { px(x - 1, y + h - 1, fill); px(x, y + h - 1, fill); } }
@@ -224,7 +226,7 @@ function chatHead(who, av, left, total, sub, time) {
 // the thread: newest at the bottom, clipped under the header
 function thread(msgs, y0, yBottom) {
   let y = yBottom; const placed = [];
-  for (let k = msgs.length - 1; k >= 0; k--) { const m = msgs[k], h = wrapT(m[1], (m[2] && m[2].maxW || 74) - 8).length * 8 + 5; y -= h + 3; placed.push([m, y]); if (y < y0) break; }
+  for (let k = msgs.length - 1; k >= 0; k--) { const m = msgs[k], h = wrapT(m[1], (m[2] && m[2].maxW || BUB_W) - 8).length * 8 + 5; y -= h + 3; placed.push([m, y]); if (y < y0) break; }
   const c0 = CLIP; CLIP = [PHX(0), PHY(y0), PHX(PH.sw), PHY(yBottom)];
   for (const [m, yy] of placed) if (yy >= y0) bubble(m[1], m[0], yy, m[2] || {});   // a bubble that would be cut is left out (#45)
   CLIP = c0;
@@ -838,7 +840,7 @@ const HER_THREAD = [
   ['date', 'Today 23:12'], ['l', 'going to bed'], ['l', 'dont stay up too late'], ['r', 'one more floor ♥'],
   ['date', '00:41'], ['photo', 'jersey'], ['l', 'stole your jersey'],
 ];
-function itemH(m) { return m[0] === 'typing' ? 16 : m[0] === 'date' ? 13 : m[0] === 'sys' ? 11 : m[0] === 'photo' ? PB.h + 3 + (m[2] && m[2].left != null ? 9 : 0) : wrapT(m[1], 66).length * 8 + 8; }
+function itemH(m) { return m[0] === 'typing' ? 16 : m[0] === 'date' ? 13 : m[0] === 'sys' ? 11 : m[0] === 'photo' ? PB.h + 3 + (m[2] && m[2].left != null ? 9 : 0) : wrapT(m[1], BUB_W - 8).length * 8 + 8; }
 function drawItem(m, y, t) {
   if (m[0] === 'typing') {   // someone is typing (#102): their name and three dots that hop, in a small grey bubble
     const nw = mw(m[1]), w = nw + 22, x = 7, h = 12;
@@ -878,7 +880,7 @@ function herThread(items, y0, y1, end, t) {
 function herChat(t, o = {}) {
   const y0 = chatHead('Babe', 'babe', null, null, 'Messages', '00:44');
   const items = o.items || HER_THREAD, end = o.end ?? items.length - 1;
-  herThread(items, y0 + 2, 198, end, t);
+  herThread(items, y0 + 2, end < items.length - 1 ? 184 : 198, end, t);   // scrolled back, the thread stops short of the way down (#137: wider bubbles ran under it)
   if (end < items.length - 1) {   // scrolled back: the way down to the newest
     rrI(PH.sw - 24, 186, 15, 10, 5, P.s2); gl(['x...x', '.x.x.', '..x..'], PH.sw - 19, 189, P.moon);
   }
