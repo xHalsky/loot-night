@@ -53,6 +53,14 @@ function heart9(x, y, full, kind) {
   }
   if (full) { putI(x + 1, y + 1, C9.moon); putI(x + 2, y + 1, kind === 'caught' ? C9.rose : C9.skin); }
 }
+// an eye for the Caught blips: lit (white, crimson iris) once spent, dim (plum) while it's still free
+const EYE9 = ['.ooooo.', 'owwcwwo', 'owcvcwo', 'owwcwwo', '.ooooo.'];
+function eye9(x, y, full) {
+  for (let j = 0; j < 5; j++) for (let i = 0; i < 7; i++) {
+    const c = EYE9[j][i]; if (c === '.') continue;
+    putI(x + i, y + j, full ? (c === 'o' ? C9.plum : c === 'w' ? C9.moon : c === 'c' ? C9.crimson : C9.void) : (c === 'o' ? C9.purple : C9.plum));
+  }
+}
 // text runs: [[str, idx], ...]; '·' draws as a centred dot
 function runs9(parts, x, y) {
   for (const [s, idx] of parts) {
@@ -169,7 +177,7 @@ function herUI(st, t) {
   text('Patience', 4, sy, 'tiny', C9.beige);
   for (let k = 0; k < 5; k++) heart9(42 + k * 8, sy - 1, k < HS.patience);
   text('Caught', 88, sy, 'tiny', C9.beige);
-  for (let k = 0; k < 3; k++) heart9(119 + k * 8, sy - 1, k < HS.caught, 'caught');
+  for (let k = 0; k < 3; k++) eye9(119 + k * 8, sy, k < HS.caught);
   text('Goodwill', 4, sy + 10, 'tiny', C9.beige); bar9(42, sy + 10, 92, HS.goodwill / 100, C9.rose, [0.4, 0.6]); text(String(HS.goodwill), 144, sy + 10, 'tiny', C9.beige, { align: 'r' });
   if (st.gwTag) { const w = measure(st.gwTag, 'tiny') + 4, x = Math.min(134 - w, 42 + Math.round(92 * HS.goodwill / 100) + 2); rectI(x, sy + 9, w, 7, C9.plum); text(st.gwTag, x + 2, sy + 10, 'tiny', C9.pink); }
   text('Noise', 4, sy + 20, 'tiny', C9.beige); bar9(42, sy + 20, 92, HS.noise / 100, C9.gold); text(String(HS.noise), 144, sy + 20, 'tiny', C9.beige, { align: 'r' });
@@ -592,7 +600,7 @@ function herUILive(st, t) {
   text('Patience', 4, sy, 'tiny', C9.beige);
   for (let k = 0; k < 5; k++) heart9(42 + k * 8, sy - 1, k < HS.patience);
   text('Caught', 88, sy, 'tiny', C9.beige);
-  for (let k = 0; k < 3; k++) heart9(119 + k * 8, sy - 1, k < HS.caught, 'caught');
+  for (let k = 0; k < 3; k++) eye9(119 + k * 8, sy, k < HS.caught);
   hhit(0, sy - 1, 84, 9, '', '', 'patience'); hhit(84, sy - 1, 64, 9, '', '', 'caught');
   text('Goodwill', 4, sy + 10, 'tiny', C9.beige); bar9(42, sy + 10, 92, HS.goodwill / 100, C9.rose, HS.gwMarks || []); text(String(HS.goodwill), 144, sy + 10, 'tiny', C9.beige, { align: 'r' });
   if (st.gwTag) { const w = measure(st.gwTag, 'tiny') + 4, x = Math.min(134 - w, 42 + Math.round(92 * HS.goodwill / 100) + 2); rectI(x, sy + 9, w, 7, C9.plum); text(st.gwTag, x + 2, sy + 10, 'tiny', C9.pink); }

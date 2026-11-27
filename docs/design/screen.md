@@ -213,7 +213,7 @@ front, below her: both read at once.
   stale; cyan "Headset on. You hear nothing."; blank while she stands in the doorway), her note (y 279, a beige paper
   window 29 tall, two lines; amber dotted line for footsteps, crimson blinking for her at the door), the two pink
   pre-emptive buttons (y 310, 69 × 17: the name, and the cost or why not; dim purple when they can't; hidden during
-  a visit) and the stats from y 331: Patience (five hearts) and Caught (three), Goodwill (rose, marks at
+  a visit) and the stats from y 331: Patience (five hearts) and Caught (three eyes: lit white with a crimson iris once spent, a dim outline while free; a heart read as affection, the catches are her seeing you), Goodwill (rose, marks at
   `GOODWILL_RAID` and `GOODWILL_FORGIVE`), Noise (gold; once she is asleep a mark at `WAKE_NOISE_FLOOR`).
   Her windows grow from there: a chat question from y 270 with your three answers as moon pills (pink when pointed
   at); the snack run (SNACK RUN, the seconds, Take the plate) and the cuddle ask (CUDDLE, Come here, One sec, babe)

@@ -3,6 +3,13 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.90.3 (2026-11-27)
+
+- **Caught blips are eyes** (#112; Paweł: not hearts on the GF UI): the three Caught marks on her panel are now a 7 x 5
+  eye (white with a crimson iris when spent, a dim plum outline while free). Patience keeps its hearts, and so does her
+  name tab on the Caught screen. Same slots, nothing else moved. Rejected: a red heart (still a heart), a skull (too
+  harsh for her panel).
+
 ## 0.90.2 (2026-11-27)
 
 - **A dragged item looks like itself** (#111; Paweł: it showed the generic slot icon): picked up from the bag or a gear
