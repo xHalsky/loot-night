@@ -235,6 +235,15 @@ const ITEM = {
   hood: ['....bcd.....', '...bccdd....', '..bccddde...', '..bcvvvde...', '.bcvvvvvde..', '.bcvvvvvde..', '.bccvvvdde..', '.bbccvcdde..', 'abbcccddeee.', 'abbbccdddee.', 'aabbbcccddd.', '............'],
   wire: ['....6666....', '..66....66..', '.6........6.', '.6........6.', '.6........5.', '..5......5..', '...55..55...', '.....55.....', '....5..5....', '...tt..tt...', '..tu....tu..', '..qs....qs..'],
   potion: ['....qq......', '....tt......', '....tt......', '...qXXq.....', '..qXXMXq....', '..XXXXMX....', '..XXXXXX....', '..qXXXXq....', '...qqqq.....', '............', '............', '............'],
+  // class gear (#113): the mage's staff, circlet and robe in arcane purple; the priest's gold mace, mitre and vestments;
+  // the rogue's leathers (his dagger and hood are above, and the knight's sword, helm and armor)
+  staff: ['........XX..', '.......XMXX.', '.......XXXX.', '......O.XX..', '.....rO.....', '....rt......', '...rt.......', '..rt........', '.rt.........', 'rt..........', 'q...........', '............'],
+  mace: ['........O...', '.......OYO..', '......OYYOO.', '.....OYOOOOO', '......OOOOO.', '.....tsOOO..', '....tr..O...', '...tr.......', '..tr........', '.tr.........', 'qr..........', 'q...........'],
+  circlet: ['............', '............', '............', '.....XX.....', '..O.XMXX.O..', '.OOOOXXOOOO.', 'OYY.......OO', 'O..........O', 'OO........OO', '.OOOOOOOOOO.', '............', '............'],
+  mitre: ['.....MY.....', '....MMYY....', '...MMOOYY...', '...MOOOOY...', '..MMMOOYYY..', '..MMMOOYYY..', '..MMMOOYYY..', '..OOOOOOOO..', '..MMMMYYYY..', '..OOOOOOOO..', '...W....W...', '............'],
+  leathers: ['............', '..qrr..rrq..', '.qrrss.srrq.', 'qqrrssCssrqq', 'q.rrsCssrr.q', '..rrssCsrr..', '..rrsCssrr..', '..rrssCsrr..', '..qqqOOqqq..', '..rrsttsrr..', '..qq....qq..', '............'],
+  robe: ['....bXXb....', '...bXXXXb...', '..bXXOOXXb..', '.bbXXOOXXbb.', 'bbbXXOOXXbbb', 'bb.XXOOXX.bb', '...XXOOXXX..', '..XXXOOXXXX.', '..XXXOOXXXX.', '.XXXXOOXXXXX', '.OOOOOOOOOOO', '............'],
+  vestments: ['....MYYY....', '...MMYYYY...', '..MMOMYOYY..', '.MMMOMYOYYY.', 'MMMMOMYOYYYY', 'MM.MOMYOYY.Y', '...MOMYOYY..', '..MMOMYOYYY.', '..MMOMYOYYY.', '.MMMOMYOYYYY', '.OOOOOOOOOOO', '............'],
 };
 function icon(name, x, y, o = {}) {
   const rows = ICON[name] || ITEM[name];

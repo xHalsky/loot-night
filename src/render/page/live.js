@@ -341,13 +341,17 @@ function livePanel(ctx, st, t) {
 
 // ---- the whole side panel from the game (V2 with #53; grid doc §5, §6b): party, gear, stats, bag; in town the tabs
 // an item cell from the game: rarity, power, lock, NEW, plus the unbanked dashes, the upgrade arrow and the selection
+// lifted: the item is in your hand (its square stays empty till it lands); shake: it won't go on, x offset of its icon;
+// bad: class gear the selected hero can't wear, under the pointer: a crimson ring round the square (#113)
 function liveCell(x, y, c, o = {}) {
   if (c && c.locked) { itemCell(x, y, null, { locked: true }); return; }
-  itemCell(x, y, c && c.empty ? null : c, { isNew: c && c.isNew, ghost: o.ghost });
+  if (c && c.lifted) { itemCell(x, y, null, { ghost: o.ghost }); return; }
+  itemCell(x, y, c && c.empty ? null : c, { isNew: c && c.isNew, ghost: o.ghost, dx: c && c.shake });
   if (!c || c.empty) return;
   if (c.run) for (let k = 0; k < 17; k++) if ((k >> 1) & 1) { putI(x + 2 + k, y + 2, P.u5); putI(x + 2 + k, y + 18, P.u5); putI(x + 2, y + 2 + k, P.u5); putI(x + 18, y + 2 + k, P.u5); }
   if (c.up) sprite(x + 2, y + 2, ['..g..', '.ggg.', 'ggggg'], { g: 'g6' });
   if (c.sel) { frameI(x - 1, y - 1, 23, 23, P.pale); frameI(x, y, 21, 21, P.gold); }
+  if (c.bad) frameI(x - 1, y - 1, 23, 23, P.crimson);
 }
 function panelFrame() {
   leatherU(0, 0, W, H, { v: 0.16, vig: 0.45 });
@@ -390,7 +394,7 @@ function livePartyPanel(st, t) {
   power(X0 + PW - 4, 57, st.hero.pow, P.moon, 'r');
   ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'].forEach((slot, k) => {
     const gx = X0 + 2 + (k % 3) * 22, gy = 67 + Math.floor(k / 3) * 22, c = st.gear[slot];
-    liveCell(gx, gy, c, { ghost: { weapon: 'sword', helm: 'helm', armor: 'armor', boots: 'boots', ring: 'ring', trinket: 'amulet' }[slot] });
+    liveCell(gx, gy, c, { ghost: (st.ghosts && st.ghosts[slot]) || { weapon: 'sword', helm: 'helm', armor: 'armor', boots: 'boots', ring: 'ring', trinket: 'amulet' }[slot] });   // an empty slot shows his class's own shape (#113)
     panelHit(gx, gy, 21, 21, 'gearCell', slot, c ? 'gear:' + st.sel + ':' + slot : '');
   });
   const sx = X0 + 71;

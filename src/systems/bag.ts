@@ -3,7 +3,9 @@ import { removeEntry, entryName, swapDrop , isLocked } from './loot';
 import { useFeather } from './dungeon';
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
-import { heroLabel } from '../data/heroes';
+import { heroLabel, HERO_CLASS } from '../data/heroes';
+import { canWear } from './gear';
+import { T } from '../config/tuning';
 const toast = toastAs('LOOT');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 
@@ -19,16 +21,20 @@ export function closeSelection() { N().selected = null; }
 
 export function equipOn(heroIdx: number) { const n = N(); if (n.selected) equipItemOn(n.selected, heroIdx); }
 
-/** Equip a bag item on a hero (drag and drop, or the Equip buttons). */
-export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string) {
+/** Equip a bag item on a hero (drag and drop, right-click, or the Equip buttons). False when it didn't go on: the
+ *  wrong class shakes the item in its square (#113), the wrong slot says which one. */
+export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string): boolean {
   const n = N();
   const i = S.g.bag.findIndex(e => e.id === itemId);
-  const pre = S.g.bag[i];
-  if (pre && pre.kind === 'item' && wantSlot && pre.item.slot !== wantSlot) { toast(`That goes in the ${pre.item.slot} slot.`, '#a999bd'); sfx.bad(); return; }
   const e = S.g.bag[i];
   const h = S.g.heroes[heroIdx];
-  if (!e || e.kind !== 'item' || !h) { if (e && e.kind === 'feather') useFeather(e.id); return; }
-  if (!e.item.identified) { toast('Identify it at the Appraiser in town first.', '#b98cff'); sfx.bad(); return; }
+  if (!e || e.kind !== 'item' || !h) { if (e && e.kind === 'feather') useFeather(e.id); return false; }
+  if (!canWear(h, e.item)) {
+    n.reject = { id: e.id, t: T.WRONG_CLASS_SHAKE_SEC };
+    toast(`${HERO_CLASS[e.item.cls!]} only: ${heroLabel(h.id)} can't use it.`, '#ff8a80'); sfx.bad(); return false;
+  }
+  if (wantSlot && e.item.slot !== wantSlot) { toast(`That goes in the ${e.item.slot} slot.`, '#a999bd'); sfx.bad(); return false; }
+  if (!e.item.identified) { toast('Identify it at the Appraiser in town first.', '#b98cff'); sfx.bad(); return false; }
   const ratio = h.hp / maxHp(h);
   const old: Item | undefined = h.gear[e.item.slot];
   h.gear[e.item.slot] = e.item;
@@ -38,6 +44,7 @@ export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string) 
   n.selected = null;
   n.heroTab = heroIdx;
   toast(`${heroLabel(h.id)} equipped ${e.item.name}`, '#f2e9d8'); sfx.good();
+  return true;
 }
 
 export function dropSelected() {
@@ -56,15 +63,16 @@ export function useSelected() {
 
 export function setHeroTab(i: number) { N().heroTab = i; sfx.click(); }
 
-/** Drag a worn item back to the bag. */
-export function unequip(heroIdx: number, slot: string) {
+/** Drag a worn item back to the bag. False when it stays on (a full bag). */
+export function unequip(heroIdx: number, slot: string): boolean {
   const h = S.g.heroes[heroIdx];
   const it = h?.gear[slot as Item['slot']];
-  if (!it) return;
-  if (S.g.bag.length >= S.g.bagSize) { toast('Bag is full.', '#ff8a80'); sfx.bad(); return; }
+  if (!it) return false;
+  if (S.g.bag.length >= S.g.bagSize) { toast('Bag is full.', '#ff8a80'); sfx.bad(); return false; }
   const ratio = h.hp / maxHp(h);
   delete h.gear[slot as Item['slot']];
   S.g.bag.push({ kind: 'item', id: it.id, item: it });
   if (!h.downed) h.hp = Math.max(1, Math.min(maxHp(h), Math.round(maxHp(h) * ratio)));
   sfx.click();
+  return true;
 }

@@ -16,6 +16,7 @@ import { travelToDungeon, choosePath, isBossBattle } from '../src/systems/dungeo
 import { queueAbility, moveOf, abilityUnlocked } from '../src/systems/battle';
 import { maxHp, heroStats } from '../src/systems/stats';
 import { equipItemOn } from '../src/systems/bag';
+import { canWear } from '../src/systems/gear';
 import { skipDrop } from '../src/systems/loot';
 
 /** The bot gears up on the way, as a player must since #49: every upgrade goes on the hero it helps most. */
@@ -24,7 +25,7 @@ function gearUp() {
   for (const e of [...S.g.bag]) {
     if (e.kind !== 'item' || !e.item.identified) continue;
     let best = -1, gain = 0;
-    S.g.heroes.forEach((h, i) => { const d = score(heroStats(h, { [e.item.slot]: e.item })) - score(heroStats(h)); if (d > gain) { gain = d; best = i; } });
+    S.g.heroes.forEach((h, i) => { if (!canWear(h, e.item)) return; const d = score(heroStats(h, { [e.item.slot]: e.item })) - score(heroStats(h)); if (d > gain) { gain = d; best = i; } });   // class gear (#113)
     if (best >= 0) equipItemOn(e.id, best);
   }
   if (N().dropPopup) skipDrop();

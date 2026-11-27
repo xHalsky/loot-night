@@ -1,7 +1,7 @@
 import { T } from '../config/tuning';
-import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind, type Slot, type Enemy } from '../core/state';
+import { S, N, uid, RARITIES, SLOTS, type BagEntry, type Item, type Rarity, type Stat, type MapKind, type Slot, type Enemy, type HeroId } from '../core/state';
 import { pick, weighted, chance, rand } from '../core/rng';
-import { ADJECTIVES, NOUNS, SLOT_STATS, STAT_BASE, RARITY_MULT, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
+import { ADJECTIVES, SLOT_STATS, nounsFor, isClassSlot, SOFT_NOUNS, METAL_ADJECTIVES, STAT_BASE, RARITY_MULT, HAS_DOWNSIDE, MAP_INFO, FEATHER, RARITY_COLOR } from '../data/items';
 import { toastAs } from '../core/fx';
 const toast = toastAs('LOOT');   // feed tag (#49)
 import { LIFE_AFFIXES, CROSS_AFFIXES, INSOMNIAC_AFFIXES, SPECIAL_BY_ID, type SpecialAffix } from '../data/affixes';
@@ -71,6 +71,8 @@ export function genItem(ilvl: number, minRarity = 0, up = 0): Item {
   const legend = rarity === 'legendary' ? pick(LEGENDS.filter(l => inParty(l.hero))) : undefined;
   const set = rarity === 'epic' && chance(T.SET_CHANCE) ? pick(SETS.filter(s => inParty(s.hero))) : undefined;
   const slot = legend?.slot ?? (set ? pick(SET_SLOTS) : pick(SLOTS));
+  // class gear (#113): a weapon, helm or armor is for one hero in the party (a legendary's or a set's own hero)
+  const cls: HeroId | undefined = isClassSlot(slot) ? legend?.hero ?? set?.hero ?? pick(S.g.heroes.map(h => h.id)) ?? 'knight' : undefined;
   const mult = RARITY_MULT[rarity];
   const pool = [...SLOT_STATS[slot]];
   const affixes: { stat: Stat; amount: number }[] = [];
@@ -95,22 +97,25 @@ export function genItem(ilvl: number, minRarity = 0, up = 0): Item {
     else specialAmt = T.AFFIX_SPREADSHEET_GOLD;
   }
   const suffix = sp ? ` ${SPECIAL_BY_ID[sp.id].suffix}` : '';
-  const name = legend ? legend.name + suffix : set ? `${set.name} ${set.nouns[slot as 'weapon']}${suffix}` : itemName(slot, rarity, sp?.id);
+  const name = legend ? legend.name + suffix : set ? `${set.name} ${set.nouns[slot as 'weapon']}${suffix}` : itemName(slot, rarity, sp?.id, cls);
   const value = Math.round(6 * ilvl * mult * mult + 3 * (affixes.length - 1 + (sp ? 1 : 0)) + (sp ? 10 * mult : 0) + (legend || set ? 10 * mult : 0));
   return { id: uid(), name, slot, rarity, ilvl, affixes, value, identified: ri < 3, ...(sp ? { special: sp.id, specialAmt } : {}), ...(witched ? { witched } : {}),
-    ...(legend ? { legend: legend.id } : {}), ...(set ? { set: set.id } : {}) };
+    ...(legend ? { legend: legend.id } : {}), ...(set ? { set: set.id } : {}), ...(cls ? { cls } : {}) };
 }
 
-/** Adjective + noun, plus "of X" only when the item has a special affix (#44): a suffix means a special effect. */
-export function itemName(slot: Slot, rarity: Rarity, special?: string): string {
-  const sp = special ? SPECIAL_BY_ID[special] : undefined;
-  return `${pick(ADJECTIVES[rarity])} ${pick(NOUNS[slot])}${sp ? ` ${sp.suffix}` : ''}`;
+/** Adjective + noun, plus "of X" only when the item has a special affix (#44): a suffix means a special effect.
+ *  Class gear takes its class's words (#113); cloth and leather never get a metal adjective. */
+export function itemName(slot: Slot, rarity: Rarity, special?: string, cls?: HeroId): string {
+  const sp = special ? SPECIAL_BY_ID[special] : undefined, noun = pick(nounsFor(slot, cls));
+  const adj = ADJECTIVES[rarity].filter(a => !(SOFT_NOUNS.has(noun) && METAL_ADJECTIVES.has(a)));
+  return `${pick(adj)} ${noun}${sp ? ` ${sp.suffix}` : ''}`;
 }
-/** True if the name uses the current word lists (old saves carry names from before #44). */
+/** True if the name uses the current word lists (old saves carry names from before #44, and before class gear, #113). */
 export function nameIsCurrent(it: Item): boolean {
   if (it.legend || it.set) return true;   // named by their legend or set (#52, 1.8)
+  if (isClassSlot(it.slot) && !it.cls) return false;
   const sp = it.special ? SPECIAL_BY_ID[it.special] : undefined;
-  return ADJECTIVES[it.rarity].some(a => NOUNS[it.slot].some(n => it.name === `${a} ${n}${sp ? ` ${sp.suffix}` : ''}`));
+  return ADJECTIVES[it.rarity].some(a => nounsFor(it.slot, it.cls).some(n => it.name === `${a} ${n}${sp ? ` ${sp.suffix}` : ''}`));
 }
 
 export const itemEntry = (item: Item): BagEntry => ({ kind: 'item', id: item.id, item });
@@ -228,6 +233,7 @@ export function updateDrops(dt: number) {
   n.lootFly = n.lootFly.filter(f => f.t < f.delay + f.max);
   for (const f of n.fresh) f.t -= dt;
   n.fresh = n.fresh.filter(f => f.t > 0);
+  if (n.reject && (n.reject.t -= dt) <= 0) n.reject = null;
   if (n.dropPopup) {
     n.dropPopup.t -= dt;
     if (n.dropPopup.t <= 0) { toast(`Lost: ${entryName(n.dropPopup.entry)}`, '#ff8a80'); n.dropPopup = null; }

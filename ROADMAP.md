@@ -38,7 +38,8 @@ The bot sims (good + idle) still run every round, but these four criteria come f
       (Paweł, 2026-11-26: everything planned is in before he tests): done (0.81 to 0.86). Next, Paweł's RPG session (2).
 2. **Paweł's playtest** (2026-11-26, Monday night): first fixes in 0.87 (#95 the loot walk, #96 the rogue from night 1,
    #97 melee swings, #98 the Tonight note, #99 curios in the corridor); round 2 in 0.88 (#101 the stars card, #102
-   Billy, Mike and Lance and Age of Judgment, #103 the headset on Monday, #104 the phone's close, #105 dollars). Next,
+   Billy, Mike and Lance and Age of Judgment, #103 the headset on Monday, #104 the phone's close, #105 dollars); class
+   gear in 0.91 (#113: weapons, helms and armor per class, the wrong class shown on the item). Next,
    the rest of his notes; his 15-minute
    RPG session (real life off, F1) and the real-life-on night.
 3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every

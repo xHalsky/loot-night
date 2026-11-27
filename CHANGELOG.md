@@ -3,6 +3,32 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.91.0 (2026-11-27)
+
+- **Class gear** (#113; Paweł: per-class weapons and armour, trinkets shared). Weapons, helms and armor now belong to
+  one class and only that hero can wear them; boots, rings and trinkets fit anyone. A weapon, helm or armor drop is
+  for a hero in the party, evenly (a legendary or set piece: its own hero). Each class has its own words and its own
+  bag icon per slot: the knight's swords, helms and plate (steel); the rogue's daggers, hoods and leathers; the mage's
+  staffs, circlets and robes (purple, 3 new icons); the priest's maces, mitres and vestments (gold and cream, 3 new
+  icons); the leathers are new too. Cloth and leather never get Iron, Bronze or Steel. An empty weapon, helm or armor
+  slot shows the selected hero's own shape.
+- **The wrong class, on the item itself**: with a hero selected who can't wear it, the item's square gets a crimson
+  ring under the pointer, and the item in your hand wears it once picked up (its square stays empty while it is in
+  hand; the ring goes over the card of a hero who can wear it). Right-click: it shakes in its square. Dragged onto his
+  slot or card: it shakes in your hand, and let go it flies back to its square and shakes there. The feed says "Mage
+  only: Dutch (Knight) can't use it."; the tooltip names the class ("Rare Mage Weapon") and says the same line instead
+  of the Power change. Anything let go where it can't go now flies back to its square (it used to vanish). Numbers:
+  `WRONG_CLASS_SHAKE_SEC`, `WRONG_CLASS_SHAKE_PX`, `GHOST_RETURN_SEC`.
+- The ▲ upgrade arrow, the boys' "upgrade" line, the item window's Equip buttons, the Appraiser's "For ..." line and
+  both bots count only heroes who can wear it.
+- Old saves: worn gear becomes its wearer's class (renamed when its word isn't his); a legendary or set piece is its
+  hero's (worn by someone else, it goes back to the bag); bag items go by their word.
+- Balance (good bot): night 1 (32 nights each) equips 32 to 28, slots filled 20.5 to 18.2 of 24, gear's share of
+  attack 38% to 33% and of HP 27% to 23%; depth 6.2 to 6.1, wipes 0.16 both. Four nights (8 campaigns): depth 6.1 / 8.8
+  / 9.2 / 9.0 before, 6.2 / 8.8 / 11.0 / 11.0 after.
+- Reverses the 0.58 decision against class-locked gear (docs/design/loot.md). `test/loot.ts` (the pool, names, the
+  equip rule, old saves), `test/classgear.py` (ring, shakes, flight back), `test/ghost.py` updated.
+
 ## 0.90.3 (2026-11-27)
 
 - **Caught blips are eyes** (#112; Paweł: not hearts on the GF UI): the three Caught marks on her panel are now a 7 x 5

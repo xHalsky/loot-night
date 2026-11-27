@@ -22,6 +22,7 @@ export interface Item {
   run?: boolean;                 // picked up this run, not banked yet (#52, 1.4): lost on a wipe, even worn
   legend?: LegendId;             // a legendary: its rule (src/data/legendaries.ts, #52 1.8)
   set?: SetId;                   // a set piece
+  cls?: HeroId;                  // class gear (#113): a weapon, helm or armor only this hero can wear; boots, rings and trinkets have none
 }
 export type BagEntry = (
   | { kind: 'item'; id: string; item: Item }
@@ -179,6 +180,7 @@ export interface Night {
   dropQueue: BagEntry[];
   floorLoot: { entry: BagEntry; x: number; t: number }[];   // drops lying on the dungeon floor (screen x)
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
+  reject: { id: string; t: number } | null;                 // a bag item that wouldn't go on (#113): it shakes in its square for t s
   lootFly: { x: number; text: string; color: string; t: number; max: number; delay: number; dx: number }[];   // picked-up loot: names flying up from the floor (#49)
   dropPopup: { entry: BagEntry; t: number } | null;
   reserve: { defId: string; elite: boolean }[];   // the pack waiting off screen (#52, 1.3)

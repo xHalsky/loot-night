@@ -45,6 +45,8 @@ import { toggleAutocast, buyNode, respec } from './systems/tree';
 import type { NodeId } from './data/trees';
 import type { HeroId } from './core/state';
 import { setRpgTip, rpgTipShown, type RpgTip } from './render/liveRpg';
+import { setPanelPtr, shakeDx } from './render/rpgView';
+import { canWear } from './systems/gear';
 import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown, liveDrewAt } from './render/liveRpg';
 import { PK } from 'virtual:pagekit';
 import { phoneShown, phoneView, shopFlashed, voiceUp } from './render/phoneView';
@@ -267,29 +269,86 @@ function setDrag(p: number) { const g = S.g.night?.game; if (g && g.kind === 'ph
 function setHold(on: boolean) { if (!S.g.night) return; setPhoneHold(on); }
 
 // ---------- Inventory: hover tooltips, drag to equip / unequip, right-click to equip ----------
-let inv: { key: string; x0: number; y0: number; moved: boolean; shot?: HTMLCanvasElement } | null = null;
+// rect: the item's square in panel px; over: the drop target under it ('slot:weapon', 'hero:2', 'bag'); bad: class gear
+// the hero it would land on can't wear (#113): the ghost wears a crimson ring and shakes on a slot or a card it can't go
+let inv: { key: string; x0: number; y0: number; moved: boolean; shot?: HTMLCanvasElement; rect?: { x: number; y: number; w: number; h: number }; over?: string; bad?: boolean; ring?: HTMLCanvasElement } | null = null;
 /** The item's own cell as the side panel drew it (grid px), for the drag ghost: the picked-up item looks the same as in the bag. */
 function cellShot(h: { x: number; y: number; w: number; h: number }): HTMLCanvasElement {
-  const c = document.createElement('canvas'); c.width = h.w; c.height = h.h; c.className = 'ghost-cell'; c.style.width = `${h.w * 2}px`; c.style.height = `${h.h * 2}px`;
+  const c = document.createElement('canvas'); c.width = h.w; c.height = h.h;
   c.getContext('2d')!.drawImage(el('spArea') as HTMLCanvasElement, h.x, h.y, h.w, h.h, 0, 0, h.w, h.h);
+  return c;
+}
+/** The ghost's canvas: the cell with a 1 px border round it, crimson when it can't go on (the bag's ring, #113). */
+function ghostCell(shot: HTMLCanvasElement, bad: boolean, c?: HTMLCanvasElement): HTMLCanvasElement {
+  if (!c) { c = document.createElement('canvas'); c.width = shot.width + 2; c.height = shot.height + 2; c.className = 'ghost-cell'; c.style.width = `${c.width * 2}px`; c.style.height = `${c.height * 2}px`; }
+  const g = c.getContext('2d')!; g.clearRect(0, 0, c.width, c.height); g.drawImage(shot, 1, 1);
+  if (bad) { g.fillStyle = '#d23c5a'; g.fillRect(0, 0, c.width, 1); g.fillRect(0, c.height - 1, c.width, 1); g.fillRect(0, 0, 1, c.height); g.fillRect(c.width - 1, 0, 1, c.height); }
   return c;
 }
 const toStage = (ev: PointerEvent | MouseEvent) => { const r = stage.getBoundingClientRect(); return { x: (ev.clientX - r.left) / stageScale, y: (ev.clientY - r.top) / stageScale }; };
 const ghost = () => el('ghost');
+/** The ghost shakes (#113): the bag square's hops (shakeDx), in whole grid px (x2 on the stage). */
+let ghostShakeAt = 0;
+function shakeGhost() {
+  const t0 = ghostShakeAt = performance.now(), dur = T.WRONG_CLASS_SHAKE_SEC * 1000;
+  const step = () => {
+    if (ghostShakeAt !== t0) return;
+    const p = Math.min(1, (performance.now() - t0) / dur);
+    ghost().style.transform = p < 1 ? `translateX(${shakeDx(p) * 2}px)` : '';
+    if (p < 1) requestAnimationFrame(step);
+  };
+  step();
+}
+/** Where a drag would land: a gear slot ('slot:weapon'), a party card ('hero:2'), the bag ('bag'), or nowhere (''). */
+function dropAt(ev: PointerEvent): string {
+  const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+  const dropEl = under?.closest('[data-drop]') as HTMLElement | null;
+  return under?.id === 'spArea' ? panelDrop(ev) : dropEl?.dataset.drop ?? '';
+}
+/** A bag item whose drop target can't wear it (class gear, #113): a party card under it, else the selected hero. */
+function dragBad(key: string, over: string): boolean {
+  const [kind, a] = key.split(':'), e = kind === 'bag' ? S.g.bag.find(x => x.id === a) : undefined;
+  if (!e || e.kind !== 'item') return false;
+  const [dk, dv] = over.split(':'), h = S.g.heroes[dk === 'hero' ? Number(dv) : N().heroTab];
+  return !!h && !canWear(h, e.item);
+}
+/** Let go where it can't go: the item flies back to its square, then lands there (and shakes, if it was refused). */
+let homeTimer = 0;
+function ghostHome(rect: { x: number; y: number }, lift: string, id: string) {
+  const g = ghost(), sp = el('spArea').getBoundingClientRect(), st = stage.getBoundingClientRect(), k = sp.width / 140 / stageScale;
+  g.style.transition = `left ${T.GHOST_RETURN_SEC}s ease-in, top ${T.GHOST_RETURN_SEC}s ease-in`;
+  void g.offsetWidth;
+  g.style.left = `${(sp.left - st.left) / stageScale + (rect.x - 1) * k}px`; g.style.top = `${(sp.top - st.top) / stageScale + (rect.y - 1) * k}px`;
+  clearTimeout(homeTimer);
+  homeTimer = window.setTimeout(() => {
+    g.style.display = 'none'; g.style.transition = ''; setPanelPtr({ lift: null });
+    const n = S.g.night; if (n?.reject?.id === id) n.reject.t = T.WRONG_CLASS_SHAKE_SEC;   // it shakes once it's back in its square
+  }, T.GHOST_RETURN_SEC * 1000);
+}
+function ghostDone() { clearTimeout(homeTimer); const g = ghost(); g.style.display = 'none'; g.style.transition = ''; g.style.transform = ''; ghostShakeAt = 0; setPanelPtr({ lift: null }); }
 
 document.addEventListener('pointermove', ev => {
   const p = toStage(ev);
   if (inv) {
     if (!inv.moved && Math.hypot(ev.clientX - inv.x0, ev.clientY - inv.y0) > 6) {
       inv.moved = true;
+      ghostDone();
       const [kind, a, b] = inv.key.split(':');
       const entry = kind === 'bag' ? S.g.bag.find(e => e.id === a) : kind === 'gear' ? (() => { const it = S.g.heroes[Number(a)]?.gear[b as 'weapon']; return it ? { kind: 'item' as const, id: it.id, item: it } : undefined; })() : undefined;
       const h = kind === 'hero' ? S.g.heroes[Number(a)] : null;
       ghost().innerHTML = entry && inv.shot ? '' : entry ? entryIcon(entry, 34) : h ? `<span class="ghost-hero" style="border-color:${HERO_COLORS[h.id]}">${HERO_NAME[h.id]} <small>${HERO_CLASS[h.id]}</small></span>` : '';
-      if (entry && inv.shot) ghost().appendChild(inv.shot);   // the item's own cell, at the grid's pixel (x2 on the stage)
+      if (entry && inv.shot) { inv.bad = dragBad(inv.key, ''); inv.ring = ghostCell(inv.shot, inv.bad); ghost().appendChild(inv.ring); }   // the item's own cell, at the grid's pixel (x2 on the stage)
       ghost().classList.toggle('hero', !!h); ghost().classList.toggle('cell', !!(entry && inv.shot)); ghost().style.display = 'block';
+      if (entry && inv.shot) setPanelPtr({ lift: kind === 'bag' ? `bag:${a}` : `gear:${b}`, hover: null });   // in your hand: its square is empty
     }
-    if (inv.moved) { const half = inv.shot ? inv.shot.width : 20; ghost().style.left = `${p.x - half}px`; ghost().style.top = `${p.y - half}px`; hover.key = ''; }
+    if (inv.moved) {
+      const half = inv.ring ? inv.ring.width : 20; ghost().style.left = `${p.x - half}px`; ghost().style.top = `${p.y - half}px`; hover.key = '';
+      if (inv.ring && inv.shot) {
+        const over = dropAt(ev), bad = dragBad(inv.key, over);
+        if (bad !== inv.bad) { inv.bad = bad; ghostCell(inv.shot, bad, inv.ring); }
+        if (over !== inv.over) { inv.over = over; if (bad && /^(slot|hero):/.test(over)) shakeGhost(); }   // onto a slot or a card it can't go on
+      }
+    }
   } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea', 'ebArea', 'headHit'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases (V2, V3) and his head (#103) set their own hover
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
@@ -301,20 +360,20 @@ document.addEventListener('pointermove', ev => {
 });
 document.addEventListener('pointerup', ev => {
   if (inv && S.g.night) {
-    const { key, moved } = inv; inv = null;
-    ghost().style.display = 'none';
+    const { key, moved, rect, ring } = inv; inv = null;
     const [kind, a, b] = key.split(':');
+    let went = false;
     if (!moved) { if (kind === 'bag') clickBagSlot(a); else if (kind === 'hero') actions.heroTab(a); }
     else {
-      const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
-      const dropEl = under?.closest('[data-drop]') as HTMLElement | null;
-      const drop = under?.id === 'spArea' ? panelDrop(ev) : dropEl?.dataset.drop ?? '';
-      const [dk, dv] = drop.split(':');
-      if (kind === 'bag' && dk === 'slot') equipItemOn(a, N().heroTab, dv);
-      else if (kind === 'bag' && dk === 'hero') equipItemOn(a, Number(dv));
-      else if (kind === 'gear' && dk === 'bag') unequip(Number(a), b);
+      const [dk, dv] = dropAt(ev).split(':');
+      if (kind === 'bag' && dk === 'slot') went = equipItemOn(a, N().heroTab, dv);
+      else if (kind === 'bag' && dk === 'hero') went = equipItemOn(a, Number(dv));
+      else if (kind === 'gear' && dk === 'bag') went = unequip(Number(a), b);
       else if (kind === 'hero' && dk === 'hero' && dv !== a) actions.swap(`${a},${dv}`);
     }
+    // an item that didn't go anywhere goes back to its square (#113); anything else, the ghost just goes
+    if (moved && ring && rect && !went) ghostHome(rect, kind === 'bag' ? `bag:${a}` : `gear:${b}`, kind === 'bag' ? a : '');
+    else ghostDone();
   }
   setHold(false);
   if (!drag) return;
@@ -369,8 +428,8 @@ el('spArea').addEventListener('pointerdown', ev => {
   if (!h || !h.act) return;
   ev.preventDefault(); ev.stopPropagation(); hover.key = '';
   // an item: pick it up (drag to equip or unequip, as the DOM bag did); a click without a drag selects it
-  if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h) }; return; }
-  if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h) }; return; }
+  if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h), rect: h }; return; }
+  if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h), rect: h }; return; }
   // a party card: a click picks the hero, a drag onto another card swaps their positions (the town had no reorder before)
   if (h.act === 'heroTab') { inv = { key: `hero:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
   actions[h.act]?.(h.arg);
@@ -379,6 +438,7 @@ el('spArea').addEventListener('pointermove', ev => {
   const [x, y] = spXY(ev), h = panelHitAt(x, y), p = toStage(ev);
   (el('spArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
   if (inv?.moved) return;
+  setPanelPtr({ hover: h?.act === 'bagCell' ? h.arg : null });   // its ring, when the selected hero can't wear it (#113)
   hover.key = h?.tip ? (/^(bag|gear|hero|skill):|^autosalvage$/.test(h.tip) ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
   hover.src = 'rpg'; hover.area = 'sp'; hover.ax = x; hover.ay = y;
 });
@@ -398,7 +458,7 @@ function panelDrop(ev: PointerEvent): string {
   if (h.act === 'bagCell' || h.act === 'bagArea') return 'bag';
   return '';
 }
-el('spArea').addEventListener('pointerleave', () => { hover.key = ''; });
+el('spArea').addEventListener('pointerleave', () => { hover.key = ''; setPanelPtr({ hover: null }); });
 // right-click a skill well: switch its autocast on or off (#53, 2.3)
 el('rpgArea').addEventListener('contextmenu', ev => {
   ev.preventDefault();

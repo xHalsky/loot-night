@@ -10,7 +10,7 @@ import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_POSITIONS, AURAS, HERO_
 import { autocastBought, autocastOn } from '../systems/tree';
 import { positionOf, outOfPosition, aurasOn } from '../systems/positions';
 import { LEGEND_BY_ID, SET_BY_ID } from '../data/legendaries';
-import { legendOn, setPieces } from '../systems/gear';
+import { legendOn, setPieces, canWear } from '../systems/gear';
 import { pacingLine } from '../systems/pacing';
 import { liveMs } from '../render/liveRpg';
 import { markText } from '../data/marks';
@@ -129,8 +129,8 @@ export function tooltipHtml(): string {
       const it = e.item;
       const h = S.g.heroes[n.heroTab];
       body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
-        <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · <b style="color:#ffd27a">\u25c6 ${it.identified ? itemPower(it) : '?'}</b>${it.locked ? ' · <b style="color:#f2c46b">locked</b>' : ''}</div>
-        ${it.identified ? statLines(it) + `<div class="tt-cmp">${powerCompare(h, it)}</div>` : '<div class="dim">Unidentified: identify it at the Appraiser.</div>'}`;
+        <div class="tt-sub">${kindOf(it)} · <b style="color:#ffd27a">\u25c6 ${it.identified ? itemPower(it) : '?'}</b>${it.locked ? ' · <b style="color:#f2c46b">locked</b>' : ''}</div>
+        ${it.identified ? statLines(it) + `<div class="tt-cmp">${powerCompare(h, it)}</div>` : `<div class="dim">Unidentified: identify it at the Appraiser.</div>${canWear(h, it) ? '' : `<div class="tt-cmp">${wrongClass(h, it)}</div>`}`}`;
     } else if (e.kind === 'map') {
       body = `<div class="tt-name" style="color:${MAP_INFO[e.map].color}">${entryName(e)}</div><div>${MAP_INFO[e.map].desc}</div>`;
     } else {
@@ -141,7 +141,7 @@ export function tooltipHtml(): string {
     const it = h?.gear[parts[2] as Item['slot']];
     if (!it) return '';
     body = `<div class="tt-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(it.name)}</div>
-      <div class="tt-sub">${cap(it.rarity)} ${cap(it.slot)} · <b style="color:#ffd27a">\u25c6 ${itemPower(it)}</b></div>${statLines(it)}`;
+      <div class="tt-sub">${kindOf(it)} · <b style="color:#ffd27a">\u25c6 ${itemPower(it)}</b></div>${statLines(it)}`;
   } else return '';
   const left = Math.min(hover.x + 16, 1280 - 250), top = Math.min(hover.y + 12, 720 - 200);
   return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
@@ -152,7 +152,13 @@ function affixLines(item: Item): string {
   return item.affixes.map(a => `<div style="color:${a.amount >= 0 ? '#6fcf7f' : '#ff8a80'}">${a.amount >= 0 ? '+' : ''}${a.amount} ${STAT_LABEL[a.stat]}</div>`).join('');
 }
 
+/** "Rare Mage Weapon" for class gear (#113), "Rare Ring" for the rest. */
+const kindOf = (it: Item) => `${cap(it.rarity)} ${it.cls ? HERO_CLASS[it.cls] + ' ' : ''}${cap(it.slot)}`;
+/** Class gear the hero can't wear (#113): one red line instead of the power change. */
+const wrongClass = (h: Hero, it: Item) => `<span style="color:#ff8a80">${HERO_CLASS[it.cls!]} only: ${heroLabel(h.id)} can't use it.</span>`;
+
 function powerCompare(h: Hero, item: Item): string {
+  if (!canWear(h, item)) return wrongClass(h, item);
   const d = heroPower(h, { [item.slot]: item }) - heroPower(h);
   return d > 0 ? `<span style="color:#6fcf7f">\u25b2 +${d} power for ${heroLabel(h.id)}</span>` : d < 0 ? `<span style="color:#ff8a80">\u25bc ${d} power for ${heroLabel(h.id)}</span>` : `<span class="dim">Same power for ${heroLabel(h.id)}</span>`;
 }
@@ -167,11 +173,12 @@ function detailHtml(e: BagEntry): string {
   if (e.kind === 'item') {
     const it = e.item;
     const eq = it.identified ? `<div class="pop-eq">${S.g.heroes.map((h, i) => {
+      if (!canWear(h, it)) return '';   // class gear (#113): only its class gets a button
       const d = heroPower(h, { [it.slot]: it }) - heroPower(h);
       return `<button class="pop-eq-btn" data-act="equip" data-arg="${i}"><b>${h.name}</b><i style="color:${clsHex(h.id)}">${HERO_CLASS[h.id]}</i><em class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? `\u25b2 +${d}` : d < 0 ? `\u25bc ${d}` : '='}</em></button>`;
     }).join('')}</div>` : '<div class="dim">Unidentified: the Appraiser in town reveals it.</div>';
     body = `<div class="d-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
-      <div class="pop-sub">${cap(it.rarity)} ${it.slot}${it.identified && (it.legend || it.set) ? ` · ${heroLabel((it.legend ? LEGEND_BY_ID[it.legend] : SET_BY_ID[it.set!]).hero)}` : ''} · item level ${it.ilvl}${it.identified ? ` · \u25c6 ${itemPower(it)}` : ''}</div>
+      <div class="pop-sub">${kindOf(it)}${it.identified && (it.legend || it.set) ? ` · ${heroLabel((it.legend ? LEGEND_BY_ID[it.legend] : SET_BY_ID[it.set!]).hero)}` : ''} · item level ${it.ilvl}${it.identified ? ` · \u25c6 ${itemPower(it)}` : ''}</div>
       ${it.identified ? `<div class="pop-aff">${affixLines(it)}</div>${specialLine(it)}${ruleLines(it)}` : ''}${eq}
       ${town ? '<div class="dim">Sell, identify, salvage or list it at the services above.</div>' : ''}`;
   } else if (e.kind === 'map') {

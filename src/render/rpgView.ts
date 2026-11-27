@@ -3,7 +3,8 @@
 import { T } from '../config/tuning';
 import { S, N, RARITIES, type Enemy, type Hero, type HeroId, type Item, type BagEntry, type Stat, type ServiceSpot } from '../core/state';
 import { ENEMY_BY_ID, bossFor } from '../data/enemies';
-import { MAP_INFO, RARITY_COLOR } from '../data/items';
+import { MAP_INFO, RARITY_COLOR, CLASS_ICON, isClassSlot } from '../data/items';
+import { canWear } from '../systems/gear';
 import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
 import { ULT_SLOT, ABILITIES, HOME_POSITIONS, AURAS, HERO_NAME, HERO_CLASS, heroLabel } from '../data/heroes';
 import { outOfPosition } from '../systems/positions';
@@ -74,26 +75,44 @@ export function panelView(hov: string | null) {
 const SLOT_ICON: Record<string, string> = { weapon: 'sword', helm: 'helm', armor: 'armor', boots: 'boots', ring: 'ring', trinket: 'amulet' };
 function itemIcon(it: Item): string {
   if (!it.identified) return 'unknown';
-  if (it.slot === 'weapon' && /Dagger/.test(it.name)) return 'dagger';
-  if (it.slot === 'helm' && /Hood/.test(it.name)) return 'hood';
-  if (it.slot === 'trinket' && /Censer|Sigil|Orb/.test(it.name)) return it.name.includes('Orb') ? 'amulet' : 'amulet';
+  if (it.cls && isClassSlot(it.slot)) return CLASS_ICON[it.cls][it.slot];   // class gear (#113): a staff looks like a staff
   return SLOT_ICON[it.slot];
 }
-function cellOf(e: BagEntry | undefined): Record<string, unknown> {
+/** The pointer over the side panel (#113, from main.ts): the bag item under it (its ring when the selected hero can't
+ *  wear it), and what is in your hand ('bag:id' or 'gear:slot': its square stays empty till it lands). */
+const panelPtr: { hover: string | null; lift: string | null } = { hover: null, lift: null };
+export function setPanelPtr(p: Partial<typeof panelPtr>) { Object.assign(panelPtr, p); }
+/** A shake (#113) at p (0..1 of WRONG_CLASS_SHAKE_SEC), in whole grid px: six hops, right, left, right at full
+ *  WRONG_CLASS_SHAKE_PX, then three at half, then still. The bag square and the item in hand use the same one. */
+export function shakeDx(p: number): number {
+  if (p < 0 || p >= 1) return 0;
+  const k = Math.floor(p * 6);
+  return (k % 2 ? -1 : 1) * (k < 3 ? T.WRONG_CLASS_SHAKE_PX : Math.ceil(T.WRONG_CLASS_SHAKE_PX / 2));
+}
+/** The item's icon offset while it shakes in its square (a refused equip). */
+function shakeOf(id: string): number {
+  const r = N().reject;
+  return r && r.id === id ? shakeDx(1 - r.t / T.WRONG_CLASS_SHAKE_SEC) : 0;
+}
+function cellOf(e: BagEntry | undefined, ring = false): Record<string, unknown> {
   if (!e) return { empty: true };
   const n = N(), fresh = n.fresh.some(f => f.id === e.id), sel = n.selected === e.id;
+  if (panelPtr.lift === `bag:${e.id}`) return { id: e.id, lifted: true };
   if (e.kind === 'map') return { id: e.id, icon: 'map', r: 'rare', isNew: fresh, run: !!e.run, sel };
   if (e.kind === 'feather') return { id: e.id, icon: 'feather', r: 'epic', isNew: fresh, sel };
-  const it = e.item, up = it.identified && S.g.heroes.some(h => heroPower(h, { [it.slot]: it }) > heroPower(h));
-  return { id: e.id, icon: itemIcon(it), r: it.rarity, pow: it.identified ? itemPower(it) : '?', lock: !!it.locked, isNew: fresh, run: !!e.run, up, sel };
+  const it = e.item, up = it.identified && S.g.heroes.some(h => canWear(h, it) && heroPower(h, { [it.slot]: it }) > heroPower(h));
+  const h = S.g.heroes[n.heroTab], bad = ring && panelPtr.hover === e.id && !!h && !canWear(h, it);
+  return { id: e.id, icon: itemIcon(it), r: it.rarity, pow: it.identified ? itemPower(it) : '?', lock: !!it.locked, isNew: fresh, run: !!e.run, up, sel, bad, shake: shakeOf(e.id) };
 }
-function gearCell(it: Item | undefined) {
+function gearCell(it: Item | undefined, slot: string) {
   if (!it) return null;
+  if (panelPtr.lift === `gear:${slot}`) return { id: it.id, lifted: true };
   return { id: it.id, icon: itemIcon(it), r: it.rarity, pow: it.identified ? itemPower(it) : '?', lock: !!it.locked, run: !!it.run };
 }
-function bagView() {
+/** ring: the party tab, where the selected hero is on show; hovering class gear he can't wear rings it red (#113). */
+function bagView(ring = false) {
   const g = S.g, cells: Record<string, unknown>[] = [];
-  for (let k = 0; k < T.BAG_SIZE + T.TREASURY_ROW; k++) cells.push(k >= g.bagSize ? { locked: true } : cellOf(g.bag[k]));
+  for (let k = 0; k < T.BAG_SIZE + T.TREASURY_ROW; k++) cells.push(k >= g.bagSize ? { locked: true } : cellOf(g.bag[k], ring));
   return { bag: cells, bagCount: g.bag.length, bagSize: g.bagSize, autoSalvage: g.autoSalvage };
 }
 const foot = () => ({ gold: S.g.gold, souls: S.g.mats, record: Math.max(S.g.record, N().deepest) });
@@ -106,9 +125,9 @@ function partyPanelView() {
   const r1 = (v: number) => String(Math.round(v * 10) / 10), r0 = (v: number) => String(Math.round(v));
   const row = (k: Stat, label: string, f: (v: number) => string) => { const d = st[k] - base[k]; return [label, f(st[k]), Math.abs(d) >= 0.05 ? `${d > 0 ? '+' : ''}${f(d)}` : ''] as const; };
   const gear: Record<string, unknown> = {};
-  for (const sl of ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'] as const) gear[sl] = gearCell(h.gear[sl]);
-  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: HERO_CLASS[h.id], pow: heroPower(h) }, gear,
-    stats: [row('hp', 'HP', r0), row('atk', 'ATK', r1), row('armor', 'ARM', r1), row('speed', 'SPD', r1), row('crit', 'CRIT', r1), row('luck', 'LUCK', r1)], ...bagView(), ...foot() };
+  for (const sl of ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'] as const) gear[sl] = gearCell(h.gear[sl], sl);
+  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: HERO_CLASS[h.id], pow: heroPower(h) }, gear, ghosts: CLASS_ICON[h.id],
+    stats: [row('hp', 'HP', r0), row('atk', 'ATK', r1), row('armor', 'ARM', r1), row('speed', 'SPD', r1), row('crit', 'CRIT', r1), row('luck', 'LUCK', r1)], ...bagView(true), ...foot() };
 }
 function townPanelView() {
   const g = S.g, cps = [...g.checkpoints].sort((a, b) => a - b), f = cps.includes(g.startFloor) ? g.startFloor : 1;
@@ -149,7 +168,7 @@ function servicePanelView(svc: ServiceSpot) {
     S0.summary = k ? `Identify: ${sum} g (${T.COST_IDENTIFY_MIN} min)` : 'Pick an unknown item.'; S0.button = `Identify · ${sum} g`; S0.ok = k > 0 && g.gold >= sum;
     const a = n.appraised, e = a && g.bag.find(x => x.id === a.id);
     if (a && e && e.kind === 'item' && a.t < 6) {
-      const it = e.item, sp = it.special ? specialText(it) : null, who = it.legend ? LEGEND_BY_ID[it.legend].hero : it.set ? SET_BY_ID[it.set].hero : null;
+      const it = e.item, sp = it.special ? specialText(it) : null, who = it.legend ? LEGEND_BY_ID[it.legend].hero : it.set ? SET_BY_ID[it.set].hero : it.cls ?? null;
       const lines: [string, string, string][] = it.affixes.map(x => [`${x.amount >= 0 ? '+' : ''}${x.amount} ${STAT_LABEL[x.stat]}`, x.amount >= 0 ? 'g6' : 'crimson', '']);
       if (sp) lines.push([SPECIAL_BY_ID[it.special!].suffix, sp.life ? 'real life' : 'cross', sp.text]);
       if (it.legend) lines.push([LEGEND_BY_ID[it.legend].name, 'rule', LEGEND_BY_ID[it.legend].rule]);

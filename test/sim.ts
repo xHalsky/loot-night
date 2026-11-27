@@ -1,4 +1,5 @@
 import { queueAbility, abilityUnlocked } from '../src/systems/battle';
+import { canWear } from '../src/systems/gear';
 import { swapHeroes, outOfPosition } from '../src/systems/positions';
 import { buyNode, nodeState, owns } from '../src/systems/tree';
 import { DEFAULT_ORDER } from '../src/data/heroes';
@@ -65,7 +66,7 @@ function tryEquip() {
   for (const e of [...S.g.bag]) {
     if (e.kind !== 'item' || !e.item.identified) continue;
     let best = -1, gain = 0;
-    S.g.heroes.forEach((h, i) => { const d = score(heroStats(h, { [e.item.slot]: e.item })) - score(heroStats(h)); if (d > gain) { gain = d; best = i; } });
+    S.g.heroes.forEach((h, i) => { if (!canWear(h, e.item)) return; const d = score(heroStats(h, { [e.item.slot]: e.item })) - score(heroStats(h)); if (d > gain) { gain = d; best = i; } });   // class gear (#113): its own class only
     if (best >= 0) { N().selected = e.id; equipOn(best); equips++; }
   }
 }

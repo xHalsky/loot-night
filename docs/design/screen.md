@@ -45,13 +45,17 @@ click one to select it, drop an item on one to equip it. The selected hero: an e
 ◆44"), a 3 × 2 gear grid (weapon, helm, armor / boots, ring, trinket; power in the corner) and the six stats with the
 gear's share. The bag: "BAG 7/18" and the AUTO salvage switch in its header, 6 × 3 slots, then the Treasury row (the
 building opens 2 per level, the rest show a lock). A cell: the rarity light, the icon, its power, NEW, a lock, a
-green ▲ when it is an upgrade for someone, dashes when it is unbanked, a gold frame when picked. The footer: gold ·
+green ▲ when it is an upgrade for someone who can wear it, dashes when it is unbanked, a gold frame when picked. The footer: gold ·
 Souls, and the deepest floor ever. In town three tabs over it (Town: the build list, the way down and the bag, or
 the open service's page, [city.md](city.md); Inventory: as in the dungeon, and drag a party card onto another to
 swap their positions; Skill Tree: [trees.md](trees.md)). The town map itself is drawn on the battle area (0.62). Drag from the bag onto a gear slot or a card to
 equip, from a slot onto the bag to unequip (the item under the pointer is its own cell, as the panel drew it, at the
-grid's pixel: #111); right-click equips on the selected hero (or unequips); hover for the
-tooltip; L locks. HP shows only on the battle sprites and the skill-bar portraits.
+grid's pixel, in a 1 px border: #111; its square stays empty while it is in hand); right-click equips on the selected
+hero (or unequips); hover for the tooltip; L locks. Class gear the selected hero can't wear (#113,
+[loot.md](loot.md)): a crimson ring round its square under the pointer and round it in hand, a shake in its square
+on right-click and in hand over his slot or card; let go, it flies back to its square. Anything let go where it
+can't go flies back. An empty weapon, helm or armor slot shows the selected hero's class shape (Hudzor's: a staff,
+a circlet, a robe). HP shows only on the battle sprites and the skill-bar portraits.
 
 **Item windows** (details of a clicked item, the bag-full popup) open over the side panel's top block (the party and
 gear, or the city menu), so the bag below stays clickable and the battle stays in view. They are still DOM, over the

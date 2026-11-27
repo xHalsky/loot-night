@@ -1,3 +1,4 @@
+import { canWear } from './gear';
 import { T } from '../config/tuning';
 import { S, type Night, type Item } from '../core/state';
 import { pick, rand } from '../core/rng';
@@ -36,7 +37,7 @@ export function boysSay(trigger: BoysTrigger): boolean {
   return true;
 }
 /** An item that would raise someone's power (the bag's upgrade arrow). */
-export function isUpgradeForSomeone(it: Item): boolean { return it.identified && S.g.heroes.some(h => heroPower(h, { [it.slot]: it }) > heroPower(h)); }
+export function isUpgradeForSomeone(it: Item): boolean { return it.identified && S.g.heroes.some(h => canWear(h, it) && heroPower(h, { [it.slot]: it }) > heroPower(h)); }
 /** A hero went down this run: a banked run is not a clean one. */
 export function boysNoteDown() { const p = P(); if (p) p.downRun = S.g.night?.run ?? null; }
 /** The run is banked: a clean one (nobody went down) gets Lance's line. */

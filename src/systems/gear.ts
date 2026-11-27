@@ -2,6 +2,9 @@
 import { S, type Hero, type HeroId, type Item } from '../core/state';
 import { LEGEND_BY_ID, SET_BY_ID, type LegendId, type SetId } from '../data/legendaries';
 
+/** Class gear (#113): a weapon, helm or armor goes on its own class only; boots, rings and trinkets on anyone. */
+export const canWear = (h: { id: HeroId }, it: Item): boolean => !it.cls || it.cls === h.id;
+
 const worn = (h: Hero, gear: Partial<Record<string, Item | undefined>> = h.gear) =>
   Object.values(gear).filter((it): it is Item => !!it && it.identified);
 /** True when the legendary's own hero wears it. */

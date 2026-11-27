@@ -1,4 +1,4 @@
-import type { Rarity, Slot, Stat, MapKind } from '../core/state';
+import type { Rarity, Slot, Stat, MapKind, HeroId } from '../core/state';
 
 export const RARITY_COLOR: Record<Rarity, string> = {
   common: '#8e8a99', uncommon: '#6fcf7f', rare: '#6aa8ff', epic: '#b98cff', legendary: '#ff9a4d',
@@ -22,14 +22,39 @@ export const STAT_LABEL: Record<Stat, string> = { atk: 'Attack', hp: 'Max HP', a
 
 // Item names (#44): plain fantasy words, two of them, readable at a glance. The adjective climbs with rarity;
 // "of X" is added only for a special affix (data/affixes.ts), so a suffix always means a special effect.
-export const NOUNS: Record<Slot, string[]> = {
-  weapon: ['Sword', 'Axe', 'Mace', 'Dagger', 'Spear', 'Staff', 'Hammer'],
-  helm: ['Helm', 'Hood', 'Crown', 'Circlet'],
-  armor: ['Breastplate', 'Chainmail', 'Robe', 'Tunic'],
+// Boots, rings and trinkets fit anyone; weapons, helms and armor are class gear (#113), with their own words below.
+export type SharedSlot = 'boots' | 'ring' | 'trinket';
+export const NOUNS: Record<SharedSlot, string[]> = {
   boots: ['Boots', 'Greaves', 'Sandals', 'Treads'],
   ring: ['Ring', 'Band', 'Signet'],
   trinket: ['Amulet', 'Charm', 'Talisman', 'Relic'],
 };
+/** Class gear (#113): one class wears it. Each class's words fit one picture (its icon below), so a staff in the
+ *  bag looks like a staff whatever its name. */
+export type ClassSlot = 'weapon' | 'helm' | 'armor';
+export const CLASS_SLOTS: ClassSlot[] = ['weapon', 'helm', 'armor'];
+export const isClassSlot = (s: Slot): s is ClassSlot => (CLASS_SLOTS as Slot[]).includes(s);
+export const CLASS_NOUNS: Record<HeroId, Record<ClassSlot, string[]>> = {
+  knight: { weapon: ['Sword', 'Longsword', 'Broadsword'], helm: ['Helm', 'Greathelm', 'Warhelm'], armor: ['Breastplate', 'Plate', 'Chainmail'] },
+  rogue: { weapon: ['Dagger', 'Dirk', 'Stiletto'], helm: ['Hood', 'Cowl'], armor: ['Leathers', 'Jerkin', 'Tunic'] },
+  mage: { weapon: ['Staff', 'Rod', 'Stave'], helm: ['Circlet', 'Diadem'], armor: ['Robe', 'Garb'] },
+  healer: { weapon: ['Mace', 'Scepter', 'Morningstar'], helm: ['Mitre', 'Crown'], armor: ['Vestments', 'Raiment'] },
+};
+/** The bag icon of class gear (the renderer's ITEM table): plate and steel for the knight, a dagger, hood and leathers
+ *  for the rogue, a staff, circlet and robe in arcane purple for the mage, a gold mace, mitre and vestments for the priest. */
+export const CLASS_ICON: Record<HeroId, Record<ClassSlot, string>> = {
+  knight: { weapon: 'sword', helm: 'helm', armor: 'armor' },
+  rogue: { weapon: 'dagger', helm: 'hood', armor: 'leathers' },
+  mage: { weapon: 'staff', helm: 'circlet', armor: 'robe' },
+  healer: { weapon: 'mace', helm: 'mitre', armor: 'vestments' },
+};
+/** The words an item of this slot (and class) is named from. */
+export function nounsFor(slot: Slot, cls?: HeroId): string[] {
+  return isClassSlot(slot) ? CLASS_NOUNS[cls ?? 'knight'][slot] : NOUNS[slot];
+}
+/** Cloth and leather: never iron, bronze or steel ("Iron Robe"). */
+export const SOFT_NOUNS = new Set(['Hood', 'Cowl', 'Leathers', 'Jerkin', 'Tunic', 'Robe', 'Garb', 'Vestments', 'Raiment', 'Mitre', 'Sandals']);
+export const METAL_ADJECTIVES = new Set(['Iron', 'Bronze', 'Steel']);
 export const ADJECTIVES: Record<Rarity, string[]> = {
   common: ['Worn', 'Old', 'Plain', 'Crude'],
   uncommon: ['Iron', 'Sturdy', 'Fine', 'Bronze'],

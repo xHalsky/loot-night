@@ -24,13 +24,34 @@ its rule. From rare up one of them is a downside, so the bigger number is not au
 (one may be a special) + downside. Names are two plain fantasy
 words, readable at a glance: a rarity adjective and a slot noun (Worn Dagger, Iron Helm, Runed Band, Shadow
 Robe, Dragon Sword). The adjective climbs with rarity: Worn/Old/Plain/Crude, Iron/Sturdy/Fine/Bronze,
-Steel/Silver/Runed/Elven, Arcane/Shadow/Dwarven/Blessed, Dragon/Ancient/Mythic/Titan.
+Steel/Silver/Runed/Elven, Arcane/Shadow/Dwarven/Blessed, Dragon/Ancient/Mythic/Titan. Cloth and leather never get
+Iron, Bronze or Steel (`SOFT_NOUNS`: no "Iron Robe").
 Epics and legendaries drop **unidentified** until the Appraiser reveals them.
+
+**Class gear** (#113). Weapons, helms and armor belong to one class and only that hero can wear them; boots, rings
+and trinkets fit anyone. A weapon, helm or armor drop is for a hero in the party, evenly (a legendary or a set piece:
+its own hero). Each class has its own words (`CLASS_NOUNS`) and one icon per slot (`CLASS_ICON`), so a staff in the
+bag looks like a staff whatever it is called:
+
+| Class | Weapon | Helm | Armor |
+|---|---|---|---|
+| Knight (Dutch) | Sword, Longsword, Broadsword: the steel sword | Helm, Greathelm, Warhelm: the steel helm | Breastplate, Plate, Chainmail: the plate |
+| Rogue (Hixx) | Dagger, Dirk, Stiletto: the dagger | Hood, Cowl: the hood | Leathers, Jerkin, Tunic: the brown leathers |
+| Mage (Hudzor) | Staff, Rod, Stave: the staff with a purple orb | Circlet, Diadem: the gold circlet | Robe, Garb: the purple robe |
+| Priest (Arkbishop) | Mace, Scepter, Morningstar: the gold mace | Mitre, Crown: the mitre | Vestments, Raiment: the cream vestments |
+
+The tooltip names the class ("Rare Mage Weapon"); for the selected hero it says "Mage only: Dutch (Knight) can't use
+it." instead of the Power change, the ▲ upgrade arrow counts only heroes who can wear it, and the item's window has
+an Equip button only for them. A wrong-class equip never happens: see the bag below. Old saves: worn gear became its
+wearer's class (renamed to his words when it wasn't one of them); a legendary or set piece is its hero's (worn by
+someone else, it goes back to the bag if there is room); bag items went by their word (an old Spear or Hammer to the
+knight). `npx tsx test/loot.ts` checks the pool, the names, the equip rule and the old saves.
 
 **Legendaries change a rule** (`src/data/legendaries.ts`, rules in `src/systems/battle.ts`). Every legendary is one
 of eight named items, the name is the whole name ("Frostbinder", or "Frostbinder of Stealth" with a special). Each
 belongs to one hero: its rule works only while he wears it, and it drops only while he is in the party (all four are
-from night 1, #96). Its stats work on anyone.
+from night 1, #96). A weapon or armor legendary is his class gear, so only he can wear it; a trinket's stats work on
+anyone.
 
 | Legendary | Slot | Hero | Rule |
 |---|---|---|---|
@@ -44,8 +65,8 @@ from night 1, #96). Its stats work on anyone.
 | Vigil Censer | trinket | Healer | Miracle also raises Ward for `LEGEND_VIGIL_WARD_SEC` (4 s) |
 
 **Sets**, one per hero, three pieces (weapon, armor, trinket): `SET_CHANCE` (30%) of epics are a piece of a set whose
-hero is in the party, named "Ironwake Plate", "Embervow Orb". Pieces count only on the set's own hero; the tooltip
-says how many he wears.
+hero is in the party, named "Ironwake Plate", "Embervow Orb". The weapon and armor are his class gear; the trinket
+fits anyone but counts only on the set's own hero. The tooltip says how many he wears.
 
 | Set | Hero | 2 pieces | 3 pieces |
 |---|---|---|---|
@@ -115,9 +136,16 @@ bag items, and in item tooltips as one line on the Power change for the selected
 Dutch (Knight)"). Sell prices show in the Merchant's window, not in tooltips. A hero under `POWER_BEHIND` (85%) of the party's best gets a pulsing red "!" on
 their party card: they deserve the next good item.
 
-**Gear** (the side panel, #49). Three party cards (level, power, a thin XP line; no HP); click one to show its gear:
-a 3 × 2 grid (helm, armor, boots / weapon, ring, trinket, faint icons for empty slots). Drag from the bag onto a
-slot or a party card to equip; drag off to unequip; right-click to equip on the selected hero. Hover tooltips show the
+**Gear** (the side panel, #49). Four party cards (level, power, a thin XP line; no HP); click one to show its gear:
+a 3 × 2 grid (weapon, helm, armor / boots, ring, trinket; an empty slot shows a faint icon, his class's own shape for
+the weapon, helm and armor). Drag from the bag onto a slot or a party card to equip; drag off to unequip; right-click
+to equip on the selected hero. **Class gear on the wrong hero** (#113): hovered with a hero selected who can't wear
+it, the item's square gets a crimson ring; picked up, the item in your hand wears the ring (gone over the card of a
+hero who can wear it), and its square stays empty while it is in hand. Right-click: it shakes in its square
+(`WRONG_CLASS_SHAKE_SEC` 0.35 s, `WRONG_CLASS_SHAKE_PX` 2 grid px: three hops, then three at half). Dragged onto his
+slot or card it shakes in your hand, and let go it flies back to its square (`GHOST_RETURN_SEC` 0.16 s) and shakes
+there; the feed says "Mage only: Dutch (Knight) can't use it." Anything let go where it can't go flies back the same
+way. `python3 test/classgear.py` plays all of it. Hover tooltips show the
 name, rarity, slot and power, the stats and special affix, and for bag items whether it is better for the
 selected hero; the detailed stat comparison is in the item's click panel. Next to the grid, a stat block shows the selected
 hero's HP, ATK, ARM, SPD, CRIT and LUCK, with the share that comes from gear in green (red if gear lowers it).
@@ -141,8 +169,18 @@ Souls.
   always one of eight named rules for one hero, which makes the first one a moment and a build decision, not a bigger
   number; it drops only for heroes in the party. Stormcoil and Vigil Censer were written for Storm and Revive, which
   were cut (decisions 2026-11-20): they now work on Hudzor's Bolt and Arkbishop's Miracle. Rejected: random legendaries
-  with four stats (0.11 to 0.57: the best item in the game read like an epic); class-locked gear (any hero can wear
-  any item; only the rule and the set bonus are his).
+  with four stats (0.11 to 0.57: the best item in the game read like an epic). Class-locked gear was rejected here
+  too; 0.91 took it (below).
+
+- **Class gear** (0.91, #113; Paweł). Weapons, helms and armor are one class's; boots, rings and trinkets are
+  shared. A drop now says whose it is at a glance (a staff, a mitre, leathers), the party reads like four characters
+  rather than four stat sheets, and an upgrade is somebody's, which gives the bag a "who is this for" beat. The
+  wrong-class signal lives on the item itself: a crimson ring under the pointer, a shake in its square or in your hand,
+  and a flight back to the bag, so it reads without the tooltip; the feed line says why. Drops spread evenly over the
+  party. Measured: night 1 (32 good-bot nights each) 32 equips to 28, 20.5 to 18.2 of 24 slots filled, gear's share of attack 38% to 33% and of HP 27% to 23%, depth 6.2 to 6.1 floors and wipes 0.16 both; over four nights (8 campaigns) depth 6.1 / 8.8 / 9.2 / 9.0 before, 6.2 / 8.8 / 11.0 / 11.0 after (more unwearable drops get sold, so the city grows a little faster). Gear fills a little slower, the run doesn't suffer. Rejected: armor types (cloth, leather, plate) shared between classes (more rules to
+  learn for four heroes); a class weighting toward whoever is behind (smart loot: kept for later, if the playtests
+  find a hero starved); class trinkets (they stay the item anyone can use); a hint toast alone, without the ring and
+  the shake (the feed is easy to miss mid-fight).
 
 - **Plain two-word names** (0.43, #44): adjective + noun, and an "of ..." suffix only for a special affix.
   The joke names (Gilded Spoon of the Sweet Talker, Bailiff's Tab-Pull Band of Infinite Excuses) ran to 6
