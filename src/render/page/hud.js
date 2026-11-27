@@ -150,13 +150,27 @@ function haloU(x, y, w, h, mat, a) {
 // (not bought), or between fights a skill that needs an enemy: the picture in the stone ramp (Moonwell's iron greys)
 // and dim, the key dark, no frame, no glow. On cooldown or charging: the picture in stone at full value under the
 // sweep and its seconds. st.off: { [key]: 'locked' | 'idle' }.
-const OFF_K = 0.5, CD_K = 0.85, LOCK = ['.555.', '5...5', '44444', '45v54', '44444'];   // the lock on a skill not bought yet
+// #126: in true grayscale (the UI-only neutral greys, engine.js), not the stone ramp: stone is night blue, so the
+// knight's steel skills looked the same usable or not. The lock sits at the same spot in every slot, the ultimate's too.
+const OFF_K = 0.5, CD_K = 0.85, LOCK = ['.555.', '5...5', '44444', '45v54', '44444'], LOCK_INK = { 5: 'ash6', 4: 'ash5' };
+const ASH = [P.void, P.ash1, P.ash2, P.ash3, P.ash4, P.ash5, P.ash6];
+// the grey for a lightness: the nearest one for the icon's flat colours, ordered-dithered between the two nearest for
+// the tile's textured backing (so its grain survives)
+function ashAt(L, i, j, dither) {
+  let k = 0; while (k < ASH.length - 1 && PAL_LAB[ASH[k + 1]][0] <= L) k++;
+  if (k === ASH.length - 1) return ASH[k];
+  const a = PAL_LAB[ASH[k]][0], f = (L - a) / (PAL_LAB[ASH[k + 1]][0] - a);
+  return ASH[f > (dither ? BAYER8[((j & 7) << 3) | (i & 7)] : 0.5) ? k + 1 : k];
+}
 function greyU(x, y, w, h, k) {
   for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) {
     if (i < 0 || j < 0 || i >= W || j >= H) continue;
     const p = j * W + i, idx = B.I[p];
-    if (idx >= 0) putU(i, j, PAL_LAB[idx][0] * k, M_STONE);
-    else if (B.A[p]) { B.M[p] = M_STONE; B.V[p] *= k; }
+    if (idx >= 0) putI(i, j, ashAt(PAL_LAB[idx][0] * k, i, j, false));
+    else if (B.A[p]) {
+      const v = clamp((B.V[p] + (B.X ? B.X[p] : 0)) * (B.G ? B.G[p] : 1)), R = RAMPS[B.M[p]] || RAMPS[0], q = ((v * 255) | 0) * 3;
+      putI(i, j, ashAt(oklab(R[q], R[q + 1], R[q + 2])[0] * k, i, j, true));
+    }
   }
 }
 function cdSweep(x, y, cd) {
@@ -175,11 +189,11 @@ function skillSlot(x, y, sk, key, st, t, ult = false) {
   skillTile(x + 1, y + 1, 13, 16, SKILL_CLASS[sk]);
   sprite(x + 1, y + 1, SKILL_ICON[sk]);
   if (off) greyU(x + 1, y + 1, 13, 16, OFF_K);   // not now: grey and dim (#123)
-  if (off === 'locked') sprite(x + 5, y + 4, LOCK);   // not bought: a lock
+  if (off === 'locked') sprite(x + 5, y + 4, LOCK, LOCK_INK);   // not bought: a lock
   else if (cd) { greyU(x + 1, y + 1, 13, 16, CD_K); cdSweep(x, y, cd); }   // not yet: grey under the sweep
   if (!off && st.answer === key && pulse > 0.5) frameI(x, y, w, h, P.crimson); else if (!off && st.answer === key) frameI(x, y, w, h, P.wine);
   if (combo) frameI(x, y, w, h, P.gold);
-  rectI(x + 1, y + 13, 6, 5, P.void); text(key, x + 2, y + 13, 'tiny', off ? P.s2 : cd ? P.u4 : P.u6);
+  rectI(x + 1, y + 13, 6, 5, P.void); text(key, x + 2, y + 13, 'tiny', off ? P.ash3 : cd ? P.u4 : P.u6);
   // autocast bought (tree.js): a loop mark on a void tab in the other corner; moss when on, dim when switched off (right-click)
   const ac = st.autocast && st.autocast[key];
   if (ac != null) { rectI(x + 7, y + 13, 7, 5, P.void); sprite(x + 8, y + 13, ['.mmm.', 'm...m', 'm..mm', '.mm..'], { m: ac && !off ? 'g6' : 'u3' }); }
@@ -200,16 +214,16 @@ function ultSlot(x, y, sk, key, st, t) {
   sprite(x + 1, y + 1, SKILL_ICON[sk]);
   if (off) greyU(x + 1, y + 1, 13, 16, OFF_K);
   else if (cd) { greyU(x + 1, y + 1, 13, 16, CD_K); cdSweep(x, y, cd); }
-  const fc = off ? P.s2 : ready ? P.gold : P.copper, sc = off ? P.s3 : ready ? P.pale : P.gold, tc = off ? P.s3 : P.void;
+  const fc = off ? P.ash2 : ready ? P.gold : P.copper, sc = off ? P.ash3 : ready ? P.pale : P.gold, tc = off ? P.ash4 : P.void;
   frameI(x - 1, y - 1, w + 2, h + 2, P.void); frameI(x, y, w, h, fc);
   for (const [cx, cy] of [[x, y], [x + w - 1, y], [x, y + h - 1], [x + w - 1, y + h - 1]]) putI(cx, cy, sc);
   // the crest: a peak over the slot's top edge with a gem in it
   const mx = x + (w >> 1);
   rectI(mx - 3, y - 1, 7, 1, fc); rectI(mx - 2, y - 2, 5, 1, fc); rectI(mx - 1, y - 3, 3, 1, fc); putI(mx, y - 4, sc);
-  putI(mx, y - 2, off ? P.s1 : P.crimson); putI(mx - 1, y - 1, P.void); putI(mx + 1, y - 1, P.void); putI(mx, y - 1, off ? P.s2 : P.moon);
+  putI(mx, y - 2, off ? P.ash1 : P.crimson); putI(mx - 1, y - 1, P.void); putI(mx + 1, y - 1, P.void); putI(mx, y - 1, off ? P.ash2 : P.moon);
   // its key on a tab
   rectI(x + 1, y + 12, 7, 6, fc); rectI(x + 1, y + 12, 7, 1, sc); text(key, x + 2, y + 13, 'tiny', tc);
-  if (locked) { sprite(x + 5, y + 3, LOCK); text(String(u.need), x + w - 2, y + 12, 'tiny', P.s4, { align: 'r', outline: P.void }); }
+  if (locked) { sprite(x + 5, y + 4, LOCK, LOCK_INK); text(String(u.need), x + w - 2, y + 12, 'tiny', P.ash5, { align: 'r', outline: P.void }); }
 }
 function lockedSlot(x, y, key) {
   wellU(x, y, 11, 14, { v: 0.08 });

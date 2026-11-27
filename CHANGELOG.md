@@ -3,6 +3,15 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.94.2 (2026-11-27)
+
+- **Locked and unusable skills are grayscale** (#126; Paweł: the knight's skills are blue-ish and the locked ones were
+  almost the same colour). The not-now state used the stone ramp, which is night blue like the knight's steel; it now
+  uses six neutral greys of its own (Moonwell has none), UI-only slots after Flow's, kept out of the dither and used
+  only by the skill bar. The cooldown picture under the sweep and the locked ultimate's frame, crest and tab are grey
+  too. The lock sits at the same height in every slot (it was 1 px higher on the ultimates) and is light grey. Render
+  only: no balance change.
+
 ## 0.94.1 (2026-11-27)
 
 - **The curio card's description is easier to read** (#125; Paweł: make it a bit more readable). It was mid-brown

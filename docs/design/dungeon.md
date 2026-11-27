@@ -221,12 +221,18 @@ during microsleeps.
 current numbers (`tip` in `src/data/heroes.ts`: damage, heal, duration and the one combo that matters); locked
 skills add their unlock level. The cooldown shows on the button itself. **Colour means usable now** (#123; Paweł: in
 play it was hard to see what could be used): a well shows its picture in colour only when the skill can go off.
-Not bought yet, or between fights a skill that needs an enemy: the picture in the stone ramp (Moonwell's iron greys,
-the palette has no neutral grey) at half value, its key dark, no glow or answer pulse, and a lock when not bought. On
-cooldown: the picture in stone at full value under the dark sweep and its seconds. The ultimate's well is gilded with
-its glow only when it is ready; charging, the frame, crest and tab are copper and the picture grey under the sweep;
-locked (the tree's nodes still missing) or not usable between fights, the whole slot, crest and tab included, is dim
-stone with the lock and the count of missing nodes, so at the start of the game it no longer stands out. Hovering a portrait shows the hero's
+Not bought yet, or between fights a skill that needs an enemy: the picture in true grayscale at half value, its key
+dark, no glow or answer pulse, and a lock when not bought, at the same spot in every slot, the ultimate's included. On
+cooldown: the picture in grayscale at full value under the dark sweep and its seconds. The ultimate's well is gilded
+with its glow only when it is ready; charging, the frame, crest and tab are copper and the picture grey under the
+sweep; locked (the tree's nodes still missing) or not usable between fights, the whole slot, crest and tab included,
+is dim grey with the lock and the count of missing nodes, so at the start of the game it no longer stands out.
+**Why real greys** (#126; Paweł: the knight's skills are blue-ish and the locked ones looked the same colour): the
+first version used Moonwell's stone ramp, which is night blue like the knight's steel, so a knight skill read the same
+usable or not. Moonwell has no neutral grey, so the skill bar has six of its own (`#1c1c1c` to `#aeaeae`), UI-only
+slots after Flow's two: written by index, never part of the dither, used by nothing else. The icon's flat colours take
+the nearest grey by lightness; the tile's grain is ordered-dithered between two, so it survives. Rejected: a darker
+or more washed-out stone (still blue next to steel), the Graphite desk's greys (warm or mauve, and the desk's own). Hovering a portrait shows the hero's
 name, class and role in one line. (Tooltips carry only crucial information: [screen.md](screen.md).)
 During a boss wind-up, the skills that answer it pulse red (Taunt, Ward, and Bash unless the boss is braced),
 so the game teaches the answer in the moment. Skill numbers (`power`, `flat`, `dur`) live in

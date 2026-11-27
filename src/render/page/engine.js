@@ -75,7 +75,12 @@ function usePal(set) { PAL = set.PAL; PAL_RGB = set.PAL_RGB; PAL_LAB = set.PAL_L
 // + two UI-only slots after the 32 (kept out of the dither): Flow's yellow and its pale top row (2026-11-20)
 const FLOW_Y = '#eadf3a', FLOW_Y2 = '#fbf5a8';
 P.flow = 32; P.flowHi = 33;
-const PAL_BASE = makePalSet([...PAL, FLOW_Y, FLOW_Y2], RAMP_IDX, 32);
+// + six UI-only neutral greys after them (#126, Paweł: the locked and unusable skills in grayscale). Moonwell has no
+// neutral grey: its stone ramp is night blue, as the knight's steel is, so a grey knight skill read as a usable one.
+// Only the skill bar's "not now" state writes them (hud.js greyU), by index; they never join the dither.
+const ASH_HEX = ['#1c1c1c', '#303030', '#484848', '#646464', '#868686', '#aeaeae'];
+P.ash1 = 34; P.ash2 = 35; P.ash3 = 36; P.ash4 = 37; P.ash5 = 38; P.ash6 = 39;
+const PAL_BASE = makePalSet([...PAL, FLOW_Y, FLOW_Y2, ...ASH_HEX], RAMP_IDX, 32);
 usePal(PAL_BASE);
 
 // Bayer 8x8 ordered-dither thresholds
