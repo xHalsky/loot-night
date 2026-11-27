@@ -142,7 +142,7 @@ listening, so her sounds are the most important ones in the game.
   the keys). All on the game bus; it makes no Noise (the night hasn't started). **From the login** (every night after
   the first Monday): only the cues from T 23 on fire, and the theme (from its offset at 23, just before bar 2) and the
   rain fade in over 1.5 s (`LAUNCH_LOGIN_SOUND_FADE_SEC`).
-  - **The real PC is clean** (`mouse`, `hdd`, `crt`, `cdspin`; the keys are the desk's `key`); **the game's own sounds
+  - **The real PC is clean** (`mouse`, `crt`, `cdspin`, and `kb_clack`, a clacky mechanical keyboard, for the login's typing; no hard-drive chatter after the double-click, Paweł, #127); **the game's own sounds
     sound like the console** it is styled on: every other cue and the theme are baked through `tools/sfx/ps1.py`
     (22,050 Hz, a 4-bit ADPCM round trip in blocks of 28 with five prediction filters, the console's kind of reverb: a
     long dark hall of damped combs and all-passes, about a third wet). The theme is sampled instruments sequenced on

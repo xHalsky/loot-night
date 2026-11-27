@@ -486,7 +486,6 @@ const TYPING_SEC = 1.6;
 const LAUNCH_SOUND = [
   // Windows 98
   [1.25, 'mouse', 'pc: the double-click, first'], [1.45, 'mouse', 'pc: the double-click, second'],
-  [1.6, 'hdd', 'pc: the hard drive chatters while the hourglass turns (1.2 s)'],
   [2.85, 'crt', 'pc: the display mode switches: a relay clunk, the whine cut, the line collapses'],
   // the engine
   [3.25, 'cdspin', 'pc: the CD drive spins up under the start-up lines (2.6 s, quiet)'],
@@ -522,9 +521,9 @@ const LAUNCH_SOUND = [
   // the login, u = T - 23
   [23.45, 'ui_panel', 'the iron panel slides up: stone and iron, a soft stop at 23.9'],
   [23.95, 'mouse', 'pc: a click in Account'],
-  ...[1, 2, 3, 4, 5].map((k) => [23 + 1.1 + k * 0.18, 'key', 'pc: "dutch" typed (the desk\'s keyboard cue)']),
+  ...[1, 2, 3, 4, 5].map((k) => [23 + 1.1 + k * 0.18, 'kb_clack', 'pc: "dutch" typed on a clacky mechanical keyboard']),
   [25.7, 'mouse', 'pc: a click in Password'],
-  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => [23 + 2.75 + k * 1.15 / 9, 'key', 'pc: nine stars typed']),
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => [23 + 2.75 + k * 1.15 / 9, 'kb_clack', 'pc: nine stars typed']),
   [28.0, 'mouse', 'pc: Log in clicked'], [28.0, 'ui_login', 'Log in pressed: a heavy iron button, a low bell tap'],
   [28.3, 'thunder_far', 'the scene\'s lightning (27.5): far thunder, a rumble with no crack'],
   // logging in, u = T - 31

@@ -4,7 +4,8 @@ LAUNCH_MUSIC in src/render/page/aoj.js). Registered into make.py:
     python3 tools/sfx/make.py aoj_theme          # the theme alone
     python3 tools/sfx/make.py hl_land aoj_strike  # any cue
 
-The real PC's sounds stay clean (mouse, hdd, crt, cdspin; the keys are the desk's `key`). Every other cue is the game's
+The real PC's sounds stay clean (mouse, crt, cdspin, kb_clack; the hard drive's chatter, hdd, is no longer on the
+cue sheet: Paweł, #127). Every other cue is the game's
 own and goes through the console chain (ps1.py): 22,050 Hz, the ADPCM round trip, the console's reverb. The theme is
 sampled instruments sequenced on that chain, 24 voices at most, in stereo.
 """
@@ -215,23 +216,22 @@ def register(cue, write, level, kenney, out_dir):
             place(x, D.lp(D.white(0.02), 600) * D.env_exp(0.02, 0.004) * 0.25, 0.0, 1.0)
             write(f'mouse_{k}', x, 'desk')
 
-    @cue('hdd')
-    def _hdd():
-        D.seed(5100)
-        d = 1.3
-        x = np.zeros(secs(d))
-        t = tt(d)
-        x += 0.05 * (np.sin(2 * np.pi * 90 * t) + 0.4 * np.sin(2 * np.pi * 180 * t)) * np.clip(t / 0.05, 0, 1)
-        at = 0.02
-        while at < 1.18:
-            n = D.rng.integers(1, 4)
-            for j in range(n):
-                f = D.rng.uniform(1800, 3600)
-                c = noise_burst(0.01, f * 0.6, f * 1.5, 0.0015) + 0.5 * dsine(f, 0.01, 0.0018)
-                place(x, c, at + j * D.rng.uniform(0.008, 0.02), D.rng.uniform(0.35, 0.8))
-            at += D.rng.uniform(0.025, 0.09)
-        x[secs(1.2):] *= np.linspace(1, 0, len(x) - secs(1.2))
-        write('hdd', x, 'desk')
+    @cue('kb_clack')
+    def _kb_clack():
+        # a mechanical keyboard, clacky (#127, Paweł: the login's typing is keyboard clacking): the keycap's sharp tick on
+        # the plate, a hollow plastic body ringing for a few ms, the thock of bottoming out, then the softer click of the
+        # key coming back up; six keys, each a little different
+        for k in range(6):
+            D.seed(5050 + k)
+            r = D.rng.uniform
+            x = np.zeros(secs(0.16))
+            place(x, D.click(0.006, 3500, 11000, 0.0007), 0.0, 0.9)                                        # the tick
+            body = D.peak(D.click(0.03, 700, 4500, 0.004), r(1500, 2300), 4) * 1.4 + D.peak(D.click(0.03, 600, 3000, 0.006), r(900, 1200), 6) * 0.9
+            place(x, body, 0.0015, 1.0)                                                                       # the hollow clack
+            place(x, dsine(r(170, 230), 0.05, 0.012) * 0.5, 0.002, 1.0); place(x, D.lp(D.click(0.02, 80, 900, 0.006), 700) * 0.6, 0.002, 1.0)   # the thock
+            up = r(0.055, 0.085)
+            place(x, D.peak(D.click(0.02, 1500, 7000, 0.0015), r(2400, 3200), 5) * 0.55, up, 1.0)              # back up
+            write(f'kb_clack_{k}', x / (np.max(np.abs(x)) + 1e-9) * 0.9, 'desk')
 
     @cue('crt')
     def _crt():

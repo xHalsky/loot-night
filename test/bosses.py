@@ -1,15 +1,15 @@
-# Screenshots: the three bosses mid-move, the new enemy types, and the node map with the new maps.
+# Screenshots: the three bosses mid-move and two packs of the roster (test/*.png). The floor map is test/dmap.py's;
+# the bosses beat by beat beside the references, test/v2_stills.py. Run after `npm run build`.
 import asyncio, sys
 from playwright.async_api import async_playwright
 async def act(pg, sel):
     await pg.evaluate("s=>{const e=document.querySelector(s); const m=/^\\[data-act=\\x22?(\\w+)\\x22?\\](?:\\[data-arg=\\x22?([^\\x22\\]]*)\\x22?\\])?$/.exec(s); if(!e && m){const b=document.createElement('button'); b.dataset.act=m[1]; if(m[2]!=null) b.dataset.arg=m[2]; document.getElementById('stage').appendChild(b); b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); b.remove(); return;} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
 CLIP={'x':314,'y':16,'width':948,'height':464}   # the game screen (#49)
-async def boss_shot(pg, floor, name, cond):
-    await pg.evaluate("f=>{const S=window.__lootnight.S; const n=S.g.night; n.floor=f; n.battleIdx=2; n.phase='walk'; n.phaseT=0; n.enemies=[]; S.g.timeScale=1; S.g.heroes.forEach(h=>{h.level=9; h.hp=9999; h.downed=false})}", floor)
-    for _ in range(150):
-        await pg.wait_for_timeout(150)
-        if await pg.evaluate(cond): break
-    await pg.evaluate("()=>{window.__lootnight.S.g.timeScale=0}"); await pg.wait_for_timeout(200)
+async def boss_shot(pg, floor, name, defId, extra):
+    # the boss staged mid-move on its floor (the floor flow itself is test/routes.ts's and test/dmap.py's)
+    await pg.evaluate("""([f,id,x])=>{const S=window.__lootnight.S; const n=S.g.night; n.floor=f; n.phase='battle'; n.reserve=[]; S.g.timeScale=0;
+      n.enemies=[Object.assign({uid:990, defId:id, name:id, hp:1500, maxHp:1700, atk:28, armor:5, speed:8, atb:0, aliveSec:5, stunned:0, boss:true, flash:0, slot:5}, x)]}""", [floor, defId, extra])
+    await pg.wait_for_timeout(400)
     await pg.screenshot(path=f'test/{name}.png', clip=CLIP)
 async def main():
     async with async_playwright() as p:
@@ -27,24 +27,19 @@ async def main():
             if await pg.evaluate("()=>window.__lootnight.S.g.night.phase==='battle'"): break
         await pg.evaluate("""()=>{const S=window.__lootnight.S; const n=S.g.night; const L=window.__lootnight;
           const mk=(id,hp)=>({uid:900+Math.random(),defId:id,name:id,hp,maxHp:hp,atk:5,armor:1,speed:0,atb:0,turnsAlive:0,stunned:0,boss:false,flash:0});
-          const a=mk('auditor',90); a.name='Shaman'; const s=mk('shelter',180); s.name='Guardian'; s.shield=true; const j=mk('junk',120); j.name='Imps'; j.per=24; j.hp=90;
+          const a=mk('auditor',90); a.name='Confessor'; const s=mk('shelter',180); s.name='Guardian'; s.shield=true; const j=mk('junk',120); j.name='Cherubs'; j.per=24; j.hp=90;
           n.enemies=[s,a,j]; S.g.timeScale=0;}""")
         await pg.wait_for_timeout(250)
         await pg.screenshot(path='test/enemies_new.png', clip=CLIP)
         await pg.evaluate("""()=>{const S=window.__lootnight.S; const n=S.g.night;
-          const mk=(id,hp)=>({uid:950+Math.random(),defId:id,name:{collector:'Orc',skeleton:'Skeleton',bat:'Bat'}[id],hp,maxHp:hp,atk:5,armor:1,speed:0,atb:0,turnsAlive:0,stunned:0,boss:false,flash:0});
+          const mk=(id,hp)=>({uid:950+Math.random(),defId:id,name:{collector:'Revenant',skeleton:'Hollow',bat:'Ironwing'}[id],hp,maxHp:hp,atk:5,armor:1,speed:0,atb:0,turnsAlive:0,stunned:0,boss:false,flash:0});
           n.enemies=[mk('collector',120),mk('skeleton',80),mk('bat',50)]; S.g.timeScale=0;}""")
         await pg.wait_for_timeout(250)
         await pg.screenshot(path='test/enemies_basic.png', clip=CLIP)
-        await boss_shot(pg, 5, 'boss_ogre', "()=>window.__lootnight.S.g.night.enemies.some(e=>e.boss&&e.wind>0.5)")
-        await boss_shot(pg, 10, 'boss_shark', "()=>window.__lootnight.S.g.night.enemies.some(e=>e.boss&&e.wind>0.5)")
-        await boss_shot(pg, 15, 'boss_landlord', "()=>window.__lootnight.S.g.night.enemies.some(e=>e.boss&&e.wind>1&&e.evict!==undefined)")
-        # node map with all map kinds in the bag
-        await pg.evaluate("""()=>{const S=window.__lootnight.S; const n=S.g.night; ['cursed','goblin','vault','elite','shrine'].forEach((m,i)=>S.g.bag.push({kind:'map',id:'m'+i,map:m})); n.floor=9; n.enemies=[]; n.phase='mapChoice'; S.g.timeScale=0;}""")
-        await pg.wait_for_timeout(250)
-        bb = await pg.evaluate("()=>{const r=[...document.querySelectorAll('.nm-opt')][1].getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]}")
-        await pg.mouse.move(bb[0], bb[1]); await pg.wait_for_timeout(250)
-        await pg.screenshot(path='test/nodemap_maps.png', clip=CLIP)
+        await boss_shot(pg, 5, 'boss_ogre', 'bailiff', {'wind': 1.5, 'windMax': 3})          # the Gaoler whirling the ball (Smash)
+        await boss_shot(pg, 10, 'boss_shark', 'shark', {'wind': 1.2, 'windMax': 2})          # the Bellringer hauling the rope (Summon)
+        await boss_shot(pg, 15, 'boss_landlord', 'landlord', {'wind': 0.3, 'windMax': 3, 'evict': 3})   # the Inquisitor's sword raised (Execute)
         print('ERRORS', errs)
         await b.close()
+        if errs: sys.exit(1)
 asyncio.run(main())

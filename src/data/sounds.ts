@@ -17,7 +17,7 @@ export const MIX: Record<string, number> = {
   // the launch on the first Monday (#127, aoj-world §7b): the real PC clean and quiet; the game's own through the console
   // chain: Halsky Labs, Procrastination Studios light, the title the heavy part (the strike the loudest), the theme
   // under the title's sounds
-  mouse: 0.35, hdd: 0.22, crt: 0.4, cdspin: 0.14, bootline: 0.25,
+  mouse: 0.35, kb_clack: 0.42, crt: 0.4, cdspin: 0.14, bootline: 0.25,
   hl_point: 0.5, hl_trace: 0.45, hl_seal: 0.45, hl_develop: 0.45, hl_land: 0.62, hl_slide: 0.35, hl_labs: 0.35, hl_out: 0.4, hl_blink: 0.3,
   ps_wait: 0.22, ps_pop: 0.35, ps_move: 0.22, ps_letters: 0.3, ps_late: 0.32, ps_type: 0.22, ps_flip: 0.3,
   thunder_near: 0.8, thunder_far: 0.45, rain: 0.32,

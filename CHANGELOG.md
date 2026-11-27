@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.99.3 (2026-11-27)
+
+- **The launch's sound, approved as a placeholder, with two fixes** (#127, Paweł): the hard drive's chatter between
+  the double-click and the boot is gone (it read as a repeated clacking), and "dutch" and the stars on the login are
+  typed on a clacky mechanical keyboard (`kb_clack`, six keys: the keycap's tick on the plate, the hollow clack, the
+  thock, the key coming back up), not the desk's soft key cue. The cue sheet has 61 cues.
+- **`test/curios.py` and `test/bosses.py` run again** (#134). Both were written before the redesign moved the curio card
+  and the floor map into the canvas and crashed on HTML that is gone (the card's close button, the map's buttons):
+  the game was fine. `curios.py` now clicks the card's close box in the canvas and checks the curio closes (every
+  interrupt is escapable); `bosses.py` stages each boss mid-move and leaves the floor map to `test/dmap.py`.
+
 ## 0.99.2 (2026-11-27)
 
 - **The v2 redesign's check and docs** (#132, W6). Stills from the build at every reference beat, side by side with

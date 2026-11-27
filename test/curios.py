@@ -1,5 +1,6 @@
-# Screenshots: a curio panel (ask), the troll sneak in progress, the shrine with no cans left.
-import asyncio
+# Screenshots: a curio card (ask), the Abbot's sneak in progress, the shrine; then the card's close box closes it
+# (every interrupt is escapable). Run after `npm run build`. The curios' looks: test/curio_stills.py.
+import asyncio, sys
 from playwright.async_api import async_playwright
 async def act(pg, sel):
     await pg.evaluate("s=>{const e=document.querySelector(s); const m=/^\\[data-act=\\x22?(\\w+)\\x22?\\](?:\\[data-arg=\\x22?([^\\x22\\]]*)\\x22?\\])?$/.exec(s); if(!e && m){const b=document.createElement('button'); b.dataset.act=m[1]; if(m[2]!=null) b.dataset.arg=m[2]; document.getElementById('stage').appendChild(b); b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); b.remove(); return;} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(120)
@@ -21,10 +22,14 @@ async def main():
         await curio(pg, 'troll', 'sneak', 3.4, 6); await pg.screenshot(path='test/curio_sneak.png', clip=CLIP)
         await pg.evaluate("()=>{window.__lootnight.S.g.monsters=0; window.__lootnight.S.g.night.partyBuffs=[{name:'Curse',dmg:-0.15,speed:0,t:1,max:1,icon:'curse',floor:true},{name:'Green flame',dmg:0.3,speed:0.2,t:41,max:60,icon:'blessing'}]; window.__lootnight.S.g.night.sulk=30}")
         await curio(pg, 'shrine'); await pg.screenshot(path='test/curio_shrine.png', clip=CLIP)
-        # the escape button really closes it
+        # the card's close box (drawn in the canvas since the redesign: the curioLeave hit at its top right) really closes it
         await pg.evaluate("()=>{window.__lootnight.S.g.timeScale=1}")
-        await act(pg, '#monUi .mg-close'); await pg.wait_for_timeout(200)
-        print('phase after close:', await pg.evaluate("()=>window.__lootnight.S.g.night.phase"))
+        r = await pg.evaluate("()=>{const a=document.getElementById('rpgArea').getBoundingClientRect(); return [a.left,a.top,a.width/334]}")
+        await pg.mouse.click(r[0] + 268 * r[2], r[1] + 5 * r[2]); await pg.wait_for_timeout(250)
+        st = await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; return [n.phase, !!n.curio]}")
+        ok = st[0] != 'curio' and not st[1]
+        print(('ok   ' if ok else 'FAIL ') + f'the close box walks past the curio (phase {st[0]})')
         print('ERRORS', errs)
+        if not ok or errs: sys.exit(1)
         await b.close()
 asyncio.run(main())
