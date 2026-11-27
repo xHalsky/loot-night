@@ -15,6 +15,7 @@ const FEATURE_ONLY = new Set<string>();
 import { addBlessing, blessCount } from './run';
 import { maxHp } from './stats';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
+import { boysSay } from './boys';
 
 // Curios in the corridor (docs/design/dungeon.md, #30). The party stops at one during a walk; you choose,
 // and every choice costs something from real life: Noise, time standing still, a real can, Mood-adjacent trouble.
@@ -132,6 +133,7 @@ function bless(id: BlessingId) {
   addBlessing(id);
   const b = BLESSINGS[id], k = blessCount(id);
   toast(`${b.name}${k > 1 ? ` x${k}` : ''}, this run: ${b.got}. ${b.cost}.`, '#6ef06e');
+  if (id === 'shrine') boysSay('dmgBuff');   // the boys' chat (#109): a damage buff
 }
 
 function trollFight() {

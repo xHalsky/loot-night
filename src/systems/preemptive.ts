@@ -11,6 +11,7 @@ import { sfx } from '../ui/audio';
 import { addMood } from './meters';
 import { herSay, boysLog } from './messages';
 import { phoneDead, battery, charged } from './home';
+import { boysSay } from './boys';
 
 // Pre-emptive actions (docs/design/preemptive.md, #19). Used BEFORE a visit to shape it: push her next visit
 // (apartment calm), set the next visit's type, or lower Mood. Where she is decides whether it works, and that
@@ -96,6 +97,7 @@ function land(id: PreId) {
   finishPre(); boysLog([['r', 'raid night? need a carry'], ['l', 'Billy: SAY LESS']]);
   if (S.g.goodwill < T.GOODWILL_RAID || a.asleep) { toast('"Not tonight."', '#ffb07a'); return; }
   S.g.goodwill -= T.GOODWILL_RAID;
+  if (n.clock > 23 * 60) boysSay('raidLate');   // the boys' chat (#109): the raid is at 11
   a.calm = Math.max(a.calm, T.RAID_CALM_SEC); a.calmHard = true;
   n.herReply = { msg: 'ok go raid, nerd \u2665 i\'ll watch my show', t: T.PRE_REPLY_SHOW, wait: 1.5 };
   toast(`Raid pass: no visits for ${T.RAID_CALM_SEC} s. Get loud. (Goodwill -${T.GOODWILL_RAID})`, '#ff9ab8'); sfx.good();

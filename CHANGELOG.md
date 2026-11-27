@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.90.0 (2026-11-27)
+
+- **The boys' voices and lines** (#109; Paweł): Billy loud and panicky (the 20:00 message, the replay, the call),
+  Mike the calm organizer (the raid time), Lance dry and deadpan; they call Age of Judgment "aoj". Their lines riff
+  on 80s and 90s action films, old MMOs and arena shooters and read as plain gamer talk without them (nothing named,
+  quotes of five words at most). Monday's 20:00 chat is Billy's realm-is-up message with Lance's and Mike's tips; the
+  replay is Billy's "game over man. GAME OVER." and Lance's tears in rain; Lance's other 20:00 lines are cut down to
+  his few words. Still text, not voice notes (#108).
+- **The boys' call:** Billy calls with one of four openers, then Mike or Lance. The polite, shouting and rude replies
+  stay, with GET TO THE CHOPPER and "I'll be back. Maybe." added; misses and Noise work as before.
+- **The boys' chat between the calls** (`data/boys.ts`, `systems/boys.ts`): moments of the night post a line or a short
+  exchange in The Boys' chat (a wipe, a boss, a crit kill, Backstab, a combo, drops, the Appraiser, her on her way, a
+  clean tab-out, the party low, the sugar crash, your first yawn, Raid night?...); two lines with no moment come now
+  and then in the dungeon. Quiet: no banner, no sound, no effect on play. Spaced by `BOYS_GAP_SEC` (40 s) and
+  `BOYS_SAME_GAP_SEC` (240 s), some once a night; the thread keeps 30 lines. The full pool and its triggers are in the
+  decisions doc.
+- `test/boys.ts`: who says what, their style (lowercase, no dashes, no old names), the call's replies, the pacing.
+
 ## 0.89.1 (2026-11-27)
 
 - **The boys always text** (#108; Paweł: never voice messages): Tuesday to Sunday's 20:00 message and their reaction

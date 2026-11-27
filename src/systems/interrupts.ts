@@ -16,6 +16,7 @@ import { coach } from './coach';
 import { realLifeFree } from './reallife';
 import { herSay, boysLog, herRead } from './messages';
 import { phoneDead, drain } from './home';
+import { boysSay } from './boys';
 
 export const BOSS_MSGS = ['you there?', 'quick question', 'need the Q4 totals for the deck', 'asap pls', 'hello??'];
 export const HER_MSGS = ['are you coming to bed?', 'babe', 'its really late', 'hello??'];
@@ -259,6 +260,7 @@ function succeed(kind: InterruptKind) {
   } else if (kind === 'friends') {
     addBuff({ name: 'Raid buff', dmg: T.FRIENDS_BUFF_DMG, speed: T.FRIENDS_BUFF_SPD, t: 1, max: 1, icon: 'raid', untilBoss: true });
     toast(`Billy: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage until the boss is down.`, '#6fcf7f'); sfx.good();
+    boysSay('dmgBuff');   // the boys' chat (#109)
   } else replyText(true);
 }
 
@@ -281,7 +283,7 @@ function friendsBlast(how: string) {
   n.noise = Math.min(100, n.noise + v);
   if (n.headset) toast(declined ? 'The group chat pings into your headset. Ow.' : 'Discord rings straight into your headset. Ow. At least she did not hear.', '#ffb07a');
   else toast(declined ? `Declined. They spam the group chat: ping ping ping. Noise +${v}.` : `They call Discord on the PC instead. FULL VOLUME. Noise +${v}.`, '#ff8a80');
-  sfx.bad();
+  sfx.bad(); boysSay('late');   // the boys' chat (#109): you didn't come
 }
 
 // ---------- Declining without picking up (docs/design/desk.md) ----------

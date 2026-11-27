@@ -5,6 +5,7 @@ import { S, type Hero, type HeroId } from '../core/state';
 import { NODES, TREES, type NodeId, type RuleId, type StatFx } from '../data/trees';
 import { toastAs } from '../core/fx';
 import { sfx } from '../ui/audio';
+import { boysSay } from './boys';
 const toast = toastAs('GAME');
 
 export type NodeState = 'owned' | 'buy' | 'poor' | 'locked' | 'shut';
@@ -30,7 +31,7 @@ export function buyNode(hero: HeroId, node: NodeId): boolean {
   S.g.mats -= nodeCost(hero, node);
   bought(hero).push(node);
   if (NODES[node].kind === 'auto') (S.g.autocast ??= {})[`${hero}:${node === 'a1' ? 1 : 2}`] = true;
-  sfx.level();
+  sfx.level(); boysSay('build');   // the boys' chat (#109)
   return true;
 }
 /** Free while testing: every Soul spent in that tree comes back. */

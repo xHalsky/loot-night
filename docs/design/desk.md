@@ -32,7 +32,7 @@ has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 | 20:30 to 21:30, once | Courier (call) | Two steps of his line and three replies, get the parcel left with a neighbour; one wrong reply and he leaves (`COURIER_TALK_SEC`). **Your new gaming mouse: skill cooldowns -`COURIER_MOUSE_CD` (10%) until dawn** | No parcel | No parcel ("he leaves a note") |
 | about 21:00, once (+1 callback) | Mom (call) | `MOM_BEATS` (2) lines; her line's ending (… ? !) tells the reply (mhm / really?! / wow), tapped while a marker sweeps through a zone; `MOM_MAX_MISSES` (3). **Party fully healed, the fallen get up** | Mood +`MOM_FAIL_MOOD` and she calls your girlfriend (next visit soon) | Mood +`MOM_DECLINE_MOOD`, she calls back once in 40 to 60 s |
 | about 22:00, once | Boss (texts, with an optional follow-up) | One row of sums (`BOSS_ROWS`), `BOSS_WINDOW_SEC`; wrong total -2 s. **Overtime pay +$50 (`BOSS_ZL`)** | Nothing ("The boss gave up. No overtime tonight.") | (texts can't be declined) |
-| from Thursday, once a night (`NIGHT_SCHEDULE` friends), on the floor before a boss floor | The Boys (group call) | Two steps of declining politely; a rude reply = Noise +8 on speaker and a miss, `FRIENDS_MAX_MISSES` misses = fail. **Raid buff: +20% damage, +10% speed until that boss fight ends** | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
+| from Thursday, once a night (`NIGHT_SCHEDULE` friends), on the floor before a boss floor | The Boys (group call) | Billy calls (one of four openers), then Mike or Lance (#109): two steps of declining politely; a rude reply = Noise +8 on speaker and a miss, `FRIENDS_MAX_MISSES` misses = fail. **Raid buff: +20% damage, +10% speed until that boss fight ends** | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
 | when she wakes (from Friday, in bed) | Her (text) | Tap "Five more minutes, love": waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | (texts can't be declined) |
 
 Each time is picked in its window at 20:00; nothing comes before `PHONE_FIRST_SEC` (45 s) into the night. Money rule:
@@ -82,7 +82,7 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   replies, across the nights, with a grey separator per sitting (the day, "Today 23:12", the time after a gap); the
   wheel scrolls it a bubble at a time, a chip goes back to the newest; Text her at the bottom (dim, with a lock and
   why, when it can't). **The Boys' chat** shows the last call's exchange (their lines, your replies, how it ended)
-  until the next, with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
+  until the next, and their lines between the calls ([night.md](night.md), #109), with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
   message into the chat (hands busy), then Delivered.
 - **The Shop** (step 4.6, #55; grid doc 7i and 7f; `systems/shop.ts`, `data/shop.ts`): real-life things for dollars,
   the money Q4 pays. The header has the back chevron, "Shop" and the wallet; tabs **For you**, **For her** and, from

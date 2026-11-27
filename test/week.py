@@ -53,7 +53,7 @@ async def main():
         check(await ev("g.voice.chat.length") == 6 and await ev("n.threat") < 0.5, 'Monday\'s chat; the night has not started')
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
         check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'Esc puts the phone down; How to hide next')
-        check(await ev("g.boysThread && g.boysThread[1].text.startsWith('Billy: AGE OF JUDGMENT')"), 'the chat stays in The Boys\' chat')
+        check(await ev("g.boysThread && g.boysThread[1].text.startsWith(`Billy: yo. realm's up`)"), 'the chat stays in The Boys\' chat')
         await shot('1_monday_howto')
         await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
         check(await ev("g.howto && g.howtoPage === 1"), 'Enter: tonight\'s stars next (#101)')
@@ -109,7 +109,7 @@ async def main():
         await shot('10_replay_morning')
         spot = await morning_button(); await pg.mouse.click(*spot); await pg.wait_for_timeout(700)
         check(await ev("g.day") == 1 and await ev("g.nightsPlayed") == 2, 'the replay: Tuesday again, the third night played')
-        check(await ev("g.voice && g.voice.date") == 'Tuesday, again' and await ev("g.voice.chat[0][1]") == 'F. she pulled the plug', 'the replay: the boys react in their chat')
+        check(await ev("g.voice && g.voice.date") == 'Tuesday, again' and await ev("g.voice.chat[0][1]") == 'game over man. GAME OVER.', 'the replay: the boys react in their chat')
         await shot('11_replay_chat', 3000)
         # the title
         await pg.reload(); await pg.wait_for_timeout(700)

@@ -46,9 +46,16 @@ export const COURIER_TALKS: TalkStep[][] = [
    { line: '"Okay, who?"', right: 'Flat 12, the lady with the cat.', wrong: ['Anyone, really', 'Me, but downstairs'] }],
 ];
 // The boys call on speaker, loud. Decline politely; rude replies make them louder.
-export const FRIENDS_TALKS: TalkStep[][] = [
-  [{ line: 'Mike: "YOOO are you on?? We need a tank!"', right: 'Can\'t talk, she\'s home. Text me?', wrong: ['YES LET\'S GOOO', 'Who is this?'] },
-   { line: 'Billy: "Just one boss, come ooon."', right: 'I\'m already in your party. Check. Muting!', wrong: ['Shut up, she\'ll hear you!', 'Ask my mom'] }],
-  [{ line: 'Billy: "BRO. Raid. Now. Bring snacks."', right: 'Shh, she\'s next door. Text only, love you guys.', wrong: ['WHAT? I CAN\'T HEAR YOU', 'Nah'] },
-   { line: 'Mike: "Is she listening? HI BABE!"', right: 'Bye lads, see you in guild chat.', wrong: ['Say hi louder', '*hang up*'] }],
+// The boys' group call (#109): Billy calls (loud, panicky; one of four openers at random), then Mike or Lance. Each line
+// has your polite reply (right), then the shouting one and the rude one (wrong: they get louder; on speaker she hears).
+const FRIENDS_OPEN: TalkStep[] = [
+  { line: 'Billy: "get your ass to the raid"', right: 'Can\'t talk, she\'s home. Text me?', wrong: ['GET TO THE CHOPPER', 'I\'ll be back. Maybe.'] },
+  { line: 'Billy: "we need a fourth for the boss. come on, do you wanna loot forever?"', right: 'I\'m already in your party. Check. Muting!', wrong: ['YES LET\'S GOOO', 'Who is this?'] },
+  { line: 'Billy: "i need a healer. now. where are you"', right: 'Shh, she\'s next door. Text only, love you guys.', wrong: ['WHAT? I CAN\'T HEAR YOU', 'Nah'] },
+  { line: 'Billy: "if it bleeds we can kill it. it bleeds. come on"', right: 'Text me, she\'s in the next room.', wrong: ['Shut up, she\'ll hear you!', 'Ask my mom'] },
 ];
+const FRIENDS_FOLLOW: TalkStep[] = [
+  { line: 'Mike: "is she listening? hi babe"', right: 'Bye lads, see you in guild chat.', wrong: ['Say hi louder', '*hang up*'] },
+  { line: 'Lance: "your mic is on. we hear her tv."', right: 'Muting. Guild chat in five.', wrong: ['WHAT TV?', '*hang up*'] },
+];
+export const FRIENDS_TALKS: TalkStep[][] = FRIENDS_OPEN.flatMap(o => FRIENDS_FOLLOW.map(f => [o, f]));

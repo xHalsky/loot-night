@@ -146,6 +146,11 @@ export const T = {
   CHECKPOINT_EVERY: 5,
   WALK_SEC: 4,
   SWING_SEC: 0.42,                // a melee hit's weapon swing (the Knight, the Rogue; #97): wind-up, the cut, back to the guard
+  // the boys' chat between the calls (#109; systems/boys.ts): text pacing only, no effect on play
+  BOYS_GAP_SEC: 40,               // at least this long (night seconds) between two posts
+  BOYS_SAME_GAP_SEC: 240,         // ...and between two posts for the same moment
+  BOYS_RANDOM_SEC: [150, 240] as [number, number],   // a line with no moment of its own, now and then in the dungeon
+  BOYS_THREAD_MAX: 30,            // The Boys' chat keeps this many lines
   CHAT_FIRST_SEC: 0.4, CHAT_TYPE_SEC: 0.25, CHAT_TYPE_PER_CHAR: 0.012, CHAT_TYPE_MAX: 0.8, CHAT_GAP_SEC: 0.2,   // Monday's first chat (#102): typing dots, then the bubble; about 6 s for six
   WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die

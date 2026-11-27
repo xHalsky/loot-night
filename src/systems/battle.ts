@@ -22,6 +22,7 @@ import { dropFromKill } from './loot';
 import { rankMult, auraTaken, auraCrit, auraCd, heroById, hookLine, shoveLine } from './ranks';
 import { legendOn, setOn } from './gear';
 import { skillOwned, rule, heroFx, autocastOn } from './tree';
+import { boysSay, boysNoteDown } from './boys';
 
 let enemyUid = 1;
 // A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once.
@@ -64,6 +65,7 @@ export const bodies = (e: Enemy) => e.per ? Math.max(0, Math.ceil(e.hp / e.per -
  *  in two lanes), the rest waiting off screen. An Elite Pack is stronger and its lieutenant always drops a rare. */
 export function spawnBattle(floor: number, boss: boolean, elite: boolean) {
   const n = N();
+  boysSay(boss ? 'bossStart' : 'trashStart');   // the boys' chat (#109)
   const pool = ENEMIES.filter(d => (d.from ?? 1) <= floor && !d.breaker);
   const size = Math.round(Math.min(T.PACK_MAX, T.PACK_MIN + Math.floor(floor / 2)) * (n.cond === 'swarm' ? 1 + T.COND_SWARM_PACK : 1));
   const defs: EnemyDef[] = boss ? [bossFor(floor, T.CHECKPOINT_EVERY)] : [];
@@ -188,6 +190,7 @@ function castAbility(h: Hero, slot: number) {
     return;
   }
   if (h.id === 'rogue' && slot === 1) {   // Backstab: the front enemy; x2 on Staggered (Bash first)
+    boysSay('backstab');   // the boys' chat (#109): text only
     const e = frontEnemy();
     if (e) {
       const sure = (legendOn('widow') && e.marks?.chill! > 0) || (rule('rogue', 'ambush') && e.marks?.stagger! > 0);   // Widow's Kiss on Chilled; Ambush on Staggered
@@ -289,6 +292,7 @@ function cashIn(e: Enemy, id: MarkId, label: string): boolean {
   if (!(e.marks?.[id]! > 0)) return false;
   delete e.marks![id];
   const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 10, label + '!', MARKS[id].color);
+  boysSay('combo');
   sfx.crit();
   return true;
 }
@@ -316,7 +320,9 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
     dmg = Math.round(kind === 'fire' ? Math.min(dmg, e.per) * (left - 1) + Math.min(dmg, cur) : Math.min(dmg, cur));
     dmg = Math.max(1, dmg);
   }
+  const full = e.hp >= e.maxHp;
   e.hp -= dmg; e.flash = 0.15;
+  if (isCrit && e.hp <= 0 && !e.per) boysSay(attacker?.id === 'mage' && e.boss ? 'mageBoss' : full ? 'oneShot' : 'combo');   // the boys' chat (#109): a crit kill
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * T.ECHO_ENRAGE_HP) {   // enrage: the fight of the night, don't look away
     e.enraged = true; sfx.enrage();
     toast(`${e.name} is ENRAGED! Flow builds faster. Alt-tab now and you lose it.`, '#ff5a3a');
@@ -430,7 +436,7 @@ function attackHero(e: Enemy, atk: number) {
 function hurtHero(h: Hero, dmg: number) {
   h.hp -= dmg;
   if (h.hp <= 0 && N().lastStand > 0) { h.hp = 1; return; }
-  if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${heroLabel(h.id)} is down!`, '#ff8a80'); sfx.down(); }
+  if (h.hp <= 0) { h.hp = 0; h.downed = true; h.queued = null; toast(`${heroLabel(h.id)} is down!`, '#ff8a80'); sfx.down(); boysNoteDown(); }
 }
 
 /** A boss's telegraphed move starts instead of a normal action. Returns true when it did. */
@@ -617,7 +623,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
       dropFromKill(e);   // #52, 1.3: drops fall where the enemy died
       if (n.cond === 'haunted') n.noise = Math.min(100, n.noise + T.COND_HAUNTED_NOISE);
       if (e.boss) {
-        n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b');
+        n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b'); boysSay('bossKill');
         n.enemies.forEach(x => { if (x !== e && x.hp > 0) { x.hp = 0; x.maxHp = 0; } });   // without the boss the rest run
         n.reserve = [];
         if (N().run) N().run!.oath = false;   // the Pilgrim's oath is kept: the portal opens again

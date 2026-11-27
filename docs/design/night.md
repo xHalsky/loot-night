@@ -32,17 +32,32 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   the results ("TUESDAY · RESULTS"), the morning ("Tue 07:40", "Start Tuesday night"; after the plug UNPLUGGED, what
   it cost and "Tuesday, again"), the title ("Continue · Tuesday", read from the save).
 - **The boys at 20:00** (grid doc 7m; `data/voice.ts`): every night of week one the phone rises into your hand while
-  the night waits, at The Boys' chat. The boys are **Billy, Mike and Lance** (#102, an Aliens in-joke for Paweł's
-  friends; their characters are Hudzor, Hixx and Arkbishop, the cast of 2026-11-27). **The first Monday** is their chat, live (`FIRST_CHAT`): six bubbles
-  from all three, one at a time, each after their name and three hopping dots (`CHAT_*`: about 0.6 s of typing a
-  bubble, all in by about 6 s, a soft tick as each lands), stoked to finally play a session of **Age of Judgment**
-  (the RPG's name in the fiction, #102), with the premise and two tips in their banter (Tab before the door opens; Q4
-  pays real money, the Shop). "Let's go" works from the first bubble. **The boys always text, never send voice notes**
+  the night waits, at The Boys' chat. The boys are **Billy, Mike and Lance** (#102, #109; their characters are Hudzor,
+  Hixx and Arkbishop, the cast of 2026-11-27): **Billy** is loud and panicky (he calls, he opens the chats), **Mike** the
+  calm organizer (he posts the raid time), **Lance** dry and deadpan, a few words a line. They call **Age of Judgment**
+  (the RPG's name in the fiction, #102) "aoj". Their lines riff on 80s and 90s action films and old MMOs and arena
+  shooters (an inside joke for Paweł's friends) and read as plain gamer talk without them: no film, character or game is
+  named, and a quote is kept exact only up to five words. **The first Monday** is their chat, live (`FIRST_CHAT`): six
+  bubbles, one at a time, each after the name and three hopping dots (`CHAT_*`: about 0.6 s of typing a bubble, all in
+  by about 6 s, a soft tick as each lands): Billy's realm is up, patch notes he didn't read, 11 sharp, "careful with her
+  tonight"; Lance's "would you like to know more?"; Mike's tip (Tab before the door opens) and Lance's (Q4 pays real
+  money, the Shop). "Let's go" works from the first bubble. **The boys always text, never send voice notes**
   (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`) naming tonight's new
-  things in their chat voice; after the plug the boys react the same way ("F. she pulled the plug", "tuesday again
-  then...", `replayChat`), under "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
+  things in their chat voice; after the plug the boys react the same way (Billy "game over man. GAME OVER.", "tuesday again
+  then.", Lance "all that loot, gone like tears in rain", Mike's Tab tip; `replayChat`), under "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
   down; How to hide follows on a night with a new tile, then tonight's stars; then the night starts. The message stays
   in The Boys' chat until the next call. Week two has none (nothing new).
+- **The boys' chat between the calls** (#109; `data/boys.ts`, `systems/boys.ts`): moments of the night post a line (or
+  a short exchange) in The Boys' chat, grey, quiet (no banner, no sound, no effect on play), kept until the next call
+  or 20:00 chat: the raid invite on the night's first trip down (or one of its exchanges; "it's 20:15" only near
+  20:15), a wipe (a trash wipe adds the starter slime), a crit that kills from full HP, a mage crit on the boss's
+  killing blow, a crit kill or a combo ("impressive."), Backstab, a boss fight starting and a boss down, a call you
+  didn't take, an Appraiser reveal that is nobody's upgrade, an upgrade or a legendary landing in the bag, a cheap
+  Auction listing, a tree node bought, a clean tab-out, her on her way, the party low, a clean banked run, a damage buff
+  (the Raid buff, the Shrine), the sugar crash, your first yawn, Raid night? open, Raid night? after 23:00; and, with
+  no moment of their own, the odd line in the dungeon. Spaced: `BOYS_GAP_SEC` (40 s) between posts, `BOYS_SAME_GAP_SEC`
+  (240 s) for the same moment, a few once a night; the thread keeps `BOYS_THREAD_MAX` (30). Rejected: a banner or a
+  feed line for them (the phone and the feed carry what wants you; these are flavour you find when you look).
 - **The first chance** (`first` in the schedule, week one): her first visit tonight is the night's new type, within
   `VISIT_FIRST_DELAY_SEC` (35 s), never a fake-out, and safe. Tuesday a chat visit: caught on it, she lets it go ("Raid
   night? Fine. Just this once.": no catch, no Mood, no Goodwill spent). Thursday a snack run: cans in sight, she points

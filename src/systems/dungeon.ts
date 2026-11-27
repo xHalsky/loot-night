@@ -17,6 +17,7 @@ import { planCurios, approachCurio, walkCurio, updateCurio, curioFloorEnd, battl
 import { FEATURES, CONDITIONS, type PathCard, type FeatureId, type ConditionId } from '../data/routes';
 import { triggerDog } from './pets';
 import { tip } from './tips';
+import { boysSay } from './boys';
 
 export const isBossBattle = () => { const n = N(); return !n.curioFight && n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
 
@@ -171,8 +172,10 @@ function wipe() {
   n.noise = Math.min(100, n.noise + T.ECHO_SLAM_NOISE);   // echo: he slams the desk, the dog comes to see
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
   toast(`You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
+  const trash = !n.enemies.some(e => e.boss);
   n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.goblin = null; n.curio = null; n.curioAt = null;
   loseRun();
+  boysSay(trash ? 'wipeTrash' : 'wipe');   // the boys' chat (#109)
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.atb = 0; h.queued = null; });
   n.clock += T.COST_TRAVEL_MIN;
   n.location = 'town'; n.phase = 'walk';

@@ -20,6 +20,7 @@ import { updateHim } from '../systems/him';
 import { updateTips } from '../systems/tips';
 import { updateCoach, coachScale } from '../systems/coach';
 import { updatePacing } from '../systems/pacing';
+import { updateBoys } from '../systems/boys';
 
 const STEP = 1 / 60;
 
@@ -31,6 +32,7 @@ export function step(dt: number) {
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
   updatePre(dt);
   updateCurioTimers(dt);   // party buffs, the mage's sulk
+  updateBoys(dt);   // the boys' chat between the calls (#109)
   if (life) { updateVisits(dt); updatePeek(dt); updateLean(dt); }   // lean in (#77)
   updateHim(dt);
   updateTips(dt);

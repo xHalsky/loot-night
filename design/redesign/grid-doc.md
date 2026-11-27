@@ -1259,10 +1259,12 @@ chat**.
 - The chat's header (The Boys (3), "Billy, Mike, Lance"), the status bar at 20:00, a day line ("Today 20:00"; a replay:
   "Tuesday, again").
 - Their bubbles (incoming grey, the name first) come in one at a time, each after the name and three hopping dots, in
-  their chat voice (lowercase, casual). Monday: six, all three of them stoked. Tuesday: Billy "no curfew tonight. play
-  till you drop lol", Mike "hold your door open longer: you lean in and see what she's doing", Lance "she can see you
-  too tho. don't get weird". A replay: Mike "F. she pulled the plug", Billy "tuesday again then. the good loot's still
-  in your bag", Lance "tab out BEFORE she opens the door this time".
+  their chat voice (lowercase, short; the lines are the decisions doc's, 2026-11-27). Monday: Billy "yo. realm's up",
+  "patch notes are forty pages, i read zero", Lance "would you like to know more?", Billy "11 sharp. and careful with
+  her tonight, they mostly come at night", then Mike's and Lance's tips. Tuesday: Billy "no curfew tonight. play till
+  you drop lol", Mike "hold your door open longer: you lean in and see what she's doing", Lance "she can see you too.
+  don't get weird". A replay: Billy "game over man. GAME OVER.", "tuesday again then.", Lance "all that loot, gone like
+  tears in rain", Mike "tab out BEFORE she opens the door this time".
 - **Let's go** (the gold pill, from the first bubble) puts the phone down and starts the night (How to hide first on a
   night with new tiles); "the night starts" under it. It stays in The Boys' chat until the next minigame.
 

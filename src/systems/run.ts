@@ -3,6 +3,7 @@ import { T } from '../config/tuning';
 import { S, N, type RunState } from '../core/state';
 import type { BlessingId } from '../data/blessings';
 import { toastAs } from '../core/fx';
+import { boysSay, boysRunBanked } from './boys';
 const toast = toastAs('GAME');
 
 // Runs (#52, 1.4; docs/design/dungeon.md): a run goes from the town portal until the town portal (banked) or a wipe
@@ -31,6 +32,7 @@ export function addBlessing(id: BlessingId) { const r = S.g.night?.run; if (r) r
 export function startRun(floor: number) {
   const n = N();
   n.run = { startFloor: floor, deepest: floor, gold: 0, items: 0, souls: 0, blessings: [], oath: false };
+  boysSay('invite');   // the boys' chat (#109): the night's first trip down
 }
 /** What the run would bank or lose now: items and maps in the bag and on the heroes picked up this run. */
 export function unbanked(): { items: number; gold: number } {
@@ -48,6 +50,7 @@ export function bankRun() {
   S.g.gold += n.run.gold;
   for (const e of S.g.bag) { delete e.run; if (e.kind === 'item') delete e.item.run; }
   for (const h of S.g.heroes) for (const it of Object.values(h.gear)) if (it) delete it.run;
+  boysRunBanked();   // the boys' chat (#109): a clean run
   endRun(n.run, true, u.items);
 }
 /** A wipe: the unbanked items and gold are lost (locked ones too); the Souls stay. */

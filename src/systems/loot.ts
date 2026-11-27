@@ -13,6 +13,7 @@ import { blessPow } from './run';
 import { ENEMY_SLOTS, RANK_X, LOOTER_REACH } from '../core/arena';
 import { LEGENDS, SETS, SET_SLOTS } from '../data/legendaries';
 import { legendOn } from './gear';
+import { boysSay, isUpgradeForSomeone } from './boys';
 
 function round1(v: number) { return Math.round(v * 10) / 10; }
 /** A stat's base roll at this item level. Attack, HP and armor compound (ITEM_POWER_GROWTH a level, #52 1.2) to keep pace
@@ -262,6 +263,7 @@ function announce(e: BagEntry) {
     sfx.loot(ri);
     if (!e.item.identified) n.unidentifiedFound++;
     if (e.item.rarity === 'legendary') legendaryYell();
+    if (e.item.rarity === 'legendary') boysSay('legendary'); else if (isUpgradeForSomeone(e.item)) boysSay('upgrade');   // the boys' chat (#109)
     if (ri >= T.HIS_GRIN_RARITY) n.grin = T.HIS_GRIN_SEC;   // he grins at the webcam (#37)
     if (e.item.witched) toast(`The Witching Hour shifts it up: ${e.item.rarity}.`, '#c77dff');
   } else sfx.loot(1);

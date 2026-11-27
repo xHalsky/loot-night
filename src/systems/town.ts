@@ -9,6 +9,7 @@ import { isLocked } from './loot';
 import { CITY, CITY_BY_ID, BAG_PLUS, type CityId } from '../data/city';
 import { maxHp } from './stats';
 import { save } from './save';
+import { boysSay, isUpgradeForSomeone } from './boys';
 
 const inTown = () => N().location === 'town';
 function selectedItemEntry() {
@@ -27,6 +28,7 @@ export function identify() {
   n.clock += T.COST_IDENTIFY_MIN;
   e.item.identified = true;
   n.reveal = { name: e.item.name, t: 2.5 };
+  if (!isUpgradeForSomeone(e.item)) boysSay('badDrop');   // the boys' chat (#109)
   sfx.loot(RARITIES.indexOf(e.item.rarity));
   toast(`Identified: ${e.item.name} (10 min)`, '#b98cff');
 }
@@ -80,6 +82,7 @@ export function list() {
   const e = removeEntry(n.selected);
   if (!e) return;
   S.g.pendingListings.push({ name: entryName(e), zl });
+  if (e.kind === 'item' && (e.item.rarity === 'common' || e.item.rarity === 'uncommon')) boysSay('cheap');   // the boys' chat (#109)
   n.clock += T.COST_LIST_MIN;
   toast(`Listed ${entryName(e)} for ~$${zl}. Pays tomorrow morning. (5 min)`, '#6fcf7f'); sfx.good();
 }

@@ -28,6 +28,7 @@ import { addBuff } from './curios';
 import { addGoodwill, tryForgive } from './goodwill';
 import { tip } from './tips';
 import { coach } from './coach';
+import { boysSay } from './boys';
 
 // Her visits (docs/design/her.md). Her movements between visits come from apartment.ts.
 // Each visit type asks for a different answer:
@@ -78,6 +79,7 @@ export function startVisit(woken = false, kind?: VisitKind) {
   if (v.stage !== 'idle') return;
   coach('steps');
   v.stage = 'far'; v.t = FAR; v.fake = !woken && !kind && !N().apt.forceKind && chance(T.FAKEOUT_CHANCE); v.checked = false; v.result = ''; v.chat = null;
+  if (!v.fake) boysSay('herVisit');   // the boys' chat (#109)
   v.bed = false; v.looked = 0; v.gw = 0; v.esc = false; v.ask = undefined; v.lapSit = false;
   v.from = woken ? 'sleep' : N().apt.activity;
   v.kind = kind ?? N().apt.forceKind ?? pickKind(v.from, woken);   // a pre-emptive action can set the type
@@ -295,7 +297,7 @@ function check() {
     v.result = 'chat'; v.t = T.CHAT_ASK_SEC + 1;
     return;
   }
-  v.result = 'pass'; tip('pass');
+  v.result = 'pass'; tip('pass'); boysSay('cleanTab');   // the boys' chat (#109)
   addMood(T.PEEK_PASS_MOOD);
   toast(`Peek passed. ${pick(PEEK_PASS)}`, '#6fcf7f'); sfx.good();
 }
