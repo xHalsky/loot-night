@@ -47,8 +47,15 @@ function makeEnemy(def: EnemyDef, floor: number, elite: boolean, slot = 0, pack 
   const e: Enemy = { uid: enemyUid++, defId: def.id, name: def.name, hp, maxHp: hp, atk: def.atk * atkM, armor: def.armor * (1 + 0.1 * floor), speed: def.speed, atb: rand(0, 40), aliveSec: 0, stunned: 0, boss: !!def.boss, flash: 0, slot };
   if (def.role === 'shield') e.shield = true;
   if (def.role === 'swarm') e.per = hp / def.stacks!;
+  if (def.id === 'bat') { e.look = batLook(e.uid); e.name = e.look === 'vigil' ? 'Vigil' : 'Ironwing'; }   // the v2 roster (#130)
   meet(def);
   return e;
+}
+/** Each bat is the Ironwing or the Vigil (#130, the v2 redesign), rolled when it spawns from its uid (no draw from the
+ *  game's random numbers, so the sims stay the same), kept for its life; a pack can mix them. */
+export function batLook(uid: number): 'ironwing' | 'vigil' {
+  let h = Math.imul(uid ^ 0x9e3779b9, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) % 2 ? 'vigil' : 'ironwing';
 }
 /** The first time you meet an enemy type, a line says what it wants from you. */
 function meet(def: EnemyDef) {

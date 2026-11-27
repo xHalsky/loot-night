@@ -69,7 +69,7 @@ export const ABILITIES: Record<HeroId, AbilityDef[]> = {
   ],
   mage: [
     { name: 'Bolt', short: 'BOLT', cd: 0, desc: 'Auto attack on the weakest enemy.' },
-    { name: 'Fire', short: 'FIRE', cd: 9, power: 1, tip: 'Hits every enemy for {dmg}. [stagger]Staggered[/] ones take x{stagger}.', desc: 'Hits every enemy for {dmg}, every imp in a swarm too. [stagger]Staggered[/] enemies take x{stagger}.', use: 'Three enemies or a swarm are up, or right after Bash.' },
+    { name: 'Fire', short: 'FIRE', cd: 9, power: 1, tip: 'Hits every enemy for {dmg}. [stagger]Staggered[/] ones take x{stagger}.', desc: 'Hits every enemy for {dmg}, every cherub in a swarm too. [stagger]Staggered[/] enemies take x{stagger}.', use: 'Three enemies or a swarm are up, or right after Bash.' },
     { name: 'Frost', short: 'FROST', cd: 7, power: 2.6, tip: 'Hits the front enemy for {dmg} and [chill]Chills[/] it: Bash shatters it.', desc: 'Hits the front enemy (a healer first) for {dmg} and [chill]Chills[/] it.', use: 'One big target, like a boss. Then Bash shatters it.' },
     { name: 'Cataclysm', short: 'CATACLYSM', cd: 0, power: T.CATACLYSM_POWER, ult: true, tip: 'Ultimate: hits every enemy for {dmg}. Staggered and Chilled ones take double.', desc: 'Ultimate. Hits every enemy for {dmg}; [stagger]Staggered[/] and [chill]Chilled[/] enemies take double. Charges during fights.', use: 'A big pack, or right after Bash and Frost.' },
   ],

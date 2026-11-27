@@ -54,6 +54,7 @@ export interface Enemy {
   burn?: number; burnDps?: number;                   // Wildfire (a tree rule, #53): seconds left burning, damage a second
   per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
   windMax?: number; evict?: number;                  // boss: length of the current wind-up; EXECUTE's target hero
+  look?: 'ironwing' | 'vigil';                       // a bat's figure and name (#130), rolled from its uid when it spawns, kept for its life
   wind?: number; acts?: number; braced?: boolean; enraged?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
 }
 

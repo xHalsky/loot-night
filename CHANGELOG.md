@@ -3,6 +3,28 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.98.0 (2026-11-27)
+
+- **The roster: every enemy in the new look** (#130, W4 of the v2 redesign; aoj-world §4, approved 2026-11-27). The
+  Skeleton is the Hollow, the Guardian a Hollow with the halo shield (torn open once Bash breaks it), the Orc the
+  Revenant, the Ghoul the Penitent, the Shaman the Confessor, the Imps the Cherubs, each bat the Ironwing or the Vigil
+  (rolled from its uid when it spawns, kept for its life, a pack can mix them), the Brute the Gravedigger; the bosses
+  the Gaoler, the Bellringer and the Inquisitor; the troll's fight the Abbot. The samples page's figures ported as they
+  are (`render/page/aoj.js`, `render/page/foes.js`) and drawn from the live battle by `drawFoe`; the view
+  (`render/rpgView.ts`) gives each its look and its pose. **The big attacks move like the real thing:** Smash whirls
+  the ball while the bar fills, slams it down in the last 0.3 s with a flash and dust, holds, drags it back; Execute
+  raises the sword, holds, cuts in 0.15 s as the damage lands, follows through and recovers; the Abbot raises his mace
+  1.7 s before each hit and cuts as it lands; the Bellringer tolls through Summon and Empower; the Gravedigger drives
+  his spade through the end of Shove's wind-up. Their lights, the outline pass, the hit flash, the back lane's dimming,
+  the HP bars (placed clear of each figure), the marks, the casts and the shields all work as before. Names and meet
+  lines follow (the ids are unchanged: saves and tests key on them): "New: Confessor...", "New: Cherubs. One cherub per
+  hit...", "New: Penitent...", "New: Gravedigger...", "Boss: The Gaoler...", "Boss: The Bellringer...", "Boss: The
+  Inquisitor..."; the Abbot wakes with a roar and his tithe is yours. Fit to the build: the bosses stand 6 to 10 px left
+  of the boss slot (x 300) so the Gaoler's ball, the Inquisitor's wings and the Abbot's banner stay inside the battle
+  area, where the page staged them (x 290 to 294); the flyers fly 72 to 88 px up as on the page; the Abbot's hits are
+  timed from the battle's own attack clock (the page staged one swing). Visual and text only: the bats' roll draws no
+  random number, so the bot sims are unchanged.
+
 ## 0.97.0 (2026-11-27)
 
 - **The Shadow Crypt's tells** (#129, W3 of the v2 redesign; aoj-world §3): three colossal riveted iron ribs rise through

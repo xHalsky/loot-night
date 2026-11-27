@@ -55,6 +55,222 @@ function rustPatch(x, y, w, h, seed, k = 0.62) { for (let j = 0; j < h; j++) for
 let LAUNCH_C = null;
 function launchCanvas() { if (!LAUNCH_C) { LAUNCH_C = document.createElement('canvas'); LAUNCH_C.width = GS_W; LAUNCH_C.height = GS_H; } return LAUNCH_C; }
 
+// ================================================================ the roster (W4, #130): the first four, from the samples page
+// ---------------------------------------------------------------- the Hollow (replaces the skeleton)
+// A dead knight in blackened, rusted armour. Where the armour broke he is an iron frame underneath: riveted rods,
+// joint discs, a crimson heart-lens. strip 0: armoured · 1: the breastplate torn open · 2: the bare frame.
+function hollow(cx, fy, t, o = {}) {
+  const st = o.strip || 0, Y = fy + (o.b || 0), sw = o.swing ? 1 : 0;
+  const IR = (x0, y0, x1, y1, w, d = 1) => ironRod(x0, y0, x1, y1, w, d);
+  // far leg
+  if (st >= 2) { IR(cx + 3, Y - 27, cx + 7, fy - 14, 2.4, 0.75); ironJoint(cx + 7, fy - 14, 1.6, 0.75); IR(cx + 7, fy - 14, cx + 9, fy - 3, 2.2, 0.75); plate([[cx + 5, fy - 3], [cx + 12, fy - 2], [cx + 12, fy], [cx + 5, fy]], 0.14, 0.3); }
+  else { limb(cx + 3, Y - 27, cx + 7, fy - 14, 5, 4.2, 0.07, 0.24, M_STONE); limb(cx + 7, fy - 14, cx + 9, fy - 3, 4.2, 3.6, 0.07, 0.24, M_STONE); plate([[cx + 4, fy - 4], [cx + 12, fy - 3], [cx + 13, fy], [cx + 4, fy]], 0.1, 0.26); }
+  // far arm and the kite shield: dark wine field, iron rim, the broken halo painted in bone
+  if (st >= 2) { IR(cx + 4, Y - 45, cx + 9, Y - 38, 2.2, 0.75); ironJoint(cx + 9, Y - 38, 1.5, 0.75); IR(cx + 9, Y - 38, cx + 11, Y - 30, 2, 0.75); }
+  else limb(cx + 4, Y - 45, cx + 10, Y - 37, 4, 3.4, 0.08, 0.26, M_STONE);
+  if (o.shield !== false && st < 2) {
+    const sx = cx + 6, sy = Y - 48, S = [[sx, sy], [sx + 12, sy + 1], [sx + 13, sy + 14], [sx + 7, sy + 28], [sx, sy + 15]];
+    plate(S, 0.2, 0.42, M_DUSK, { grain: true, edge: false });
+    litEdges(S, 0.82, 0.12, M_STONE);
+    brokenHalo(sx + 6.5, sy + 11, 4.5, 0.9, M_UMBER, t, { w: 1, bigSpark: false });
+    rustPatch(sx + 1, sy + 16, 10, 10, 61, 0.55);
+  }
+  // tabard's back flap and the far pauldron
+  if (st < 2) { poly([[cx - 1, Y - 30], [cx + 6, Y - 30], [cx + 8, fy - 12], [cx + 1, fy - 13]], 0.2, M_DUSK); ragHem(cx + 1, cx + 8, fy - 13, 5, 62, 0.18, M_DUSK); }
+  if (st < 2) plate([[cx + 1, Y - 50], [cx + 6, Y - 51], [cx + 9, Y - 47], [cx + 8, Y - 43], [cx + 2, Y - 44]], 0.1, 0.3);
+  // torso
+  if (st < 2) {
+    const T = [[cx - 8, Y - 49], [cx + 6, Y - 49], [cx + 7, Y - 42], [cx + 5, Y - 31], [cx - 5, Y - 31], [cx - 8, Y - 40]];
+    plate(T, 0.2, 0.72, M_STONE, { edgeHi: 1 });
+    line(cx - 3, Y - 47, cx - 2, Y - 33, 0.78, M_STONE); line(cx - 2, Y - 47, cx - 1, Y - 33, 0.08, M_STONE);
+    for (const yy of [Y - 41, Y - 36]) { line(cx - 7, yy, cx + 5, yy + 1, 0.04, M_STONE); line(cx - 7, yy + 1, cx + 5, yy + 2, 0.5, M_STONE); }
+    rustPatch(cx - 7, Y - 48, 14, 16, 51, 0.56);
+    if (st === 1) {
+      ellipse(cx + 1, Y - 41, 5.6, 5.4, 0.02, M_DUSK);
+      for (let a = 0; a < 56; a++) { const an = a / 56 * 6.283, rr = 5.6 + 1.3 * hash(a, 2, 63), x = cx + 1 + Math.cos(an) * rr, y = Y - 41 + Math.sin(an) * rr * 0.95; put(Math.round(x), Math.round(y), Math.cos(an + 2.4) > 0 ? 0.9 : 0.3, M_STONE); }
+      for (const dy of [-4, 4]) line(cx - 3, Y - 41 + dy, cx + 5, Y - 41 + dy, 0.5, M_STONE);
+      ironRod(cx + 1, Y - 46, cx + 1, Y - 36, 1.6, 0.8);
+      rect(cx - 1, Y - 43, 4, 4, 0.55, M_DANGER, 1); eyeLight(cx, Y - 42, t, 7, true); put(cx + 1, Y - 42, 1, M_DANGER, 1);
+    }
+  } else {
+    IR(cx + 1, Y - 49, cx + 1, Y - 29, 2.6, 0.95);
+    for (let k = 0; k < 4; k++) {
+      const y0 = Y - 47 + k * 4;
+      for (let s = 0; s <= 10; s++) { const q = s / 10, x = cx + 1 - q * (9 - k), y = y0 + Math.sin(q * Math.PI) * -1.4 + q * q * 2.5; put(Math.round(x), Math.round(y), 0.82 - 0.36 * q, M_STONE); put(Math.round(x), Math.round(y) + 1, 0.16, M_STONE); }
+      put(cx - 3 + k, y0 + 1, 0.95, M_STONE);
+    }
+    eyeLight(cx - 2, Y - 41, t, 7, true);
+    plate([[cx - 5, Y - 31], [cx + 5, Y - 31], [cx + 4, Y - 26], [cx - 4, Y - 26]], 0.16, 0.5);
+    rivets(cx - 3, Y - 29, cx + 3, Y - 29, 3, 0.9);
+  }
+  // belt; the tabard's front with a faded broken halo
+  rect(cx - 6, Y - 32, 12, 2, 0.22, M_UMBER); rect(cx - 2, Y - 32, 3, 2, 0.8, M_UMBER);
+  if (st < 2) {
+    poly([[cx - 6, Y - 30], [cx + 1, Y - 30], [cx + 2, fy - 10], [cx - 6, fy - 11]], (x, y) => 0.42 + 0.2 * clamp((cx + 2 - x) / 8) - ((x + y) % 5 === 0 ? 0.08 : 0), M_DUSK);
+    ragHem(cx - 6, cx + 2, fy - 11, 6, 65, 0.36, M_DUSK);
+    brokenHalo(cx - 2, Y - 23, 2.5, 0.62, M_UMBER, t, { spark: false });
+  }
+  // near leg
+  if (st >= 2) { IR(cx - 2, Y - 27, cx - 7, fy - 14, 2.6); ironJoint(cx - 7, fy - 14, 1.8); IR(cx - 7, fy - 14, cx - 9, fy - 3, 2.4); plate([[cx - 15, fy - 3], [cx - 7, fy - 3], [cx - 6, fy], [cx - 15, fy]], 0.16, 0.56); }
+  else {
+    limb(cx - 2, Y - 27, cx - 7, fy - 14, 5.4, 4.6, 0.2, 0.74, M_STONE); limb(cx - 7, fy - 14, cx - 9, fy - 3, 4.6, 4, 0.2, 0.74, M_STONE);
+    ellipse(cx - 7, fy - 14.5, 2.6, 2.2, (x) => 0.3 + 0.5 * clamp((cx - 5 - x) / 5), M_STONE);
+    plate([[cx - 16, fy - 4], [cx - 7, fy - 5], [cx - 6, fy], [cx - 17, fy]], 0.2, 0.7);
+    rustPatch(cx - 10, fy - 13, 5, 9, 66, 0.55);
+  }
+  // near pauldron: three lames
+  if (st < 2) {
+    for (let k = 2; k >= 0; k--) { const py = Y - 47 + k * 2.4, px = cx - 6 - k * 0.6; plate([[px - 5, py + 1], [px - 2, py - 2], [px + 3, py - 2], [px + 5, py + 1], [px + 4, py + 3], [px - 4, py + 3]], 0.2, k === 0 ? 0.78 : 0.56, M_STONE, { edgeHi: 1 });
+      put(px - 3, py + 2, 0.8, M_UMBER); put(px + 1, py + 2, 0.8, M_UMBER); }
+    rustPatch(cx - 11, Y - 49, 9, 7, 67, 0.58);
+  } else ironJoint(cx - 6, Y - 45, 2);
+  // near arm and the greatsword: raised, or cut down on the swing
+  const sh = [cx - 6, Y - 45], el = sw ? [cx - 11, Y - 40] : [cx - 13, Y - 39], hd = sw ? [cx - 18, Y - 37] : [cx - 16, Y - 48];
+  const tip = sw ? [hd[0] - 21, hd[1] + 7] : [hd[0] - 2, hd[1] - 25], bx = tip[0] - hd[0], by = tip[1] - hd[1], bl = Math.hypot(bx, by), nx = -by / bl, ny = bx / bl;
+  for (let s = 3; s <= bl; s++) { const q = s / bl, x = hd[0] + bx * q, y = hd[1] + by * q, w = q > 0.92 ? 0.6 : 1.4; for (let o2 = -w; o2 <= w; o2 += 0.5) put(Math.round(x + nx * o2), Math.round(y + ny * o2), o2 < -0.5 ? 0.98 : o2 > 0.5 ? 0.3 : 0.62, M_STONE); }
+  rustPatch(Math.round(hd[0] + bx * 0.4) - 1, Math.round(hd[1] + by * 0.4) - 2, 3, 5, 69, 0.5);
+  for (let o2 = -3.5; o2 <= 3.5; o2 += 0.5) put(Math.round(hd[0] + bx / bl * 2 + nx * o2), Math.round(hd[1] + by / bl * 2 + ny * o2), 0.72, M_UMBER);
+  ellipse(hd[0] - bx / bl * 3 + 0.5, hd[1] - by / bl * 3 + 0.5, 1.3, 1.3, 0.8, M_UMBER);
+  if (st >= 2 || o.armBare) { IR(sh[0], sh[1], el[0], el[1], 2.4); ironJoint(el[0], el[1], 1.6); IR(el[0], el[1], hd[0], hd[1], 2.2); }
+  else { limb(sh[0], sh[1], el[0], el[1], 4.2, 3.6, 0.22, 0.76, M_STONE); limb(el[0], el[1], hd[0], hd[1], 3.6, 3.4, 0.22, 0.76, M_STONE); }
+  ellipse(hd[0] + 0.5, hd[1] + 0.5, 1.9, 1.9, 0.5, M_STONE);
+  // head: the great helm, a cross-slit with two embers; or the riveted iron skull of the frame
+  const hx = cx - 3, hy = Y - 56;
+  if (st < 2) {
+    const HL = [[hx - 6, hy - 5], [hx - 4, hy - 8], [hx + 3, hy - 8], [hx + 5, hy - 5], [hx + 5, hy + 6], [hx - 6, hy + 6]];
+    plate(HL, 0.2, 0.76, M_STONE, { edgeHi: 1 });
+    rect(hx - 6, hy - 6, 11, 1, 0.82, M_UMBER); rect(hx - 6, hy - 5, 11, 1, 0.4, M_UMBER);
+    line(hx - 4, hy - 7, hx + 1, hy - 7, 0.86, M_STONE); put(hx - 5, hy - 6, 0.8, M_STONE);
+    line(hx - 6, hy + 1, hx + 5, hy + 1, 0.06, M_STONE);
+    rect(hx - 6, hy - 3, 9, 2, 0.02, M_DUSK);
+    for (const ex of [hx - 5, hx - 2]) { eyeLight(ex, hy - 3, t, ex); eyeLight(ex + 1, hy - 3, t, ex + 1); put(ex, hy - 2, 0.45, M_DANGER, 1); }
+    for (const [dx, dy] of [[-5, 3], [-3, 3], [-5, 5], [-3, 5], [-1, 4]]) put(hx + dx, hy + dy, 0.03, M_DUSK);
+    rustPatch(hx, hy - 7, 6, 8, 68, 0.55);
+    if (st === 1) { line(hx + 1, hy - 8, hx + 3, hy - 3, 0.02, M_DUSK); put(hx + 2, hy - 6, 0.36, M_STONE); }
+  } else {
+    plate([[hx - 4, hy - 5], [hx + 3, hy - 6], [hx + 5, hy - 1], [hx + 4, hy + 3], [hx - 4, hy + 3], [hx - 5, hy - 1]], 0.12, 0.6);
+    rect(hx - 4, hy - 2, 2, 2, 0.02, M_DUSK); rect(hx - 1, hy - 2, 2, 2, 0.02, M_DUSK);
+    eyeLight(hx - 4, hy - 2, t, 1); eyeLight(hx - 1, hy - 2, t, 3);
+    rivets(hx - 4, hy - 4, hx + 3, hy - 5, 4, 0.95);
+    plate([[hx - 4, hy + 4], [hx + 3, hy + 4], [hx + 2, hy + 7], [hx - 3, hy + 7]], 0.16, 0.46);
+    for (let x = hx - 3; x <= hx + 1; x += 2) line(x, hy + 4, x, hy + 6, 0.03, M_DUSK);
+    IR(hx + 1, hy + 6, cx, Y - 49, 2);
+  }
+  EFX.warrior = [cx - 2, Y - 38];
+}
+
+// ---------------------------------------------------------------- the Penitent (replaces the zombie)
+// A flagellant pilgrim, gaunt and bowed, bare to the waist, his back striped with lashes, a dark robe below. An iron
+// cage over his head with a candle stub on top (a small warm light). He swings a scourge over his own shoulder.
+function penitent(cx, fy, t, o = {}) {
+  const ph = o.ph || 0, lash = Math.sin(t * 3.2 + ph), Y = fy + (Math.sin(t * 1.5 + ph) > 0.8 ? -1 : 0), SK = M_UMBER;
+  // the robe from the waist: dark, heavy folds, a ragged hem; bare feet
+  poly([[cx - 6, Y - 29], [cx + 6, Y - 29], [cx + 9, fy - 3], [cx + 5, fy - 1], [cx - 7, fy - 1], [cx - 9, fy - 4]], (x, y) => 0.1 + 0.2 * clamp((cx + 8 - x) / 17) - ((x * 3 + y) % 7 === 0 ? 0.03 : 0), M_DUSK);
+  for (const [x0, l] of [[cx - 4, 22], [cx + 1, 24], [cx + 5, 20]]) for (let j = 0; j < l; j++) put(x0 + (j > 13 ? 1 : 0), Y - 26 + j, 0.04, M_DUSK);
+  ragHem(cx - 9, cx + 9, fy - 4, 4, 81, 0.1, M_DUSK);
+  poly([[cx - 13, fy - 2], [cx - 6, fy - 3], [cx - 5, fy], [cx - 13, fy]], (x) => 0.5 + 0.34 * clamp((cx - 5 - x) / 8), SK);
+  // far arm, clutching his chest
+  limb(cx + 4, Y - 45, cx + 3, Y - 37, 2.6, 2.2, 0.34, 0.56, SK); limb(cx + 3, Y - 37, cx - 2, Y - 37, 2.2, 2, 0.34, 0.56, SK);
+  // the bare torso, bowed a little forward: gaunt, ribs showing, lashes across the back (his right side)
+  const TB = [[cx - 7, Y - 47], [cx + 5, Y - 48], [cx + 6, Y - 41], [cx + 4, Y - 30], [cx - 4, Y - 30], [cx - 6, Y - 38]];
+  plate(TB, 0.44, 0.86, SK, { edgeHi: 0.96, edgeLo: 0.22 });
+  for (let k = 0; k < 4; k++) { const yy = Y - 44 + k * 3; for (let x = cx - 5; x <= cx; x++) if ((x + k) % 2 === 0) put(x, yy + Math.round((x - cx) * 0.25), 0.34, SK); }
+  for (let y = Y - 36; y <= Y - 31; y++) put(cx - 1, y, 0.36, SK);
+  for (let k = 0; k < 4; k++) { const y0 = Y - 46 + k * 4; for (let s = 0; s < 5; s++) { const x = cx + 1 + s, y = y0 + Math.round(s * 0.5); if (hash(k, s, 82) > 0.15) put(x, y, 0.64 + 0.3 * hash(s, k, 83), M_DANGER); } }
+  // the rope belt with its knotted end
+  for (let x = cx - 6; x <= cx + 6; x++) put(x, Y - 30 + ((x & 1) ? 0 : 1), 0.7, SK);
+  for (let j = 0; j < 8; j++) put(cx - 4 + (j > 3 ? -1 : 0), Y - 29 + j, j === 7 ? 0.9 : 0.6, SK);
+  // the neck and the head, bowed, inside the iron cage; the candle stub on top
+  limb(cx - 2, Y - 47, cx - 4, Y - 51, 2.6, 2.4, 0.5, 0.8, SK);
+  const hx = cx - 5, hy = Y - 54;
+  ellipse(hx + 0.5, hy + 0.5, 3.4, 3.8, (x) => 0.62 + 0.32 * clamp((hx + 3 - x) / 7), SK);
+  rect(hx - 3, hy, 2, 2, 0.02, M_DUSK); rect(hx, hy, 2, 2, 0.02, M_DUSK);
+  eyeLight(hx - 3, hy + 1, t, 11); eyeLight(hx, hy + 1, t, 12);
+  rect(hx - 2, hy + 3, 3, 1, 0.06, M_DUSK);
+  const cageTop = (x) => hy - 6 + Math.round(((x - hx) / 5.5) ** 2 * 3);
+  for (let x = hx - 5; x <= hx + 5; x += 2) for (let y = cageTop(x); y <= hy + 5; y++) put(x, y, x <= hx ? 0.86 : 0.44, M_STONE);
+  for (let x = hx - 5; x <= hx + 5; x++) { put(x, cageTop(x), x <= hx ? 0.8 : 0.5, M_STONE); put(x, hy + 5, x < hx ? 0.7 : 0.3, M_STONE); }
+  ellipse(hx + 0.5, hy - 7.5, 1.6, 1.2, 0.66, M_STONE);
+  rect(hx - 1, hy - 13, 3, 5, (x) => (x === hx - 1 ? 0.96 : 0.74), SK); put(hx + 2, hy - 10, 0.84, SK); put(hx + 2, hy - 9, 0.7, SK);
+  AOJ.candles = AOJ.candles || []; AOJ.candles.push([hx, hy - 14, t, cx]);
+  // near arm raised high, the scourge thrown back over his shoulder: three cords with iron weights
+  const hd = [cx - 10, Y - 62 + Math.round(lash)], el = [cx - 11, Y - 49];
+  limb(cx - 5, Y - 46, el[0], el[1], 3, 2.6, 0.5, 0.88, SK); limb(el[0], el[1], hd[0], hd[1], 2.6, 2.2, 0.5, 0.88, SK);
+  rect(hd[0] - 1, hd[1] - 4, 2, 5, 0.4, M_UMBER);
+  for (let c = 0; c < 3; c++) {
+    let px = hd[0], py = hd[1] - 4;
+    for (let s = 1; s <= 12; s++) { const q = s / 12, x = hd[0] + q * (13 + c * 2) + lash * 1.5 * q, y = hd[1] - 4 + q * (12 + c * 3) - Math.sin(q * Math.PI) * 6; line(px, py, x, y, 0.56, M_UMBER); px = x; py = y; }
+    put(Math.round(px), Math.round(py), 0.92, M_STONE); put(Math.round(px) + 1, Math.round(py), 0.4, M_STONE); put(Math.round(px), Math.round(py) + 1, 0.3, M_STONE);
+  }
+  EFX.mouth = [hx - 2, hy + 3];
+}
+function candleFlames(t) { for (const [x, y, , seed] of AOJ.candles || []) { const f = hash(Math.floor(t * 13), seed, 7); put(x, y, 1, M_UMBER, 1); put(x, y - 1, 0.92, M_UMBER, 1); if (f > 0.5) put(x + (f > 0.8 ? 1 : 0), y - 2, 0.8, M_UMBER, 1); } }
+
+// ---------------------------------------------------------------- the Confessor (replaces the necromancer)
+// A tall priest of a heretic serpent cult: a pointed hood, an iron confessional grille for a face with a crimson glow
+// behind it, a serpent crozier, a censer swinging on its chain and breathing violet smoke.
+function confessor(cx, fy, t, o = {}) {
+  const Y = fy - 1 + Math.round(Math.sin(t * 1.4)), sw = Math.sin(t * 2.4);
+  // a summoning ring on the floor: candles round a crimson-inked circle
+  for (let a = 0; a < 90; a++) { const an = a / 90 * 6.283 + t * 0.4, x = cx + Math.cos(an) * 19, y = fy + 1 + Math.sin(an) * 4; if (a % 3) put(Math.round(x), Math.round(y), a % 15 === 0 ? 0.9 : 0.5, M_DANGER, 1); }
+  // the robe: tall, flared, deep dusk, a gilt stole down the front
+  poly([[cx - 6, Y - 50], [cx + 6, Y - 50], [cx + 12, fy - 4], [cx + 8, fy - 1], [cx + 3, fy - 4], [cx - 2, fy - 1], [cx - 7, fy - 4], [cx - 12, fy - 2]], (x, y) => 0.12 + 0.24 * Math.sin(clamp((x - cx + 12) / 24) * Math.PI) * (1.1 - 0.3 * clamp((x - cx) / 12)) - (((x - cx + 40) % 4 === 0 && y > Y - 38) ? 0.05 : 0), M_DUSK);
+  for (const sx of [cx - 3, cx + 1]) { rect(sx, Y - 46, 2, fy - Y + 40, (x) => (x === sx ? 0.82 : 0.56), M_UMBER); }
+  for (const sx of [cx - 3, cx + 1]) { rect(sx - 1, fy - 8, 4, 2, 0.62, M_UMBER); brokenHalo(sx + 1, fy - 12, 1.6, 0.7, M_UMBER, t, { spark: false }); }
+  // far arm out with the censer on its chain (violet smoke)
+  line(cx + 5, Y - 44, cx + 10, Y - 38, 0.24, M_DUSK); line(cx + 5, Y - 43, cx + 10, Y - 37, 0.18, M_DUSK);
+  rect(cx + 10, Y - 38, 2, 2, 0.6, M_UMBER);
+  const cxn = cx + 11 + Math.round(sw * 5), cyn = Y - 22 - Math.round(Math.abs(sw) * 2);
+  line(cx + 11, Y - 36, cxn, cyn - 3, 0.5, M_STONE);
+  ellipse(cxn + 0.5, cyn + 0.5, 2.6, 2.4, (x) => 0.4 + 0.4 * clamp((cxn + 2 - x) / 5), M_UMBER); put(cxn - 1, cyn, 0.9, M_MAGIC, 1); put(cxn + 1, cyn + 1, 0.8, M_MAGIC, 1);
+  for (let k = 0; k < 7; k++) { const q = (t * 0.6 + k / 7) % 1, x = cxn + Math.sin(q * 7 + k) * 2.5 + q * 4, y = cyn - 3 - q * 26; put(Math.round(x), Math.round(y), 0.85 - q * 0.6, M_MAGIC, 1); if (q < 0.5) put(Math.round(x) + 1, Math.round(y), 0.6 - q * 0.6, M_MAGIC, 1); }
+  // the pointed hood and the iron grille: a crimson glow through the lattice
+  const hx = cx - 1, hy = Y - 57;
+  poly([[hx - 6, hy + 6], [hx - 6, hy - 2], [hx - 2, hy - 10], [hx + 1, hy - 17], [hx + 3, hy - 9], [hx + 7, hy - 2], [hx + 7, hy + 7]], (x, y) => 0.16 + 0.26 * clamp((hx + 7 - x) / 13) * (1 - 0.3 * clamp((hy - y) / 15)), M_DUSK);
+  for (let y = hy - 4; y <= hy + 4; y++) for (let x = hx - 4; x <= hx + 2; x++) {
+    const lat = (x + y) % 3 === 0 || (x - y + 30) % 3 === 0;
+    if (lat) put(x, y, x < hx - 1 ? 0.62 : 0.44, M_STONE); else put(x, y, 0.35 + 0.35 * clamp(1 - Math.hypot(x - hx + 1, y - hy + 1) / 4), M_DANGER, 1);
+  }
+  frameLine(hx - 5, hy - 5, 8, 11);
+  // the serpent crozier in the near hand: a coiled snake for its crook, a crimson eye
+  const sx = cx - 13;
+  for (let y = Y - 66; y < fy; y++) put(sx + ((y >> 2) & 1 ? 0 : 0), y, 0.42 + (y & 1) * 0.12, M_UMBER);
+  for (let k = 0; k <= 30; k++) { const q = k / 30, an = -Math.PI / 2 - q * 4.6, r = 6 - q * 3, x = sx + 6 + Math.cos(an) * r - 6, y = Y - 70 + Math.sin(an) * r + 4; const w = 1.6 - q * 0.6; ellipse(x + 0.5, y + 0.5, w, w, 0.6 - 0.2 * q + (k % 4 === 0 ? 0.2 : 0), M_STONE); }
+  const shx = sx - 1, shy = Y - 69; ellipse(shx + 0.5, shy + 0.5, 2.2, 1.6, 0.66, M_STONE); eyeLight(shx - 1, shy, t, 21); put(shx - 3, shy + 1, 0.8, M_DANGER, 1);
+  limb(cx - 5, Y - 45, cx - 10, Y - 40, 3, 2.6, 0.12, 0.3, M_DUSK); limb(cx - 10, Y - 40, sx + 1, Y - 44, 2.6, 2.4, 0.12, 0.3, M_DUSK);
+  rect(sx - 1, Y - 46, 3, 3, 0.66, M_UMBER);
+  EFX.necro = [cxn, cyn]; EFX.staff = [shx, shy];
+}
+function frameLine(x, y, w, h) { for (let i = x; i < x + w; i++) { put(i, y, 0.3, M_DUSK); put(i, y + h - 1, 0.1, M_DUSK); } for (let j = y; j < y + h; j++) { put(x, j, 0.3, M_DUSK); put(x + w - 1, j, 0.1, M_DUSK); } }
+
+// ---------------------------------------------------------------- Cherubs (replace the imps)
+// Baroque putti with iron wings: a round baby head with a blank porcelain face and an open mouth, a chubby body,
+// a broken iron halo floating over the head with its spark.
+function cherub(x, y, t, n) {
+  const flap = Math.floor(t * 10 + n * 1.7) % 4, ang = [-1.15, -0.55, 0.25, -0.55][flap], Y = Math.round(y + Math.sin(t * 3 + n) * 2);
+  const wing = (wx, wy, d) => {
+    for (let k = 0; k < 5; k++) {
+      const a = ang + k * 0.28, L = 12 - k * 1.6;
+      for (let s = 1; s <= L; s++) { const px = Math.round(wx + Math.cos(a) * s), py = Math.round(wy + Math.sin(a) * s); put(px, py, (s >= L - 1 ? 0.9 : 0.62 - 0.07 * k) * d, M_STONE); put(px, py + 1, 0.14 * d, M_STONE); }
+      put(Math.round(wx + Math.cos(a) * 4), Math.round(wy + Math.sin(a) * 4), 0.95 * d, M_STONE);
+    }
+  };
+  wing(x + 2, Y - 7, 0.62);
+  // the body: chubby, pale; little legs tucked under
+  ellipse(x + 0.5, Y - 2.5, 3.6, 4.4, (xx, yy) => 0.64 + 0.3 * clamp((x + 3 - xx) / 7) - 0.12 * clamp((yy - Y + 2) / 4), M_UMBER);
+  ellipse(x - 1.5, Y + 2.5, 1.8, 1.5, 0.66, M_UMBER); ellipse(x + 2.5, Y + 2, 1.6, 1.4, 0.48, M_UMBER);
+  line(x - 2, Y - 5, x - 5, Y - 2 + (flap & 1), 0.78, M_UMBER); put(x - 5, Y - 2 + (flap & 1), 0.9, M_UMBER);
+  // the head: round, a porcelain face with no eyes, a dark open mouth, a curl on top
+  ellipse(x - 0.5, Y - 10, 4.2, 4, (xx, yy) => 0.76 + 0.22 * clamp((x + 2 - xx) / 7) - 0.08 * clamp((yy - Y + 10) / 4), M_UMBER);
+  rect(x - 4, Y - 11, 2, 1, 0.08, M_DUSK); rect(x - 1, Y - 11, 2, 1, 0.08, M_DUSK);
+  rect(x - 3, Y - 8, 2, 2, 0.03, M_DUSK);
+  put(x, Y - 15, 0.6, M_UMBER); put(x + 1, Y - 14, 0.5, M_UMBER);
+  // the halo floating over the head, seen at an angle: a flat broken ring
+  for (let k = 0; k < 28; k++) { const an = k / 28 * 6.283; if (an > 5.2 && an < 5.9) continue; put(Math.round(x - 0.5 + Math.cos(an) * 4.5), Math.round(Y - 17 + Math.sin(an) * 1.4), Math.sin(an) > 0 ? 0.9 : 0.6, M_STONE); }
+  eyeLight(Math.round(x + 3), Y - 18, t, n);
+  wing(x + 1, Y - 6, 1);
+}
+
 // ---------------------------------------------------------------- the Shadow Crypt's tells (W3, #129)
 // The crypt as approved, plus three tells: colossal riveted ribs in the far hall (seen through the arches), the iron
 // angel in the moonlit alcove (foes.js ironAngelStatue) and the Church's broken halo on the banner. Drawn once into the

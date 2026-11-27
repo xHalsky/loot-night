@@ -22,7 +22,7 @@ import { abilitiesLocked, abilityUnlocked, bodies, moveOf, betweenFights, partyS
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { CURIO_BY_ID } from '../data/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
-import { POS_X, ENEMY_SLOTS, FLOOR_Y } from '../core/arena';
+import { POS_X, ENEMY_SLOTS, FLOOR_Y, MID_SLOT } from '../core/arena';
 import { unbanked } from '../systems/run';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
 
@@ -221,6 +221,69 @@ const RIG: Record<string, { rig: string; o?: Record<string, unknown> }> = {
   skeleton: { rig: 'skel' }, collector: { rig: 'zomb', o: { sword: true } }, auditor: { rig: 'necro' }, ghoul: { rig: 'zomb' },
   shelter: { rig: 'skel', o: { helm: true, shield: true } },
 };
+// The v2 roster (#130, aoj-world §4): every enemy by id as its Age of Judgment figure (render/page/foes.js drawFoe).
+// The ids stay (saves key on them); each bat is the Ironwing or the Vigil, rolled from its uid when it spawns, kept for
+// its life (systems/battle.ts batLook).
+const LOOK: Record<string, string> = {
+  skeleton: 'hollow', shelter: 'guardian', collector: 'revenant', ghoul: 'penitent', auditor: 'confessor', junk: 'cherub',
+  brute: 'gravedigger', bailiff: 'gaoler', shark: 'bellringer', landlord: 'inquisitor', troll: 'abbot',
+};
+/** Where a figure's HP bar sits (its marks and the cast above it): clear of its head, its wings or its rotor. */
+const LOOK_BAR: Record<string, number> = { gravedigger: 128, gaoler: 64, bellringer: 76, inquisitor: 90, abbot: 104 };
+/** The bosses stand where the page staged them (the boss slot is x 300): the Gaoler's ball, the Inquisitor's wings and the
+ *  Abbot's banner stay inside the battle area. */
+const LOOK_DX: Record<string, number> = { gaoler: -6, inquisitor: -8, abbot: -10 };
+/** A flyer's height over the lane's floor (the page flew them 72 to 88 px up, at head height); the cherubs lower. */
+const FLY: Record<string, Record<string, number>> = { ironwing: { front: 86, back: 72, mid: 80 }, vigil: { front: 88, back: 74, mid: 80 }, cherub: { front: 50, back: 54, mid: 52 } };
+// the attack timelines (aoj-world §2; foes.js strikeTimeline): wind-up under the cast bar, the hit as the cast resolves,
+// the follow-through held, recovery. The view remembers when a cast resolved and when a hit landed (real time).
+const castEnd = new Map<number, { at: number; max: number; hit: boolean }>(), lastHit = new Map<number, number>(), prevWind = new Map<number, number>(), prevLunge = new Map<number, number>();
+function timeline(u: number, wind: number, hold = 0.25, strike = 0.15, after = 0.5, recover = 0.7): Record<string, number> {
+  if (u < 0) return {};
+  if (u < wind) return { wind: u / wind };
+  u -= wind; if (u < hold) return { wind: 1 };
+  u -= hold; if (u < strike) return { strike: Math.max(0.001, u / strike) };
+  u -= strike; if (u < after) return { strike: 1, after: u / after };
+  u -= after; if (u < recover) return { recover: u / recover };
+  return {};
+}
+/** Seconds since this enemy's big cast began (its wind-up, then on through the hit and recovery), or -1. */
+function castU(e: Enemy, nowMs: number): number {
+  const w = e.wind ?? 0, pw = prevWind.get(e.uid) ?? 0;
+  prevWind.set(e.uid, w);
+  if (w > 0 && e.windMax) { castEnd.delete(e.uid); return e.windMax - w; }
+  if (pw > 0 && e.windMax) castEnd.set(e.uid, { at: nowMs, max: e.windMax, hit: !(e.stunned > 0) });   // resolved now (a Bash stops it: no hit)
+  const c = castEnd.get(e.uid);
+  if (!c || !c.hit) return -1;
+  const u = c.max + (nowMs - c.at) / 1000;
+  if (u > c.max + 2) { castEnd.delete(e.uid); return -1; }
+  return u;
+}
+/** The Abbot (the troll's fight) swings at every hit: the raise from 1.7 s before it lands, the cut as it lands. */
+function abbotU(e: Enemy, nowMs: number): number {
+  const l = e.lunge ?? 0, pl = prevLunge.get(e.uid) ?? 0;
+  prevLunge.set(e.uid, l);
+  if (l > 0 && pl <= 0) lastHit.set(e.uid, nowMs);
+  const rate = (100 * e.speed) / (T.BASE_ATTACK_SEC * 10), next = e.stunned > 0 || (e.enter ?? 0) > 0 ? 99 : (100 - e.atb) / rate;
+  if (next <= 1.7) return 1.7 - next;
+  const h = lastHit.get(e.uid);
+  if (h != null && nowMs - h < 1200) return 1.7 + (nowMs - h) / 1000;
+  return -1;
+}
+function foePose(e: Enemy, nowMs: number) {
+  const look = e.defId === 'bat' ? (e.look ?? 'ironwing') : LOOK[e.defId];
+  if (!look) return null;
+  const mv = moveOf(e), winding = (e.wind ?? 0) > 0;
+  const o: Record<string, unknown> = { look };
+  if (look === 'gaoler') { const u = castU(e, nowMs); if (u >= 0) o.pose = timeline(u, T.BOSS_WINDUP_SEC - 0.3, 0, 0.3, 0.5, 0.8); }   // Smash: whirled, then over and down in the last 0.3 s
+  else if (look === 'inquisitor') { const u = castU(e, nowMs); if (u >= 0) o.pose = timeline(u, T.EVICT_WINDUP_SEC - 0.4); }   // Execute: the raise, a hold, the 0.15 s cut
+  else if (look === 'abbot') { const u = abbotU(e, nowMs); if (u >= 0) o.pose = timeline(u, 1.3); }
+  else if (look === 'bellringer') o.toll = winding ? 1 : 0;   // Summon / Empower: he hauls the rope
+  else if (look === 'gravedigger') o.swing = (winding && mv === 'shove' && (e.wind ?? 0) < 0.5) || (e.lunge ?? 0) > 0;   // Shove: the spade driven at you
+  else o.swing = (e.lunge ?? 0) > 0;
+  o.shield = !!e.shield;
+  return o;
+}
 const MOVE_LABEL: Record<string, string> = { slam: 'Smash', loan: 'Summon', evict: 'Execute', hook: 'Hook', shove: 'Shove' };
 const MARK_TAG: Record<string, [string, string]> = { stagger: ['STAGGERED', 'bone'], chill: ['CHILLED', 'stone'], judged: ['JUDGED', 'pale'], taunted: ['TAUNTED', 'dusk'] };
 const RARITY_IDX: Record<string, string> = { common: 'moon', uncommon: 'moss', rare: 'stone', epic: 'arcane', legendary: 'gold' };
@@ -278,11 +341,15 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
   const alert = pack && pack.spot >= 0 && pack.spot < T.PACK_ALERT_SEC ? pack.spot / T.PACK_ALERT_SEC : null;   // the "!": 0 to 1, then gone (#120)
   const enemies = (n.phase === 'walk' && !pack ? [] : n.enemies).map((e: Enemy) => {
     const d = ENEMY_BY_ID[e.defId], sl = ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0];
-    const boss = e.boss, lane = sl.lane, x = sl.x + Math.round(pack?.at ?? 0) + Math.round((e.enter ?? 0) / T.STEP_IN_SEC * Math.max(50, T.PACK_ENTER_X - sl.x));
-    const rig = !boss ? RIG[e.defId] : undefined;
+    const boss = e.boss, lane = sl.lane; let x = sl.x + Math.round(pack?.at ?? 0) + Math.round((e.enter ?? 0) / T.STEP_IN_SEC * Math.max(50, T.PACK_ENTER_X - sl.x));
+    const fp = foePose(e, nowMs), look = fp?.look as string | undefined;
+    const rig = !boss && !look ? RIG[e.defId] : undefined;
     const s = boss ? 4 : 3;
     let barY = sl.bar;
-    if (!rig && d) { const h = Math.max(...d.sprite.map(r => r[1] + r[3])) * s; barY = Math.max(66, sl.y - h - (e.defId === 'bat' ? 26 : 8)); }
+    const fly = look && FLY[look] ? FLY[look][lane] ?? 80 : 0;
+    if (look && LOOK_DX[look] && e.slot === MID_SLOT) x += LOOK_DX[look];
+    if (look) barY = LOOK_BAR[look] ?? (fly ? sl.y - fly - (look === 'cherub' ? 16 : 27) : sl.bar);
+    else if (!rig && d) { const h = Math.max(...d.sprite.map(r => r[1] + r[3])) * s; barY = Math.max(66, sl.y - h - (e.defId === 'bat' ? 26 : 8)); }
     const tags: [string, string][] = [];
     if (e.shield) tags.push(['SHIELD', 'stone']);
     if (e.enraged) tags.push(['ENRAGED', 'crimson']);
@@ -291,7 +358,8 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
     const wind = (e.wind ?? 0) > 0 && e.windMax ? { label: windLabel(e), f: 1 - (e.wind ?? 0) / e.windMax } : null;
     return {
       dead: e.hp <= 0, boss, lane, x, barY, back: lane === 'back', hp: Math.max(0, e.hp / (e.maxHp || 1)), flash: e.flash, lunge: (e.lunge ?? 0) > 0 ? 3 : 0, ph: (e.uid % 7) * 0.9,
-      rig: rig?.rig, o: rig?.o, px: rig ? null : d?.sprite, s, bodies: e.per ? bodies(e) : 1, fly: e.defId === 'bat', tags: tags.slice(0, 2), wind,
+      rig: rig?.rig, o: rig?.o, px: rig || look ? null : d?.sprite, s, bodies: e.per ? bodies(e) : 1, fly: look ? fly : e.defId === 'bat', tags: tags.slice(0, 2), wind,
+      ...(fp ?? {}), n: e.uid % 4,
       ahead: !!pack, alert,   // coming up: no HP bar; as it sees the party, a red "!" pops over its head for a moment
     };
   });

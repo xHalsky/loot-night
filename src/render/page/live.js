@@ -117,12 +117,14 @@ function liveBattleArea(ctx, vm, t) {
       }
     },
     enemies(F, t, lights) {
+      AOJ.candles = []; AOJ.lamps = [];
       vm.enemies.forEach((e, n) => {
         if (e.dead) return;
         const fy = LANE[e.lane] || CHAR_Y, x = e.x - (e.lunge || 0), tt = t + (e.ph || 0);
-        if (!e.boss) mulEllipse(x, fy, 11, 3, 0.3);
+        if (e.look ? !FOE_FLY[e.look] && e.look !== 'confessor' : !e.boss) mulEllipse(x, fy, e.boss ? 18 : 11, 3, 0.3);
         TAG = 11 + n;
-        if (e.rig === 'skel') skeletonWarrior(x, fy, tt, { b: Math.sin(tt * 2) > 0.6 ? -1 : 0, ...(e.o || {}) });
+        if (e.look) drawFoe(e, x, fy, tt, t, lights);   // the v2 roster (#130): every enemy as its Age of Judgment figure
+        else if (e.rig === 'skel') skeletonWarrior(x, fy, tt, { b: Math.sin(tt * 2) > 0.6 ? -1 : 0, ...(e.o || {}) });
         else if (e.rig === 'zomb') zombie(x, fy, tt, e.o || {});
         else if (e.rig === 'necro') necromancer(x, fy, tt, { cast: e.wind ? e.wind.f : 0 });
         else if (e.px) {
@@ -132,7 +134,7 @@ function liveBattleArea(ctx, vm, t) {
         TAG = 0;
         if (e.flash > 0) for (let i = 0; i < W * H; i++) if (F.T[i] === 11 + n && !F.E[i]) F.V[i] = Math.min(1, F.V[i] + 0.35 * e.flash / 0.15);
         if (e.back) for (let i = 0; i < W * H; i++) if (F.T[i] === 11 + n) { F.G[i] *= 0.62; if (F.E[i] === 0) F.V[i] *= 0.9; }
-        if (e.rig === 'necro' && EFX.necro) lights.push({ x: EFX.necro[0], y: EFX.necro[1], r: 70, i: 0.55, c: [1.0, 0.8, 1.6] });
+        if (!e.look && e.rig === 'necro' && EFX.necro) lights.push({ x: EFX.necro[0], y: EFX.necro[1], r: 70, i: 0.55, c: [1.0, 0.8, 1.6] });
       });
       // downed heroes: dark, out of the light
       vm.party.forEach((m, n) => { if (m.down) for (let i = 0; i < W * H; i++) if (F.T[i] === n + 1) { F.V[i] *= 0.3; F.G[i] *= 0.7; } });
@@ -143,7 +145,12 @@ function liveBattleArea(ctx, vm, t) {
         lights.push({ x: gx, y: gy - 20, r: 40, i: 0.6, c: WARM });
       }
     },
-    fx(F, t, lights) { for (const it of vm.loot) lootOnFloor(F, it, t, lights); for (const v of vm.vfx || []) liveVfx(v, t, lights); },
+    fx(F, t, lights) {
+      candleFlames(t);   // the Penitents' candles, the Confessor's ring, the Bellringer's and the Abbot's (#130): a warm light each
+      for (const [x, y] of AOJ.candles) lights.push({ x, y, r: 30, i: 0.7, c: WARM });
+      for (const [x, y] of AOJ.lamps) lights.push({ x, y, r: 36, i: 0.85, c: WARM });
+      for (const it of vm.loot) lootOnFloor(F, it, t, lights); for (const v of vm.vfx || []) liveVfx(v, t, lights);
+    },
   });
   bind(F); CLIP = null;
   // over the scene: HP bars, marks, casts, numbers

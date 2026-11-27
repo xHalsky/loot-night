@@ -147,7 +147,7 @@ export function updateDungeon(realDt: number) {
     if (r === 'victory' && n.curioFight) {   // the troll: extra loot, then the walk goes on (not one of the floor's battles)
       const x = ENEMY_SLOTS[MID_SLOT].x;
       rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true, at: [x - 20, x, x + 20] });
-      toast('The troll is down. His pile is yours.', '#f2b84b');
+      toast('The Abbot is down. The tithe is yours.', '#f2b84b');
       n.curioFight = false; n.phase = 'walk'; n.phaseT = T.WALK_SEC * 0.5;
     } else if (r === 'victory') {
       const boss = isBossBattle();

@@ -70,7 +70,7 @@ export function updateCurio(realDt: number) {
   if (!c) return;
   c.t -= realDt;
   if (c.stage === 'sneak' && (n.monitor !== 'rpg' || n.switching || n.monitorOff > 0)) {   // you looked away: he wakes
-    toast('The troll wakes up and roars!', '#ff8a80'); sfx.bad();
+    toast('The Abbot wakes up and roars!', '#ff8a80'); sfx.bad();
     return trollFight();
   }
   if (c.t > 0) return;

@@ -26,7 +26,7 @@ ring, trinket). Old saves are renamed on load.
 (`BATTLES_PER_FLOOR`, 3). Every `CHECKPOINT_EVERY` (5th) floor is a boss floor: two encounters, then the boss.
 **An encounter is a pack:** `PACK_MIN` + floor / 2 enemies (5 on floor 1, at most `PACK_MAX` 12), six on screen
 (`src/core/arena.ts`): fodder in two close lanes (front x 186, 226, 266; back x 205, 245, darker), a boss or a caster
-(the Shaman) behind them on the party's lane. **The party walks up to it** (#118; `systems/dungeon.ts`, `PACK_*`): once
+(the Confessor) behind them on the party's lane. **The party walks up to it** (#118; `systems/dungeon.ts`, `PACK_*`): once
 the walk has gone `PACK_PLANT_SEC` (1 s) the pack stands in the corridor just off the right edge (`PACK_ENTER_X`, or
 further if loot still lies ahead, so it is all picked up first; after a curio once the curio will be off the left edge
 by the time the pack is reached). It stands still, idling, and the corridor brings it in at `PACK_PACE` (about 3 s).
@@ -37,41 +37,67 @@ can be hit ("No enemies in reach"). In position, the fight starts. A walk with n
 `WALK_SEC` (4 s) one did. The rest of the pack waits off screen and steps into a free position as the front ones die
 (`STEP_IN_SEC`, 0.6 s, running in from off the right edge). A pack member has `PACK_HP_MULT` (1.25) of a lone enemy's HP and
 `PACK_ATK_MULT` (0.7) of its attack (tuned in 0.59, #52 1.9: the good bot's fights take 9 to 12 s against the 8 to 12 s
-target, and its night-1 runs end on floors 5 to 10, the Ogre on floor 5 now a real wall).
+target, and its night-1 runs end on floors 5 to 10, the floor-5 boss now a real wall).
 Enemies compound per floor (1.2); levels add `HERO_LEVEL_SCALE` (+4%) and the gear has to keep up
 ([loot.md](loot.md), #49). **Who they hit:** Taunt takes everything (everything hits the Knight, wherever he
-stands); otherwise melee hits the front living hero (70%) or the next, the Shaman hits positions 3 and 4, bats hit anyone
+stands); otherwise melee hits the front living hero (70%) or the next, the Confessor hits positions 3 and 4, the flyers (Ironwings and Vigils) hit anyone
 (positions: the marching order below). Monday's dungeon is the Shadow Crypt
 (`src/data/enemies.ts`). When a boss dies, the enemies still standing run. Enemy ids are older than their
-names (`collector` = Orc, `auditor` = Shaman, `shelter` = Guardian, `junk` = Imps, `bailiff` = Ogre, `shark` =
-Warlock, `landlord` = Black Knight; boss moves `slam`, `loan`, `evict`); saves and tests key on the ids.
+names (`skeleton` = Hollow, `bat` = Ironwing or Vigil, `collector` = Revenant, `auditor` = Confessor, `shelter` =
+Guardian, `junk` = Cherubs, `ghoul` = Penitent, `brute` = Gravedigger, `bailiff` = the Gaoler, `shark` = the
+Bellringer, `landlord` = the Inquisitor, `troll` = the Abbot; boss moves `slam`, `loan`, `evict`); saves and tests key
+on the ids.
 
-**Enemies.** Three plain ones (Skeleton, Bat, Orc) and three that each ask for a
+**The roster's look** (#130, the v2 redesign, [aoj-world.md](aoj-world.md) §4; approved 2026-11-27): every enemy is
+drawn as its Age of Judgment figure (`render/page/aoj.js` and `foes.js`, `drawFoe`; the view gives each its look and
+pose, `render/rpgView.ts`). A reskin only: stats, roles, moves and timings are as before. The Hollow is a dead knight in
+blackened armour; the Guardian a Hollow behind the halo kite shield (torn open, its crimson heart-lens showing, once
+Bash breaks it); the Revenant a Hollow torn open, one arm bare to the iron frame; the Penitent a flagellant with a caged
+candle on his head; the Confessor a hooded heretic priest with an iron grille for a face and a ring of candles; the
+Cherubs iron-winged putti, one per body; **each bat is the Ironwing or the Vigil, rolled from its uid when it spawns
+and kept for its life** (`battle.ts batLook`: no draw from the game's random numbers, so the sims are the same; a pack
+can mix them), flying at head height; the Gravedigger a hulking hooded brute with an iron grave-spade. The bosses: the
+Gaoler (a ball and chain), the Bellringer (a bell under a yoke), the Inquisitor (spread angel-iron wings, the tower
+shield, the headsman's sword), and the troll's fight is the Abbot (a war-priest with a great mace). **The big attacks
+move like the real thing** (aoj-world §2): the wind-up is the cast, the hit plays as it resolves, then recovery (the
+view's `timeline`, the page's `strikeTimeline`): Smash whirls the ball overhead while the bar fills and brings it over
+and down in its last 0.3 s, with a flash and dust where it lands, held 0.5 s, dragged back in 0.8 s; Execute is the
+raise (the wings flare, the near pauldron lifts with the arm), a 0.25 s hold, the straight-arm cut in 0.15 s, the
+follow-through and recovery; a Bash that interrupts Smash leaves no follow-through. The Abbot raises his mace 1.7 s
+before each hit he lands and cuts as it lands; the Bellringer hauls his rope for Summon and Empower; the Gravedigger
+drives his spade for the last 0.5 s of Shove's wind-up. Their lights: each Penitent's candle and the Bellringer's and
+the Abbot's candles, the Confessor's two lights, the Gravedigger's cage lantern, a crimson light at each flyer's
+heart or eye (stronger in the back lane, so they read where it is dimmed), the torn Hollows' heart-lens, the bell's
+cold light while it tolls. HP bars sit clear of each figure (`LOOK_BAR`: the bosses' over their heads and wings, a
+flyer's 27 px over its centre); the Gaoler, the Inquisitor and the Abbot stand a little left of the boss slot
+(`LOOK_DX`) so the ball, the wings and the banner stay in the battle area.
+
+**Enemies.** Three plain ones (Hollow, the flyers, Revenant) and three that each ask for a
 different answer, joining from floors 2, 3 and 4. The first time you meet one, a line says what it wants.
 
 | Enemy | From | Role | Answer |
 |---|---|---|---|
-| Shaman | floor 2 | Heals the most hurt friend under `AUDITOR_HEAL_BELOW` (75%) for `AUDITOR_HEAL` (60%) of his own max HP instead of attacking | Frost goes for him first; the mage's auto Bolt picks the weakest, often him |
+| Confessor | floor 2 | Heals the most hurt friend under `AUDITOR_HEAL_BELOW` (75%) for `AUDITOR_HEAL` (60%) of his own max HP instead of attacking | Frost goes for him first; the mage's auto Bolt picks the weakest, often him |
 | Guardian | floor 3 | Shielded: takes `SHIELD_TAKEN` (25%) damage until a Bash breaks the shield | Bash (it goes for a shield before the front enemy), then burst |
-| Imps | floor 4 | A swarm of 5 imps; each single hit takes one imp at most, and every imp bites when it attacks | Fire and Cataclysm hit every imp; Taunt soaks the bites |
+| Cherubs | floor 4 | A swarm of 5 cherubs; each single hit takes one at most, and every cherub bites when it attacks | Fire and Cataclysm hit every cherub; Taunt soaks the bites |
 
-| Ghoul | floor `LINE_BREAK_FROM` (6) | Hook (marching order below) | Drag the hooked hero back, or kill it during the 1 s wind-up |
-| Brute | floor 6 | Shove (marching order below) | Drag the front hero back |
+| Penitent | floor `LINE_BREAK_FROM` (6) | Hook (marching order below) | Drag the hooked hero back, or kill it during the 1 s wind-up |
+| Gravedigger | floor 6 | Shove (marching order below) | Drag the front hero back |
 
 Skill targeting: Bash goes for a winding-up boss, then a shield, then the front enemy; Frost goes for a
 healer, then the front enemy; Backstab hits the front enemy.
 
-**Bosses** rotate per checkpoint floor: floor 5 the Ogre, 10 the Warlock, 15 the Black Knight, then around
+**Bosses** rotate per checkpoint floor: floor 5 the Gaoler, 10 the Bellringer, 15 the Inquisitor, then around
 again with floor scaling. Each has its own telegraphed move: a cast bar at the top centre and the skills
 that answer it pulsing red. The floor map names the boss in the margin note of the boss floor's path.
 
 | Boss (HP / attack at floor 1 scale) | Move | Answer |
 |---|---|---|
-| The Ogre (1700 / 28) | SMASH, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
-| The Warlock (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s SUMMON: a friend (Shaman or Imps) joins; a friend still standing is EMPOWERed instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next summon: Fire, Cataclysm, Frost on the Shaman |
-| The Black Knight (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the position of the most hurt hero ("Execute · position 4"): whoever stands in that position when it lands loses `EVICT_PCT` (90%) of max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, swap a sturdier hero into that position, Last Stand or Miracle after; Bash the shield off again |
+| The Gaoler (1700 / 28) | SMASH, every 2nd action: everyone loses 60% | Bash interrupts (then he braces), Ward halves, Taunt pulls it onto the knight |
+| The Bellringer (1700 / 28) | Every `LOAN_EVERY` (3rd) action, a 2 s SUMMON: a friend (a Confessor or Cherubs) joins; a friend still standing is EMPOWERed instead: full HP, x`LOAN_REFI` (1.3) attack | Kill the friend before the next summon: Fire, Cataclysm, Frost on the Confessor |
+| The Inquisitor (1600 / 26) | Starts behind a shield. Every `EVICT_EVERY` (3rd) action, a 3 s EXECUTE on the position of the most hurt hero ("Execute · position 4"): whoever stands in that position when it lands loses `EVICT_PCT` (90%) of max HP. Afterwards the shield comes back | Taunt (the knight takes 55% instead), Ward halves, swap a sturdier hero into that position, Last Stand or Miracle after; Bash the shield off again |
 
-**Boss big attack: SMASH** (the Ogre). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
+**Boss big attack: SMASH** (the Gaoler). Every `BOSS_SLAM_EVERY` (2nd) boss action is a wind-up instead of a hit:
 a boss cast bar at the top centre of the screen (MMO raid style, outside the camera) fills over
 `BOSS_WINDUP_SEC` (3 s) with a low rising sound you can hear from Excel. Then every hero loses
 `BOSS_SLAM_PCT` (60%) of max HP. Three answers, one per hero:
@@ -132,7 +158,7 @@ after that the order is the player's and carries over from night to night.
   the order changes for free: drag one party card onto another in the side panel's Inventory tab (the cards work
   the same in the dungeon). A click without a drag selects the hero.
 - **Enemies that break the line** (from floor `LINE_BREAK_FROM`, 6; `LINE_BREAK_CHANCE` 35% of encounters, never
-  with a boss): a Ghoul or a Brute joins the pack. Its move comes on its 2nd action and then every 4th, after a
+  with a boss): a Penitent or a Gravedigger joins the pack. Its move comes on its 2nd action and then every 4th, after a
   `LINE_BREAK_WINDUP_SEC` (1 s) cast that names the position: **Hook · position 4** (a chain drags the last hero to the
   front, the others step back one) and **Shove · position 1** (the front hero is knocked back, swapping with position 2).
   Everyone who moved walks for `SWAP_SEC`. Away, the line stays broken: fixing it is a reason to look.
@@ -401,7 +427,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   5.7 to 6.0, wipes 0.25 to 0; the idle bot is still caught (2.4 a night). Rejected: keeping him for Tuesday with a
   bigger entrance. A save that lacks him gets him at the party's lowest level: at level 1 he would be dead weight on
   the deeper floors. Two skills and Heist (Pickpocket was dropped with the other second unlocks, decisions 2026-11-20).
-  Stand-ins until Paweł's art: the Ghoul on the zombie rig, the Brute is the old Ogre sprite at fodder size.
+  Since the v2 redesign (#130) the Penitent and the Gravedigger have their own figures.
 
 - **The RPG plays it straight** (0.43, #44): plain fantasy names (WoW and D&D tropes) for the party, enemies,
   bosses, skills, items, curios, the town (Ravenhold) and the dungeon (Shadow Crypt), so the real-life half

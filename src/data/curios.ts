@@ -65,7 +65,7 @@ export const CURIO_BY_ID: Record<string, CurioDef> = Object.fromEntries(CURIOS.m
 
 // The troll's fight (a mini-boss, not in the floor pool).
 const trollFight: Px[] = [[3,0,6,3,'#5f8a3a'],[4,1,1,1,'#ff5a3a'],[7,1,1,1,'#ff5a3a'],[2,3,8,1,'#4f7a2a'],[4,3,1,1,'#efe6cf'],[7,3,1,1,'#efe6cf'],[1,4,10,8,'#5f8a3a'],[3,6,6,3,'#7a5a2a'],[0,5,1,6,'#4f7a2a'],[11,5,1,6,'#4f7a2a'],[11,2,1,10,'#8a6a4a'],[3,12,2,4,'#4f7a2a'],[7,12,2,4,'#4f7a2a']];
-export const TROLL = { id: 'troll', name: 'Troll', hp: 330, atk: 14, armor: 4, speed: 6, sprite: trollFight };
+export const TROLL = { id: 'troll', name: 'The Abbot', hp: 330, atk: 14, armor: 4, speed: 6, sprite: trollFight };
 
 export const CURIO_LINES = {
   bankNotice: [`[Guild] ${M}: "who took the {item} from the bank??"`, `[Guild] ${M}: "the log says ${HERO_NAME.knight.toUpperCase()}. explain."`, `[Guild] ${M}: "officers ONLY. i am an officer. you are not."`],
