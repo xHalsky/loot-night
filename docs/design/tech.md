@@ -54,7 +54,9 @@ belongs to the origin, `https://xhalsky.github.io`, which every Pages site of th
 `.github/workflows/pages.yml` runs on a push to the `playtest` branch (and by hand, workflow_dispatch): checkout,
 Node 22, `npm ci`, `npx tsc`, `npm run build`, then it uploads `dist/` and deploys it. Main never deploys. **To
 release a build**, fast-forward `playtest` to main and push it (`git push origin main:playtest`, which refuses
-anything that is not a fast-forward). The claude.ai artifact stays the in-session preview.
+anything that is not a fast-forward). The repo's Pages setting must be Source = **GitHub Actions**: "Deploy from a
+branch" publishes the raw repo root instead (the dev `index.html`, which does not run) on every push to that branch.
+The claude.ai artifact stays the in-session preview.
 
 **Debug overlay** (F1): live state, time scale, Real life on/off (#52: nobody home, no Tiredness, Noise, Mood or night
 clock), live pacing numbers (`systems/pacing.ts`), spawn buttons for visits, interrupts and drops, meter setters,

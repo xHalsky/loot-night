@@ -12,6 +12,8 @@ Versions before 0.14.0 predate the repository (they exist only as published arti
   of every diff: nothing (gitleaks' 3 hits are the save key names).
 - `docs/playtest.md`: the link and "send the version number from the title screen with every bug report".
   `tech.md` had the save key as v2: it is `lootnight.save.v3` (since 0.80), and it stays that way during the playtest.
+- Pages' Source must be GitHub Actions: the first time it was "Deploy from a branch" (main), which published the
+  repo's raw root (the dev `index.html`, which does not run).
 - No game changes.
 
 ## 0.87.1 (2026-11-26)
