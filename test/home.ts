@@ -74,7 +74,7 @@ n.apt.t = 10; n.apt.cued = true; for (let i = 0; i < 60; i++) updateApartment(1 
 ok(Math.abs(n.apt.t - (10 - (1 - T.SEAL_SLOW) * rules().visits)) < 0.02, 'her routine runs 30% slower');
 useDevice('seal'); ok(!n.seal && n.home.batt === 92, 'unsealed: another 4%');
 n = night(3, 'tv'); useDevice('seal'); n.visit.stage = 'handle'; n.visit.t = 0.001; n.visit.kind = 'peek'; n.monitor = 'excel'; const ms = n.mood; updateVisits(1 / 60); updateVisits(1 / 60);
-ok([...n.log, ...n.toasts].some(l => l.text.includes('Why is your door sealed')) && n.mood === ms + T.SEAL_SEEN_MOOD + T.PEEK_PASS_MOOD, 'she asks about it on every visit (Mood +5, then the pass)');
+ok((n.say ?? []).some(l => l.text.includes('Why is your door sealed')) && n.mood === ms + T.SEAL_SEEN_MOOD + T.PEEK_PASS_MOOD, 'she asks about it on every visit (Mood +5, then the pass)');
 
 // --- bubble tea ---
 n = night(3, 'tv'); const z0 = S.g.zl = 100;

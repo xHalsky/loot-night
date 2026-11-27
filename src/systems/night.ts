@@ -34,7 +34,7 @@ export function newNight(): Night {
     q4: newQ4Night(), shopTonight: [],
     taunt: 0, ward: 0, lastStand: 0, smoke: 0, heist: 0, goodBoy: 0, excused: false, goodDog: 0, forgiven: false, witchingSaid: false, walkby: false,
     pre: null, preUses: {}, preMenu: null, herAsk: null, herThanks: null, lapMouse: 0, lapSay: null, wear: { top: null, feet: null }, photo: null, lean: null, leanHold: 0, leanFog: 0, leanSpotted: null, seal: false, home: newHomeNight(), looking: false, tease: { left: randi(...rules().teases), next: rand(...T.TEASE_FIRST_SEC), bedAt: rand(...T.BED_TEASE_AT), bedDone: false }, herReply: null,
-    curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, tip: null, goldStart: S.g.gold, coach: null,
+    curio: null, curioPlan: [], curioFight: false, partyBuffs: [], sulk: 0, bankNotice: 0, bankItem: '', guilt: 0, monitorOff: 0, yawn: 0, nextYawn: T.YAWN_EVERY_SEC, grin: 0, say: [], goldStart: S.g.gold, coach: null,
     moodDrift: 0, selected: null, heroTab: 0, everCaught: false, unidentifiedFound: 0,
     goblin: null, fx: [], vfx: [], beams: [], toasts: [], walkScroll: 0,
     market: Math.round(rand(...T.MARKET_RANGE) * 100) / 100, reveal: null,
@@ -62,7 +62,7 @@ export function startNight() {
   // before the night (#28, #56): the boys' chat on the phone, then How to hide on the first Monday and a night with a new tile
   S.g.voice = voiceNote();
   S.g.howto = howtoOpens() || !!S.g.voice;
-  toast(`${dayName()}, 20:00. Town is quiet. Head down through the Dungeon Portal.`, '#8fb3ff');   // its name on the map (#124)
+  toast(`${dayName()}, 20:00. Town is quiet.`, '#8fb3ff');
 }
 
 /** Checks the three ways a night ends (docs/design/night.md). */
@@ -80,7 +80,7 @@ function warnRun() {
   const end = rules().end;
   if (end && !w.bed && n.clock >= end - T.BEDTIME_WARN_MIN) { w.bed = true; toast(`Bedtime at ${String(Math.floor(end / 60) % 24).padStart(2, '0')}:00 tonight: the night ends then, your run banked.`, '#8fb3ff'); }
   if (!n.run) return;
-  if (!w.dawn && n.clock >= T.DAWN - T.RUN_WARN_DAWN_MIN) { w.dawn = true; toast(`Dawn in ${T.RUN_WARN_DAWN_MIN} minutes. Take the portal, or the run is lost.`, '#ff8a80'); }
+  if (!w.dawn && n.clock >= T.DAWN - T.RUN_WARN_DAWN_MIN) { w.dawn = true; toast(`Dawn in ${T.RUN_WARN_DAWN_MIN} minutes. This run isn't banked.`, '#ff8a80'); }
   if (!w.plug && n.mood >= T.MOOD_RED) { w.plug = true; toast("She's close to pulling the plug. This run isn't banked.", '#ff8a80'); }
 }
 

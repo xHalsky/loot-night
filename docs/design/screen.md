@@ -82,10 +82,20 @@ Drink". It glows gold from `TIRED_YAWN` while a can is left (time to top up). Du
 "Hide cans" and pulses; after hiding, "Hidden" until she leaves; dark with no cans. Boost and crash stay in the
 buffs.
 
-**The feed card**, under it: the last lines that fit (six at most), newest on top, older ones fading, two lines at
-most each. Each line
+**The game chat (the feed)** (#138, Paweł: bigger, readable): a column from x 338 of the right screen to its edge,
+the YOU card at its top (widened to the column, the Drink button at its right) and the chat under it; on Monday,
+with no YOU card, the chat takes the whole column, from under the monitor to the bottom (90 px; 61 from Tuesday).
+**It is a chat:** the newest line at the bottom, every line at full brightness (the older lines' fade read as a
+gradient over its bottom), each message wrapped in full (never cut with "..."), the night's last 60 lines. Each line
 has its time and a tag for whose it is: YOU, LOOT (in the rarity colour), HER, PHONE, GAME, EXCEL, DOG, NIGHT,
-PARTY, GUILD, or a hero's name (HUDZOR, ARKBISHOP; a tag has no room for the class). A first-time tip is pinned on top while it lasts. No header, no tabs.
+PARTY, GUILD. **Its own layer** (`#feedArea`, `PK.feed`, desk.js `drawFeedLive`): drawn at 30 fps above the desk,
+the dog's overlay and everything on the desk, under the full-screen windows; the desk lays only its shadow, and the
+right screen's copy gets it too (for what dims it). **It scrolls back** (#140): grab it with the left button and
+drag (the lines follow the pointer; let go and it settles on a line's edge, so none is cut at rest, #45), or the
+wheel (a line at a time); a new line while you read back keeps your place; a chip at the bottom right goes back to
+the newest; a thin scroll bar on the right edge. **What she says is not in it** (#139): her words come from behind
+the door ([her.md](her.md)), what happened around them stays ("CAUGHT!", "Mood +5."). **No tips** (#141): the game
+chat says what happened, never how to play; the coach marks and the How-to cards teach. No header, no tabs.
 
 **Monitor chrome.** The Win98 taskbar under the screen: Start, the app buttons for Age of Judgment (the RPG he plays, #102; its button fits "Age of Judgment · Tab") and Excel ("Tab"
 on the one you would switch to), the power button "Sleep" (greyed with "23:00+" until bedtime), the wallet (in dollars, #105) and

@@ -16,7 +16,6 @@ import { auraRegen } from './positions';
 import { planCurios, approachCurio, walkCurio, updateCurio, curioFloorEnd, battleEnded } from './curios';
 import { FEATURES, CONDITIONS, type PathCard, type FeatureId, type ConditionId } from '../data/routes';
 import { triggerDog } from './pets';
-import { tip } from './tips';
 import { boysSay } from './boys';
 
 export const isBossBattle = () => { const n = N(); return !n.curioFight && n.floor % T.CHECKPOINT_EVERY === 0 && n.battleIdx === T.BATTLES_PER_FLOOR - 1; };
@@ -63,7 +62,7 @@ function floorEnd() {
   const souls = T.SOULS_PER_FLOOR_BASE + n.floor;              // #52, 1.4
   gainGold(pay); gainSouls(souls);
   toast(`Floor ${n.floor} cleared: +${pay} gold, +${souls} Souls.`, '#f2b84b');
-  n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; n.pack = null; tip('map');
+  n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; n.pack = null;
   makePaths();
 }
 
@@ -158,7 +157,7 @@ export function updateDungeon(realDt: number) {
         gainSouls(T.SOULS_PER_BOSS);
         toast(`Checkpoint: runs can start at floor ${n.checkpoint}. +${T.SOULS_PER_BOSS} Souls.`, '#8fb3ff');
       }
-      if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE * (n.goodDog > 0 ? T.GOOD_BOY_GOBLIN : 1)))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN! Click it!', '#f2b84b'); sfx.goblin(); }
+      if (!n.goblin && (n.floorMap === 'goblin' || chance(T.GOBLIN_CHANCE * (n.goodDog > 0 ? T.GOOD_BOY_GOBLIN : 1)))) { n.goblin = { t: T.GOBLIN_SEC }; toast('A LOOT GOBLIN!', '#f2b84b'); sfx.goblin(); }
       n.battleIdx++;
       n.phase = 'walk'; n.phaseT = 0;
     } else if (r === 'wipe') wipe();

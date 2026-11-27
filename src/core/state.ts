@@ -227,7 +227,7 @@ export interface Night {
   wear: { top: string | null; feet: string | null }; giftFirst?: string[];
   photo: { key: string; first: boolean; clock: number; t: number } | null;
   lean: LeanState | null; leanHold: number; leanFog: number; leanSpotted: { t: number; good: boolean } | null;   // lean in (#77): his view through the crack; holding the door; the mirror's fog; "Enjoying the view?"   // her photo open beside the phone (#92): hands busy   // her gifts tonight (#91), one per slot; worn for the first time   // the lap sit (#86): seconds she has your mouse; her line by her head          // you brought it: her line for a moment   // pre-emptive actions (#19)
-  phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop' | 'homeapp'; shopTab?: 'you' | 'her' | 'home'; phScroll?: number; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
+  phApp?: 'home' | 'messages' | 'babe' | 'boys' | 'shop' | 'homeapp'; shopTab?: 'you' | 'her' | 'home'; phUp?: number;   // the idle phone in your hand: which app; her chat scrolled back; when it came up (performance ms)
   seal: boolean;   // the door seal is on (the Home app, #57; it was the towel)
   home: import('../systems/home').HomeNight;   // the battery and the devices tonight (#57)
   herReply: { msg: string; t: number; wait: number } | null;
@@ -240,7 +240,7 @@ export interface Night {
   sanctuary?: number;             // seconds left of Sanctuary's armor (a tree rule, #53)
   taunt: number; ward: number; lastStand: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
-  tip: { text: string; color: string; t: number } | null;   // a first-time tip pinned in the feed (#28)
+  say?: { text: string; t: number; max: number }[];   // what she says, waiting for the door's speech bubble (#139): the head shows, t counts down
   goldStart: number;   // gold when the night began: the F1 line shows tonight's income (#2)
   coach: { id: 'steps' | 'door' | 'phone' | 'loot' | 'windup' | 'headset' | 'lean' | 'leanview' | 'tell'; t: number; mark: number } | null;   // a coach mark is up (#42)
   moodDrift: number;

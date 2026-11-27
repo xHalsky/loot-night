@@ -43,7 +43,9 @@ declare module 'virtual:pagekit' {
     ebCursor(kind: 'hand' | 'grab'): string;
     her(src: HTMLCanvasElement, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     desk(src: HTMLCanvasElement, st: unknown, t: number, phase?: 0 | 1 | 2): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[]; overlay: HTMLCanvasElement | null; shake: number } | null;
-    phone(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string }[] };
+    /** The game chat (#138): its own layer; how far it scrolls (#140). */
+    feed(rows: [string, string, string, string?][], youOn: boolean, off: number, drag: boolean): { canvas: HTMLCanvasElement; rect: number[]; max: number; stops: number[]; total: number; chip: number[] | null; off: number };
+    phone(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string }[]; scroll: { y0: number; y1: number; max: number; stops: number[]; total: number; off: number } | null };
     drawFrame(scene: string, tScreen: number, t: number, moment: string, her: string, o?: Record<string, unknown>): HTMLCanvasElement;
     drawScreen(scene: string, t: number, o?: Record<string, unknown>): HTMLCanvasElement;
     palettes(): { moonwell: string[]; pc98: string[]; desk: string[] };

@@ -5,7 +5,7 @@
 // the Tonight note in a slanted ballpoint hand. The game screen (474 × 232) is pasted in at 9, 8.
 // ===========================================================================
 const RS_W = 492, RS_H = 360;
-const RSZ = { bezel: [4, 3, 484, 260], game: [9, 8, 474, 232], task: [9, 241, 474, 15], desk: [0, 263, 492, 97], phone: [0, 268, 120, 92], keys: [96, 282, 360, 78], you: [355, 267, 133, 26], feed: [355, 296, 133, 61] };
+const RSZ = { bezel: [4, 3, 484, 260], game: [9, 8, 474, 232], task: [9, 241, 474, 15], desk: [0, 263, 492, 97], phone: [0, 268, 120, 92], keys: [96, 282, 360, 78], you: [338, 267, 151, 26], feed: [338, 296, 151, 61] }   // the YOU card and the game chat: one column from x 338 to the edge (#138);
 
 // ---------------------------------------------------------------- the desk's own palette (three variants + backup)
 // Three worlds, one core. Every world palette keeps the same eight anchors in the same slots: the ink (void), the
@@ -286,17 +286,17 @@ function youCard(st, t) {
   glassCard(x, y, w, h);
   const bar = (yy, label, v, max, fill, mark) => {
     text(label, x + 5, yy, 'tiny', P.u5);
-    const bx = x + 28, bw = 46; rectI(bx, yy + 1, bw, 3, P.void); rectI(bx, yy + 1, Math.round((bw * v) / max), 3, fill);
+    const bx = x + 28, bw = w - 87; rectI(bx, yy + 1, bw, 3, P.void); rectI(bx, yy + 1, Math.round((bw * v) / max), 3, fill);
     if (v > 0) putI(bx, yy + 1, P.moon);
     if (mark) rectI(bx + Math.round((bw * mark) / max), yy - 1, 1, 7, v >= mark ? P.gold : P.u5);
-    text(String(v), x + 86, yy, 'tiny', P.moon, { align: 'r' });
+    text(String(v), bx + bw + 12, yy, 'tiny', P.moon, { align: 'r' });
   };
   const yawn = st.yawn ?? 30;   // where yawning starts (the game passes TIRED_YAWN)
-  if (on.tired) { bar(y + 5, 'TIRED', st.tired, 100, P.arcane, yawn); dhit(x, y, 88, 13, '', '', 'tired'); }
-  if (on.zone) { bar(y + (on.tired ? 15 : 5), 'ZONE', st.zone, 30, P.s6, 0); dhit(x, y + (on.tired ? 13 : 0), 88, 13, '', '', 'zone'); }
+  if (on.tired) { bar(y + 5, 'TIRED', st.tired, 100, P.arcane, yawn); dhit(x, y, w - 46, 13, '', '', 'tired'); }
+  if (on.zone) { bar(y + (on.tired ? 15 : 5), 'ZONE', st.zone, 30, P.s6, 0); dhit(x, y + (on.tired ? 13 : 0), w - 46, 13, '', '', 'zone'); }
   if (!on.fuel) return;
   // the Monster button: glows gold (the next action) from the yawn mark while a can is left
-  const bx = x + 90, by = y + 3, bw = 40, bh = 20, glow = (st.tired >= yawn && st.cans > 0) || st.hideCans, pulse = 0.5 + 0.5 * Math.sin(t * (st.hideCans ? 8 : 4));
+  const bx = x + w - 43, by = y + 3, bw = 40, bh = 20, glow = (st.tired >= yawn && st.cans > 0) || st.hideCans, pulse = 0.5 + 0.5 * Math.sin(t * (st.hideCans ? 8 : 4));
   if (glow) for (let j = -2; j < bh + 2; j++) for (let i = -2; i < bw + 2; i++) { const e = i < 0 || j < 0 || i >= bw || j >= bh; if (e && (i + j) % 2 === (pulse > 0.5 ? 0 : 1)) putI(bx + i, by + j, P.copper); }
   rectI(bx, by, bw, bh, glow ? P.gold : st.cans ? P.s3 : P.s2); rectI(bx + 1, by + 1, bw - 2, bh - 2, glow ? P.d2 : P.s2); rectI(bx + 1, by + 1, bw - 2, 1, glow ? P.copper : P.s3);
   // the Goblin Fuel can (its 6 x 13 icon, in its own print colours) goes on after compose: canIconOverlay
@@ -307,27 +307,86 @@ function youCard(st, t) {
   const kx = bx + bw - 10; rectI(kx, by + 3, 8, 8, P.s3); rectI(kx + 1, by + 3, 6, 6, P.s4); text('G', kx + 4, by + 4, 'tiny', P.moon, { align: 'c' });
   text(st.hideCans ? 'cans' : 'Drink', bx + 12, by + 12, 'tiny', st.hideCans ? P.void : glow ? P.pale : P.u5);
 }
-function feedCard(st) {
-  const [x, y, w, h] = RSZ.feed;
-  glassCard(x, y, w, h);
-  const fade = [P.moon, P.u6, P.u5, P.u4, P.u3, P.u3];
-  let yy = y + 4; const tx = x + 25, maxW = x + w - 4 - tx;
-  for (const [k, [tm, tag, msg, rar]] of st.feed.entries()) {
-    if (yy > y + h - 9) break;
-    text(tm, x + 4, yy, 'tiny', k ? P.u3 : P.u4);
-    const tc = P[rar || FEED_TAG[tag] || 'u6'], tw = text(tag, tx, yy, 'tiny', k > 2 ? P.u4 : tc) + 4;
-    // wrap to two lines at most, the second indented to the text column
-    const words = msg.split(' '); let line = '', lx = tx + tw, row = 0;
-    for (const wd of words) {
+// ---------------------------------------------------------------- the game chat (the feed, #138)
+// A chat: the newest line at the bottom, every line in full (wrapped, never cut with '...'), all at full brightness
+// (the older lines' fade read as a gradient over its bottom, Paweł). In the game it is its own layer over the desk
+// (drawFeedLive, PK.feed), drawn above everything on the desk; the desk only lays its shadow. It scrolls back by drag
+// and wheel (#140): off is how far back, in px from the newest; at rest it sits on an entry's edge, and an entry the
+// top edge would cut is left out (#45). On nights without the YOU card it takes the whole column.
+const FEED_X = 338, FEED_W = 151, FEED_B = 357, FEED_LH = 7;
+function feedRect(youOn) { const y = youOn ? RSZ.feed[1] : RSZ.you[1]; return [FEED_X, y, FEED_W, FEED_B - y]; }
+// each entry's lines: the time, the tag, then the message wrapped, its first line after the tag
+const feedTx = () => measure('00:00', 'tiny') + 6;   // the tag's column: after the time
+function feedLayout(rows, w) {
+  const tx = feedTx(), maxW = w - 7 - tx;
+  return rows.map(([tm, tag, msg, rar]) => {
+    const tw = measure(tag, 'tiny') + 4, lines = []; let line = '', room = maxW - tw;
+    for (const wd of String(msg).split(' ')) {
       const tryS = line ? line + ' ' + wd : wd;
-      if (measure(tryS, 'tiny') > maxW - (lx - tx) && line) {
-        if (row === 1) { line += '...'; break; }
-        text(line, lx, yy, 'tiny', fade[k]); yy += 7; row++; lx = tx; line = wd;
-      } else line = tryS;
+      if (measure(tryS, 'tiny') > room && line) { lines.push(line); line = wd; room = maxW; } else line = tryS;
     }
-    text(line, lx, yy, 'tiny', fade[k]);
-    yy += 8;
+    lines.push(line);
+    return { tm, tag, rar, tw, lines, h: (lines.length - 1) * FEED_LH + 8 };
+  });
+}
+// the card, its lines, the scroll bar and the way back to the newest, into the bound buffer at (ox, oy)
+function feedDraw(lay, ox, oy, w, h, off, drag) {
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const cr = (i === 0 || i === w - 1) && (j === 0 || j === h - 1); if (cr) continue;
+    const c2 = (i === 0 || i === w - 1) && (j === 1 || j === h - 2) || (j === 0 || j === h - 1) && (i === 1 || i === w - 2);
+    putI(ox + i, oy + j, j === 0 ? P.s3 : c2 || i === 0 || i === w - 1 || j === h - 1 ? P.s2 : P.s1);
   }
+  const top = 3, bot = h - 3, view = bot - top, total = lay.reduce((a, e) => a + e.h, 0), max = Math.max(0, total - view);
+  off = Math.max(0, Math.min(max, off));
+  const c0 = CLIP; CLIP = [ox + 2, oy + top, ox + w - 2, oy + bot];
+  let y = bot + off; const tx = feedTx();
+  for (let k = lay.length - 1; k >= 0; k--) {
+    const e = lay[k]; y -= e.h;
+    if (y + e.h <= top) break;
+    if (y >= bot || (!drag && y + e.h > bot + 0.5)) continue;   // at rest an entry either edge would cut is left out (#45)
+    if (!drag && y < top - 0.5) break;
+    const yy = oy + Math.round(y) + 1;
+    text(e.tm, ox + 4, yy, 'tiny', P.u4);
+    text(e.tag, ox + tx, yy, 'tiny', P[e.rar || FEED_TAG[e.tag] || 'u6']);
+    e.lines.forEach((l, i) => text(l, ox + tx + (i ? 0 : e.tw), yy + i * FEED_LH, 'tiny', P.moon));
+  }
+  CLIP = c0;
+  const stops = [0]; for (let k = lay.length - 1, a = 0; k >= 0 && a < max; k--) { a += lay[k].h; stops.push(Math.min(a, max)); }
+  if (max > 0) {   // the scroll bar: a thin track on the right edge, the thumb where you are
+    const th = Math.max(6, Math.round(view * view / total)), ty = top + Math.round((view - th) * (1 - off / max));
+    rectI(ox + w - 3, oy + top, 1, view, P.s2); rectI(ox + w - 4, oy + ty, 2, th, P.s4);
+  }
+  let chip = null;
+  if (off > 0.5) {   // scrolled back: a chip back to the newest
+    const cw = 15, ch = 9, cx = w - 22, cy = h - 13;
+    rectI(ox + cx - 1, oy + cy - 1, cw + 2, ch + 2, P.void); rectI(ox + cx, oy + cy, cw, ch, P.s3); rectI(ox + cx, oy + cy, cw, 1, P.s4);
+    [[0, 0], [4, 0], [1, 1], [3, 1], [2, 2]].forEach(([i, j]) => putI(ox + cx + 5 + i, oy + cy + 3 + j, P.moon));
+    chip = [cx - 2, cy - 2, cw + 4, ch + 4];
+  }
+  return { max, stops, total, chip, off };
+}
+// the page's moments (drawDesk): the card into the desk, as before; the game (drawDeskLive): only its shadow, the card
+// is the feed's own layer
+function feedCard(st, live = false) {
+  const youOn = !!(st.you ? st.you.tired || st.you.zone || st.you.fuel : true), [x, y, w, h] = feedRect(youOn);
+  shadowU(x, y, w, h, { k: 0.7, r: 5, dx: 2, dy: 4 });
+  if (live) return;
+  feedDraw(feedLayout([...(st.feed || [])].reverse(), w), x, y, w, h, 0, false);
+}
+// the game's feed layer: 151 wide, as tall as the column leaves it; its canvas, where it sits on the right screen, and
+// what the scroller needs (how far it goes, the entries' edges, the chip)
+let FEED_CANVAS = null, FEED_LAY = null;
+function drawFeedLive(rows, youOn, off, drag) {
+  const [x, y, w, h] = feedRect(youOn);
+  if (!FEED_CANVAS || FEED_CANVAS.width !== w || FEED_CANVAS.height !== h) { FEED_CANVAS = document.createElement('canvas'); FEED_CANVAS.width = w; FEED_CANVAS.height = h; }
+  const key = JSON.stringify(rows) + w;
+  if (!FEED_LAY || FEED_LAY.key !== key) FEED_LAY = { key, lay: feedLayout(rows, w) };
+  setRes(w, h); const F = buf('feed' + h, w, h); F.I.fill(-1); bind(F); CLIP = null;
+  const m = feedDraw(FEED_LAY.lay, 0, 0, w, h, off, drag);
+  const set = deskSet(DESK_VARIANT), ctx = FEED_CANVAS.getContext('2d'), img = ctx.createImageData(w, h), D = img.data;
+  for (let k = 0; k < w * h; k++) { const q = F.I[k]; if (q < 0) continue; const c = set.PAL_RGB[q]; D[k * 4] = c[0]; D[k * 4 + 1] = c[1]; D[k * 4 + 2] = c[2]; D[k * 4 + 3] = 255; }
+  ctx.putImageData(img, 0, 0);
+  return { canvas: FEED_CANVAS, rect: [x, y, w, h], ...m };
 }
 // the phone, lying flat on the desk, a little turned: graphite rails, Dynamic Island; dark glass that reflects the
 // monitor, or the incoming call. Everything is placed through the camera; glyphs stay unscaled (pixel-exact) and sit
@@ -616,7 +675,7 @@ function drawDeskLive(src, st, t, phase = 0) {
   // the dog (V6, #71): drawn into the desk, under the cards; his hearts, marks and sounds float over the monitor
   const DV = st.dog ? dogView(st, t, { dog: 'game', g: st.dog }) : null, DGV = DV ? drawDog(st, t, set, {}, DV) : null;
   youCard(st, t);
-  feedCard(st);
+  feedCard(st, true);   // the game's feed is its own layer (#138): here only its shadow
   if (DGV) dogCard(DGV, t);
   if (DV && st.dog.kind === 'live' && DV.rise > 0.9) dhit(DV.hx - 40, DV.hy - 52, 80, 82, 'dogHead', DV.hx + ',' + DV.hy, '');
   DESK_PENDING = { F, lights, src, hits: DESK_HITS, DV, t }; DESK_HITS = null;

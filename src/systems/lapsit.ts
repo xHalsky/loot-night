@@ -37,9 +37,10 @@ export function sitDown() {
   const order = LAP_SIT_QS.map((_, i) => i).sort(() => Math.random() - 0.5);
   v.result = 'lap'; v.t = T.LAP_SIT_SEC;
   v.chat = { order, asked: 0, good: 0, bad: 0, t: T.LAP_SIT_ASK_SEC, line: `"${LAP_SIT_QS[order[0]].q}"`, last: -1 };
-  n.lapMouse = 0; n.lapSay = null; seen.clear(); seed();
+  n.lapMouse = 0; seen.clear(); seed();
   sfx.kiss();
-  toast('She sits on your lap. "Keep playing, I wanna watch."', '#ff9ab8');
+  toast('She sits on your lap.', '#ff9ab8');
+  n.lapSay = { text: 'keep playing, i wanna watch', t: 2.5 };   // on your lap her words are by her head, not at the door (#139)
 }
 
 /** kind: 0 sweet, 1 meh, 2 rude. Answering her "My turn!" gets your mouse back. */

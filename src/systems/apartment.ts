@@ -15,7 +15,6 @@ import { hasLife } from './affixes';
 import { sealNoise, sealPace, sealSteps } from './home';
 import { ROOM_ACTIVITY } from '../data/home';
 import { addGoodwill } from './goodwill';
-import { tip } from './tips';
 
 // Where she is between visits (docs/design/her.md, FNAF layer).
 // You track her by sound; the headset muffles it (and costs your Zone to take off); after midnight she sleeps.
@@ -55,8 +54,7 @@ function goToBed(wake = 0) {
   const first = !a.asleep && a.activity !== 'sleep';
   a.activity = 'sleep'; a.room = 'bedroom'; a.asleep = true; a.wake = wake; a.textSent = false;
   a.t = 99999; a.moving = T.APT_MOVE_SEC; a.soundT = 1; a.cued = false;
-  if (first || wake > 0) toast(first ? 'She went to bed. Keep the Noise down.' : 'She went back to bed.', '#b98cff');
-  if (first) tip('bed');
+  if (first || wake > 0) toast(first ? 'She went to bed.' : 'She went back to bed.', '#b98cff');
 }
 
 function pickActivity() {
@@ -65,7 +63,7 @@ function pickActivity() {
   let id: ActivityId;
   const bath = on('bath');   // the weekend: her shower is a bath (#88)
   if (!a.showerUsed && n.clock >= T.SHOWER_FROM && n.clock < bedAt() && chance(bath ? T.BATH_CHANCE : T.SHOWER_CHANCE)) {
-    id = bath ? 'bath' : 'shower'; a.showerUsed = true; if (!n.headset && !bath) tip('shower');
+    id = bath ? 'bath' : 'shower'; a.showerUsed = true;
   }
   else if (on('mask') && !a.maskUsed && n.clock >= bedAt() - T.MASK_BEFORE_BED_MIN && n.clock < bedAt()) { id = 'mask'; a.maskUsed = true; }   // getting ready for bed (#77)
   else {
@@ -133,7 +131,7 @@ export function updateApartment(dt: number): 'door' | 'wake' | null {
   if (a.activity === 'bath' && (a.wineAt ?? -1) >= 0 && a.t <= a.wineAt! && askFree()) { a.wineAt = -1; startAsk('wine'); return null; }
   if (wet(a.activity) && a.towelAsk && a.t <= T.END_CUE_SEC) { a.towelAsk = false; if (askFree()) { startAsk('towel'); return null; } }
   if (!a.cued && a.t <= T.END_CUE_SEC && act.end) {      // the tell: this activity is ending, she is about to move
-    a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end); if (!n.headset) tip('endcue');
+    a.cued = true; sfx.endCue(act.id, a.room); hear(act.room, act.end);
   }
   // how often she comes is the week's (#56): x1 Monday to x1.6 Sunday; the gaps shrink and her odds grow with it
   const gap = n.threat - a.lastVisitEnd, vm = rules().visits, minGap = T.DOOR_MIN_GAP_SEC / vm, maxGap = T.DOOR_MAX_GAP_SEC / vm;
@@ -202,7 +200,7 @@ export function sendHerSoon() { const a = N().apt; if (a.asleep) return; a.force
 export function toggleHeadset() {
   const n = N();
   n.headset = !n.headset;
-  if (n.headset) { tip('headset'); if (!S.g.tipsSeen.includes('coach:headset')) S.g.tipsSeen.push('coach:headset'); }   // found it alone: no coach mark (#49)
+  if (n.headset) { if (!S.g.tipsSeen.includes('coach:headset')) S.g.tipsSeen.push('coach:headset'); }   // found it alone: no coach mark (#49)
   if (!n.headset && n.zone > 0) toast('[You] Headset off: Zone lost.', '#ff9a4d');
   setHeadset(n.headset);
   sfx.click();

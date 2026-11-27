@@ -95,12 +95,12 @@ function land(id: PreId) {
   }
   // the raid pass: paid with Goodwill, the strongest calm, and noise does not end it
   finishPre(); boysLog([['r', 'raid night? need a carry'], ['l', 'Billy: SAY LESS']]);
-  if (S.g.goodwill < T.GOODWILL_RAID || a.asleep) { toast('"Not tonight."', '#ffb07a'); return; }
+  if (S.g.goodwill < T.GOODWILL_RAID || a.asleep) { toast('[Phone] Babe: "Not tonight."', '#ffb07a'); return; }
   S.g.goodwill -= T.GOODWILL_RAID;
   if (n.clock > 23 * 60) boysSay('raidLate');   // the boys' chat (#109): the raid is at 11
   a.calm = Math.max(a.calm, T.RAID_CALM_SEC); a.calmHard = true;
   n.herReply = { msg: 'ok go raid, nerd \u2665 i\'ll watch my show', t: T.PRE_REPLY_SHOW, wait: 1.5 };
-  toast(`Raid pass: no visits for ${T.RAID_CALM_SEC} s. Get loud. (Goodwill -${T.GOODWILL_RAID})`, '#ff9ab8'); sfx.good();
+  toast(`Raid pass: no visits for ${T.RAID_CALM_SEC} s. (Goodwill -${T.GOODWILL_RAID})`, '#ff9ab8'); sfx.good();
 }
 
 /** Back to the desk early (the ✕): no effect, the use still counts. */

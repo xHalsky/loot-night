@@ -136,6 +136,10 @@ export const PK = {
   /** The right screen around the game screen (V3, #68): desk, bezel, taskbar, keyboard, phone, cards; 492 x 360.
    *  phase 1 builds the frame and returns null, phase 2 lights it and returns it (two frames' work); 0 does both. */
   desk: (src, st, t, phase = 0) => drawDeskLive(src, st, t, phase),
+  /** The game chat (#138), its own layer over the desk: rows (oldest first), whether the YOU card is above it, how far
+   *  back it is scrolled (px) and whether a drag is on (#140). Its canvas, rect (right-screen px), and max, stops,
+   *  total, chip for the scroller. */
+  feed: (rows, youOn, off, drag) => drawFeedLive(rows, youOn, off, drag),
   init: pkInit,
   /** The whole 640 x 360 frame as the mockup draws it (V1's check against still 00-default). */
   drawFrame: (scene, tScreen, t, moment, her, o) => drawFrame(scene, tScreen, t, moment, her, o || {}),

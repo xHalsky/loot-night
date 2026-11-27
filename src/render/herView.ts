@@ -117,11 +117,13 @@ function teaseWin() {
 
 export function herView(hover = '') {
   const n = N(), zone = moodZone(n.mood), v = n.visit, tease = v.kind === 'tease' && v.stage === 'in';
+  const mid = middle(hover), said = n.say?.[0]?.text, shown = (mid as { win?: { line?: string } }).win?.line ?? '';
   return {
+    say: said && !shown.includes(said.slice(0, 14)) ? { text: said, open: v.stage === 'in' } : undefined,   // what she says (#139): from behind the door, or above her in the open doorway; not when her window already shows it
     gwTag: tease && (v.gw ?? 0) >= 1 ? `+${Math.floor(v.gw ?? 0)}${v.bed && eyesBusy() ? ' x2' : ''}` : undefined,   // looking at her: Goodwill rises on its bar
     mood: n.leanSpotted?.good || (tease && v.result === 'kissed') ? 'flustered' : tease && v.bed ? 'sleepy' : n.apt.asleep ? 'asleep' : zone === 'green' ? 'happy' : zone === 'yellow' ? 'annoyed' : 'furious',
     heard: heard(),
-    ...middle(hover),
+    ...mid,
     buttons: null,   // Make her tea and the towel went with step 6 (#57): bubble tea and the door seal are in the Home app
     hover,
     stats: {

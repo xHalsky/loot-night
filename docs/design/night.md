@@ -43,14 +43,19 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   soft tick as each lands; none while the title's heavy sounds play; the last 3 s before the town comes in, #135):
   Billy's realm is up; then four lines to read while it boots, setting the mood (#133, Paweł): Mike can't skip the
   intro, Lance "good. it's the best part", Billy's patch notes he didn't read and "this intro looks like an old crack
-  intro lol"; Lance's "would you like to know more?"; Lance's "nine stars. strong password" just after the password is
-  typed; last, Billy's 11 sharp, "careful with her tonight". Until 38 s the pill reads "Age of Judgment is loading"
+  intro lol"; Lance's "would you like to know more?"; Lance's own login, "in. arkbishop ready to be ignored again",
+  as the password is typed (#141: he can't see your screen); last, Billy's 11 sharp, "careful with her tonight". Until 38 s the pill reads "Age of Judgment is loading"
   with the percentage, dim and not a button, and Esc, Enter, the home bar and the close box do nothing. **At 38 s, as
   the town comes in, the phone goes down by itself** (#135, Paweł) and the How-to cards come up.
   **The boys always text, never send voice notes**
-  (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`) naming tonight's new
-  things in their chat voice; after the plug the boys react the same way (Billy "game over man. GAME OVER.", "tuesday again
-  then.", Lance "all that loot, gone like tears in rain", Mike's Tab tip; `replayChat`), under "Tuesday, again". These
+  (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`): banter about her and
+  the raid in their chat voice, **never how to play** (#141, Paweł: the boys only talk about your girlfriend in the
+  group chat, never like a tutorial; the How-to cards teach tonight's new things): Tuesday "is she still doing the
+  yoga thing in the living room?", Wednesday "we'll call you mid-raid. as is tradition", Thursday "goblin fuel restock
+  day", Friday "witching hour at 1. i've seen drops you wouldn't believe", Saturday "she's bored. you're the
+  entertainment.", Sunday "monday the patch drops. tonight we farm". After the plug the boys react the same way (Billy
+  "game over man. GAME OVER.", "tuesday again then.", Lance "all that loot, gone like tears in rain", Mike "she pulled
+  the plug? mid-raid??"; `replayChat`), under "Tuesday, again". These
   nights' chats are paced to the launch from the login (below): their bubbles spread evenly from 25.4 to 35.0 s
   (`CHAT_LOGIN_FROM`, `CHAT_LOGIN_TO`; three bubbles at 25.4, 30.2 and 35.0, the replay's four at 25.4, 28.6, 31.8 and
   35.0), each after its 1.6 s of dots, and the pill is "Age of Judgment is loading" until 38 s. At 38 s the phone goes
@@ -222,11 +227,12 @@ happening.
   moment passes, after `COACH_MAX_SEC` real seconds, or with ✕. Once per save. A more important one bumps a
   less important one (footsteps > doorway > phone > wind-up > loot), and the bumped one comes back next time.
   Hidden while her caught screen is up.
-- **First-time tips** (`TIPS` in `src/data/tips.ts`, `src/systems/tips.ts`): everything else gets one line from
-  her or the guild chat (Hudzor and Arkbishop, your party; the feed's tag is the name alone) in the feed, pinned at its top for `TIP_PIN_SEC`. Once per
-  save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`) and the plan on the wall
-  (`TIP_PLAN_AT`). On events: a pass, a catch, an end cue, the dog, a yawn, the headset, her bedtime, a peek,
-  the first floor choice, the shower.
+- **Her opening line** (`TIPS` in `src/data/tips.ts`, `src/systems/tips.ts`): "I'm watching my show, babe. Don't
+  play all night, okay?" a few seconds into the first night (`TIP_HER_AT`), once per save, said through the door
+  (#139). **No other tips** (#141, Paweł: no tutorial or meta tips in the game chat): the guild's first-time lines
+  pinned in the feed are gone, and so are the instructions on feed lines ("Pet him!", "Click it!", "Take the plate!",
+  "Bash, Ward or Taunt!", "Take the portal"...); a line says what happened and what it did. Kept: the replies to
+  your own click that say why nothing happened ("Locked.", "Too early to sleep.").
 - **Labelled cues on the first night:** the her-note names the hallway cue of each visit type (`VISIT_CUE`; a snack
   run's says to take the plate: there are no cans on Monday, #124) and,
   new, the cue that ends each activity (`END_HINT`: "The kettle clicked off. Tea, then maybe a snack run.").
@@ -250,9 +256,10 @@ happening.
   and the scroller carries the joke (the intro was due in March) and greets the boys. Rejected: Sora and Fredoka (too
   soft), the ring and hourglass (too corporate for the scene), copying a real group's logo or a real crack's text
   (original only), a scroller with real groups' names.
-- **The boys chat while it boots** (0.101.0, #133; Paweł): the launch is 38 s, and five bubbles left long gaps. Nine
-  now: four early lines set the mood (the intro you can't skip, "it's the best part", the crack intro look) and one
-  lands as the nine stars are typed. None from 15 to 21 s, where the title's sounds stand alone. Rejected: more lines
+- **The boys chat while it boots** (0.101.0, #133; Paweł): the launch is 38 s, and five bubbles left long gaps. Four
+  early lines set the mood (the intro you can't skip, "it's the best part", the crack intro look) and one lands as
+  the password is typed: Lance logging in himself (0.102.0, #141: his "nine stars" line was dropped, he can't see
+  your screen). None from 15 to 21 s, where the title's sounds stand alone. Rejected: more lines
   later (the login has its own beats), a skip button (the wait is the joke and the theme).
 - **The chat ends 3 s before the town, and the phone goes down by itself** (0.101.1, #135; Paweł): the last bubble
   lands at 35.0 s on every launch, so it is read before the town comes in, and at 38 s the phone goes down on its own
@@ -295,6 +302,12 @@ happening.
   to the feed, pinned, because on-screen toasts would cover the game and the door. Rejected: a scripted first
   visit (it would teach the script, not the listening); the old title screen's eight bullets (nobody reads
   them before playing); tips that repeat every night (noise after the first night).
+- **No tutorial in the chats** (0.102.0, #141; Paweł, 2026-11-27): the game chat is the game's log and the boys' chat
+  is the boys. The first-time tips that spoke in the guild's voice from the feed went (they read as the game teaching
+  through a friend's mouth), the boys' 20:00 lines stopped naming tonight's new mechanic, and feed lines lost their
+  instructions. Teaching lives where it says it is teaching: the How-to cards (with tonight's new tile) and the coach
+  marks. Her opening line stays, as something she says. Rejected: keeping the tips under a TIP tag (still a tutorial
+  in the chat), rewording the boys' hints as jokes that still carry the rule.
 
 - **The morning in the redesign's look** (0.72, V10 #75): the page's morning draws from the game's numbers and lines
   (`render/morningView.ts`), never its sample text: the Tiredness the sleep debt leads to comes from `TIRED_BASE` and

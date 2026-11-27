@@ -863,27 +863,42 @@ function drawItem(m, y, t) {
   }
   bubble(m[1], m[0], y + 3, m[0] === 'l' && !/^[A-Z][a-z]+: /.test(m[1]) ? HER : {});
 }
-// lay the thread out bottom up from item `end`; a bubble that would be cut is left out. Returns the scroll thumb.
-function herThread(items, y0, y1, end, t) {
-  let y = y1; const placed = [];
-  for (let k = end; k >= 0; k--) { const h = itemH(items[k]); if (y - h < y0) break; y -= h; placed.push([items[k], y]); }
+// lay the thread out bottom up from item `end`, `off` px back from the newest (#140: dragged or wheeled back, like a
+// smartphone); at rest a bubble the top edge would cut is left out (#45), while a drag shows it cut by the edge. The
+// scroll bar on the right edge when there is more than fits. Leaves what the scroller needs in PH_SCROLL.
+let PH_SCROLL = null;
+function herThread(items, y0, y1, end, t, off = 0, drag = false) {
+  const hs = items.map(itemH), view = y1 - y0, total = hs.slice(0, end + 1).reduce((a, h) => a + h, 0), max = Math.max(0, total - view);
+  off = Math.max(0, Math.min(max, off));
+  let y = y1 + off; const placed = [];
+  for (let k = end; k >= 0; k--) {
+    const h = hs[k]; y -= h;
+    if (y + h <= y0) break;
+    if (y >= y1 || (!drag && y + h > y1 + 0.5)) continue;   // at rest a bubble either edge would cut is left out (#45)
+    if (!drag && y < y0 - 0.5) break;
+    placed.push([items[k], Math.round(y)]);
+  }
   const c0 = CLIP; CLIP = [PHX(0), PHY(y0), PHX(PH.sw), PHY(y1)];
   for (const [m, yy] of placed) drawItem(m, yy, t);
   CLIP = c0;
-  // the scroll bar: a thin track on the right edge, the thumb where you are (shown when you're not at the bottom)
-  const total = items.reduce((a, m) => a + itemH(m), 0), below = items.slice(end + 1).reduce((a, m) => a + itemH(m), 0), view = y1 - y0;
-  if (end < items.length - 1) {
-    const th = Math.max(8, Math.round(view * view / total)), ty = y1 - th - Math.round((view - th) * below / Math.max(1, total - view));
-    rrI(PH.sw - 3, y0 + 2, 1, view - 4, 0, P.s1); rrI(PH.sw - 4, Math.max(y0 + 2, ty), 2, th, 1, P.s4);
+  const stops = [0]; for (let k = end, a = 0; k >= 0 && a < max; k--) { a += hs[k]; stops.push(Math.min(a, max)); }
+  if (max > 0) {   // the scroll bar: a thin track on the right edge, the thumb where you are
+    const th = Math.max(8, Math.round(view * view / total)), ty = y0 + Math.round((view - th) * (1 - off / max));
+    rrI(PH.sw - 3, y0 + 2, 1, view - 4, 0, P.s1); rrI(PH.sw - 4, Math.max(y0 + 2, Math.min(y1 - th - 2, ty)), 2, th, 1, P.s4);
   }
+  PH_SCROLL = { y0, y1, max, stops, total, off };
+  return off;
+}
+// scrolled back: a chip at the bottom right back to the newest, over the thread (a floating button)
+function newestChip(y1) {
+  rrI(PH.sw - 25, y1 - 13, 17, 12, 5, P.void); rrI(PH.sw - 24, y1 - 12, 15, 10, 5, P.s3); gl(['x...x', '.x.x.', '..x..'], PH.sw - 19, y1 - 9, P.moon);
+  hit(PH.sw - 26, y1 - 14, 19, 14, 'phScroll', 'end');
 }
 function herChat(t, o = {}) {
   const y0 = chatHead('Babe', 'babe', null, null, 'Messages', '00:44');
   const items = o.items || HER_THREAD, end = o.end ?? items.length - 1;
-  herThread(items, y0 + 2, end < items.length - 1 ? 184 : 198, end, t);   // scrolled back, the thread stops short of the way down (#137: wider bubbles ran under it)
-  if (end < items.length - 1) {   // scrolled back: the way down to the newest
-    rrI(PH.sw - 24, 186, 15, 10, 5, P.s2); gl(['x...x', '.x.x.', '..x..'], PH.sw - 19, 189, P.moon);
-  }
+  herThread(items, y0 + 2, 198, end, t);
+  if (end < items.length - 1) newestChip(198);   // scrolled back: the way down to the newest
   pill('Text her', 203); tx('3 s, hands busy', 56, 223, P.s4, { align: 'c' });
   homeBar();
 }
@@ -1033,7 +1048,7 @@ const LIVE = {
   // her text opens her chat straight away: the thread kept for good, her new ones, the one reply
   her(t, v) {
     const y0 = chatHead('Babe', 'babe', v.left, v.total, 'Messages', v.time); backHit('closeGame');
-    herThread(v.items, y0 + 2, 192, v.items.length - 1, t);
+    if (herThread(v.items, y0 + 2, 192, v.items.length - 1, t, v.scroll || 0, v.drag) > 0.5) newestChip(192);
     const h = pill('Five more minutes, love ♥', 196); hit(8, 196, PH.sw - 16, h - 2, 'textReply');
     homeBar(); homeHit('closeGame');
   },
@@ -1157,7 +1172,7 @@ const LIVE = {
   intro(t, v) {
     const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
     const items = [['date', v.date], ...v.items, ...(v.typing ? [['typing', v.typing]] : [])];
-    herThread(items, y0 + 2, 198, items.length - 1, t);
+    if (herThread(items, y0 + 2, 198, items.length - 1, t, v.scroll || 0, v.drag) > 0.5) newestChip(198);
     // the first Monday (#127): while Age of Judgment launches on the PC the pill is dim and not a button, with how far it
     // has loaded; at the end it turns into Let's go
     if (v.loading != null) { pill('Age of Judgment is loading', 203, { fill: P.s2, ink: P.s5, shadow: P.s1 }); tx(Math.round(v.loading * 100) + '%', 56, 223, P.s4, { align: 'c' }); homeBar(); return; }
@@ -1167,16 +1182,14 @@ const LIVE = {
   // her chat, kept for good: scroll a bubble at a time (wheel), back to the newest, Text her
   babe(t, v) {
     const y0 = chatHead('Babe', 'babe', null, null, 'Messages', v.time); backHit('phApp', 'messages');
-    const end = Math.max(0, v.items.length - 1 - v.scroll);
-    if (v.items.length) herThread(v.items, y0 + 2, 198, end, t); else tx('No messages yet.', 56, 120, P.s4, { align: 'c' });
-    if (end < v.items.length - 1) { rrI(PH.sw - 24, 186, 15, 10, 5, P.s2); gl(['x...x', '.x.x.', '..x..'], PH.sw - 19, 189, P.moon); hit(PH.sw - 26, 184, 19, 14, 'phScroll', 'end'); }
+    if (v.items.length) { if (herThread(v.items, y0 + 2, 198, v.items.length - 1, t, v.scroll || 0, v.drag) > 0.5) newestChip(198); } else tx('No messages yet.', 56, 120, P.s4, { align: 'c' });
     action(v.action, 203, t);
     homeBar(); homeHit('preMenu');
   },
   // The Boys' chat: the last call's exchange; Raid night? at the bottom
   boys(t, v) {
     const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', v.time); backHit('phApp', 'messages');
-    if (v.items.length) herThread(v.items, y0 + 2, 198, v.items.length - 1, t); else tx('No messages yet.', 56, 120, P.s4, { align: 'c' });
+    if (v.items.length) { if (herThread(v.items, y0 + 2, 198, v.items.length - 1, t, v.scroll || 0, v.drag) > 0.5) newestChip(198); } else tx('No messages yet.', 56, 120, P.s4, { align: 'c' });
     action(v.action, 203, t);
     homeBar(); homeHit('preMenu');
   },
@@ -1199,9 +1212,9 @@ const LIVE = {
 PHONE_SCREENS.live = (t, o) => { PH_BATT = o.v.batt ?? 100; return (LIVE[o.v.screen] || LIVE.home)(t, o.v); };   // the status bar's battery is the game's (#57)
 /** The phone in your hand from the game's view model: its canvas (126 x 252) and the hit regions in its pixels. */
 function livePhone(v, t) {
-  PH_HITS = [];
+  PH_HITS = []; PH_SCROLL = null;
   const c = drawPhoneHand('live', t, { v });
-  return { canvas: c, hits: PH_HITS };
+  return { canvas: c, hits: PH_HITS, scroll: PH_SCROLL };   // scroll: the thread on screen, for the scroller (#140), or null
 }
 return { PH, HAND, DT, PHONE_SCREENS, drawPhoneHand, drawPhoneOver, deskScreen, CALLERS, avatarAt, glyphAt, fitT, photoWindow, selfie, SELFIE_W, SELFIE_H, vPaint, arcCut, livePhone };
 })();

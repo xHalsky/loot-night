@@ -118,7 +118,7 @@ export function phoneView() {
       { id: 'boys', who: 'The Boys (3)', av: 'boys', last: lb ? (lb.s === 'r' ? 'You: ' : '') + lb.text : 'No messages yet', time: lb ? fmtClock(lb.clock) : '', unread: 0 },
     ] };
   }
-  if (app === 'babe') return { ...base, screen: 'babe', items: chatItems(g.herThread ?? []), scroll: n.phScroll ?? 0, action: chatAction('text') };
+  if (app === 'babe') return { ...base, screen: 'babe', items: chatItems(g.herThread ?? []), action: chatAction('text') };
   if (app === 'boys') return { ...base, screen: 'boys', items: chatItems(g.boysThread ?? []), action: chatAction('raid') };
   if (!n.game && phoneDead()) return { ...base, screen: 'dead', chargeOff: preBlocked('charge') ? 'x' : '' };   // dead (#57): only Charge it
   if (app === 'homeapp') return { ...base, ...homeAppView() };

@@ -4,7 +4,6 @@ import { addMood } from './meters';
 import { toastAs } from '../core/fx';
 const toast = toastAs('HER');   // feed tag (#49)
 import { sfx } from '../ui/audio';
-import { tip } from './tips';
 
 // Peeking through your door (docs/design/her.md). Hold the door: it opens to a narrow crack, then creeps wider;
 // the crack shows the hallway and her tells in the doorways (door.ts). If she is somewhere she can see your door
@@ -12,7 +11,7 @@ import { tip } from './tips';
 
 export function setPeeking(on: boolean) {
   const n = N();
-  if (on && !n.peeking && n.visit.stage !== 'in') { sfx.creak(); tip('peek'); }
+  if (on && !n.peeking && n.visit.stage !== 'in') { sfx.creak(); }
   n.peeking = on && n.visit.stage !== 'in';
 }
 

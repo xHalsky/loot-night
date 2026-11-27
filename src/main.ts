@@ -52,9 +52,10 @@ import { canWear } from './systems/gear';
 import { drawLiveRpg, liveHitAt, liveShown, livePointer, liveDragStart, liveDragEnd, liveDragging, drawLivePanel, panelHitAt, livePanelShown, liveDrewAt } from './render/liveRpg';
 import { PK } from 'virtual:pagekit';
 import { phoneShown, phoneView, shopFlashed, voiceUp } from './render/phoneView';
-import { deskView, deskTip } from './render/deskView';
+import { deskView, deskTip, feedView } from './render/deskView';
+import { Scroller } from './ui/scroller';
 import { herView, herTip } from './render/herView';
-import { herRead, phoneScroll } from './systems/messages';
+import { herRead } from './systems/messages';
 import { answer as lapAnswer, startLap } from './systems/lap';
 import { triggerDog, triggerUnplug, petStroke, plugIn } from './systems/pets';
 import { wakeUp } from './systems/tired';
@@ -95,6 +96,7 @@ stage.innerHTML = `
         <div id="toasts"></div>
       </div>
       <canvas id="dogOv" width="492" height="360"></canvas>
+      <canvas id="feedArea" width="151" height="90"></canvas>
       <div id="preUi"></div>
       <canvas id="phHand" width="126" height="252"></canvas><button id="phClose" data-act="closeGame" aria-label="Put the phone down"></button>
     </div>
@@ -205,7 +207,7 @@ const actions: Record<string, (arg: string) => void> = {
   boss: a => bossPick(Number(a)),
   closeGame: () => closeGame(false),
   // the phone in your hand (V8, #73): its apps and her chat
-  phApp: a => { const n = N(); n.phApp = a as 'home'; n.phScroll = 0; n.home.pick = ''; if (a === 'babe') herRead(); sfx.click(); },
+  phApp: a => { const n = N(); n.phApp = a as 'home'; n.home.pick = ''; if (a === 'babe') herRead(); sfx.click(); },
   // the Home app (step 6.2, #57): a device's sheet (speaker:kitchen picks the speaker in that room), its room, use it
   homePick: a => { const h = N().home, [id, room] = a.split(':'); h.pick = id as DeviceId | ''; if (room) h.pickRoom = room as Room; else if (id === 'vacuum') h.pickRoom = 'living'; sfx.click(); },
   homeRoom: a => { N().home.pickRoom = a as Room; sfx.click(); },
@@ -220,7 +222,7 @@ const actions: Record<string, (arg: string) => void> = {
   photoNoop: () => {},
   shopTab: a => { N().shopTab = a as 'you'; sfx.click(); },
   shopBuy: a => { if (shopBuy(a as ShopId)) shopFlashed(a); else sfx.bad(); },
-  phScroll: a => phoneScroll(a === 'end' ? 'end' : Number(a)),
+  phScroll: a => { if (a === 'end') phScroll.reset(); else phScroll.wheel(Number(a)); },   // the chip back to the newest (#140)
   // Debug (F1)
   dbgSpeed: a => { S.g.timeScale = Number(a); },
   dbgLife: () => { S.g.realLifeOff = !S.g.realLifeOff; },   // #52, 1.1: nobody is home
@@ -1054,6 +1056,7 @@ function drawDesk() {
     const r = PK.desk(rsSrc, null, now / 1000, 2);
     if (r) {
       rsCtx.drawImage(r.canvas, 0, 0); deskHitsSet(r.hits);
+      if (feedAt) rsCtx.drawImage(feedCanvas, feedAt[0], feedAt[1]);   // the feed in the right screen too, for what dims it (the breaks, the cards)
       dogOvCtx.clearRect(0, 0, 492, 360); if (r.overlay) dogOvCtx.drawImage(r.overlay, 0, 0);   // the dog's hearts, marks and sounds, over the monitor
       deskShake = r.shake;
     }
@@ -1068,6 +1071,43 @@ function drawDesk() {
   PK.desk(rsSrc, deskView(deskPhoneHover), now / 1000, 1);
   deskBuilt = true;
 }
+// The game chat (#138): its own layer over the desk (above the desk, the dog's overlay and everything on it, under
+// the full-screen overlays), drawn at 30 fps; it scrolls back by drag and wheel (#140).
+const feedCanvas = el('feedArea') as HTMLCanvasElement, feedCtx = feedCanvas.getContext('2d')!, feedScroll = new Scroller();
+let feedAt: number[] | null = null, feedKey = '', feedLast = 0, feedChip: number[] | null = null;
+function drawFeed() {
+  const n = S.g.night, on = !!n && PK.ready() && S.g.screen === 'night';
+  feedCanvas.style.display = on ? 'block' : 'none';
+  if (!on) { feedAt = null; feedScroll.reset(); return; }
+  const now = performance.now();
+  if (now - feedLast < 33 && !feedScroll.drag) return;
+  feedLast = now;
+  const fv = feedView(), key = `${n!.log.length}|${n!.log.at(-1)?.text}|${fv.rows.length}|${fv.you}|${feedScroll.off}|${!!feedScroll.drag}`;
+  if (key === feedKey) return;
+  feedKey = key;
+  const r = PK.feed(fv.rows, fv.you, feedScroll.off, !!feedScroll.drag);
+  feedScroll.meta(r);
+  if (r.off !== feedScroll.off && !feedScroll.drag) { feedKey = ''; }   // settled on an edge: drawn there next frame
+  const [x, y, w, h] = r.rect;
+  if (!feedAt || feedAt.join() !== r.rect.join()) {
+    feedCanvas.width = w; feedCanvas.height = h;
+    Object.assign(feedCanvas.style, { left: `${x * 2}px`, top: `${y * 2}px`, width: `${w * 2}px`, height: `${h * 2}px` });
+  }
+  feedAt = r.rect; feedChip = r.chip;
+  feedCtx.clearRect(0, 0, w, h); feedCtx.drawImage(r.canvas, 0, 0);
+}
+const feedY = (ev: PointerEvent | WheelEvent) => { const b = feedCanvas.getBoundingClientRect(); return [((ev.clientX - b.left) / b.width) * feedCanvas.width, ((ev.clientY - b.top) / b.height) * feedCanvas.height] as const; };
+feedCanvas.addEventListener('pointerdown', ev => {
+  if (!S.g.night || S.g.paused || ev.button !== 0) return;
+  ev.preventDefault(); ev.stopPropagation();
+  const [x, y] = feedY(ev), c = feedChip;
+  if (c && x >= c[0] && x < c[0] + c[2] && y >= c[1] && y < c[1] + c[3]) { feedScroll.reset(); feedKey = ''; sfx.click(); return; }   // back to the newest
+  feedScroll.start(y); feedCanvas.setPointerCapture(ev.pointerId); feedCanvas.style.cursor = 'grabbing';
+});
+feedCanvas.addEventListener('pointermove', ev => { if (feedScroll.drag) { feedScroll.move(feedY(ev)[1]); feedKey = ''; } else { const [x, y] = feedY(ev), c = feedChip; feedCanvas.style.cursor = c && x >= c[0] && x < c[0] + c[2] && y >= c[1] && y < c[1] + c[3] ? 'pointer' : 'grab'; } });
+const feedUp = () => { if (!feedScroll.drag) return; feedScroll.end(); feedKey = ''; feedCanvas.style.cursor = 'grab'; };
+feedCanvas.addEventListener('pointerup', feedUp); feedCanvas.addEventListener('pointercancel', feedUp);
+feedCanvas.addEventListener('wheel', ev => { if (!S.g.night || S.g.night.lean) return; ev.preventDefault(); ev.stopPropagation(); feedScroll.wheel(ev.deltaY < 0 ? 1 : -1); feedKey = ''; }, { passive: false });
 function deskHitsSet(hits: typeof deskHits) {
   deskHits = hits; (window as unknown as { __lootnight: { deskHits?: unknown } }).__lootnight.deskHits = deskHits;   // where things sit on the desk, for the tests
   const ph = deskHits.find(h => h.act === 'phone'), px = el('deskPhone');   // a DOM stand-in for the coach mark
@@ -1124,23 +1164,42 @@ function drawPhone() {
   el('phClose').dataset.act = voiceUp() ? 'voiceOk' : n!.game?.kind === 'phone' ? 'closeGame' : phoneAction() ? 'preCancel' : 'preMenu';
   if (now - phLast < 33) return;   // 30 fps is plenty for a phone
   phLast = now;
-  const r = PK.phone(phoneView(), now / 1000);
+  const vm = phoneView() as ReturnType<typeof phoneView> & { scroll?: number; drag?: boolean; who?: string };
+  const sk = `${vm.screen}|${n!.phApp ?? ''}|${vm.who ?? ''}`;
+  if (sk !== phScreenKey) { phScreenKey = sk; phScroll.reset(); }   // another chat: from its newest
+  vm.scroll = phScroll.off; vm.drag = !!phScroll.drag;   // scrolled back (#140)
+  const r = PK.phone(vm, now / 1000);
   phCtx.clearRect(0, 0, phCanvas.width, phCanvas.height); phCtx.drawImage(r.canvas, 0, 0);
   phHits = r.hits;
+  if (r.scroll) { phScroll.meta(r.scroll); phScrollRect = [6, r.scroll.y0 + 6, 112, r.scroll.y1 - r.scroll.y0]; } else phScrollRect = null;
 }
+// the phone's chats scroll back (#140): drag the thread (a tap on a photo still opens it), or the wheel over it
+const phScroll = new Scroller();
+let phScrollRect: number[] | null = null, phScreenKey = '', phPending: { act: string; arg: string } | null = null;
+Object.assign((window as unknown as { __lootnight: object }).__lootnight, { feedScroll, phScroll });   // for the tests
+const inThread = (x: number, y: number) => { const r = phScrollRect; return !!r && x >= r[0] && x < r[0] + r[2] && y >= r[1] && y < r[1] + r[3]; };
 const phXY = (ev: PointerEvent | WheelEvent) => { const r = phCanvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width) * phCanvas.width, ((ev.clientY - r.top) / r.height) * phCanvas.height] as const; };
 const phHitAt = (x: number, y: number) => { for (let i = phHits.length - 1; i >= 0; i--) { const h = phHits[i]; if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) return h; } return null; };
 phCanvas.addEventListener('pointerdown', ev => {
   if (!S.g.night || S.g.paused || ev.button !== 0) return;
   ev.preventDefault();
-  const h = phHitAt(...phXY(ev));
+  const [px, py] = phXY(ev), h = phHitAt(px, py);
+  if (inThread(px, py) && h?.act !== 'phScroll') {   // grab the thread: a drag scrolls it, a tap is the tap
+    phScroll.start(py); phPending = h ? { act: h.act, arg: h.arg } : null; phCanvas.setPointerCapture(ev.pointerId); phLast = 0; return;
+  }
   if (!h) return;
   if (h.act === 'slide') { drag = { id: 'answer', axis: 'x', dir: 1, dist: 148, x0: ev.clientX, y0: ev.clientY, t0: performance.now(), p: 0 }; return; }   // slide to answer: drag the knob
   if (h.act === 'faceHold') { setHold(true); return; }   // Face ID: hold
   actions[h.act]?.(h.arg);
 });
-phCanvas.addEventListener('pointermove', ev => { phCanvas.style.cursor = phHitAt(...phXY(ev)) ? 'pointer' : 'default'; });
-phCanvas.addEventListener('wheel', ev => { if (N()?.phApp === 'babe' && !N().game) { ev.preventDefault(); phoneScroll(ev.deltaY < 0 ? 1 : -1); } }, { passive: false });   // her chat, a bubble at a time
+phCanvas.addEventListener('pointermove', ev => {
+  const [px, py] = phXY(ev);
+  if (phScroll.drag) { phScroll.move(py); phLast = 0; phCanvas.style.cursor = 'grabbing'; return; }
+  phCanvas.style.cursor = phHitAt(px, py) ? 'pointer' : inThread(px, py) ? 'grab' : 'default';
+});
+const phUp = () => { if (!phScroll.drag) return; const moved = phScroll.end(), p = phPending; phPending = null; phLast = 0; if (!moved && p) actions[p.act]?.(p.arg); };
+phCanvas.addEventListener('pointerup', phUp); phCanvas.addEventListener('pointercancel', phUp);
+phCanvas.addEventListener('wheel', ev => { if (!inThread(...phXY(ev))) return; ev.preventDefault(); phScroll.wheel(ev.deltaY < 0 ? 1 : -1); phLast = 0; }, { passive: false });   // a message at a time
 
 // ---------- Render ----------
 function render() {
@@ -1157,6 +1216,7 @@ function render() {
     drawLivePanel(el('spArea') as HTMLCanvasElement);   // #53: the Skill Tree tab in the renderer
     drawDesk();    // V3 (#68): the right screen round the monitor, drawn by the renderer
   }
+  drawFeed();   // the game chat (#138), its own layer
   drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
   updateLaunchSound();   // the launch's sound and music (#127), on its clock
   drawEnergyBreak();   // V5 (#70): the energy break over the right screen, drawn by the renderer

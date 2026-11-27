@@ -46,7 +46,7 @@ export function drain(base: number) {
   h.batt = Math.max(0, h.batt - battCost(base));
   const mark = T.BATTERY_LOW.find(m => was > m && h.batt <= m && h.batt > 0);
   if (mark !== undefined) { h.lowShow = T.LOW_SHOW_SEC; h.lowAt = mark; sfx.vibMsg(); toast(`Phone battery ${h.batt}%.`, '#ff8a80'); }
-  if (was > 0 && h.batt <= 0) { h.deadShow = T.LOW_SHOW_SEC; toast('Your phone died. No calls, no texts, no Home app until you charge it.', '#ff8a80'); sfx.bad(); }
+  if (was > 0 && h.batt <= 0) { h.deadShow = T.LOW_SHOW_SEC; toast('Your phone died.', '#ff8a80'); sfx.bad(); }
 }
 /** Charge (the away state is preemptive.ts's): +40%. */
 export function charged() {
@@ -99,14 +99,14 @@ export function useDevice(id: DeviceId, room: Room = 'living'): boolean {
   if (id === 'speaker') {
     h.uses.speaker = (h.uses.speaker ?? 0) + 1; rest('speaker', T.SPEAKER_REST); sfx.timer();
     if (herFree()) { a.calm += T.SPEAKER_CALM; sendHerTo(room, 'TIMER'); }
-    if (h.uses.speaker >= T.SPEAKER_MOOD_FROM) { addMood(T.SPEAKER_MOOD); toast(`"Who keeps setting timers?!" Mood +${T.SPEAKER_MOOD}.`, '#ffb07a'); }
+    if (h.uses.speaker >= T.SPEAKER_MOOD_FROM) { addMood(T.SPEAKER_MOOD); toast(`[Her] "Who keeps setting timers?!" Mood +${T.SPEAKER_MOOD}.`, '#ffb07a'); }
     return true;
   }
   // the TV cast: only while her show's credits roll; at any other time nothing happens (the use is gone)
   h.uses.tv = (h.uses.tv ?? 0) + 1; rest('tv', T.TV_REST); sfx.click();
   if (h.uses.tv > T.TV_MAX) {   // the third time she notices
     addMood(T.TV_NOTICE_MOOD); a.forceDoor = true; a.t = Math.min(a.t, 2);
-    toast(`"The TV keeps starting the next one by itself..." She looks at your door. Mood +${T.TV_NOTICE_MOOD}.`, '#ff8a80');
+    toast(`[Her] "The TV keeps starting the next one by itself..." She looks at your door. Mood +${T.TV_NOTICE_MOOD}.`, '#ff8a80');
   } else if (a.activity === 'tv' && a.cued && !a.asleep && n.visit.stage === 'idle') {
     a.t = rand(...ACT_BY_ID.tv.dur); a.cued = false;   // one more episode
   }

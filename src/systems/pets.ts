@@ -6,7 +6,6 @@ import { rand, randi } from '../core/rng';
 import { toastAs } from '../core/fx';
 const toast = toastAs('DOG');   // feed tag (#49)
 import { sfx } from '../ui/audio';
-import { tip } from './tips';
 import { realLifeFree } from './reallife';
 
 // The dog (docs/design/desk.md). He jumps up at the desk for attention: pet him (a minigame on the desk, no window)
@@ -28,7 +27,7 @@ export function updateDog(dt: number) {
   if (d.stage === 'away') {
     d.next -= dt;
     if (d.next <= 0 && !n.unplugged && realLifeFree()) { d.stage = 'up';   // his arrival slides later, never drops (#54, 3.2)
-      d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweetPet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk. Pet him!', '#f2c46b'); tip('dog'); }
+      d.t = T.DOG_WAIT_SEC; d.pet = 0; d.sweetPet = 0; d.sweet = randi(0, 2); sfx.bark(); toast('The dog jumps up at the desk.', '#f2c46b'); }
     return;
   }
   if (d.stage === 'happy') { d.t -= dt; if (d.t <= 0) { d.stage = 'away'; d.next = every() + chewDelay(); } return; }
@@ -77,7 +76,7 @@ function bump() {
   n.unplugged = { kinds, colors, sockets, plugged: Array(CABLE_COUNT).fill(false), t0: n.threat + T.CABLE_SHOW_SEC, flow: n.flow };   // the fast fix counts once the cables show
   n.monitorOff = 1;
   sfx.sting();
-  toast('The dog slams into the desk. The monitor cables are out! Plug them back in.', '#ff8a80');
+  toast('The dog slams into the desk. The monitor cables are out!', '#ff8a80');
 }
 
 /** Cable `plug` dropped on socket slot `slot`. */

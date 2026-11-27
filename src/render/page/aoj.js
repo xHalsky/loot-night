@@ -478,7 +478,7 @@ const LAUNCH = [['desktop', 0, 3.2], ['engine', 3.2, 6.2], ['publisher', 6.2, 10
 const LAUNCH_END = 38;
 const launchPhase = (T) => { for (const [k, a, b] of LAUNCH) if (T >= a && T < b) return [k, T - a, b - a]; return ['game', T - LAUNCH_END, 1e9]; };
 // the boys' first chat (data/voice.ts FIRST_CHAT), each bubble's arrival in launch seconds; typing dots before each
-const FIRST_CHAT_AT = [['Billy', "yo. realm's up", 2.6], ['Mike', "launching. still can't skip the intro", 5.0], ['Lance', "good. it's the best part", 8.4], ['Billy', 'patch notes are forty pages, i read zero', 10.2], ['Billy', 'this intro looks like an old crack intro lol', 12.8], ['Lance', 'would you like to know more?', 21.4], ['Lance', 'nine stars. strong password', 27.6], ['Billy', '11 sharp. and careful with her tonight, they mostly come at night', 35.0]];
+const FIRST_CHAT_AT = [['Billy', "yo. realm's up", 2.6], ['Mike', "launching. still can't skip the intro", 5.0], ['Lance', "good. it's the best part", 8.4], ['Billy', 'patch notes are forty pages, i read zero', 10.2], ['Billy', 'this intro looks like an old crack intro lol', 12.8], ['Lance', 'would you like to know more?', 21.4], ['Lance', 'in. arkbishop ready to be ignored again', 27.6], ['Billy', '11 sharp. and careful with her tonight, they mostly come at night', 35.0]];
 const TYPING_SEC = 1.6;
 // THE LAUNCH'S SOUND (aoj-world §7b): the cue sheet in launch seconds, fired once as T passes each time; one music cue
 // from 6.2 s to the town; the rain under the title, the login and the loading. Times follow the code above exactly.

@@ -18,18 +18,13 @@ const RARITY_SLOT: Record<string, string> = { [RARITY_COLOR.common]: 'u6', [RARI
 const CALLER: Record<string, string> = { mom: 'mom', courier: 'courier', friends: 'boys' };
 const CALLS = new Set(['mom', 'courier', 'friends']);
 
-function feedRows(): [string, string, string, string?][] {
-  const n = N();
-  const pin = n.tip ? n.tip.text.match(/^\[([^\]]+)\]\s*(.*)$/) : null;
-  const rows: [string, string, string, string?][] = [];
-  if (n.tip) rows.push([fmtClock(n.clock), (pin?.[1] ?? 'TIP').toUpperCase(), pin?.[2] ?? n.tip.text]);
-  for (const l of n.log.slice(-8).reverse()) {
-    if (pin && l.text === pin[2]) continue;
-    const tag = (l.tag ?? '').toUpperCase();
-    rows.push([l.time, tag, l.text, tag === 'LOOT' ? RARITY_SLOT[l.color] ?? 'u6' : undefined]);
-  }
-  if (launchHolds()) return [];   // the launch (#127): the feed is empty until the town comes in with its welcome
-  return rows.length ? rows.slice(0, 6) : [[fmtClock(n.clock), 'GAME', "Welcome to Age of Judgment. Have fun, don't get caught."]];
+/** The game chat (the feed, #138): the night's log, oldest first (it is a chat: the newest at the bottom), every line
+ *  in full; no tips pinned on it any more (#141). Empty while Age of Judgment launches (#127), until the town's welcome. */
+export function feedView(): { rows: [string, string, string, string?][]; you: boolean } {
+  const n = N(), you = on('tired') || on('headset') || on('fuel');   // the YOU card above it from Tuesday (#56)
+  if (launchHolds()) return { rows: [], you };
+  const rows = n.log.map(l => { const tag = (l.tag ?? '').toUpperCase(); return [l.time, tag, l.text, tag === 'LOOT' ? RARITY_SLOT[l.color] ?? 'u6' : undefined] as [string, string, string, string?]; });
+  return { rows: rows.length ? rows : [[fmtClock(n.clock), 'GAME', "Welcome to Age of Judgment. Have fun, don't get caught."]], you };
 }
 
 /** What the phone lying on the desk shows (phone.js deskScreen): a call, banners, face down, or in your hand. */
@@ -66,7 +61,6 @@ export function deskView(phoneHover = false) {
     you: { tired: on('tired'), zone: on('headset'), fuel },   // the YOU card shows what is in tonight (#56)
     tired: Math.round(n.tired), yawn: T.TIRED_YAWN, zone: n.headset ? Math.round(n.zone * 30) : 0, headset: n.headset,
     cans: g.monsters, hideCans, cansHidden: cansHidden && !hideCans, drinkAct: hideCans ? 'hideCans' : canDrink && !cansHidden ? 'openMonster' : '',
-    feed: feedRows(),
     dog: dogDesk(),   // V6 (#71): the dog on the desk (render/dogView.ts)
     ...ph, hover: phoneHover && ph.phone === 'off' ? true : undefined,
   };

@@ -3,7 +3,6 @@ import { S, N, type Q4Night } from '../core/state';
 import { Q4_TITLES, MACROS, type MacroId } from '../data/q4';
 import { sfx } from '../ui/audio';
 import { toastAs } from '../core/fx';
-import { tip } from './tips';
 const toast = toastAs('Q4');
 
 // Q4, the Excel clicker (handoff step 4, #55; docs/design/desk.md, Q4). Excel is your job: every toy pays zl into the
@@ -103,7 +102,7 @@ export function q4Buy(id: MacroId): boolean {
 }
 export function q4PromoOk() { N().q4.promo = null; sfx.click(); }
 /** The switch to Excel just finished: Hustle is what the RPG charged. */
-export function q4Enter() { const q = N().q4; q.hustle = q.charge; q.charge = 0; tip('q4'); }
+export function q4Enter() { const q = N().q4; q.hustle = q.charge; q.charge = 0; }
 
 /** Looking busy (step 4.5): while she is in and Excel is up, how fast her visit runs. Busy (a toy in the last 2 s):
  *  x1.5, she leaves sooner. Idle 3 s: it waits ("What are you working on?") until you act. Never a catch by itself. */

@@ -415,7 +415,7 @@ export const T = {
   HEADSET_APT_VOLUME: 0.15,       // ...but apartment sounds are muffled and the map stops updating
   HEADSET_APT_LOWPASS: 500,       // Hz: what is left of her through the headset
   // First-night onboarding (#28): tips pinned at the top of the feed, two timed ones on a fresh save
-  TIP_PIN_SEC: 9, TIP_HER_AT: 4, TIP_PLAN_AT: 40,
+  TIP_HER_AT: 4,   // her opening line on a fresh save, said through the door (#139); the pinned tips went with #141
   COACH_SLOW: 0.25, COACH_MAX_SEC: 14,   // coach marks (#42): the game runs at a quarter speed until you act; real-second cap
   // His face in the webcam view (#37, #38): reactions and status, no gameplay effect (yet: #39 poker face)
   HIS_GRIN_RARITY: 3,             // an epic or better drop makes him grin...

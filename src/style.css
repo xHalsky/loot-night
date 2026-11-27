@@ -488,3 +488,4 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 #planArea { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 30; image-rendering: pixelated; display: none; }
 #caughtArea { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 40; image-rendering: pixelated; display: none; cursor: pointer; }
 #dogOv { position: absolute; left: 0; top: 0; width: 984px; height: 720px; z-index: 6; image-rendering: pixelated; pointer-events: none; }
+#feedArea { position: absolute; left: 676px; top: 592px; width: 302px; height: 122px; z-index: 7; image-rendering: pixelated; display: none; touch-action: none; cursor: grab; }   /* the game chat (#138): over the desk and the dog's overlay */

@@ -53,7 +53,7 @@ run(T.LAP_SIT_SEC); ok(n.visit.result !== 'lap', `up after ${T.LAP_SIT_SEC} s at
 
 // --- ooh, shiny ---
 n = night(5); triggerVisitNow('chat'); toIn();
-n.floorLoot.push({ entry: { kind: 'item', item: { rarity: 'common' } } } as never); run(0.1); ok(!n.lapSay, 'a common drop: nothing');
+n.lapSay = null; n.floorLoot.push({ entry: { kind: 'item', item: { rarity: 'common' } } } as never); run(0.1); ok(!n.lapSay, 'a common drop: nothing');
 n.floorLoot.push({ entry: { kind: 'item', item: { rarity: 'rare' } } } as never); run(0.1); ok(n.lapSay?.text === 'ooh, shiny', 'a rare drop: "ooh, shiny"');
 run(T.LAP_SAY_SEC + 0.1); ok(!n.lapSay, '...for a moment');
 // rude: the chat's outcome

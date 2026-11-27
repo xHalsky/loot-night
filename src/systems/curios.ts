@@ -112,7 +112,7 @@ export function chooseCurio(choice: string) {
       if (chance(0.5)) { bless('potion'); markDone('potion', 'caught'); }
       else { markDone('potion', 'glass'); S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); }
       break;
-    case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking. Stay on this screen.', '#8fd0ff'); return;
+    case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking...', '#8fd0ff'); return;
     case 'fight': return trollFight();
     case 'withdraw': {
       const before = S.g.bag.length;

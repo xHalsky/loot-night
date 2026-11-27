@@ -202,7 +202,7 @@ function castAbility(h: Hero, slot: number) {
       hitEnemy(e, st.atk * A.power! * mult * shatter * (1 + heroFx(h, 'bashDmg')), st.crit, 'bash');   // Crushing
       if (e.hp > 0) mark(e, 'stagger');
       const slam = (e.wind ?? 0) > 0 && moveOf(e) === 'slam';
-      if (slam && e.braced) toast(`${e.name} is braced: Bash can't stop it. Ward or Taunt!`, '#ff8a80');
+      if (slam && e.braced) toast(`${e.name} is braced: Bash can't stop it.`, '#ff8a80');
       else if ((e.wind ?? 0) > 0 && !slam) { /* only SMASH can be interrupted */ }
       else { e.stunned = T.BASH_STUN_SEC * (rule('knight', 'concussion') ? T.RULE_CONCUSSION : 1); if (slam) { e.wind = 0; e.braced = true; toast(`${heroLabel(h.id)} interrupts SMASH! The boss braces for the next one.`, '#8fb3ff'); sfx.good(); } }
     }
@@ -344,7 +344,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   if (isCrit && e.hp <= 0 && !e.per) boysSay(attacker?.id === 'mage' && e.boss ? 'mageBoss' : full ? 'oneShot' : 'combo');   // the boys' chat (#109): a crit kill
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * T.ECHO_ENRAGE_HP) {   // enrage: the fight of the night, don't look away
     e.enraged = true; sfx.enrage();
-    toast(`${e.name} is ENRAGED! Flow builds faster. Alt-tab now and you lose it.`, '#ff5a3a');
+    toast(`${e.name} is ENRAGED! Flow builds faster.`, '#ff5a3a');
   }
   floatText(enemyCenter(e).x, enemyNumY(e), isCrit ? `-${fmtNum(dmg)}!` : `-${fmtNum(dmg)}`, isCrit ? '#f2b84b' : '#ff8a80');
   if (isCrit) sfx.crit(); else sfx.hit();
@@ -465,20 +465,20 @@ function bossMove(e: Enemy): boolean {
   const move = moveOf(e);
   if (move === 'slam' && e.acts % T.BOSS_SLAM_EVERY === 0) {
     e.wind = e.windMax = T.BOSS_WINDUP_SEC;
-    toast(`${e.name} winds up SMASH! Bash, Ward or Taunt!`, '#ff8a80'); sfx.windup(); coach('windup');
+    toast(`${e.name} winds up SMASH!`, '#ff8a80'); sfx.windup(); coach('windup');
     return true;
   }
   if (move === 'loan' && e.acts % T.LOAN_EVERY === 0) {
     e.wind = e.windMax = T.LOAN_WINDUP_SEC;
     const friend = n.enemies.find(x => x !== e && x.hp > 0);
-    toast(friend ? `${e.name} empowers the ${friend.name}! Kill it first!` : `${e.name} summons help. Fire it!`, '#ff8a80'); sfx.windup();
+    toast(friend ? `${e.name} empowers the ${friend.name}!` : `${e.name} summons help.`, '#ff8a80'); sfx.windup();
     return true;
   }
   if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {   // EXECUTE names a position: whoever stands there takes it
     const v = mostHurt();
     if (!v) return false;
     e.evict = S.g.heroes.indexOf(v); e.wind = e.windMax = T.EVICT_WINDUP_SEC;
-    toast(`${e.name}: EXECUTE on position ${e.evict + 1} (${HERO_NAME[v.id]})! Taunt, Ward, or swap him out.`, '#ff8a80'); sfx.windup();   // name alone: no room for the class
+    toast(`${e.name}: EXECUTE on position ${e.evict + 1} (${HERO_NAME[v.id]})!`, '#ff8a80'); sfx.windup();   // name alone: no room for the class
     return true;
   }
   if ((move === 'hook' || move === 'shove') && S.g.heroes.length > 1 && (e.acts === T.LINE_BREAK_FIRST || (e.acts > T.LINE_BREAK_FIRST && (e.acts - T.LINE_BREAK_FIRST) % T.LINE_BREAK_EVERY === 0))) {
@@ -538,7 +538,7 @@ function eviction(e: Enemy) {
     toast(taunted ? `${heroLabel(knight.id)} takes the EXECUTE for ${HERO_NAME[v.id]}.` : `EXECUTE! ${heroLabel(h.id)} takes a brutal hit.`, '#ff8a80');
     hurtHero(h, dmg);
   }
-  if (e.hp > 0) { e.shield = true; toast(`${e.name} raises his shield again. Bash it off.`, '#8fd8ff'); }
+  if (e.hp > 0) { e.shield = true; toast(`${e.name} raises his shield again.`, '#8fd8ff'); }
 }
 
 function grantXp(amount: number) {

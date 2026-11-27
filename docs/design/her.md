@@ -58,6 +58,19 @@ it; masking tape on the top corners and a curled corner. It closes with its ✕,
 layout comes from `ui/plan.ts` as data (walls, windows, furniture shapes, swings, stops), the same walls the webcam's
 corner draws.
 
+**What she says comes from behind the door** (#139, Paweł: "like mangas usually do it"). Her words never go to the
+game chat: every quote in one of her lines (the HER tag, or a `[Her]` line from anywhere; not one named after
+someone else, "You: ...") becomes a speech bubble on her panel (`core/fx.ts` `herWords`, `say`; `n.say`, her.js
+`sayBubble`), and what happened around it stays in the feed ("CAUGHT!", "She takes the plate back. Mood +5."). The
+door shut: a white bubble over the door's upper half, its tail running into the latch-side seam and cut by the
+door's edge, so the voice is on the other side; a softly wavy outline for an ordinary line (muffled), a spiky burst
+when she shouts (a '!'), with a jolt where it comes through. The door open, she in view: the bubble above her head,
+its tail down to her, her face clear. One at a time, each 2.6 to 6 s by its length (`1.6 + 0.055 s` a letter), the
+same line twice in a row once, a pile-up keeps the one showing and the two newest. Not when her own window already
+shows the same line. Her texts stay texts (the phone; the feed under PHONE), and on your lap her words stay by her
+head (the lap sit's own line). Her lines from elsewhere in the flat ("Who keeps setting timers?!") come through the
+door too.
+
 **Last heard** (one line under the webcam view, above the her-note, `heardHtml()`; hidden while she stands in
 the doorway): what you last heard of her, where,
 and how long ago: "♫ KETTLE · kitchen · 12 s ago", "♫ STEPS · hallway · now", "♫ ZZZ · bedroom". After
@@ -304,6 +317,12 @@ buys it, angry, then furious with an anger mark on later catches, pout when woke
 visits and when she leans in. A small reaction bubble (?, !, heart, ...) over her head.
 
 ## Decisions
+
+- **Her words are speech bubbles from behind the door, not feed lines** (0.102.0, #139; Paweł, 2026-11-27): the game
+  chat is the PC's log, and she is in the flat, not in it; a manga bubble from the door puts her voice where she is.
+  The quotes are taken from her lines as they are logged, so every line of hers follows without being rewritten.
+  Rejected: her quotes in pink in the feed (still the PC talking for her), a bubble by her panel's note (it is her
+  status, not her voice), a bubble pointing at the door when she is in view (it covered her face).
 
 - **Lean in as approved, with the build's activities** (0.85, V12 #77): the couch is her TV, the kitchen her tea, the
   bath her weekend bath (its door ajar half the time, shut otherwise), the sheet mask a new once-a-night activity before

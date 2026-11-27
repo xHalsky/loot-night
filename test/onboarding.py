@@ -1,5 +1,5 @@
 # First-night onboarding (#28): the short title, the how-to-hide card (it freezes the night, Got it / Esc close it,
-# the pause menu reopens it), a pinned tip in the feed, the first-night end-cue label. Screenshots: test/onb_*.png
+# the pause menu reopens it), her opening line at the door (#139; no tips in the feed, #141), the first-night end-cue label. Screenshots: test/onb_*.png
 import asyncio
 from playwright.async_api import async_playwright
 async def act(pg, sel):
@@ -22,9 +22,9 @@ async def main():
         await pg.screenshot(path='test/onb_card.png')
         await go(pg, 'howtoClose'); await pg.wait_for_timeout(5500)
         gone = await pg.evaluate("()=>(!window.__lootnight.S.g.howto && document.getElementById('modalArea').style.display !== 'block') && window.__lootnight.S.g.night.threat > 3")
-        pinned = await pg.evaluate("()=>window.__lootnight.S.g.night.tip?.text || ''")   # the feed is drawn (V3): its pinned top row
-        print('Got it closes, night runs:', gone, '| pinned tip:', pinned); ok &= gone and 'Her' in pinned
-        await pg.screenshot(path='test/onb_tip.png', clip={'x': 960, 'y': 60, 'width': 320, 'height': 140})
+        said = await pg.evaluate("()=>(window.__lootnight.S.g.night.say || []).map(s=>s.text).join(' ') || (window.__lootnight.S.g.tipsSeen.includes('her_show') ? 'said' : '')")   # her opening line, through the door (#139)
+        print('Got it closes, night runs:', gone, '| her line:', said); ok &= gone and bool(said)
+        await pg.screenshot(path='test/onb_tip.png', clip={'x': 0, 'y': 0, 'width': 296, 'height': 300})
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
         await go(pg, 'howtoOpen'); await pg.wait_for_timeout(200)
         re = await pg.evaluate("()=>!(!window.__lootnight.S.g.howto && document.getElementById('modalArea').style.display !== 'block')")

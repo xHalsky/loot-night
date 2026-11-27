@@ -23,8 +23,3 @@ export function herUnread(): number {
   return t.slice(S.g.herSeen ?? 0).filter(l => l.s === 'l' || l.s === 'photo').length;
 }
 export function herRead() { S.g.herSeen = (S.g.herThread ?? []).length; }
-/** While the phone shows a chat: scrolled back this many items from the newest (0 = the newest). */
-export function phoneScroll(d: number | 'end') {
-  const n = N();
-  n.phScroll = d === 'end' ? 0 : Math.max(0, Math.min((S.g.herThread ?? []).length + 8, (n.phScroll ?? 0) + d));
-}

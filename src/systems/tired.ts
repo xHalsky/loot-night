@@ -5,7 +5,6 @@ import { S, N } from '../core/state';
 import { rand } from '../core/rng';
 import { toastAs } from '../core/fx';
 const toast = toastAs('YOU');   // feed tag (#49)
-import { tip } from './tips';
 import { boysSay } from './boys';
 
 // Tiredness: the live form of sleep debt (docs/design/night.md).
@@ -28,7 +27,7 @@ export function updateTired(dt: number, clockDelta: number) {
   // Yawns.
   if (n.tired >= T.TIRED_YAWN) {
     n.nextYawn -= dt;
-    if (n.nextYawn <= 0) { n.nextYawn = T.YAWN_EVERY_SEC * (1.3 - n.tired / 200); n.yawn = T.YAWN_SEC; tip('yawn'); boysSay('tired'); }
+    if (n.nextYawn <= 0) { n.nextYawn = T.YAWN_EVERY_SEC * (1.3 - n.tired / 200); n.yawn = T.YAWN_SEC; boysSay('tired'); }
   }
   n.yawn = Math.max(0, n.yawn - dt);
 

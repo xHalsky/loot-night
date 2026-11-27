@@ -118,7 +118,7 @@ export function openPhone() {
   const n = N();
   if (n.game || n.phoneDown > 0) return;
   if (!n.interrupts.length) {   // the idle phone: up into your hand at the home screen (V8: Messages, later the Shop and Home)
-    n.preMenu = n.preMenu === 'phone' ? null : 'phone'; n.phApp = 'home'; n.phScroll = 0; n.phUp = performance.now(); sfx.click(); return;
+    n.preMenu = n.preMenu === 'phone' ? null : 'phone'; n.phApp = 'home'; n.phUp = performance.now(); sfx.click(); return;
   }
   const it = n.interrupts.shift();
   if (!it) return;

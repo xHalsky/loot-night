@@ -4,7 +4,6 @@ import { S, N } from '../core/state';
 import { SHOP_ITEMS, type ShopId } from '../data/shop';
 import { addGoodwill } from './goodwill';
 import { isGift, giftBought } from './wardrobe';
-import { tip } from './tips';
 import { sfx } from '../ui/audio';
 import { toastAs } from '../core/fx';
 const toast = toastAs('SHOP');
@@ -33,8 +32,8 @@ export function shopBuy(id: ShopId): boolean {
   if (id === 'fuel') { const got = Math.min(T.SHOP_FUEL_CANS, T.MONSTER_DRAWER - S.g.monsters); S.g.monsters += got; toast(`Goblin Fuel: +${got} cans in the drawer.`, '#9fe08a'); }
   else if (id === 'chew') { if (n.dog.stage === 'away') n.dog.next += T.SHOP_CHEW_SEC; else n.dogChew = true; toast('A chew for the dog. His next visit comes later.', '#f2c46b'); }
   else if (id === 'flowers') { toast('Flowers for her. She will find them on the table.', '#ff9ab8'); addGoodwill(T.SHOP_FLOWERS_GOODWILL, 'flowers'); }
-  else if (id === 'mirror') { toast('The hall mirror is up. Lean past 3 to look round the corner.', '#9fe08a'); tip('mirror'); }
-  else if (it.tab === 'home') toast(`${it.name}: installed. It's in the Home app.`, '#9fe08a');
+  else if (id === 'mirror') { toast('The hall mirror is up.', '#9fe08a'); }
+  else if (it.tab === 'home') toast(`${it.name}: installed.`, '#9fe08a');
   else if (isGift(id)) { giftBought(id); toast(`${it.name} for her. She'll wear them tomorrow.`.replace('wear them', /socks/.test(it.name) ? 'wear them' : 'wear it'), '#ff9ab8'); }
   else toast(`${it.name}: yours.`, '#9fe08a');
   sfx.coin();

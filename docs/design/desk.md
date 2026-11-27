@@ -106,7 +106,9 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   with her unread count, and the Shop; from Thursday the battery widget instead of the clock, and Home, below). **Messages** lists Babe and The Boys (3).
   **Her chat is kept for good** (`S.g.herThread`, `systems/messages.ts`): her texts, your answers, Text her and her
   replies, across the nights, with a grey separator per sitting (the day, "Today 23:12", the time after a gap); the
-  wheel scrolls it a bubble at a time, a chip goes back to the newest (scrolled back, the thread stops above it); Text her at the bottom (dim, with a lock and
+  thread scrolls back like a smartphone's (#140): grab it and drag (it follows the pointer, a tap on a photo still
+  opens it; let go and it settles on a bubble's edge), or the wheel, a bubble at a time; a floating chip at the bottom
+  right goes back to the newest. The Boys' chat, her text and the 20:00 chat scroll the same way; Text her at the bottom (dim, with a lock and
   why, when it can't). **The Boys' chat** shows the last call's exchange (their lines, your replies, how it ended)
   until the next, and their lines between the calls ([night.md](night.md), #109), with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
   message into the chat (hands busy), then Delivered.

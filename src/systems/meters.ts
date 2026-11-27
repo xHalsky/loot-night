@@ -42,7 +42,7 @@ export function updateMeters(dt: number) {
 
   if (!n.witchingSaid && isWitching()) {   // the Witching Hour (docs/design/synergy.md)
     n.witchingSaid = true;
-    toast('01:00. The Witching Hour: drops can shift up a rarity, and insomniac affixes are out. Bed can wait?', '#c77dff');
+    toast('01:00. The Witching Hour: drops can shift up a rarity.', '#c77dff');
   }
   n.moodDrift += off ? 0 : dt;
   if (n.moodDrift >= T.MOOD_DRIFT_EVERY_SEC) { n.moodDrift = 0; addMood(1); }
@@ -70,6 +70,7 @@ export function updateMeters(dt: number) {
   for (const b of n.beams) b.t -= dt;
   n.beams = n.beams.filter(b => b.t > 0);
   for (const t of n.toasts) t.t -= dt;
+  if (n.say?.length) { n.say[0].t -= dt; if (n.say[0].t <= 0) n.say.shift(); }   // her speech bubble at the door (#139)
   n.toasts = n.toasts.filter(t => t.t > 0);
   if (n.reveal) { n.reveal.t -= dt; if (n.reveal.t <= 0) n.reveal = null; }
   if (n.appraised) n.appraised.t += dt;   // the Appraiser's reveal in the panel: sparks, a flash, the card

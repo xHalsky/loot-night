@@ -3,6 +3,47 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.102.0 (2026-11-27)
+
+Paweł's notes on the game chat, her lines and the boys (#138 to #141).
+
+- **The game chat is bigger, readable, and a chat** (#138):
+  - It is a column from x 338 of the right screen to its edge. The YOU card is at its top, widened to the column, its
+    Drink button at the right. The chat is under it: 151 × 61 px from Tuesday. On Monday, with no YOU card, it takes
+    the whole column from under the monitor to the bottom (151 × 90; it was 133 × 61).
+  - It is its own layer (`#feedArea`, `PK.feed`) at 30 fps. It sits above the desk and the dog's overlay, under the
+    full-screen windows.
+  - Every line is at full brightness (the older lines' fade read as a gradient over its bottom). Every message wraps
+    in full, no more "...".
+  - It reads like a chat: the newest line is at the bottom, and it keeps the night's last 60 lines.
+- **It scrolls back, and so do the phone's chats** (#140):
+  - Grab and drag, like a smartphone: the lines follow the pointer. When you let go, it settles on a line's edge, so
+    nothing is cut at rest (#45). The wheel moves a line at a time.
+  - A new line while you read back keeps your place. A chip at the bottom right goes back to the newest.
+  - On the phone this works in her chat, The Boys' chat, her text and the 20:00 chat. A tap on a photo still opens it.
+  - It uses one scroller (`ui/scroller.ts`).
+- **What she says comes from behind the door** (#139):
+  - Her words leave the game chat. They become a speech bubble on her panel, the way manga draw it.
+  - With the door shut, the bubble's tail runs into the door's latch-side seam and is cut there. The outline is wavy
+    for her ordinary lines (muffled) and spiky when she shouts.
+  - With the door open, the bubble sits above her head, with her face clear.
+  - What happened around her words stays in the feed ("CAUGHT!", "Mood +5.").
+  - One bubble at a time, each 2.6 to 6 s depending on its length.
+  - Her texts stay texts; "Not tonight." is now a text, like her yes. On your lap, her words stay by her head.
+- **No tutorial in the chats** (#141):
+  - The first-time tips pinned in the feed are gone. Only her own opening line is left, said through the door.
+  - Feed lines lost their instructions: Pet him!, Click it!, Take the plate!, Bash, Ward or Taunt!, Take the portal,
+    Keep the Noise down, Get loud, and the rest. Replies to your own click that say why nothing happened stay.
+  - The boys' 20:00 chats from Tuesday and the replay's are rewritten as banter about her and the raid, never how to
+    play. The How-to cards teach tonight's new things.
+  - Lance's "nine stars. strong password" is now "in. arkbishop ready to be ignored again" (he can't see your screen).
+- Tests:
+  - New: `test/say.ts` (her words, the queue, the feed's order, no tips, the boys don't teach) and `test/chats.py`
+    (the column on Monday and Tuesday, the layer, full brightness, wheel, drag, the chip, keeping your place, the
+    door bubble, the phone).
+  - Updated: `test/tips.ts`, `test/onboarding.py`, `test/home.ts`, `test/lapsit.ts`, `test/lean.ts`, `test/lean.py`.
+  - Seeded sims (good, idle) are identical: no balance change.
+
 ## 0.101.2 (2026-11-27)
 
 - **Wider chat bubbles on the phone** (#137, Paweł: they read cramped): every chat bubble can be up to 92 px wide

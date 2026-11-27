@@ -26,7 +26,6 @@ import { startCuddle } from './cuddle';
 import { sealSteps } from './home';
 import { addBuff } from './curios';
 import { addGoodwill, tryForgive } from './goodwill';
-import { tip } from './tips';
 import { coach } from './coach';
 import { boysSay } from './boys';
 
@@ -297,7 +296,7 @@ function check() {
     v.result = 'chat'; v.t = T.CHAT_ASK_SEC + 1;
     return;
   }
-  v.result = 'pass'; tip('pass'); boysSay('cleanTab');   // the boys' chat (#109)
+  v.result = 'pass'; boysSay('cleanTab');   // the boys' chat (#109)
   addMood(T.PEEK_PASS_MOOD);
   toast(`Peek passed. ${pick(PEEK_PASS)}`, '#6fcf7f'); sfx.good();
 }
@@ -310,7 +309,7 @@ function snackArrive() {
   const v = n.visit;
   if (cansInSight() && v.safe) {   // the night's first chance (#56): she only points at them
     v.safe = false;
-    toast('"Are those cans? Hide them when you hear me coming." She lets it go. Once.', '#ff9ab8');
+    toast('"Are those cans? Again?" She lets it go. Once.', '#ff9ab8');
   } else if (cansInSight()) {
     v.result = 'snackFail';
     addMood(T.SNACK_FAIL_MOOD);
@@ -319,7 +318,7 @@ function snackArrive() {
     return;
   }
   v.result = 'offer'; v.t = T.SNACK_TAKE_SEC;
-  toast('"Made you a plate. Eat something, babe." Take the plate!', '#ff9ab8');
+  toast('"Made you a plate. Eat something, babe."', '#ff9ab8');
 }
 
 export function takePlate() {
@@ -392,16 +391,15 @@ function caught() {
   const n = N();
   if (n.visit.safe) {   // the night's first chance (#56): she lets it go, once
     n.visit.safe = false; n.visit.result = 'forgiven'; n.visit.chat = null; n.visit.t = 1.8;
-    toast('She sees the game. "Raid night? Fine. Just this once." First time: she lets it go.', '#ff9ab8'); sfx.kiss(); tip('caught');
+    toast('She sees the game. "Raid night? Fine. Just this once."', '#ff9ab8'); sfx.kiss();
     return;
   }
   if (hasLife('excuses') && !n.excused) {   // of Infinite Excuses: once a night she buys it
     n.excused = true; n.visit.result = 'pass';
     addMood(T.AFFIX_EXCUSE_MOOD);
-    toast(`"It's a team-building exercise, for work." She squints. She buys it. Once. Mood +${T.AFFIX_EXCUSE_MOOD}.`, '#ff7ab8'); sfx.good();
+    toast(`You: "It's a team-building exercise, for work." She squints. She buys it. Once. Mood +${T.AFFIX_EXCUSE_MOOD}.`, '#ff7ab8'); sfx.good();
     return;
   }
-  tip('caught');
   if (tryForgive()) {   // Goodwill 60+: once a night she lets it go (and leaves: no second look)
     n.visit.result = 'forgiven'; n.visit.chat = null; n.visit.t = 1.8;
     toast(`She sees the game. Sighs. "I know, I know. Raid night." Forgiven (Goodwill -${T.GOODWILL_FORGIVE}).`, '#ff9ab8'); sfx.kiss();

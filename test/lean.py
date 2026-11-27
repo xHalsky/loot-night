@@ -22,7 +22,7 @@ async def main():
             await pg.wait_for_timeout(wait); path = f'test/shots/lean_{name}.png'; await pg.screenshot(path=path); shots.append((name, path))
         await pg.add_init_script('window.__lnDay = 1'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200)
-        check(await ev("g.voice && g.voice.chat[1][1].includes('lean in')"), "Tuesday: the boys' chat names lean in")
+        check(await ev("g.voice && !g.voice.chat.some(c => /lean in/.test(c[1]))"), "Tuesday: the boys' chat doesn't teach lean in (#141)")
         await go('voiceOk') if False else None
         await ev("g.voice = null; g.howto = true; 0"); await pg.wait_for_timeout(500)
         await shot('0_howto')
