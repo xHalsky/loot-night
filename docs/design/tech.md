@@ -56,6 +56,8 @@ Node 22, `npm ci`, `npx tsc`, `npm run build`, then it uploads `dist/` and deplo
 release a build**, fast-forward `playtest` to main and push it (`git push origin main:playtest`, which refuses
 anything that is not a fast-forward). The repo's Pages setting must be Source = **GitHub Actions**: "Deploy from a
 branch" publishes the raw repo root instead (the dev `index.html`, which does not run) on every push to that branch.
+The `github-pages` environment (Settings, Environments) must let `playtest` deploy: GitHub creates it allowing
+only main, and a deploy from `playtest` is then refused.
 The claude.ai artifact stays the in-session preview.
 
 **Debug overlay** (F1): live state, time scale, Real life on/off (#52: nobody home, no Tiredness, Noise, Mood or night
