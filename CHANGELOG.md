@@ -3,6 +3,16 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.93.1 (2026-11-27)
+
+- **Colour means usable now on the skill bar** (#123; Paweł: in play it was hard to see what can be used, and the
+  ultimate stood out at the start when it can't be used at all). A skill not bought yet, or between fights one that
+  needs an enemy, shows its picture in the stone ramp (the palette's iron greys) at half value, its key dark, no glow;
+  a skill not bought also gets a lock (it was a flat dark square). On cooldown the picture goes grey under the sweep and
+  its seconds. The ultimate is gilded with its glow only when ready; charging, its frame, crest and tab are copper and
+  the picture grey; locked (or Cataclysm between fights), the whole slot is dim stone with the lock and the count of
+  missing nodes. The 0.93.0 veil over enemy-only skills between fights is replaced by the same grey.
+
 ## 0.93.0 (2026-11-27)
 
 - **Party skills work between fights** (#122; Paweł: buffs and heals, any skill that helps the party). Arkbishop's

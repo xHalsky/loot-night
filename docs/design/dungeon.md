@@ -207,7 +207,7 @@ Skills **cast instantly** on click or key, with no global cooldown; only their o
 next pack coming up included) and at a curio, so you heal up after a fight, raise the fallen, or put Ward or Last
 Stand up as the pack comes in (their time runs in real time, so a Ward cast in the last seconds of the approach is
 still on when the fight starts). The skills that need an enemy (Taunt, Bash, Backstab, Smoke Bomb, Fire, Frost,
-Cataclysm) dim on the bar between fights behind a sparse veil (lighter than a cooldown's sweep) and their key says
+Cataclysm) turn grey and dim on the bar between fights (see the bar's states below) and their key says
 "No enemies in reach"; in town and on the floor map nothing goes off. **Cooldowns run between fights too** (on the
 walk and at a curio, not in town or on the map); the ultimates still charge only in fights. Each cast adds
 `NOISE_ABILITY` (3.5). A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once. Skills are blocked while switching screens, while a minigame has your hands, and
@@ -215,7 +215,14 @@ during microsleeps.
 
 **Teaching the skills.** Hovering a skill shows its name and hotkey and one line on what it does in this hero's
 current numbers (`tip` in `src/data/heroes.ts`: damage, heal, duration and the one combo that matters); locked
-skills add their unlock level. The cooldown shows on the button itself. Hovering a portrait shows the hero's
+skills add their unlock level. The cooldown shows on the button itself. **Colour means usable now** (#123; Paweł: in
+play it was hard to see what could be used): a well shows its picture in colour only when the skill can go off.
+Not bought yet, or between fights a skill that needs an enemy: the picture in the stone ramp (Moonwell's iron greys,
+the palette has no neutral grey) at half value, its key dark, no glow or answer pulse, and a lock when not bought. On
+cooldown: the picture in stone at full value under the dark sweep and its seconds. The ultimate's well is gilded with
+its glow only when it is ready; charging, the frame, crest and tab are copper and the picture grey under the sweep;
+locked (the tree's nodes still missing) or not usable between fights, the whole slot, crest and tab included, is dim
+stone with the lock and the count of missing nodes, so at the start of the game it no longer stands out. Hovering a portrait shows the hero's
 name, class and role in one line. (Tooltips carry only crucial information: [screen.md](screen.md).)
 During a boss wind-up, the skills that answer it pulse red (Taunt, Ward, and Bash unless the boss is braced),
 so the game teaches the answer in the moment. Skill numbers (`power`, `flat`, `dur`) live in

@@ -140,62 +140,71 @@ function haloU(x, y, w, h, mat, a) {
     if (d <= 0 || d >= 3) continue; putU(i, j, a * (1 - d / 3), mat);
   }
 }
+// What a well shows (#123, Paweł: hard to see what can be used): colour only when the skill can go off now. Locked
+// (not bought), or between fights a skill that needs an enemy: the picture in the stone ramp (Moonwell's iron greys)
+// and dim, the key dark, no frame, no glow. On cooldown or charging: the picture in stone at full value under the
+// sweep and its seconds. st.off: { [key]: 'locked' | 'idle' }.
+const OFF_K = 0.5, CD_K = 0.85, LOCK = ['.555.', '5...5', '44444', '45v54', '44444'];   // the lock on a skill not bought yet
+function greyU(x, y, w, h, k) {
+  for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) {
+    if (i < 0 || j < 0 || i >= W || j >= H) continue;
+    const p = j * W + i, idx = B.I[p];
+    if (idx >= 0) putU(i, j, PAL_LAB[idx][0] * k, M_STONE);
+    else if (B.A[p]) { B.M[p] = M_STONE; B.V[p] *= k; }
+  }
+}
+function cdSweep(x, y, cd) {
+  const n = Math.round(13 * cd.f);
+  for (let j = 0; j < n; j++) for (let i = 0; i < 13; i++) if (((i + j) & 1) || j < n - 6) putI(x + 1 + i, y + 1 + j, P.void);
+  if (cd.s !== '') text(String(cd.s), x + 8, y + 5, 'tiny', P.moon, { align: 'c', outline: P.void });
+}
 function skillSlot(x, y, sk, key, st, t, ult = false) {
   const w = 15, h = 18;
   if (ult) return ultSlot(x, y, sk, key, st, t);
-  const pulse = st.answer === key ? 0.5 + 0.5 * Math.sin(t * 8) : 0, combo = st.combo && st.combo.key === key;
-  if (st.answer === key) haloU(x, y, w, h, M_DANGER, 0.55 + 0.4 * pulse);
+  const off = st.off && st.off[key], cd = !off && st.cooldown && st.cooldown[key];
+  const pulse = !off && st.answer === key ? 0.5 + 0.5 * Math.sin(t * 8) : 0, combo = !off && !cd && st.combo && st.combo.key === key;
+  if (!off && st.answer === key) haloU(x, y, w, h, M_DANGER, 0.55 + 0.4 * pulse);
   if (combo) haloU(x, y, w, h, M_LOOT, 0.7);
-  wellU(x, y, w, h, { v: 0.14 });
+  wellU(x, y, w, h, { v: off ? 0.08 : 0.14 });
   skillTile(x + 1, y + 1, 13, 16, SKILL_CLASS[sk]);
-  if (st.answer === key && pulse > 0.5) frameI(x, y, w, h, P.crimson); else if (st.answer === key) frameI(x, y, w, h, P.wine);
-  if (combo) frameI(x, y, w, h, P.gold);
   sprite(x + 1, y + 1, SKILL_ICON[sk]);
-  const cd = st.cooldown && st.cooldown[key], idle = !cd && st.idle && st.idle[key];
-  if (cd) {
-    const n = Math.round(13 * cd.f);
-    for (let j = 0; j < n; j++) for (let i = 0; i < 13; i++) if (((i + j) & 1) || j < n - 6) putI(x + 1 + i, y + 1 + j, P.void);
-    text(String(cd.s), x + 8, y + 5, 'tiny', P.moon, { align: 'c', outline: P.void });
-  }
-  if (idle) idleDim(x, y);   // between fights it needs an enemy (#122)
-  rectI(x + 1, y + 13, 6, 5, P.void); text(key, x + 2, y + 13, 'tiny', cd || idle ? P.u4 : P.u6);
+  if (off) greyU(x + 1, y + 1, 13, 16, OFF_K);   // not now: grey and dim (#123)
+  if (off === 'locked') sprite(x + 5, y + 4, LOCK);   // not bought: a lock
+  else if (cd) { greyU(x + 1, y + 1, 13, 16, CD_K); cdSweep(x, y, cd); }   // not yet: grey under the sweep
+  if (!off && st.answer === key && pulse > 0.5) frameI(x, y, w, h, P.crimson); else if (!off && st.answer === key) frameI(x, y, w, h, P.wine);
+  if (combo) frameI(x, y, w, h, P.gold);
+  rectI(x + 1, y + 13, 6, 5, P.void); text(key, x + 2, y + 13, 'tiny', off ? P.s2 : cd ? P.u4 : P.u6);
   // autocast bought (tree.js): a loop mark on a void tab in the other corner; moss when on, dim when switched off (right-click)
   const ac = st.autocast && st.autocast[key];
-  if (ac != null) { rectI(x + 7, y + 13, 7, 5, P.void); sprite(x + 8, y + 13, ['.mmm.', 'm...m', 'm..mm', '.mm..'], { m: ac ? 'g6' : 'u3' }); }
+  if (ac != null) { rectI(x + 7, y + 13, 7, 5, P.void); sprite(x + 8, y + 13, ['.mmm.', 'm...m', 'm..mm', '.mm..'], { m: ac && !off ? 'g6' : 'u3' }); }
   if (st.queued === key) { putI(x + w - 3, y + 1, P.pale); putI(x + w - 2, y + 1, P.pale); putI(x + w - 2, y + 2, P.pale); }
   if (combo) { const s = st.combo.label, cw = measure(s, 'tiny') + 4; shadowU(x + w - cw + 2, y - 5, cw, 8, { k: 0.5, r: 2, dx: 1, dy: 1 }); rectI(x + w - cw + 2, y - 5, cw, 8, P.void); rectI(x + w - cw + 3, y - 4, cw - 2, 6, P.gold); rectI(x + w - cw + 3, y - 4, cw - 2, 1, P.pale); text(s, x + w - cw + 4, y - 4, 'tiny', P.void); }
 }
-// the ultimate, always the third slot: gilded. A gold frame with pale corner studs, a gem set into the rail above it on
-// a little gold crest, its key on a gold tab. Ready: a warm glow that breathes. Locked (needs 6 nodes in the tree): dark
-// copper, a lock and how many nodes are still missing. On cooldown: the sweep, as for the others
+// the ultimate, always the third slot. Ready: gilded (a gold frame with pale corner studs, a gem set into the rail
+// above it on a little gold crest, its key on a gold tab) and a warm glow that breathes. Charging: the same in copper,
+// the picture grey under the sweep. Locked (needs 6 nodes in the tree) or, between fights, one that needs an enemy:
+// the whole slot, crest and tab included, in dim stone with a lock and how many nodes are still missing (#123: it stood
+// out at the start, when it can't be used at all)
 function ultSlot(x, y, sk, key, st, t) {
-  const w = 15, h = 18, u = (st.ult && st.ult[key]) || 'ready', cd = st.cooldown && st.cooldown[key];
-  const locked = typeof u === 'object' && u.need, idle = !cd && !locked && st.idle && st.idle[key], ready = u === 'ready' && !cd && !idle;
+  const w = 15, h = 18, u = (st.ult && st.ult[key]) || 'ready', locked = typeof u === 'object' && u.need;
+  const off = locked || (st.off && st.off[key]), cd = !off && st.cooldown && st.cooldown[key], ready = !off && !cd && u === 'ready';
   if (ready) haloU(x, y, w, h, M_LOOT, 0.42 + 0.22 * Math.sin(t * 2.6));
-  wellU(x, y, w, h, { v: 0.14 });
+  wellU(x, y, w, h, { v: off ? 0.08 : 0.14 });
   skillTile(x + 1, y + 1, 13, 16, SKILL_CLASS[sk]);
   sprite(x + 1, y + 1, SKILL_ICON[sk]);
-  if (locked) for (let j = 1; j < 17; j++) for (let i = 1; i < 14; i++) if ((i + j) & 1) putI(x + i, y + j, P.void);
-  if (idle) idleDim(x, y);   // Cataclysm between fights: it needs an enemy (#122)
-  if (cd) {
-    const n = Math.round(13 * cd.f);
-    for (let j = 0; j < n; j++) for (let i = 0; i < 13; i++) if (((i + j) & 1) || j < n - 6) putI(x + 1 + i, y + 1 + j, P.void);
-    text(String(cd.s), x + 8, y + 5, 'tiny', P.moon, { align: 'c', outline: P.void });
-  }
-  const fc = locked ? P.copper : P.gold, sc = locked ? P.wine : P.pale;
+  if (off) greyU(x + 1, y + 1, 13, 16, OFF_K);
+  else if (cd) { greyU(x + 1, y + 1, 13, 16, CD_K); cdSweep(x, y, cd); }
+  const fc = off ? P.s2 : ready ? P.gold : P.copper, sc = off ? P.s3 : ready ? P.pale : P.gold, tc = off ? P.s3 : P.void;
   frameI(x - 1, y - 1, w + 2, h + 2, P.void); frameI(x, y, w, h, fc);
   for (const [cx, cy] of [[x, y], [x + w - 1, y], [x, y + h - 1], [x + w - 1, y + h - 1]]) putI(cx, cy, sc);
-  // the crest: a gold peak over the slot's top edge with a gem in it
+  // the crest: a peak over the slot's top edge with a gem in it
   const mx = x + (w >> 1);
   rectI(mx - 3, y - 1, 7, 1, fc); rectI(mx - 2, y - 2, 5, 1, fc); rectI(mx - 1, y - 3, 3, 1, fc); putI(mx, y - 4, sc);
-  putI(mx, y - 2, locked ? P.d2 : P.crimson); putI(mx - 1, y - 1, P.void); putI(mx + 1, y - 1, P.void); putI(mx, y - 1, locked ? P.d3 : P.moon);
-  // its key on a gold tab
-  rectI(x + 1, y + 12, 7, 6, fc); rectI(x + 1, y + 12, 7, 1, sc); text(key, x + 2, y + 13, 'tiny', P.void);
-  if (locked) { sprite(x + 5, y + 3, ['.333.', '3...3', '22222', '23v32', '22222']); text(String(u.need), x + w - 2, y + 12, 'tiny', P.u6, { align: 'r', outline: P.void }); }
+  putI(mx, y - 2, off ? P.s1 : P.crimson); putI(mx - 1, y - 1, P.void); putI(mx + 1, y - 1, P.void); putI(mx, y - 1, off ? P.s2 : P.moon);
+  // its key on a tab
+  rectI(x + 1, y + 12, 7, 6, fc); rectI(x + 1, y + 12, 7, 1, sc); text(key, x + 2, y + 13, 'tiny', tc);
+  if (locked) { sprite(x + 5, y + 3, LOCK); text(String(u.need), x + w - 2, y + 12, 'tiny', P.s4, { align: 'r', outline: P.void }); }
 }
-// a skill that can't go off between fights (it needs an enemy, #122): its picture behind a sparse veil, a quarter of
-// its pixels dark, lighter than the cooldown's sweep so it reads as "not now", not "not ready"
-function idleDim(x, y) { for (let j = 1; j < 17; j++) for (let i = 1; i < 14; i++) if (!(i & 1) && !(j & 1)) putI(x + i, y + j, P.void); }
 function lockedSlot(x, y, key) {
   wellU(x, y, 11, 14, { v: 0.08 });
   sprite(x + 2, y + 2, ['..333..', '.3...3.', '.3...3.', '2222222', '2333332', '233v332', '2222222']);
