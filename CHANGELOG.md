@@ -3,6 +3,17 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.92.1 (2026-11-27)
+
+- **Every contact's name is in their own colour** (#119; Paweł: easier to read chats, above all the group chat). One
+  colour per person (`CONTACT_COL` in `render/page/phone.js`): Babe her pink; Billy arcane (Hudzor, the Mage), Mike
+  ember (Hixx, the Rogue), Lance gold (Arkbishop, the Priest), each his character's class colour; Mom copper, the
+  courier steel, the boss moss. Drawn wherever a name is: a group chat line's "Billy:" (the text stays white), the typing
+  dots, chat headers and the member list, Messages' rows and previews, calls, the lock screen's banners. The desk phone
+  uses the same colours (the boss's banner was white, now moss). A new contact needs a line in the table; one without
+  gets a spare light colour by its name. A group's own name stays white.
+- `test/phone.py` checks the colours; `test/week.py` expected six Monday bubbles (five since 0.91.2), fixed.
+
 ## 0.92.0 (2026-11-27)
 
 - **The party walks up to the enemies** (#118; Paweł: they should not appear, they wait for you). After a fight the

@@ -84,4 +84,15 @@ async def main():
     sheet = Image.new('RGB', (cols * (w + 6), rows * (h + 6)), (20, 14, 24))
     for i, im in enumerate(ims): sheet.paste(im, ((i % cols) * (w + 6), (i // cols) * (h + 6)))
     sheet.save('test/shots/phone_sheet.png'); print('sheet:', sheet.size, [n for n, _ in shots])
+    # every contact's name in their colour (#119): the boys in their characters' class colours in their chat, Babe's pink
+    # in Messages, Mom's copper on her call, the boss's moss on his chat (the desk's Graphite palette)
+    def has(name, rgb):
+        d = Image.open(f'test/shots/phone_{name}.png').convert('RGB').getdata()
+        return sum(1 for c in d if c == rgb)
+    COL = {'arcane': (0x8b, 0x5a, 0xd6), 'copper': (0xc1, 0x62, 0x29), 'gold': (0xf1, 0xa9, 0x34), 'pink': (0xd9, 0xa6, 0x9c), 'mom': (0xa9, 0x74, 0x4b), 'moss': (0x74, 0x99, 0x70)}
+    got = {'boys arcane (Billy)': has('boys', COL['arcane']), 'boys copper (Mike)': has('boys', COL['copper']), 'boys gold (Lance, the header)': has('boys', COL['gold']),
+           'messages pink (Babe)': has('messages', COL['pink']), 'mom copper': has('mom', COL['mom']), 'boss moss': has('boss', COL['moss'])}
+    bad = [k for k, v in got.items() if v < 20]
+    print('contact colours:', got, 'FAIL ' + ', '.join(bad) if bad else 'ok')
+    if bad: raise SystemExit(1)
 asyncio.run(main())

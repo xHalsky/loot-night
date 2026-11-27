@@ -38,6 +38,30 @@ has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 Each time is picked in its window at 20:00; nothing comes before `PHONE_FIRST_SEC` (45 s) into the night. Money rule:
 real life pays in dollars or buffs, never RPG loot or gold (the courier's parcel was an item; the boss paid gold).
 
+**Every contact has a colour, one per person** (#119, Paweł; `CONTACT_COL` in `render/page/phone.js`), so a chat and
+above all The Boys' group chat read at a glance. Their name is drawn in it wherever it appears: a group chat line's
+"Billy:" (the rest of the line stays white), the typing dots' name, a chat's header and its member list ("Billy,
+Mike, Lance"), Messages' rows and previews, a call's caller, the lock screen's banners. On the desk, where the text is
+too small to read, a call fills the screen and a banner is a block in the same colour.
+
+| Contact | Colour | Why |
+|---|---|---|
+| Babe | her pink (d6) | her colour everywhere |
+| Billy | arcane violet | he plays Hudzor, the Mage (the Mage's class colour) |
+| Mike | ember | he plays Hixx, the Rogue (the Rogue's copper) |
+| Lance | gold | he plays Arkbishop, the Priest |
+| Mom | copper | her call's warm wallpaper |
+| Courier | steel blue | |
+| Boss | moss | he pays (dollars are moss) |
+
+A group's own name ("The Boys (3)") stays white: its members carry the colours. The phone is drawn in the desk's
+palette, where only the meaning colours, steel and ember stay saturated in every world, so the colours come from them
+(cyan stays Zone's and crimson danger's). **A new contact gets a line in the table** and a colour nobody has; one
+without falls back to a spare light colour picked by its name, so no contact's name is ever plain white, and a group
+chat line colours only the names in the table (a line like "Note: ..." stays plain). Rejected: the name on its own
+line above the bubble (taller bubbles, fewer lines on screen), and the boss white and Mom umber (white is the text
+colour, and the desk's umber is grey in Graphite).
+
 **One demand at a time from real life** (`systems/reallife.ts`): a phone event or the dog's arrival starts only when
 nothing else asks for you (the phone, a minigame, a pre-emptive action, the dog, her visit), `REAL_LIFE_GAP_SEC` (15 s)
 after the last thing did, and never while she is in the shower, during a boss wind-up or during a calm you earned

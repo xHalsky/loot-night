@@ -29,6 +29,36 @@ const tx = (s, x, y, idx, o = {}) => {
   text(t0, PHX(Math.round(x0)), PHY(y), o.f || 'tiny', idx, { ...o, align: 'l' }); spr(PHX(Math.round(x0) + w - 5), PHY(y + 1), PG.heart, { x: o.heart ?? idx }); return w;
 };
 const mw = (s) => s.endsWith(' ♥') ? measure(s.slice(0, -2), 'tiny') + 7 : measure(s, 'tiny');
+// Every contact's name is in their own colour, the same everywhere on the phone and the desk (#119, Paweł): Babe her
+// pink; the boys their characters' class colours (Billy plays Hudzor, the Mage: arcane; Mike Hixx, the Rogue: ember,
+// the rogue's copper; Lance Arkbishop, the Priest: gold); Mom copper, the courier steel, the boss moss (he pays). The
+// phone is drawn in the desk's palette, where only the meaning colours, steel and ember stay saturated in every world
+// (desk.js), so these are picked from them. A new contact gets a line here; one
+// without falls back to a spare colour picked by its name where a name is drawn on its own (a header, a banner, the
+// typing dots), so no contact is ever plain white; group chat lines colour only the names listed here.
+const CONTACT_COL = { Babe: 'd6', Billy: 'arcane', Mike: 'ember', Lance: 'gold', Mom: 'copper', Courier: 'steel', Boss: 'g5' };
+const SPARE_COL = ['pale', 'u6', 'd5'];
+function whoCol(name) {
+  const c = CONTACT_COL[name]; if (c) return P[c];
+  if (/\(\d+\)$/.test(name)) return P.moon;   // a group ("The Boys (3)"): its members carry the colours
+  let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return P[SPARE_COL[h % SPARE_COL.length]];
+}
+const LEAD = /^([A-Z][A-Za-z]+): /;   // a group chat line: "Billy: raid at 11?"
+// a line of text with the names in it coloured: o.lead colours only a leading "Name:" (a group chat line, a preview);
+// otherwise every contact named in it (a header, "Billy, Mike, Lance"). Same args as tx.
+function txWho(s, x, y, idx, o = {}) {
+  const spans = [];
+  if (o.lead) { const m = LEAD.exec(s); if (m && CONTACT_COL[m[1]]) spans.push([0, m[1].length, whoCol(m[1])]); }   // a known contact only: "Note: ..." stays plain
+  else { const re = new RegExp('\\b(' + Object.keys(CONTACT_COL).join('|') + ')\\b', 'g'); let m; while ((m = re.exec(s))) spans.push([m.index, m.index + m[1].length, whoCol(m[1])]); }
+  if (!spans.length) return tx(s, x, y, idx, o);
+  const w = o.f && o.f !== 'tiny' ? measure(s, o.f) : mw(s), x0 = Math.round(o.align === 'c' ? x - w / 2 : o.align === 'r' ? x - w : x), oo = { ...o, align: 'l' };
+  let at = 0;
+  const piece = (a, b, c) => { if (b > a) tx(s.slice(a, b), x0 + (a ? measure(s.slice(0, a), o.f || 'tiny') : 0), y, c, oo); };
+  for (const [a, b, c] of spans) { piece(at, a, idx); piece(a, b, c); at = b; }
+  piece(at, s.length, idx);
+  return w;
+}
 const inAV = (x, y) => !AVM || (x + 0.5 - AVM[0]) ** 2 + (y + 0.5 - AVM[1]) ** 2 <= AVM[2] * AVM[2];
 const px = (x, y, idx) => { if (inAV(x, y)) putI(PHX(x), PHY(y), idx); };
 const disc = (cx, cy, r, idx) => { for (let y = Math.floor(cy - r); y <= cy + r; y++) for (let x = Math.floor(cx - r); x <= cx + r; x++) if ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= r * r) px(x, y, idx); };
@@ -94,7 +124,7 @@ function bubble(str, side, y, o = {}) {
   const x = side === 'r' ? PH.sw - 7 - w : 7, fill = o.fill ?? (side === 'r' ? P.pale : P.s2), ink = o.ink ?? (side === 'r' ? P.s1 : P.moon);
   rrI(x, y, w, h, 4, fill);
   if (o.tail !== false) { if (side === 'r') { px(x + w - 1, y + h - 1, fill); px(x + w, y + h - 1, fill); } else { px(x - 1, y + h - 1, fill); px(x, y + h - 1, fill); } }
-  lines.forEach((l, k) => tx(l, x + 5, y + 3 + k * 8, ink, { heart: o.heart ?? (side === 'r' ? P.crimson : P.d6) }));
+  lines.forEach((l, k) => (k ? tx : txWho)(l, x + 5, y + 3 + k * 8, ink, { heart: o.heart ?? (side === 'r' ? P.crimson : P.d6), lead: true }));   // a group chat line's name in its colour (#119)
   return h;
 }
 function fitT(s, w) { if (measure(s, 'tiny') <= w) return s; while (s.length && measure(s + '...', 'tiny') > w) s = s.slice(0, -1); return s.trimEnd() + '...'; }
@@ -128,8 +158,8 @@ PHONE_SCREENS.call = (t, o) => {
   // the caller, ringing: a pulse round the avatar
   const pr = 22 + ((t * 1.2) % 1) * 6; for (let a = 0; a < 64; a++) { const an = (a / 64) * 6.283; if (a % 2) px(Math.round(56 + Math.cos(an) * pr), Math.round(62 + Math.sin(an) * pr), P.s4); }
   avatar(C.av, 56, 62, 20);
-  tx(C.name, 56, 92, P.moon, { align: 'c', f: 'head' });
-  tx(C.sub, 56, 111, P.s5, { align: 'c' });
+  txWho(C.name, 56, 92, P.moon, { align: 'c', f: 'head' });
+  txWho(C.sub, 56, 111, P.s5, { align: 'c' });
   // Speaker (hands free, but you are heard) and Message
   for (const [k, lab, g, x] of [[0, 'Speaker', PG.spk, 32], [1, 'Message', PG.chat, 80]]) { disc(x, 140, 10, P.s3); disc(x, 139, 10, P.s2); gl(g, x - 2, 136 - (k ? 0 : 1), P.moon); tx(lab, x, 153, P.s5, { align: 'c' }); }
   // slide to answer
@@ -157,7 +187,7 @@ PHONE_SCREENS.lock = (t, o) => {
   const bn = o.banners || [{ app: 'work', who: 'Boss', what: 'you there?' }];
   let y = 62; const shown = bn.slice(0, 2);
   shown.forEach((b) => { y += banner(b, y) + 3; });
-  if (bn.length > 2) { const more = bn.length - 2, last = bn[bn.length - 1].who; tx('+' + more + ' more from ' + last, 56, y, P.d6, { align: 'c' }); y += 10; }
+  if (bn.length > 2) { const more = bn.length - 2, last = bn[bn.length - 1].who; txWho('+' + more + ' more from ' + last, 56, y, P.s5, { align: 'c' }); y += 10; }
   // Face ID: hold to unlock; the ring fills while you hold
   const hold = o.hold === 'anim' ? Math.min(1, Math.max(0, (t % 2.4) - 0.3) / 1.2) : o.hold ?? 0, cx = 56, cy = 196;
   for (let a = 0; a < 96; a++) { const an = (a / 96) * 6.283 - 1.571, on = a / 96 < hold; px(Math.round(cx + Math.cos(an) * 15), Math.round(cy + Math.sin(an) * 15), on ? P.g5 : a % 3 ? P.s4 : -1); if (on) px(Math.round(cx + Math.cos(an) * 14), Math.round(cy + Math.sin(an) * 14), P.g5); }
@@ -175,7 +205,7 @@ function banner(b, y) {
   rrI(6, y, PH.sw - 12, h, 6, P.s1); rrI(6, y, PH.sw - 12, 1, 0, P.s3);
   const ic = b.app === 'msg' ? P.g5 : P.s4;
   rrI(10, y + 4, 11, 11, 3, ic); gl(b.app === 'msg' ? PG.bubble : PG.brief, 13, y + 7, P.moon);
-  tx(b.who, 25, y + 4, b.app === 'msg' ? P.d6 : P.moon); if (b.app === 'msg') gl(PG.heart, 25 + measure(b.who, 'tiny') + 2, y + 5, P.d6);
+  tx(b.who, 25, y + 4, whoCol(b.who)); if (b.who === 'Babe') gl(PG.heart, 25 + measure(b.who, 'tiny') + 2, y + 5, whoCol('Babe'));
   tx(b.app === 'msg' ? 'Messages' : 'Work', PH.sw - 10, y + 4, P.s4, { align: 'r' });
   lines.forEach((l, k) => tx(l, 25, y + 12 + k * 8, P.u6));
   return h;
@@ -186,8 +216,8 @@ function chatHead(who, av, left, total, sub, time) {
   flatBg(54);
   statusBar({ time });
   gl(PG.back, 6, 22, P.moon); avatar(av, 56, 25, 9);
-  if (who === 'Babe') tx('Babe ♥', 56, 37, P.d6, { align: 'c' }); else tx(who, 56, 37, P.moon, { align: 'c' });
-  if (sub) tx(sub, 56, 45, P.s5, { align: 'c' });
+  if (who === 'Babe') tx('Babe ♥', 56, 37, whoCol('Babe'), { align: 'c' }); else txWho(who, 56, 37, P.moon, { align: 'c' });
+  if (sub) txWho(sub, 56, 45, P.s5, { align: 'c' });   // The Boys' members, each in his colour
   if (left != null) { timerBar(61, left, total); return 68; }
   return 56;
 }
@@ -223,7 +253,7 @@ function callHead(who, status, t, o = {}) {
   const C = CALLERS[who];
   flatBg(40);
   statusBar({ time: o.time });
-  avatar(C.av, 17, 27, 9); tx(C.name, 31, 20, P.moon); tx(status, 31, 29, P.g5);
+  avatar(C.av, 17, 27, 9); txWho(C.name, 31, 20, P.moon); tx(status, 31, 29, P.g5);
   tx('0:' + String(4 + Math.floor(t % 50)).padStart(2, '0'), PH.sw - 8, 20, P.s5, { align: 'r' });
 }
 // misses so far: a row of pips above End
@@ -330,7 +360,7 @@ function drawPhoneOver(ctx, x, y, scr, t, o = {}) {
 // is in perspective; the wallpaper stays material and is dithered in screen space.
 const DT = { w: 64, h: 100 };
 // who it is, on the desk phone: [fill, second tone] for calls, [fill, ink] for banners
-const DESK_WHO = { mom: [P.copper, P.wine], courier: [P.steel, P.s2], boys: [P.arcane, P.d2], boss: [P.moon, P.s1], babe: [P.d6, P.d1] };
+const DESK_WHO = { mom: [P.copper, P.wine], courier: [P.steel, P.s2], boys: [P.arcane, P.d2], boss: [P.g5, P.g1], babe: [P.d6, P.d1] };   // their contact colours (#119)
 function deskScreen(st, t) {
   const B0 = B, W0 = W, H0 = H, C0 = CLIP;
   const T = buf('phoneDesk', DT.w, DT.h); clearFrame(T); setRes(DT.w, DT.h); bind(T); CLIP = null; OX = 0; OY = 0;
@@ -341,7 +371,7 @@ function deskScreen(st, t) {
   };
   // On the desk the text is too small to read, so who it is shows in colour (2026-11-20): a call fills the screen
   // in the caller's colour (Mom copper, the courier steel blue, The Boys violet), a message banner is a solid block
-  // in the sender's (the boss white, her pink, The Boys violet). The layouts stay the OS's, so a call still reads
+  // in the sender's (the boss moss, her pink, The Boys violet; the contact colours, #119). The layouts stay the OS's, so a call still reads
   // as a call (the green knob, the red Decline) and a text as a banner.
   if (S === 'call') {
     const C = CALLERS[st.caller || 'mom'], [c0, c1] = DESK_WHO[st.caller || 'mom'];
@@ -813,7 +843,7 @@ function drawItem(m, y, t) {
   if (m[0] === 'typing') {   // someone is typing (#102): their name and three dots that hop, in a small grey bubble
     const nw = mw(m[1]), w = nw + 22, x = 7, h = 12;
     rrI(x, y + 3, w, h, 4, P.s2); px(x - 1, y + h + 2, P.s2); px(x, y + h + 2, P.s2);
-    tx(m[1], x + 5, y + 6, P.s5);
+    tx(m[1], x + 5, y + 6, whoCol(m[1]));
     for (let k = 0; k < 3; k++) { const hop = Math.floor(t * 6 - k) % 3 === 0 ? 1 : 0; rrI(x + nw + 8 + k * 4, y + 9 - hop, 2, 2, 0, hop ? P.moon : P.s4); }
     return;
   }
@@ -875,9 +905,9 @@ function msgList(t, o = {}) {
     const y = 46 + k * 34;
     if (o.tap === k && (t % 2) > 0.9) rrI(3, y - 2, PH.sw - 6, 32, 6, P.s1);
     avatar(r.av, 18, y + 13, 10);
-    if (r.her) tx('Babe ♥', 33, y + 4, P.d6); else tx(r.who, 33, y + 4, P.moon);
+    if (r.her) tx('Babe ♥', 33, y + 4, whoCol('Babe')); else txWho(r.who, 33, y + 4, P.moon);
     tx(r.time, PH.sw - 7, y + 4, r.unread ? P.d6 : P.s4, { align: 'r' });
-    tx(fitT(r.last, PH.sw - 52), 33, y + 14, r.unread ? P.moon : P.s5);
+    txWho(fitT(r.last, PH.sw - 52), 33, y + 14, r.unread ? P.moon : P.s5, { lead: true });
     if (r.unread) { disc(PH.sw - 12, y + 18, 4.5, P.d6); tx(String(r.unread), PH.sw - 12, y + 16, P.void, { align: 'c' }); }
     rrI(33, y + 29, PH.sw - 33, 1, 0, P.s1);
     if (o.tap === k) { const on = Math.floor(t * 6) & 1; for (let i = 0; i < PH.sw - 4; i++) if (((i >> 1) + on) & 1) { px(2 + i, y - 3, P.gold); px(2 + i, y + 30, P.gold); } for (let j = 0; j < 34; j++) if (((j >> 1) + on) & 1) { px(2, y - 3 + j, P.gold); px(PH.sw - 3, y - 3 + j, P.gold); } }
@@ -961,8 +991,8 @@ const LIVE = {
     rrI(PH.sw - 30, 15, 22, 9, 4, P.gold); tx(Math.ceil(v.left) + ' s', PH.sw - 19, 17, P.void, { align: 'c' });
     const pr = 22 + ((t * 1.2) % 1) * 6; for (let a = 0; a < 64; a++) { const an = (a / 64) * 6.283; if (a % 2) px(Math.round(56 + Math.cos(an) * pr), Math.round(62 + Math.sin(an) * pr), P.s4); }
     avatar(C.av, 56, 62, 20);
-    tx(C.name, 56, 92, P.moon, { align: 'c', f: 'head' });
-    tx(C.sub, 56, 111, P.s5, { align: 'c' });
+    txWho(C.name, 56, 92, P.moon, { align: 'c', f: 'head' });
+    txWho(C.sub, 56, 111, P.s5, { align: 'c' });
     disc(56, 140, 10, P.s3); disc(56, 139, 10, P.s2); gl(PG.spk, 54, 135, P.moon); tx('Speaker', 56, 153, P.s5, { align: 'c' });
     tx('hands free, loud', 56, 161, P.s4, { align: 'c' });
     hit(42, 127, 28, 42, 'speaker');
@@ -981,7 +1011,7 @@ const LIVE = {
     tx(v.date, 56, 22, P.d6, { align: 'c' });
     bigTime(v.time, 56, 32, P.moon);
     let y = 62; v.banners.slice(-2).reverse().forEach((b) => { y += banner(b, y) + 3; });
-    if (v.banners.length > 2) { tx('+' + (v.banners.length - 2) + ' more from ' + v.banners[0].who, 56, y, P.d6, { align: 'c' }); }
+    if (v.banners.length > 2) { txWho('+' + (v.banners.length - 2) + ' more from ' + v.banners[0].who, 56, y, P.s5, { align: 'c' }); }
     const hold = v.hold, cx = 56, cy = 196;
     for (let a = 0; a < 96; a++) { const an = (a / 96) * 6.283 - 1.571, on = a / 96 < hold; px(Math.round(cx + Math.cos(an) * 15), Math.round(cy + Math.sin(an) * 15), on ? P.g5 : a % 3 ? P.s4 : -1); if (on) px(Math.round(cx + Math.cos(an) * 14), Math.round(cy + Math.sin(an) * 14), P.g5); }
     faceGlyph(cx, cy, hold >= 1 ? P.g5 : P.moon);
@@ -1079,9 +1109,9 @@ const LIVE = {
     v.rows.forEach((r, k) => {
       const y = 46 + k * 34;
       avatar(r.av, 18, y + 13, 10);
-      if (r.her) tx('Babe ♥', 33, y + 4, P.d6); else tx(r.who, 33, y + 4, P.moon);
+      if (r.her) tx('Babe ♥', 33, y + 4, whoCol('Babe')); else txWho(r.who, 33, y + 4, P.moon);
       tx(r.time, PH.sw - 7, y + 4, r.unread ? P.d6 : P.s4, { align: 'r' });
-      tx(fitT(r.last, PH.sw - 52), 33, y + 14, r.unread ? P.moon : P.s5);
+      txWho(fitT(r.last, PH.sw - 52), 33, y + 14, r.unread ? P.moon : P.s5, { lead: true });
       if (r.unread) { disc(PH.sw - 12, y + 18, 4.5, P.d6); tx(String(r.unread), PH.sw - 12, y + 16, P.void, { align: 'c' }); }
       rrI(33, y + 29, PH.sw - 33, 1, 0, P.s1);
       hit(2, y - 3, PH.sw - 4, 33, 'phApp', r.id);

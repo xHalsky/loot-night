@@ -50,7 +50,7 @@ async def main():
         check(await ev("g.day") == 0 and await ev("!!g.voice && g.howto"), 'a new game is Monday: the boys\' chat first, the night waits')
         check(await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'block', 'the phone is in your hand')
         await shot('0_monday_chat', 7000)   # Billy, Mike and Lance typing, a bubble at a time
-        check(await ev("g.voice.chat.length") == 6 and await ev("n.threat") < 0.5, 'Monday\'s chat; the night has not started')
+        check(await ev("g.voice.chat.length") == 5 and await ev("n.threat") < 0.5, 'Monday\'s chat; the night has not started')
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
         check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'Esc puts the phone down; How to hide next')
         check(await ev("g.boysThread && g.boysThread[1].text.startsWith(`Billy: yo. realm's up`)"), 'the chat stays in The Boys\' chat')
