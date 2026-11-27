@@ -1,8 +1,8 @@
 import { T } from '../config/tuning';
 import { S, N, type MapKind } from '../core/state';
 import { spawnBattle, updateBattle, reviveHero } from './battle';
-import { rollBattleDrops, rollBattleExtras, removeEntry, entryName, moveFloorLoot, sweepFloorLoot } from './loot';
-import { ENEMY_SLOTS, MID_SLOT } from '../core/arena';
+import { rollBattleDrops, rollBattleExtras, removeEntry, entryName, moveFloorLoot, sweepFloorLoot, looterIndex } from './loot';
+import { ENEMY_SLOTS, MID_SLOT, POS_X, LOOTER_REACH } from '../core/arena';
 import { gainGold, gainSouls, startRun, bankRun, loseRun, blessCount } from './run';
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
@@ -33,7 +33,7 @@ function startFloor(map: MapKind | 'plain', card?: PathCard) {
   n.feature = card?.feat ?? null; n.cond = card?.cond ?? null;
   if (n.feature && FEATURES[n.feature].map) map = FEATURES[n.feature].map!;   // Elite Pack, Goblin Den
   if (n.cond && CONDITIONS[n.cond].map) map = CONDITIONS[n.cond].map!;          // Cursed
-  n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.phaseT = 0;
+  n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.pack = null; n.phaseT = 0;
   n.curio = null; n.curioAt = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
   n.deepest = Math.max(n.deepest, n.floor);
   S.g.mapPath[n.floor] = map === 'plain' ? (n.floor % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'plain') : map;   // the dungeon map (#48)
@@ -63,7 +63,7 @@ function floorEnd() {
   const souls = T.SOULS_PER_FLOOR_BASE + n.floor;              // #52, 1.4
   gainGold(pay); gainSouls(souls);
   toast(`Floor ${n.floor} cleared: +${pay} gold, +${souls} Souls.`, '#f2b84b');
-  n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; tip('map');
+  n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; n.pack = null; tip('map');
   makePaths();
 }
 
@@ -89,7 +89,7 @@ function makePaths() {
   n.safest = pool.sort((a, b) => danger(a.c) - danger(b.c))[0]?.i ?? 0;
 }
 /** Debug (F1, End floor): the floor ends now, with its route choice. */
-export function debugEndFloor() { const n = N(); if (n.location === 'dungeon' && n.phase !== 'mapChoice') { n.enemies = []; n.reserve = []; floorEnd(); } }
+export function debugEndFloor() { const n = N(); if (n.location === 'dungeon' && n.phase !== 'mapChoice') { n.enemies = []; n.reserve = []; n.pack = null; floorEnd(); } }
 /** Off screen while the map waits: after MAP_AWAY_SEC in all the safest path is taken. */
 export function updateMapAway(dt: number) {
   const n = N();
@@ -128,17 +128,18 @@ export function updateDungeon(realDt: number) {
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt;
   if (n.phase === 'walk') {   // the walk picks up the loot (#52, 1.3: no loot pause); it lasts at least WALK_SEC
-    if (!n.curioAt && n.curioPlan.includes(n.battleIdx)) approachCurio();   // a curio comes into view (#99)
-    const c = n.curioAt, sp = n.floorLoot.length || c?.passed ? T.WALK_HURRY_PACE : c ? T.CURIO_PACE : T.WALK_PACE;   // hurry over to the loot, and on past a curio
+    if (!n.curioAt && !n.pack && n.curioPlan.includes(n.battleIdx)) approachCurio();   // a curio comes into view (#99)
+    const c = n.curioAt, sp = n.floorLoot.length || c?.passed ? T.WALK_HURRY_PACE : n.pack ? T.PACK_PACE : c ? T.CURIO_PACE : T.WALK_PACE;   // hurry over to the loot, and on past a curio
     n.walkScroll += dt * sp;
     moveFloorLoot(dt * sp * 0.7, dt);   // the camera's pace on the grid (render/rpgView.ts): the front hero walks over it (#95)
     walkCurio(dt * sp * 0.7);
     if (n.phase !== 'walk') return;   // the party stopped at the curio
-    if (n.phaseT >= T.WALK_SEC && !n.floorLoot.length && !n.curioAt) {   // until he has walked over all of it and the curio is behind; after the floor's last fight this is the walk out
-      if (n.battleIdx >= T.BATTLES_PER_FLOOR) { floorEnd(); return; }
-      spawnBattle(n.floor, isBossBattle(), n.floorMap === 'elite');
-      n.phase = 'battle'; n.phaseT = 0;
+    if (n.pack) { walkPack(dt * sp * 0.7, dt); return; }   // the next pack comes up; the fight starts when it is in position (#118)
+    if (n.battleIdx >= T.BATTLES_PER_FLOOR) {   // after the floor's last fight: the walk out, until he has walked over all the loot and the curio is behind
+      if (n.phaseT >= T.WALK_SEC && !n.floorLoot.length && !n.curioAt) floorEnd();
+      return;
     }
+    if (n.phaseT >= T.PACK_PLANT_SEC && packFits()) plantPack();
   } else if (n.phase === 'battle') {
     const r = updateBattle(dt);
     if (r === 'victory') battleEnded(isBossBattle());
@@ -163,6 +164,31 @@ export function updateDungeon(realDt: number) {
   }
 }
 
+/** The next pack is placed in the corridor (#118): just off the right edge, or further if loot still lies ahead (he
+ *  picks it all up on the way). It stands still; the walk brings it in. */
+function plantPack() {
+  const n = N();
+  spawnBattle(n.floor, isBossBattle(), n.floorMap === 'elite');
+  const front = Math.min(...n.enemies.map(e => ENEMY_SLOTS[e.slot]?.x ?? ENEMY_SLOTS[0].x));
+  const loot = n.floorLoot.reduce((m, l) => Math.max(m, l.x), -1e9) - (POS_X[looterIndex()] + LOOTER_REACH) + 4;
+  n.pack = { at: Math.max(T.PACK_ENTER_X - front, loot), front, spot: -1 };
+}
+/** A curio in the corridor would still be on screen when the pack arrives: wait. A passed one is fine if it is off
+ *  the left edge by then (they both move with the corridor). */
+function packFits(): boolean {
+  const c = N().curioAt;
+  return !c || (c.passed && c.x < T.CURIO_GONE_X + (T.PACK_ENTER_X - ENEMY_SLOTS[0].x));
+}
+/** The walk moved the corridor dx grid px: the pack comes up; its front enemy in view, it sees the party ("!"); in
+ *  position, the fight starts. */
+function walkPack(dx: number, dt: number) {
+  const n = N(), p = n.pack!;
+  p.at = Math.max(0, p.at - dx);
+  if (p.spot >= 0) p.spot += dt;
+  else if (p.front + p.at <= T.PACK_SPOT_X) { p.spot = 0; sfx.spotted(); }
+  if (p.at <= 0) { n.pack = null; n.phase = 'battle'; n.phaseT = 0; }
+}
+
 /** PARTY WIPE (#52, 1.4): the run is lost (its unbanked items and gold), its Souls stay; the party wakes in town at
  *  full HP after the portal's travel time. He still slams the desk. */
 function wipe() {
@@ -173,7 +199,7 @@ function wipe() {
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
   toast(`You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
   const trash = !n.enemies.some(e => e.boss);
-  n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.goblin = null; n.curio = null; n.curioAt = null;
+  n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null;
   loseRun();
   boysSay(trash ? 'wipeTrash' : 'wipe');   // the boys' chat (#109)
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.atb = 0; h.queued = null; });
@@ -208,7 +234,7 @@ export function returnToTown() {
   n.clock += T.COST_TRAVEL_MIN;
   sweepFloorLoot();
   bankRun();
-  n.location = 'town'; n.enemies = []; n.reserve = []; n.goblin = null; n.curio = null; n.curioAt = null; n.phase = 'walk';
+  n.location = 'town'; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null; n.phase = 'walk';
   toast('Back in town (15 min)', '#8fb3ff');
 }
 

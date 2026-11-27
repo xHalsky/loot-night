@@ -144,7 +144,7 @@ export const T = {
   // --- Dungeon ---
   BATTLES_PER_FLOOR: 3,
   CHECKPOINT_EVERY: 5,
-  WALK_SEC: 4,
+  WALK_SEC: 4,                    // the walk out after a floor's last fight lasts at least this; before a fight the pack sets it (PACK_*, #118)
   SWING_SEC: 0.42,                // a melee hit's weapon swing (the Knight, the Rogue; #97): wind-up, the cut, back to the guard
   // the boys' chat between the calls (#109; systems/boys.ts): text pacing only, no effect on play
   BOYS_GAP_SEC: 40,               // at least this long (night seconds) between two posts
@@ -157,7 +157,13 @@ export const T = {
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))
   PACK_HP_MULT: 1.25,              // a pack member's HP and attack against a lone enemy's (*start*, tuned to 8 to 12 s fights)
   PACK_ATK_MULT: 0.7,
-  STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free position (it doesn't attack meanwhile)
+  STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free position (it doesn't attack meanwhile); it comes in from off the right edge
+  // the pack stands in the corridor and the party walks up to it (#118; systems/dungeon.ts): it is placed off the right
+  // edge once the walk has gone PACK_PLANT_SEC (and any loot is behind it), comes in at PACK_PACE, and the fight starts
+  // when it is in position. Its front enemy in view (x at most PACK_SPOT_X): "!" over every head until the fight.
+  PACK_PLANT_SEC: 1, PACK_PACE: 75,
+  PACK_ENTER_X: 350, PACK_SPOT_X: 326,   // grid px (core/arena.ts): the front enemy starts here, just off the 334 px area; spotted here
+  PACK_ALERT_POP_SEC: 0.3,        // the "!" hops up this long when the pack sees the party
   // Drops per kill (#52, 1.3): they fall where the enemy died; the front hero walks over them on the next walk (#95)
   DROP_CHANCE: 0.35,              // each kill drops an item; elites always; bosses BOSS_DROPS
   LEGENDARY_FIRST_BY: 40,         // the first legendary of a save drops within its first 40 drops (night 1 has 45 to 75)

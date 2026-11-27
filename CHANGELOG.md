@@ -3,6 +3,22 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.92.0 (2026-11-27)
+
+- **The party walks up to the enemies** (#118; Paweł: they should not appear, they wait for you). After a fight the
+  walk goes on for `PACK_PLANT_SEC` (1 s), then the next pack stands in the corridor just off the right edge
+  (`PACK_ENTER_X`; beyond any loot still lying ahead, so it is all picked up first; after a curio, only once the curio
+  will be off the left edge on arrival). It stands still and idles; the corridor brings it in at `PACK_PACE` (about 3 s)
+  and the fight starts when it is in position. No HP bars on the way in, and skills say "No enemies in reach".
+- **"!" when they see you** (#118): once the pack's front enemy is in view (`PACK_SPOT_X`), a gold "!" with a void
+  outline hops up over every head (`PACK_ALERT_POP_SEC`) with a short rising chirp (`sfx.spotted`), until the fight.
+- **Newcomers run in from off the right edge**: an enemy stepping into a free position (or the Warlock's summon) used to
+  pop in 50 px right of its slot, in plain view; it now comes from beyond the edge in the same `STEP_IN_SEC`.
+- Balance, good bot, 32 nights each, before / after: depth 6.0 / 6.0, wipes 0.22 / 0.22, Noise 68 / 67, equips 28.9 /
+  30.4, visits 3.9 / 4.2 (noise between runs). A walk with no loot takes 4.1 s (was 4 s). Idle bot: caught.
+- New tests: `npx tsx test/pack.ts` (the rules) and `python3 test/pack.py` (the "!" on screen; shots
+  `test/shots/pack_*.png`).
+
 ## 0.91.4 (2026-11-27)
 
 - **Dead buttons look dead** (#117; Paweł: slightly dim, still UI buttons): Start, the window's minimise, maximise and

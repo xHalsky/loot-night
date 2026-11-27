@@ -260,10 +260,13 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
     const id = PAGE_ID[h.id];
     return { id, x: heroX(position), ph: PH[id], hp: h.downed ? 0 : h.hp / maxHp(h), down: h.downed, lunge: (h.lunge ?? 0) > 0 && !h.moving ? 3 : 0, swing: (h.swing ?? 0) > 0 && !h.downed ? 1 - h.swing! / T.SWING_SEC : null };
   });
-  // the enemies: six positions, fodder in two lanes, the boss or the lieutenant behind them; a newcomer slides in
-  const enemies = n.enemies.map((e: Enemy) => {
+  // the enemies: six positions, fodder in two lanes, the boss or the lieutenant behind them. The next pack stands in
+  // the corridor ahead, as far right as the party still has to walk (#118); a newcomer runs in from off the right edge
+  const pack = n.phase === 'walk' ? n.pack ?? null : null;
+  const alert = pack && pack.spot >= 0 ? Math.min(1, pack.spot / T.PACK_ALERT_POP_SEC) : null;
+  const enemies = (n.phase === 'walk' && !pack ? [] : n.enemies).map((e: Enemy) => {
     const d = ENEMY_BY_ID[e.defId], sl = ENEMY_SLOTS[e.slot] ?? ENEMY_SLOTS[0];
-    const boss = e.boss, lane = sl.lane, x = sl.x + Math.round((e.enter ?? 0) / T.STEP_IN_SEC * 50);
+    const boss = e.boss, lane = sl.lane, x = sl.x + Math.round(pack?.at ?? 0) + Math.round((e.enter ?? 0) / T.STEP_IN_SEC * Math.max(50, T.PACK_ENTER_X - sl.x));
     const rig = !boss ? RIG[e.defId] : undefined;
     const s = boss ? 4 : 3;
     let barY = sl.bar;
@@ -277,6 +280,7 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
     return {
       dead: e.hp <= 0, boss, lane, x, barY, back: lane === 'back', hp: Math.max(0, e.hp / (e.maxHp || 1)), flash: e.flash, lunge: (e.lunge ?? 0) > 0 ? 3 : 0, ph: (e.uid % 7) * 0.9,
       rig: rig?.rig, o: rig?.o, px: rig ? null : d?.sprite, s, bodies: e.per ? bodies(e) : 1, fly: e.defId === 'bat', tags: tags.slice(0, 2), wind,
+      ahead: !!pack, alert,   // coming up: no HP bar; once it has seen the party, a "!" over its head (k: the pop, 0 to 1)
     };
   });
   // floating numbers and effects: the systems place them on the grid (core/arena.ts)

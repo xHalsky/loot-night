@@ -293,6 +293,7 @@ export const sfx = {
   loot(r: number) { if (r >= 4) sfx.legendary(); else lootTone(Math.max(0, r)); },
   level() { [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.12, 'square', 0.12, i * 0.08)); },
   bad() { tone(200, 0.25, 'sawtooth', 0.15, 0, 90); },
+  spotted() { tone(620, 0.07, 'square', 0.09, 0, 1240); tone(1240, 0.06, 'square', 0.07, 0.07); },   // the next pack sees the party: "!" (#118)
   good() { tone(660, 0.08, 'square', 0.12); tone(880, 0.12, 'square', 0.12, 0.07); },
   coin() { play('coins', { variant: 1 }) || (tone(1320, 0.05, 'square', 0.1), tone(1760, 0.12, 'square', 0.1, 0.06)); },
   windup() { tone(110, 1.4, 'sawtooth', 0.12, 0, 330, 'loud'); tone(55, 1.4, 'square', 0.08, 0, 110, 'loud'); },

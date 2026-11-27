@@ -92,6 +92,10 @@ function liveVfx(v, t, lights) {
 }
 
 // ---- the battle area (dungeon walk, battle, curio, loot) from the game's state
+// the "!" over an enemy that has seen the party (#118): gold, a pale edge, the void outline; it hops up as it pops (k 0 to 1).
+// cx its centre, by its foot
+const SPOTTED = ['.vvvv.', 'vYYOOv', 'vYOOOv', 'vYOOOv', '.vYOv.', '.vYOv.', '.vOOv.', '..vv..', '.vvvv.', '.vYOv.', '.vOOv.', '.vvvv.'];
+function spottedMark(cx, by, k) { sprite(Math.round(cx) - 3, by - SPOTTED.length - (k < 1 ? Math.round(Math.sin(k * Math.PI) * 4) : 0), SPOTTED); }
 const LIVE_HERO = { knight: 0, rogue: 1, mage: 2, priest: 3 };
 const LIVE_IDX = { crimson: 'crimson', gold: 'gold', moon: 'moon', moss: 'g6', heal: 'g6', bone: 'u6', pale: 'pale', arcane: 'arcane', stone: 's6', dusk: 'd5' };
 function liveBattleArea(ctx, vm, t) {
@@ -147,6 +151,7 @@ function liveBattleArea(ctx, vm, t) {
   vm.enemies.forEach((e) => {
     if (e.dead) return;
     const by = e.barY;
+    if (e.ahead) { if (e.alert != null) spottedMark(e.x - 2, by + 3, e.alert); return; }   // the next pack, coming up: "!" once it has seen the party (#118)
     hpBar(e.x - 2, by, e.hp, true);
     let ty = by - 10;
     for (const [label, idx] of e.tags || []) { markTag(e.x - 2, ty, label, P[LIVE_IDX[idx] || idx]); ty -= 10; }

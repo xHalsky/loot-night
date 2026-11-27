@@ -26,8 +26,15 @@ ring, trinket). Old saves are renamed on load.
 (`BATTLES_PER_FLOOR`, 3). Every `CHECKPOINT_EVERY` (5th) floor is a boss floor: two encounters, then the boss.
 **An encounter is a pack:** `PACK_MIN` + floor / 2 enemies (5 on floor 1, at most `PACK_MAX` 12), six on screen
 (`src/core/arena.ts`): fodder in two close lanes (front x 186, 226, 266; back x 205, 245, darker), a boss or a caster
-(the Shaman) behind them on the party's lane. The rest wait off screen and step into a free position as the front ones
-die (`STEP_IN_SEC`, 0.6 s, sliding in). A pack member has `PACK_HP_MULT` (1.25) of a lone enemy's HP and
+(the Shaman) behind them on the party's lane. **The party walks up to it** (#118; `systems/dungeon.ts`, `PACK_*`): once
+the walk has gone `PACK_PLANT_SEC` (1 s) the pack stands in the corridor just off the right edge (`PACK_ENTER_X`, or
+further if loot still lies ahead, so it is all picked up first; after a curio once the curio will be off the left edge
+by the time the pack is reached). It stands still, idling, and the corridor brings it in at `PACK_PACE` (about 3 s).
+When its front enemy is in view (`PACK_SPOT_X`) it has seen the party: a gold **"!"** hops up over every head
+(`PACK_ALERT_POP_SEC`) with a short rising chirp, and stays until the fight. No HP bars while it comes up, and nothing
+can be hit ("No enemies in reach"). In position, the fight starts. A walk with no loot lasts about 4.1 s, as the old
+`WALK_SEC` (4 s) one did. The rest of the pack waits off screen and steps into a free position as the front ones die
+(`STEP_IN_SEC`, 0.6 s, running in from off the right edge). A pack member has `PACK_HP_MULT` (1.25) of a lone enemy's HP and
 `PACK_ATK_MULT` (0.7) of its attack (tuned in 0.59, #52 1.9: the good bot's fights take 9 to 12 s against the 8 to 12 s
 target, and its night-1 runs end on floors 5 to 10, the Ogre on floor 5 now a real wall).
 Enemies compound per floor (1.2); levels add `HERO_LEVEL_SCALE` (+4%) and the gear has to keep up
@@ -409,6 +416,13 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   fight. Now the drops scroll in with the floor and the first standing hero picks up what reaches his feet; after the
   floor's last fight the party still walks forward, out of the floor, over the drops. Rejected: a pickup pause, and
   the drops flying to the bag on their own (nobody walks over anything).
+- **Packs stand in the corridor** (0.92, #118; Paweł): they used to pop into their positions the moment the walk
+  ended, and newcomers popped in 50 px right of their slot. Now the party walks up to a pack that stands waiting, it
+  shows a "!" when it comes into view (it has seen the party), and newcomers run in from off the right edge. The walk
+  is as long as before (1 s, then about 3 s of approach), so the night's pace and the balance barely move. Rejected:
+  the pack walking towards the party (they wait for you; the walk is yours), the "!" on each enemy as it comes into
+  view (the pack sees the party at once), keeping the HP bars on the way in (full bars are noise next to the "!"), and
+  a longer approach (it adds up over three fights a floor).
 - **Curios stand in the corridor** (0.87, #99; Paweł after the first playtest): they used to pop up halfway through
   the walk and vanish after the choice. Walking up to one and past it costs about 4 s a curio; the hurry pace on the
   way past keeps it short. Rejected: starting the next fight while it is still behind the party (it would stand

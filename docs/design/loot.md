@@ -113,8 +113,8 @@ bounce once. Each shows a bundle with a gleam, an additive beam in its rarity co
 for better rarities) with a soft halo, a glow pool, rising sparkles and a pool of light in the darkness.
 Drops fall where the enemy died; there is no loot pause. On the walk after the fight the drops come toward the party
 with the floor and **whoever walks in front** (the first standing hero in the marching order) picks each one up as he
-walks over it (`LOOTER_REACH`, in front of his feet; #95). Nobody runs ahead for it. The walk lasts until every drop
-is picked up (at least `WALK_SEC`), at `WALK_HURRY_PACE` (75) instead of `WALK_PACE` (40) while loot lies ahead; after
+walks over it (`LOOTER_REACH`, in front of his feet; #95). Nobody runs ahead for it. The next pack is placed beyond the farthest
+drop, so the walk lasts until every drop is picked up (#118; the floor's walk out: at least `WALK_SEC`), at `WALK_HURRY_PACE` (75) instead of `WALK_PACE` (40) while loot lies ahead; after
 the floor's last fight this is the walk out of the floor, over the drops, before the map. (0.62.2 to 0.86 a looter ran
 ahead of his place to each drop and back; the playtest read it as the Knight breaking ranks. Decision in
 [dungeon.md](dungeon.md). `python3 test/walk.py` shoots it.) A collected item's name flies up from where it lay, in its rarity colour, and its bag slot

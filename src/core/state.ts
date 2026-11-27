@@ -160,6 +160,10 @@ export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
 /** The curio standing in the corridor (#99): coming up (the party stops at it), or passed and going by behind them. x: grid px. */
 export interface CurioAt { id: string; x: number; passed: boolean }
+/** The next pack in the corridor (#118): it stands still; the walk brings it in. at: grid px the party still has to
+ *  walk before it is in position (every enemy is drawn that far right of its slot); front: the x of its front slot;
+ *  spot: seconds since it saw the party (the "!"), -1 until its front enemy is in view. */
+export interface PackAhead { at: number; front: number; spot: number }
 /** A timed party buff or debuff (curios, the friends' raid buff). floor: lasts until the next floor instead of t. */
 /** A line in a phone chat: hers or theirs (l), yours (r), a grey note (sys); when it was sent. */
 export interface ChatLine { s: 'l' | 'r' | 'sys' | 'photo'; text: string; night: number; clock: number; day?: number; at?: number; seen?: boolean }   // photo (#92): text = the photo's key; at: when she sent it (n.threat); seen: you opened it   // night: the sitting (nightsPlayed); day: the week's day (#56)
@@ -228,6 +232,7 @@ export interface Night {
   herReply: { msg: string; t: number; wait: number } | null;
   curio: CurioState | null; curioPlan: number[]; curioFight: boolean; partyBuffs: PartyBuff[];   // curios (#30)
   curioAt?: CurioAt | null;      // the curio in the corridor, before and after the stop (#99)
+  pack?: PackAhead | null;       // the next pack, standing in the corridor ahead until the party walks up to it (#118)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
   smoke: number; heist: number;   // seconds left of the rogue's Smoke Bomb and Heist (#52, 1.7)
