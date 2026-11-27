@@ -740,11 +740,11 @@ function abbot(cx, fy, t, o = {}) {
   ellipse(hd[0] + 0.5, hd[1] + 0.5, 2.8, 2.6, (x) => 0.36 + 0.36 * clamp((hd[0] + 2 - x) / 5), SK);
   EFX.abbot = [hx, hy]; EFX.mace = headAt;
 }
-function abbotAsleep(cx, fy, t) {
+function abbotAsleep(cx, fy, t, o = {}) {
   const SK = M_UMBER, breath = Math.sin(t * 2.1), by = fy - 11, bb = Math.round(breath * 0.6);
   // the banner planted in the heap behind him, hanging still; the iron-bound chest he leans on
   abbotBanner(cx + 15, fy - 8, by - 80, t, 0.85, 0.2);
-  titheHeap(cx + 2, fy, t, 30);
+  titheHeap(cx + 2, fy, t, o.heap || 30);   // smaller once an armful has been taken (#131)
   rect(cx + 6, by - 24, 18, 22, (x, y) => (y === by - 24 ? 0.6 : 0.06 + 0.14 * clamp((cx + 24 - x) / 18)), M_DUSK);
   for (const x of [cx + 7, cx + 15, cx + 22]) for (let y = by - 24; y < by - 2; y++) put(x, y, x === cx + 7 ? 0.9 : 0.44, M_STONE);
   rect(cx + 6, by - 14, 18, 2, (x) => (x < cx + 12 ? 0.86 : 0.42), M_STONE); rect(cx + 13, by - 15, 4, 4, 0.7, M_STONE); put(cx + 14, by - 13, 0.04, M_DUSK);

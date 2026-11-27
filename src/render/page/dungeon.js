@@ -223,7 +223,7 @@ function drawFloor(F, cam) {
 }
 
 // ---------------------------------------------------------------- cart: baroque peddler
-function potionCart(cx, fy, t) {
+function potionCart(cx, fy, t, o = {}) {   // o.fell: the third bottle has fallen off the rack (the curio, #131)
   MAT = M_UMBER;
   line(cx - 21, fy - 18, cx - 42, fy - 7, 0.38); line(cx - 21, fy - 17, cx - 42, fy - 6, 0.22);
   for (const px of [cx - 22, cx + 20]) { rect(px, fy - 49, 2, 21, (x) => (x === px ? 0.58 : 0.3)); ellipse(px + 1, fy - 51, 2, 2, 0.78); }
@@ -241,7 +241,7 @@ function potionCart(cx, fy, t) {
     rect(bx - 2, fy - 29 - h, 1, h - 4, 1, M_MAGIC, 1);
   };
   const g = 0.08 * Math.sin(t * 3);
-  bottle(cx - 5, 9, 0.5 + g); bottle(cx + 3, 7, 0.55 - g); bottle(cx + 11, 9, 0.45 + g);
+  bottle(cx - 5, 9, 0.5 + g); bottle(cx + 3, 7, 0.55 - g); if (!o.fell) bottle(cx + 11, 9, 0.45 + g);
   line(cx - 25, fy - 44, cx - 25, fy - 40, 0.3, M_STONE);
   rect(cx - 28, fy - 40, 7, 9, 0.15, M_STONE); rect(cx - 27, fy - 39, 5, 7, 0.9 + 0.1 * Math.sin(t * 11), M_UMBER, 1); rect(cx - 25, fy - 39, 1, 7, 0.65, M_UMBER, 1); rect(cx - 29, fy - 41, 9, 1, 0.35, M_STONE);
   for (const wx of [cx - 13, cx + 13]) {

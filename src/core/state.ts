@@ -160,7 +160,7 @@ export type DungeonPhase = 'walk' | 'battle' | 'loot' | 'mapChoice' | 'curio';
 /** A curio the party stopped at (systems/curios.ts). stage: ask = waiting for your choice; pick, sneak = in progress. */
 export interface CurioState { id: string; stage: 'ask' | 'pick' | 'sneak'; t: number; max: number }
 /** The curio standing in the corridor (#99): coming up (the party stops at it), or passed and going by behind them. x: grid px. */
-export interface CurioAt { id: string; x: number; passed: boolean }
+export interface CurioAt { id: string; x: number; passed: boolean; done?: string; out?: string }   // done: the choice taken; out: how it went (the coffin: gold, rare, curse; the cart: caught, glass), for its look after (#131)
 /** The next pack in the corridor (#118): it stands still; the walk brings it in. at: grid px the party still has to
  *  walk before it is in position (every enemy is drawn that far right of its slot); front: the x of its front slot;
  *  spot: seconds since it saw the party (the "!"), -1 until its front enemy is in view. */

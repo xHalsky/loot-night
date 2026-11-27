@@ -92,7 +92,7 @@ function curioWindow(st, t) {
   parchU(x, y, w, h, { v: 0.84, burn: 0.34, torn: 1 });
   // curled bottom-right corner
   for (let k = 0; k < 6; k++) for (let j = 0; j <= k; j++) putU(x + w - 6 + k, y + h - 1 - j, k === j ? 0.1 : 0.62 + 0.05 * j, M_UMBER);
-  const T = st.title.toUpperCase();   // a long name (Sleeping troll on a loot pile) drops the letter spacing to clear the close box
+  const T = st.title.toUpperCase();   // a long name (The Abbot, asleep on the tithe) drops the letter spacing to clear the close box
   text(T, x + 7, y + 6, 'silkb', P.u1, { ls: measure(T, 'silkb', 1) > w - 30 ? 0 : 1 });
   for (let i = x + 7; i < x + w - 23; i++) putU(i, y + 13, 0.36 + 0.08 * (GR(i, 3) - 0.5), M_UMBER);
   rectI(x + 5, y + 15, w - 10, lines.length * 8 + 1, P.u6);   // the paper's lightest tone, flat (no grain under the letters)

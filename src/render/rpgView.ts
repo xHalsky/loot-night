@@ -444,9 +444,18 @@ function buffList() {
 }
 
 // the curio's parchment card in the band, its two choices (the page's layout: 85 x 20 buttons)
+// The curio's look (#131, the v2 redesign: each drawn in code, render/page/curios.js): which one, its stage (picking,
+// sneaking), what was chosen and how it went, and the seconds since (the choice's moment is animated briefly).
+let curioDoneOf: unknown = null, curioDoneAt = 0;
+function curioLook(at: { id: string; done?: string; out?: string } | null | undefined, stage: string | null, k: number) {
+  if (!at) return {};
+  const key = at.done ? at : null, now = performance.now();
+  if (key !== curioDoneOf) { curioDoneOf = key; curioDoneAt = now; }
+  return { id: at.id, done: at.done ?? null, out: at.out ?? null, stage, k, since: at.done ? (now - curioDoneAt) / 1000 : 0 };
+}
 function curioView() {
   const n = N(), at = n.curioAt;
-  if (n.phase !== 'curio' || !n.curio) { const d = at && CURIO_BY_ID[at.id]; return d ? { x: Math.round(at.x), px: d.sprite, card: null, passed: at.passed } : null; }   // coming up, or going by behind (#99)
+  if (n.phase !== 'curio' || !n.curio) { const d = at && CURIO_BY_ID[at.id]; return d ? { x: Math.round(at.x), px: d.sprite, card: null, passed: at.passed, ...curioLook(at, null, 0) } : null; }   // coming up, or going by behind (#99)
   const c = n.curio, d = curioDef(c);
   if (!d) return null;
   const choices = c.stage === 'ask'
@@ -455,7 +464,7 @@ function curioView() {
       return { label: [[curioText(ch.label), why ? 'u4' : 'u6']], cost: [[fit(why || curioText(ch.cost), 19), why ? 'u4' : 'u5']], act: why ? '' : 'curio', arg: ch.id, tip: why || curioText(ch.cost) };
     })
     : [{ label: [[c.stage === 'pick' ? 'Picking the lock' : 'Sneaking', 'u6']], cost: [[`${Math.ceil(c.t)} s left`, 'u5']], act: '', arg: '', tip: '' }];
-  return { x: Math.round(at?.x ?? T.CURIO_STOP_X), px: d.sprite, card: { title: d.name, line: d.line, timer: c.stage === 'ask' ? Math.max(0, c.t / c.max) : 1 - Math.max(0, c.t / c.max), choices } };
+  return { x: Math.round(at?.x ?? T.CURIO_STOP_X), px: d.sprite, ...curioLook(at, c.stage, c.stage === 'ask' ? 0 : 1 - Math.max(0, c.t / c.max)), card: { title: d.name, line: d.line, timer: c.stage === 'ask' ? Math.max(0, c.t / c.max) : 1 - Math.max(0, c.t / c.max), choices } };
 }
 const fit = (s: string, n: number) => (s.length <= n ? s : s.slice(0, n - 3).trimEnd() + '...');
 

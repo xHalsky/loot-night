@@ -109,7 +109,11 @@ function liveBattleArea(ctx, vm, t) {
   const r = drawDungeon(F, t, {
     battle, live: { cam: vm.cam, walking: vm.walking }, cam: vm.cam, foreOff: battle ? 98 : undefined,
     behind(F, t, lights) {
-      if (vm.curio && vm.curio.px) {   // the curio stands in the corridor, a row behind the party: ahead, then passed (#99)
+      if (vm.curio && vm.curio.id && CURIO_DRAW[vm.curio.id]) {   // the v2 curios, drawn in code (#131, curios.js)
+        const cx = vm.curio.x;
+        mulEllipse(cx, CART_Y, 24, 3, 0.3);
+        TAG = 8; drawCurio(vm.curio, cx, CART_Y, t, lights); TAG = 0;
+      } else if (vm.curio && vm.curio.px) {   // the curio stands in the corridor, a row behind the party: ahead, then passed (#99)
         const [w, h] = pxSize(vm.curio.px, 3), cx = vm.curio.x;
         mulEllipse(cx, CART_Y, 20, 3, 0.3);
         TAG = 8; pxSprite(vm.curio.px, Math.round(cx - w / 2), CART_Y - h, 3); TAG = 0;
@@ -146,6 +150,7 @@ function liveBattleArea(ctx, vm, t) {
       }
     },
     fx(F, t, lights) {
+      curioFx();   // the curio's flames, smoke, sigils and sparks (#131)
       candleFlames(t);   // the Penitents' candles, the Confessor's ring, the Bellringer's and the Abbot's (#130): a warm light each
       for (const [x, y] of AOJ.candles) lights.push({ x, y, r: 30, i: 0.7, c: WARM });
       for (const [x, y] of AOJ.lamps) lights.push({ x, y, r: 36, i: 0.85, c: WARM });

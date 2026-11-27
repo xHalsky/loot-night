@@ -75,8 +75,8 @@ export function updateCurio(realDt: number) {
   }
   if (c.t > 0) return;
   if (c.stage === 'ask') { toast('The party walks past.', '#a999bd'); return endCurio(); }
-  if (c.stage === 'pick') { toast('Click. The chest opens.', '#f2b84b'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); return endCurio(); }
-  if (c.stage === 'sneak') { toast('You tiptoe away with an armful. He keeps snoring.', '#6fcf7f'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true }); return endCurio(); }
+  if (c.stage === 'pick') { toast('Click. The chest opens.', '#f2b84b'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); markDone('pick'); return endCurio(); }
+  if (c.stage === 'sneak') { toast('You tiptoe away with an armful. He keeps snoring.', '#6fcf7f'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true }); markDone('sneak'); return endCurio(); }
 }
 
 /** Can this choice be taken right now? Returns the reason if not. */
@@ -95,9 +95,9 @@ export function chooseCurio(choice: string) {
     case 'open': {
       noise(T.CURIO_GROAN_NOISE);
       const r = Math.random(), [g, rare] = T.CURIO_MAIL_ODDS;
-      if (r < g) { const gold = T.CURIO_MAIL_GOLD * n.floor; S.g.gold += gold; toast(`Old coins! +${gold} gold.`, '#f2b84b'); sfx.coin(); }
-      else if (r < g + rare) { toast('A relic lies inside.', '#f2b84b'); rollBattleDrops(n.floor, { count: 1, minRare: true }); }
-      else { addBuff({ name: 'Curse', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'curse', floor: true }); toast(CURIO_LINES.curse.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
+      if (r < g) { const gold = T.CURIO_MAIL_GOLD * n.floor; S.g.gold += gold; toast(`Old coins! +${gold} gold.`, '#f2b84b'); sfx.coin(); markDone('open', 'gold'); }
+      else if (r < g + rare) { toast('A relic lies inside.', '#f2b84b'); rollBattleDrops(n.floor, { count: 1, minRare: true }); markDone('open', 'rare'); }
+      else { markDone('open', 'curse'); addBuff({ name: 'Curse', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'curse', floor: true }); toast(CURIO_LINES.curse.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
       break;
     }
     // run blessings (#52, 1.5b): each lasts until the run ends and has its cost
@@ -109,8 +109,8 @@ export function chooseCurio(choice: string) {
     case 'ritual': bless('ritual'); sfx.windup(); break;
     case 'potion':
       noise(T.CURIO_KICK_NOISE); sfx.slam();
-      if (chance(0.5)) bless('potion');
-      else { S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); }
+      if (chance(0.5)) { bless('potion'); markDone('potion', 'caught'); }
+      else { markDone('potion', 'glass'); S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); }
       break;
     case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking. Stay on this screen.', '#8fd0ff'); return;
     case 'fight': return trollFight();
@@ -125,6 +125,7 @@ export function chooseCurio(choice: string) {
     }
     case 'leave': toast('You leave it alone.', '#a999bd'); break;
   }
+  if (!n.curioAt?.done) markDone(choice);
   endCurio();
 }
 
@@ -145,6 +146,9 @@ function trollFight() {
   sfx.windup();
 }
 
+/** What was chosen at the curio standing in the corridor, for its look after the choice (#131): opened, emptied, used,
+ *  gone dark. Visual only. */
+function markDone(choice: string, out?: string) { const a = N().curioAt; if (a) { a.done = choice; if (out) a.out = out; } }
 /** Walk on: the curio stays where it stands and the party walks past it (#99). */
 export function endCurio() {
   const n = N();

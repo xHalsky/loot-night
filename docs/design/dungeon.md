@@ -178,7 +178,7 @@ it at `CURIO_STOP_X` once the loot ahead is picked up. A parchment card names it
 its real-life cost on the button, so the question is "can I afford this right now, given where she is?". The card's
 description is the whole line (wrapped to two lines if it ever needs them; the choices move down with it) in the
 darkest umber ink on a flat band of the paper's lightest tone (#125): on the grained, burnt paper the letters
-flickered, and cut at 40 characters most curios lost their second sentence. A long name (the troll's) drops the
+flickered, and cut at 40 characters most curios lost their second sentence. A long name (the Abbot's) drops the
 title's letter spacing so it clears the close box. The party
 waits `CURIO_WAIT_SEC` (7 real seconds), then walks past; the ✕ or "walk past" leaves at once. Curio time is your
 time: the night clock runs, the battle does not. After the choice the curio stays where it stands and the party
@@ -186,11 +186,39 @@ walks on past it at the hurry pace (`WALK_HURRY_PACE`); it goes by behind them (
 its glow dimmed) and the next fight starts once it is off the left edge (`CURIO_GONE_X`). The troll gets up into the
 fight instead. `python3 test/walk.py` checks and shoots it.
 
+**The curios' look** (#131, the v2 redesign, [aoj-world.md](aoj-world.md) §4b): every curio is drawn in code at the
+characters' detail (`render/page/curios.js`, `drawCurio`), on the cart row with its feet on it, outlined as an actor.
+Each has an idle (a flame, a sway, a drip, a rattle), a key light and its own lights (dimmed over 2 s once the party
+walks on past it), and its states: waiting, the choice's moment, after. The state is visual only: the choice taken
+and how it went are kept on the corridor's curio (`curioAt.done`, `.out`: the coffin's gold, rare or curse, the cart's
+potion caught or broken), set where the choice resolves, with no extra random draw. Flames, smoke, sigils, sparks,
+the bell's rings, the tap's drip and the Ritual Circle's ink are drawn after the outline pass (so they are not
+outlined) and never over the party in front.
+
+| Curio | Look | After the choice |
+|---|---|---|
+| Locked chest | The Church's tithe chest: dark planks under riveted iron bands, a domed lid with coins wedged in a split, broken wax seals, a chain staked to the floor, the padlock cast as the broken halo (its spark crimson); it hops now and then | Pick: a pick in the halo lock, pale sparks, then the lid stands open, the chest empty. Smash: a band springs, the lid splits (half on the floor), gold spills in a heap |
+| Sealed coffin | A Hollow knight's iron coffin upright: the effigy in relief (great helm, hands on a sword), prayers cut round the rim, chains crossed with a padlock, candles on its shoulders, a crimson glow breathing at the seams | Open: the lid grinds aside on its chains; gold heaped in its foot, a relic sword glowing, or crimson smoke pouring out; then open and dark |
+| Wayside Shrine | A fallen angel's iron feather driven point-down, a niche cut in it with a green flame on a small altar, a bell on a bracket, the halo painted above, votive candles at its foot | Pray: the bell swings and rings, the flame flares, then burns low |
+| Pilgrim | An old pilgrim, stooped, hooded, a patched cloak, a halo staff with tokens and a lantern, a bundle, a penance chain, the vow's scroll held out | Swear: he seals the scroll and bows, the lantern flares; he walks on and dithers out |
+| Supply Cart | The Church's cart: iron-rimmed wheels, the canvas drawn back (the halo stencilled on its flap), sacks, a cheese, loaves, a barrel with a dripping tap, a lantern pole, its traces on the floor | Eat: a loaf left, a crust and crumbs, the cheese cut, the tap left dripping into a puddle |
+| Blood Altar | A slab of an angel's breastplate on a block of black stone: channels running to a basin, old blood down the front, a curved blade, black candles; the channels glow faintly | Bleed: drops run along the channels into the basin, the glow bright and pulsing |
+| Moonwell | A fallen angel's great helm on its back, sunk in the floor: its eye-slit cross and breaths toward us, a torn crest-fin, still silver water with the moon in it, a chained dipper, moss; the moon's beam | Drink: rings spread, the reflection breaks up, the beam dims a little |
+| Ritual Circle | The serpent cult's ring in crimson ink with the serpent biting its tail, sigils, skulls, black candles, a censer on a stand breathing violet smoke | Join: the candles flare violet, the ring glows, the sigils rise thick |
+| The Abbot, asleep on the tithe | `abbotAsleep` (the roster) | Sneak: the heap smaller. Fight: he wakes (`abbot`) |
+| Guild bank vault | A round vault door of angel iron in a broken wall, ajar, its wheel lock the broken halo; shelves of items in their rarity light; the lectern with the chained ledger; the iron plaque | Take: one glow goes out, the door swings wider. Close: it shuts, dark |
+| Potion cart | The approved cart with iron rims, the "PAY HERE" plank with the halo burnt in, a coin box chained to it, herbs | Shake: it rattles, a bottle falls; a potion caught upright, or broken glass |
+
+The floor map's feature icons follow these looks (`render/page/pathicons.js`): the feather's niche, the halo staff,
+the cart, the breastplate altar, the sunk helm, the serpent circle, the tithe chest's halo lock; the Elite Pack is a
+Hollow's helm with two embers; the Goblin Den is as before. `python3 test/curio_stills.py` shoots every curio
+waiting, at the choice's moment and after (`design/v2/review/curios-w5-a.png`, `-b.png`).
+
 | Curio | Choice A | Choice B |
 |---|---|---|
 | Locked chest | Pick the lock: 8 s standing still, quiet | Smash it: instant, Noise +25 |
 | Sealed coffin | Open: Noise +5; 50% gold (20 x floor), 30% a rare, 20% a curse (party -15% damage until the next floor) | Leave it |
-| Snoring troll on a loot pile | Sneak: 6 s on the RPG screen; alt-tab (or the monitor going off) wakes him | Fight: a mini-boss (330 HP at floor 1 scale), Noise +15 |
+| The Abbot, asleep on the tithe | Sneak: 6 s on the RPG screen; alt-tab (or the monitor going off) wakes him | Fight: a mini-boss (330 HP at floor 1 scale), Noise +15 (he wakes with a roar) |
 | Guild bank vault | Take one item: a free rare; 40 to 90 s later Hudzor (Mage) reads the log in guild chat and sulks (-20% damage for 45 s) | Close it |
 
 
@@ -352,10 +380,9 @@ its name worn away and wax down its front); the banner carries the broken halo i
 into the crypt's layers after they are built (`cryptTells` in `render/page/aoj.js`, the statue `ironAngelStatue` in
 `render/page/foes.js`). The party walks in position, front on the right
 (knight x 126, then 35 px apart); actors get the separation pass (fill light, rim, outline, halo). Enemies stand in
-the front lane (x 186, 226, 266), a boss behind them on the party's lane. The page's rigs stand in for the skeleton,
-the guardian (skeleton with helm and shield), the orc (zombie with a sword) and the shaman (necromancer); bats, imps,
-the bosses, curios and the goblin are the prototype's pixel sprites, lit and dithered like the rigs, until Paweł's
-art. Over the scene: HP bars, mark tags, the cast's name with its bar, floating numbers, loot lying in its rarity
+the front lane (x 186, 226, 266), a boss behind them on the party's lane. Every enemy and curio is drawn in code as its
+Age of Judgment figure (the roster's look above, the curios' look); the loot goblin is still the prototype's pixel
+sprite, lit and dithered like the rigs, until Paweł's art. Over the scene: HP bars, mark tags, the cast's name with its bar, floating numbers, loot lying in its rarity
 light with the beam, the names flying up; the corner (where, Flow in yellow), the town portal plate, the buffs, the
 skill bar (portrait, HP tube, two skill wells and the ultimate's gilded well; cooldown sweeps, the answer pulse, the
 combo glow, "L3" on a skill still locked). Every action shows: slashes, claws, bolts, fire, frost, heal sparkles,
@@ -385,6 +412,15 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 ([city.md](city.md)).
 
 ## Decisions
+- **The curios drawn in code** (0.99, #131, the v2 redesign; aoj-world.md §4b): each curio is a figure in the world's
+  lore (Church iron, the broken halo, crimson only for the angels' light, gold only for loot) at the characters'
+  detail, with its states after each choice, instead of a prototype sprite that looked the same before and after. The
+  look after a choice is kept on the corridor's curio (`done`, `out`), visual only, set where the outcome is already
+  decided, so no random draw is added and the sims are unchanged. Effects (flames, smoke, sigils, the floor's ink) go
+  after the outline pass, like the foes' candle flames: outlined, a flame or a wisp of smoke read as a black-ringed
+  blob. The light dims over 2 s after the choice rather than at once, so the choice's moment shows lit. The cheese on
+  the Supply Cart is umber's pale highs, not gold (gold is only for loot). Rejected: keeping the Px sprites with new
+  colours (no states, no detail), and a separate sprite sheet per state (the curios are drawn the way the foes are).
 - **The cast of 2026-11-27** (0.89, #107; decisions doc): the heroes are the friends' characters now, so they carry
   the friends' names for them: Dutch (the Knight, you; a nod to Paweł's film hero), Hixx (the Rogue, Mike's), Hudzor
   (the Mage, Billy's), Arkbishop (the Priest, Lance's). Every place a hero is named shows his class, so nobody has to

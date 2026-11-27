@@ -3,6 +3,24 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.99.0 (2026-11-27)
+
+- **The curios: every one drawn in code** (#131, W5 of the v2 redesign; aoj-world §4b; waiting on Paweł's review of the
+  stills). The Locked chest is the Church's tithe chest with the halo padlock, the Sealed coffin a Hollow knight's iron
+  coffin with a crimson glow at its seams, the Wayside Shrine a fallen angel's iron feather with a green flame in its
+  niche, the Pilgrim an old man with a halo staff and a lantern, the Supply Cart the Church's cart, the Blood Altar a
+  slab of an angel's breastplate, the Moonwell a great helm sunk in the floor full of moonlit water, the Ritual Circle
+  the serpent cult's ring, the Guild bank vault a round angel-iron door ajar, the Potion cart the approved cart in the
+  world; the troll is the Abbot asleep on the tithe (renamed "The Abbot, asleep on the tithe"; Fight him: "he wakes
+  with a roar"). Each idles, lights itself (dimming once the party walks on) and shows its state after the choice, the
+  choice's moment animated: the lock picked or the chest smashed and gold spilled; the coffin's lid ground aside on
+  gold, a relic or crimson smoke; the bell rung; the vow sealed and the pilgrim gone; the rations eaten; the altar fed;
+  the well's reflection broken; the circle flared violet; one glow gone from the vault or the door shut; a potion caught
+  or broken. The floor map's feature icons follow the new looks; the Elite Pack is a Hollow's helm with two embers.
+  Visual only: the outcome is kept on the corridor's curio where the rules already decide it (no new random draw);
+  `test/sim.ts good` and the routes, run-end, stars and loot tests give the same results. Stills:
+  `python3 test/curio_stills.py` (`design/v2/review/curios-w5-a.png`, `-b.png`).
+
 ## 0.98.0 (2026-11-27)
 
 - **The roster: every enemy in the new look** (#130, W4 of the v2 redesign; aoj-world §4, approved 2026-11-27). The
