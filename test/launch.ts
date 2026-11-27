@@ -21,7 +21,7 @@ const ok = (c: boolean, msg: string) => { console.log((c ? 'ok   ' : 'FAIL ') + 
 const src = readFileSync(new URL('../src/render/page/aoj.js', import.meta.url), 'utf8');
 const a = src.indexOf('const LAUNCH_SOUND = ['), b = src.indexOf('\n', src.indexOf('const LAUNCH_MUSIC', a));
 const sheet = runInNewContext(src.slice(a, b) + '\n({ sound: LAUNCH_SOUND, loops: LAUNCH_LOOPS, music: LAUNCH_MUSIC })') as { sound: [number, string, string][]; loops: [string, number, number, number, number][]; music: { cue: string; at: number; end: number } };
-ok(sheet.sound.length >= 55 && sheet.sound.length <= 70, `the cue sheet: ${sheet.sound.length} cues (about 60)`);
+ok(sheet.sound.length >= 45 && sheet.sound.length <= 70, `the cue sheet: ${sheet.sound.length} cues (about 50)`);
 const strike = sheet.sound.find(c => c[1] === 'aoj_strike');
 ok(!!strike && Math.abs(strike[0] - 19.15) < 1e-9, 'the strike at 19.15 s (the second bolt, the theme\'s downbeat)');
 ok(sheet.music.cue === 'aoj_theme' && sheet.music.at === 6.2 && sheet.music.end > 39, 'the theme from 6.2 s to after the town is in');
@@ -52,13 +52,17 @@ ok(Math.abs(launchT() - 0.5) < 0.02 && launchHolds(), 'its clock runs from when 
 const n = N(), clock0 = n.clock;
 S.g.paused = true; run(3); S.g.paused = false;
 ok(Math.abs(launchT() - 0.5) < 0.02, 'pause stops it');
-// the chat paced to it: the bubbles at 2.6, 10.2, 21.4, 26.4 and 35.4 s, each after 1.6 s of the typing dots
+// the chat paced to it: nine bubbles (#133: four more to read while it boots), each after 1.6 s of the typing dots, none
+// while the title's heavy sounds play (15 to 21 s)
 const at = T.CHAT_LAUNCH_AT;
-ok(at.length === FIRST_CHAT.length && at.join() === '2.6,10.2,21.4,26.4,35.4' && T.CHAT_LAUNCH_TYPING === 1.6, 'one arrival time per bubble');
+ok(at.length === FIRST_CHAT.length && at.join() === '2.6,5,8.4,10.2,12.8,21.4,26.4,30.6,35.4' && T.CHAT_LAUNCH_TYPING === 1.6, 'one arrival time per bubble');
+ok(at.every((a2, k) => k === 0 || a2 - T.CHAT_LAUNCH_TYPING >= at[k - 1]), 'each one types after the one before has landed');
+ok(!at.some(a2 => a2 > 15 && a2 - T.CHAT_LAUNCH_TYPING < 21.4 - T.CHAT_LAUNCH_TYPING), 'nothing lands on the title (15 to 21 s)');
 const shownAt = (s: number) => launchChatAt(FIRST_CHAT, s);
 ok(shownAt(0.9).shown === 0 && shownAt(0.9).typing === null && shownAt(1.1).typing === 'Billy' && shownAt(2.61).shown === 1, 'Billy types from 1.0 s, his bubble lands at 2.6');
-ok(shownAt(20).shown === 2 && shownAt(20).typing === 'Lance' && shownAt(21.41).shown === 3, 'Lance\'s at 21.4, clear of the title\'s sounds');
-ok(shownAt(35.39).shown === 4 && shownAt(35.41).shown === 5 && shownAt(37).typing === null, 'Mike\'s lands at 35.4, the last');
+ok(shownAt(4.0).typing === 'Mike' && shownAt(12.81).shown === 5, 'four lines to read while it boots, all in by 12.8 s');
+ok(shownAt(20).shown === 5 && shownAt(20).typing === 'Lance' && shownAt(21.41).shown === 6, 'Lance\'s at 21.4, clear of the title\'s sounds');
+ok(shownAt(35.39).shown === 8 && shownAt(35.41).shown === 9 && shownAt(37).typing === null, 'Mike\'s lands at 35.4, the last');
 run(37.4);
 ok(launchT() > 37.85 && launchT() < 38 && launchHolds() && !!S.g.voice, 'just before 38 s: still loading, the chat still up');
 ok(n.clock === clock0, 'the night\'s clock waits all through it');

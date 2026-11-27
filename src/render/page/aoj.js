@@ -478,7 +478,7 @@ const LAUNCH = [['desktop', 0, 3.2], ['engine', 3.2, 6.2], ['publisher', 6.2, 10
 const LAUNCH_END = 38;
 const launchPhase = (T) => { for (const [k, a, b] of LAUNCH) if (T >= a && T < b) return [k, T - a, b - a]; return ['game', T - LAUNCH_END, 1e9]; };
 // the boys' first chat (data/voice.ts FIRST_CHAT), each bubble's arrival in launch seconds; typing dots before each
-const FIRST_CHAT_AT = [['Billy', "yo. realm's up", 2.6], ['Billy', 'patch notes are forty pages, i read zero', 10.2], ['Lance', 'would you like to know more?', 21.4], ['Billy', '11 sharp. and careful with her tonight, they mostly come at night', 26.4], ['Mike', 'steps in the hall = tab to excel. BEFORE the door opens', 35.4]];
+const FIRST_CHAT_AT = [['Billy', "yo. realm's up", 2.6], ['Mike', "launching. still can't skip the intro", 5.0], ['Lance', "good. it's the best part", 8.4], ['Billy', 'patch notes are forty pages, i read zero', 10.2], ['Billy', 'this intro looks like an old crack intro lol', 12.8], ['Lance', 'would you like to know more?', 21.4], ['Billy', '11 sharp. and careful with her tonight, they mostly come at night', 26.4], ['Lance', 'nine stars. strong password', 30.6], ['Mike', 'steps in the hall = tab to excel. BEFORE the door opens', 35.4]];
 const TYPING_SEC = 1.6;
 // THE LAUNCH'S SOUND (aoj-world §7b): the cue sheet in launch seconds, fired once as T passes each time; one music cue
 // from 6.2 s to the town; the rain under the title, the login and the loading. Times follow the code above exactly.
@@ -490,22 +490,18 @@ const LAUNCH_SOUND = [
   // the engine
   [3.25, 'cdspin', 'pc: the CD drive spins up under the start-up lines (2.6 s, quiet)'],
   ...[0, 1, 2, 3, 4, 5, 6].map((n) => [3.45 + n * 0.34, 'bootline', 'the engine: a soft tick per start-up line']),
-  // Halsky Labs (publisher), u = T - 6.2 (#133: an 80s studio-gear sting; it holds, the next screen fades in over it)
+  // Halsky Labs (publisher), u = T - 6.2 (#133: the scene's flair, an 80s studio-gear sting through the Amiga's sound;
+  // it holds, the next screen fades in over it)
   [6.4, 'hl_line', 'the red power-on line sweeps across: an analog synth sweeping up through its filter, settling on a tone (0.45 s)'],
   [6.65, 'hl_scan', 'the mark rasters in behind its scanline: a soft digital data chirp (0.75 s)'],
   [7.2, 'hl_fly', 'HALSKY flies in from the right: a whoosh rising into the lock (0.42 s)'],
-  [7.62, 'hl_hit', 'HALSKY locks with the flash and the lens streak: a sampler orchestra stab with a gated reverb and an FM bell chord ringing on (the sting\'s one big beat)'],
+  [7.62, 'hl_hit', 'HALSKY locks with the flash, the lens streak and a burst of sparkles, its extrusion pushing out: a sampler orchestra stab with a gated snare and an FM bell chord ringing on (the sting\'s one big beat)'],
   [7.8, 'hl_badge', 'the LABS badge lights like a panel LED: three short digital blips (two flickers, then on)'],
-  [8.35, 'hl_presents', '"presents": a soft FM chime, two notes'],
+  [8.2, 'hl_presents', 'PRESENTS opens from the middle: a soft FM chime, two notes'],
   [8.9, 'hl_glint', 'the glint runs across the chrome: a thin bright shimmer (0.7 s)'],
-  // Procrastination Studios (developer), u = T - 10.6 (#133: sleek; it fades in over Halsky Labs and holds)
-  [10.9, 'ps_arc', 'the ring draws itself from the top: a soft glassy tone rising (0.6 s)'],
-  [11.35, 'ps_glass', 'the hourglass appears and its sand starts: a soft two-note glass chime over a quiet trickle'],
-  [11.7, 'ps_word', 'PROCRASTINATION rises letter by letter: an airy swell settling on a soft plucked chord'],
-  [12.65, 'ps_late', 'the last N arrives a beat late: one soft pluck, a fifth above'],
-  [12.8, 'ps_rule', 'the copper rule opens from the middle: a soft tonal swish'],
-  [13.4, 'ps_type', '"est. eventually" types itself: 15 soft ticks (0.7 s)'],
-  [14.15, 'ps_flip', 'the hourglass turns over: a soft whoosh, a gentle wooden knock as it lands, the sand again'],
+  // Procrastination Studios (developer), u = T - 10.6 (#133: a cracktro; it fades in over Halsky Labs and holds)
+  [10.75, 'ps_drop', 'the logo drops in from above: a falling whistle (0.4 s)'],
+  [11.15, 'ps_mod', 'it lands on the first kick of a 4-channel tracker jingle (125 BPM, arpeggio chords, a bass, the drums, a lead) that ends on a D minor chord ringing out by 15 s'],
   // the title, u = T - 15
   [15.9, 'thunder_near', 'the first bolt shows the angel: a crack on the flash, a roll for 3 s'],
   [17.2, 'aoj_ring', 'the halo forged round from its gap: iron dragged round under strain, rising, a forge\'s hiss (1 s); it closes at 18.2 and rings out like a cracked bell (2.5 s)'],

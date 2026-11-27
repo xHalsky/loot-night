@@ -156,7 +156,7 @@ export const T = {
   // the boys' first chat comes in, its bubbles arriving at these launch seconds, each after the typing dots. Nothing
   // starts the night before the launch ends; then the town fades in from black, dithered.
   LAUNCH_SEC: 38, LAUNCH_FADE_SEC: 0.9, LAUNCH_SOUND_END: 40,
-  CHAT_LAUNCH_AT: [2.6, 10.2, 21.4, 26.4, 35.4], CHAT_LAUNCH_TYPING: 1.6,
+  CHAT_LAUNCH_AT: [2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 26.4, 30.6, 35.4], CHAT_LAUNCH_TYPING: 1.6,   // nine since #133: four more to read while it boots; none from 15 to 21 (the title's sounds)
   // Every night after the first Monday starts from the login (#127, Paweł 2026-11-27): T starts at 23, a dithered fade in
   // from black over it, the sound from T 23 (the theme at its offset and the rain faded in); the night's chat spread
   // evenly from 25.4 to 35.4 s (three bubbles: 25.4, 30.4, 35.4)

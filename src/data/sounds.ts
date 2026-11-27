@@ -19,7 +19,7 @@ export const MIX: Record<string, number> = {
   // under the title's sounds
   mouse: 0.35, kb_clack: 0.32, crt: 0.4, cdspin: 0.14, bootline: 0.25,
   hl_line: 0.4, hl_scan: 0.22, hl_fly: 0.26, hl_hit: 0.8, hl_badge: 0.3, hl_presents: 0.3, hl_glint: 0.22,   // Halsky Labs (#133): the hit is the sting's one big beat
-  ps_arc: 0.24, ps_glass: 0.3, ps_word: 0.3, ps_late: 0.3, ps_rule: 0.2, ps_type: 0.22, ps_flip: 0.2,   // Procrastination Studios (#133): light
+  ps_drop: 0.26, ps_mod: 0.5,   // Procrastination Studios (#133): the cracktro's drop and its tracker jingle
   thunder_near: 0.8, thunder_far: 0.45, rain: 0.32,
   aoj_ring: 0.8, aoj_spark: 0.6, aoj_word: 0.75, aoj_strike: 1.0, aoj_quench: 0.4, aoj_ageof: 0.65, aoj_glint: 0.3,
   ui_panel: 0.45, ui_login: 0.55, ui_verified: 0.5,

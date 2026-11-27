@@ -101,7 +101,7 @@ ok(tiles(7) === 'listen,tab,answer,headset,lean||thu|false', `week two: no card 
 n = night(0); ok(S.g.voice?.chat?.length === FIRST_CHAT.length && new Set(S.g.voice.chat.map(c => c[0])).size === 3 && S.g.voice?.date === 'Today 20:00', 'Monday: the boys\' chat, all three of them');
 ok(S.g.voice!.chat[0][0] === 'Billy' && S.g.voice!.chat[0][1] === "yo. realm's up" && S.g.voice!.chat.some(c => c[1].startsWith('11 sharp')), "Billy opens it: the realm's up, 11 sharp (#109)");
 { const end = chatAt(FIRST_CHAT, 99), mid = chatAt(FIRST_CHAT, 1.0); let t = 0; while (chatAt(FIRST_CHAT, t).shown < FIRST_CHAT.length) t += 0.05;
-  ok(end.shown === FIRST_CHAT.length && !end.typing && mid.shown < FIRST_CHAT.length && t <= 7, `the bubbles come one at a time with typing dots, all in by ${t.toFixed(1)} s`); }
+  ok(end.shown === FIRST_CHAT.length && !end.typing && mid.shown < FIRST_CHAT.length && t <= 1.4 * FIRST_CHAT.length, `the bubbles come one at a time with typing dots, all in by ${t.toFixed(1)} s`); }
 S.g = initialState(); S.g.day = 0; startNight(); ok(S.g.howto && !!S.g.voice, 'the night waits for it (howto), the card after it');
 ok([1, 2, 3, 4, 5, 6].every(d => { S.g = initialState(); S.g.day = d; startNight(); return S.g.voice?.chat.length === 3 && new Set(S.g.voice.chat.map(c => c[0])).size === 3; }), 'their chat every night of week one, all three of them');
 ok([...Object.values(NIGHT_CHAT).flat(), ...FIRST_CHAT].map(c => c[1]).every(l => !/[\u2013\u2014]/.test(l) && l.replace(/\b[A-Z]{2,}\b|\(G\)/g, '') === l.replace(/\b[A-Z]{2,}\b|\(G\)/g, '').toLowerCase()), 'their chat voice: lowercase (shouted words aside), no dashes');

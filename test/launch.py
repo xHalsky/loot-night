@@ -56,7 +56,7 @@ async def main():
         check(times == sorted(times), f'the cues fire in order ({len(fired)} by 15 s)')
         check(len(fired) == len(set(fired)), 'each once')
         names = [f.split(':')[1] for f in fired]
-        check(names[:3] == ['mouse', 'mouse', 'crt'] and 'hdd' not in names and 'hl_hit' in names and 'ps_flip' in names, 'the PC, then Halsky Labs, then Procrastination Studios')
+        check(names[:3] == ['mouse', 'mouse', 'crt'] and 'hdd' not in names and 'hl_hit' in names and 'ps_mod' in names, 'the PC, then Halsky Labs, then Procrastination Studios')
         # the skip: straight to the end, nothing after
         await pg.keyboard.press('F1'); await pg.wait_for_timeout(200)
         await pg.evaluate("()=>{const b=[...document.querySelectorAll('[data-act=dbgSkipLaunch]')][0]; b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}")

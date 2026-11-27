@@ -23,7 +23,7 @@ The spec is `spec/aoj-world.md` (commit it as `docs/design/aoj-world.md`); the I
 | `assets/halsky-labs-logo-source.png` | Paweł's logo, the source of `HALSKY_MARK` (RGBA, 1400 x 1400). Commit it. |
 | `tools/halsky_mark.py` | Makes `HALSKY_MARK` from the source (`python3 halsky_mark.py [png] [height]`; numpy, scipy, Pillow): the sticker's white rim, the dark band, the face Atkinson-dithered in two tones, each lit pixel's brightness kept so the face can develop brightest first. Commit it with the source. |
 | `page/phone.js` | **Changed:** `PHONE_SCREENS.firstchat` (line 939) is the boys' first chat (five bubbles) paced to the launch, with the loading pill. In the build it merges into the `intro` screen. |
-| `fonts/` | The four new fonts (Cinzel Decorative Black, Cinzel Black, Sora ExtraBold, Fredoka Bold; SIL OFL 1.1, the licences beside them; in the build Sora and Fredoka were replaced by Syncopate Bold and Outfit SemiBold with the studio logos' redesign, #133) and the page's existing four. |
+| `fonts/` | The four new fonts (Cinzel Decorative Black, Cinzel Black, Sora ExtraBold, Fredoka Bold; SIL OFL 1.1, the licences beside them; in the build Sora and Fredoka were replaced with the studio logos' redesign, #133: now Syncopate Bold for HALSKY, New Rocker and Uncial Antiqua for Procrastination Studios' cracktro, in `src/assets/fonts/` with their licences) and the page's existing four. |
 | `stills/1x`, `stills/3x` | 61 stills at the native size and at 3x (below). |
 
 **The stills:** `launch-*` (every beat of the launch; `launch-03*` the Halsky Labs sting with Paweł's logo), `desk-launch-*`

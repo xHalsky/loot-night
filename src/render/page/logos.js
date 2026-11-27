@@ -5,7 +5,7 @@
 // palette: a chiselled bevel lit from the upper left, a metal gradient on the face, outlines and a drop shadow.
 // Everything here writes palette indices to the UI layer (putI), so it is exact; glows go into the lit scene.
 // ===========================================================================
-const LG_FONTS = { czd: 'cinzel-decorative-latin-900-normal', cz: 'cinzel-latin-900-normal', sync: 'syncopate-latin-700-normal', outf: 'outfit-latin-600-normal' };
+const LG_FONTS = { czd: 'cinzel-decorative-latin-900-normal', cz: 'cinzel-latin-900-normal', sync: 'syncopate-latin-700-normal', rock: 'new-rocker-latin-400-normal', unci: 'uncial-antiqua-latin-400-normal' };
 let LGC = null, LGX = null; const LGCACHE = new Map();
 function lgCtx() { if (!LGC) { LGC = document.createElement('canvas'); LGC.width = 1024; LGC.height = 360; LGX = LGC.getContext('2d', { willReadFrequently: true }); } return LGX; }
 const eIO = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
@@ -27,16 +27,17 @@ function maskDist(M) {
 }
 // a string as a mask: pen at (0, baseline); arch lifts the middle of the word by `arch` px (an arc warp)
 function typeMask(str, font, o = {}) {
-  const ls = o.ls || 0, arch = o.arch || 0, key = font + '|' + ls + '|' + arch + '|' + str;
+  const ls = o.ls || 0, arch = o.arch || 0, sy = o.sy || 1, key = font + '|' + ls + '|' + arch + '|' + sy + '|' + str;
   let M = LGCACHE.get(key); if (M) return M;
   const g = lgCtx(); g.font = font; g.letterSpacing = ls + 'px'; g.textBaseline = 'alphabetic';
-  const mt = g.measureText(str), pad = 6, asc = Math.ceil(mt.actualBoundingBoxAscent), desc = Math.ceil(mt.actualBoundingBoxDescent);
+  const mt = g.measureText(str), pad = 6, asc = Math.ceil(mt.actualBoundingBoxAscent * sy), desc = Math.ceil(mt.actualBoundingBoxDescent * sy);
   const left = Math.floor(-mt.actualBoundingBoxLeft), tw = Math.ceil(mt.actualBoundingBoxRight) - left;
   const w = tw + pad * 2, h0 = asc + desc + pad * 2, h = h0 + arch;
-  g.clearRect(0, 0, LGC.width, LGC.height); g.fillStyle = '#fff'; g.fillText(str, pad - left, pad + asc);
+  g.clearRect(0, 0, LGC.width, LGC.height); g.fillStyle = '#fff';
+  if (sy !== 1) { g.setTransform(1, 0, 0, sy, 0, pad + asc); g.fillText(str, pad - left, 0); g.setTransform(1, 0, 0, 1, 0, 0); } else g.fillText(str, pad - left, pad + asc);
   const d = g.getImageData(0, 0, w, h0).data, m = new Uint8Array(w * h);
   for (let x = 0; x < w; x++) { const q = (x - pad) / Math.max(1, tw) * 2 - 1, sh = arch - Math.round(arch * (1 - q * q)); for (let y = 0; y < h0; y++) if (d[(y * w + x) * 4 + 3] > 120) m[(y + sh) * w + x] = 1; }
-  g.font = font; const cap = Math.ceil(g.measureText('H').actualBoundingBoxAscent);
+  g.font = font; const cap = Math.ceil(g.measureText('H').actualBoundingBoxAscent * sy);
   M = maskDist({ w, h, m, ox: left - pad, oy: -(pad + asc), cap, tw, pad, arch, adv: mt.width - ls });
   LGCACHE.set(key, M); return M;
 }
@@ -237,138 +238,228 @@ const HALSKY_MARK = [
   '...................rrrrr...................................................'];
 
 // ---------------------------------------------------------------------------
-// HALSKY LABS (#133, Paweł 2026-11-27: sleeker, an 80s Japanese studio-gear flair; original, no real brand's shapes).
-// Paweł's mark (HALSKY_MARK, a stippled face on a white sticker, void and moon only) with HALSKY in a wide, heavy
-// face (Syncopate Bold) in brushed chrome, a red rule ending in a LABS badge like a model badge on a rack unit,
-// "presents" under it. In: a red power-on line sweeps across; the mark rasters in top to bottom behind a bright
-// scanline; HALSKY flies in from the right on speed lines and locks with a flash and a lens streak; the badge lights
-// like a panel LED (two flickers); "presents"; a glint across the chrome. Then it holds (the face's grain alive) until
-// the next screen fades in over it: no animation out.
+// THE SCENE'S TOOLS (#133, Paweł 2026-11-27: both studio logos with the flair of the 16-bit cracktro and demo scene's
+// logos): a parallax starfield, copper bars, chrome letters with an extrusion, sparkles, a mirror reflection, a sine
+// scroller. All palette-exact (putI).
 // ---------------------------------------------------------------------------
-let HM = null;   // the mark's pixels, once: [x, y, kind (0 void, 1 face, 2 rim)]
+function sceneStars(t, vis = 1, n = 110, seed = 7) {
+  for (let k = 0; k < n; k++) {
+    const layer = k % 3, sp = [10, 24, 55][layer], span = W + 40;
+    const x = Math.floor((((hash(k, 1, seed) * span - t * sp) % span) + span) % span) - 20, y = Math.floor(hash(k, 2, seed) * H);
+    if (x < 0 || x >= W || (vis < 1 && lgBay(x, y) >= vis)) continue;
+    putI(x, y, [P.s2, P.s4, P.s6][layer]);
+    if (layer === 2) { putI(x + 1, y, P.s3); if (hash(k, 3, seed) > 0.75) putI(x + 2, y, P.s2); }
+  }
+}
+const COPPER_FIRE = [P.wine, P.crimson, P.copper, P.gold, P.pale, P.moon, P.pale, P.gold, P.copper, P.crimson, P.wine];
+const COPPER_DUSK = [P.d1, P.d2, P.d3, P.d4, P.d5, P.d6, P.moon, P.d6, P.d5, P.d4, P.d3, P.d2, P.d1];
+const COPPER_SEA = [P.s1, P.s2, P.s3, P.s4, P.s5, P.s6, P.moon, P.s6, P.s5, P.s4, P.s3, P.s2, P.s1];
+function copperBar(cy, ramp, vis = 1, x0 = 0, x1 = W) {
+  const y0 = Math.round(cy - ramp.length / 2);
+  for (let j = 0; j < ramp.length; j++) for (let x = x0; x < x1; x++) if (vis >= 1 || lgBay(x, y0 + j) < vis) putI(x, y0 + j, ramp[j]);
+}
+// a four-point sparkle, s 0..1 its size
+function sparkle(x, y, s) {
+  const L = Math.round(s * 4); if (L <= 0) return;
+  putI(x, y, P.moon);
+  for (let k = 1; k <= L; k++) { const idx = k === 1 ? P.moon : k === 2 ? P.s6 : P.s4; putI(x + k, y, idx); putI(x - k, y, idx); putI(x, y + k, idx); putI(x, y - k, idx); }
+  if (L >= 3) for (const [dx, dy] of [[1, 1], [-1, -1], [1, -1], [-1, 1]]) putI(x + dx, y + dy, P.s5);
+}
+// where a mask's sparkles may sit: pixels on its upper and left edges, spread out (cached)
+function sparkSites(M, key) {
+  const c = LGCACHE.get('sp|' + key); if (c) return c;
+  const { w, h, m } = M, out = [];
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x; if (m[i] && (!m[i - w] || !m[i - 1]) && hash(x, y, 4417) < 0.05) out.push([x, y]); }
+  LGCACHE.set('sp|' + key, out); return out;
+}
+// sparkles twinkling over a mask at (x0, y0) (its box top-left): each site on its own phase, about one in five lit
+function sparkles(M, key, x0, y0, t, rate = 1, burst = 0) {
+  sparkSites(M, key).forEach(([x, y], k) => {
+    const ph = (t * 0.8 * rate + hash(k, 7, 4418)) % 1, on = hash(k, Math.floor(t * 0.8 * rate + hash(k, 7, 4418)), 4419) < 0.22;
+    let sz = on ? Math.sin(ph * Math.PI) : 0;
+    if (burst > 0 && hash(k, 9, 4420) < 0.45) sz = Math.max(sz, burst * (0.6 + 0.4 * hash(k, 8, 4420)));
+    if (sz > 0.15) sparkle(x0 + x, y0 + y, sz);
+  });
+}
+// chrome letters: an extrusion down and right (depth d, the side colours back to front), a void rim, a face in hard
+// bands (bands: [[row fraction, index], ...] from the cap's top), lit top and left edges
+function chromeMask(M, x0, y0, o) {
+  const { w, h, m } = M, D = o.depth ?? 4, side = o.side, capTop = o.capTop, cap = o.cap, xo = o.xoff || (() => 0);
+  if (D > 0) for (let d = D + 1; d >= 1; d--) {
+    const idx = d === D + 1 ? P.void : side[Math.min(side.length - 1, Math.floor(((d - 1) / Math.max(1, D)) * side.length))];
+    for (let y = 0; y < h; y++) { const ox = xo(y0 + y); for (let x = 0; x < w; x++) if (m[y * w + x]) { const X = x0 + x + d + ox, Y = y0 + y + d; if (!o.show || o.show(X, Y) !== false) putI(X, Y, idx); } }
+  }
+  const band = (sy) => { const r = (sy - capTop) / cap; for (const [lim, idx] of o.bands) if (r < lim) return idx; return o.bands[o.bands.length - 1][1]; };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, X = x0 + x + xo(y0 + y), Y = y0 + y;
+    if (!m[i]) { if (M.dout[i] <= 1.5 && (!o.show || o.show(X, Y) !== false)) putI(X, Y, P.void); continue; }
+    if (o.show && o.show(X, Y) === false) continue;
+    let idx = o.flash ? P.moon : band(Y);
+    if (!o.flash) { const r = (Y - capTop) / cap; if (!m[i - w]) idx = r < 0.5 ? P.moon : o.lipLow ?? P.d6; else if (!m[i - 1]) idx = r < 0.5 ? P.s6 : o.lipLow ?? P.d5; else if (!m[i + w] || !m[i + 1]) idx = o.dark ?? P.s2; }
+    if (o.glint) { const g = o.glint(X, Y); if (g) idx = g; }
+    putI(X, Y, idx);
+  }
+}
+// a mirror reflection under a mask: squashed to half, darker with depth, rippling, dithered out
+function reflectMask(M, x0, yTop, t, ramp, rows, squash = 1.15, from = null) {
+  const { w, h, m } = M, o_sq = (r) => Math.round(r * squash), top = from ?? h - 1;   // from: the mask row it mirrors from (the baseline)
+  for (let r = 0; r < rows; r++) {
+    const sy = top - o_sq(r); if (sy < 0) break;
+    const fade = 1 - r / rows, dx = Math.round(Math.sin(r * 0.9 + t * 3) * (r > 2 ? 1 : 0)), Y = yTop + r;
+    for (let x = 0; x < w; x++) if (m[sy * w + x]) { const X = x0 + x + dx; if (lgBay(X, Y) < 0.35 + 0.65 * fade) putI(X, Y, ramp[Math.min(ramp.length - 1, Math.floor((r / rows) * ramp.length))]); }
+  }
+}
+// text painted row by row from a ramp (a copper gradient through the letters)
+function textRows(str, x, y, f, rowIdx, o = {}) {
+  const g = glyphs(str, f, o.ls || 0), p = g.pts, x0 = Math.round(o.align === 'c' ? x - g.w / 2 : x);
+  for (let k = 0; k < p.length; k += 2) { const X = p[k] + x0, Y = p[k + 1] + y; if (o.show && o.show(X, Y) === false) continue; if (o.shadow != null) putI(X + 1, Y + 1, o.shadow); }
+  for (let k = 0; k < p.length; k += 2) { const X = p[k] + x0, Y = p[k + 1] + y; if (o.show && o.show(X, Y) === false) continue; putI(X, Y, rowIdx(p[k + 1], X)); }
+  return g.w;
+}
+// a sine scroller: the text moves left at speed px/s from the right edge, each letter riding a sine
+function sineScroller(str, y, t, o = {}) {
+  const f = o.font || 'head', sp = o.speed || 95, amp = o.amp ?? 6, ramp = o.ramp || COPPER_FIRE;
+  let x = W - t * sp;
+  for (let k = 0; k < str.length; k++) {
+    const ch = str[k], cw = measure(ch, f) + 1;
+    if (x > W) break;
+    if (x + cw > 0 && ch !== ' ') {
+      const yy = Math.round(y + Math.sin(x * 0.035 + t * 3.2) * amp);
+      textRows(ch, Math.round(x), yy, f, (dy) => ramp[Math.min(ramp.length - 1, Math.max(0, dy + (o.rampOff || 0)))], { shadow: P.void });
+    }
+    x += cw;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// HALSKY LABS (#133, Paweł 2026-11-27: an 80s Japanese studio-gear flair, then the scene's flair, more detail). Paweł's
+// mark (HALSKY_MARK, a stippled face on a white sticker, void and moon only) beside HALSKY in a wide, heavy face
+// (Syncopate Bold) in banded chrome with a deep extrusion, a red copper rule ending in a LABS badge like a rack unit's
+// model badge (screws in its corners), and PRESENTS, spaced, between two rules the lockup's width, centred under it.
+// A slow starfield behind. In: the stars; a red power-on line; the mark rasters in top to bottom behind a scanline;
+// HALSKY flies in from the right on speed lines and locks with a flash, a lens streak and a burst of sparkles, its
+// extrusion pushing out; the badge flickers on like a panel LED; PRESENTS opens from the middle; a glint across the
+// chrome. Then it holds (the face's grain alive, the sparkles twinkling) until the next screen fades in over it.
+// ---------------------------------------------------------------------------
+let HM = null;   // the mark's pixels, once: [x, y, kind (0 void, 1 face, 2 rim), level]
 function halskyMarkPx() {
   if (HM) return HM;
   const rows = HALSKY_MARK, mh = rows.length, mw = rows[0].length, px = [];
   for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) { const ch = rows[y][x]; if (ch === '.') continue; px.push([x, y, ch === 'r' ? 2 : ch === '0' ? 0 : 1, ch === 'r' || ch === '0' ? 0 : +ch]); }
   HM = { px, mw, mh }; return HM;
 }
-const HL_T = { line: 0.2, lineLen: 0.42, scan: 0.45, scanLen: 0.75, fly: 1.0, flyLen: 0.42, badge: 1.6, presents: 2.15, glint: 2.7, glintLen: 0.7 };
+// the sticker's rim as a mask (for its sparkles)
+function halskyRimMask() { const M = halskyMarkPx(); return fnMask('hlrim', M.mw + 2, M.mh + 2, (x, y) => { const r = HALSKY_MARK[y - 1]; return !!r && x >= 1 && x <= M.mw && r[x - 1] === 'r'; }); }
+const HL_T = { line: 0.2, lineLen: 0.42, scan: 0.45, scanLen: 0.75, fly: 1.0, flyLen: 0.42, badge: 1.6, presents: 2.0, glint: 2.7, glintLen: 0.7 };
 const eOut3 = (k) => 1 - (1 - k) ** 3;
+const HL_BANDS = [[0.14, P.moon], [0.3, P.s6], [0.44, P.s5], [0.52, P.s2], [0.62, P.s3], [0.76, P.s4], [0.9, P.s5], [1.01, P.s6]];
 function halskyLabs(u, len, cx, cy) {
   const M = halskyMarkPx(), WF = '36px sync', WMk = typeMask('HALSKY', WF, { ls: 2 }), wordW = WMk.tw, cap = WMk.cap;
   const gap = 16, lockW = M.mw + gap + wordW, lx0 = Math.round(cx - lockW / 2);
-  const mx0 = lx0, my0 = Math.round(cy - M.mh / 2), wx = lx0 + M.mw + gap, base = Math.round(cy + 6);
-  const BW = 31, BH = 11, bx = wx + wordW - BW, by = base + 5, ruleY = by + 5;
-  // 1. the red power-on line, under where the word will stand, ending at the badge
+  const mx0 = lx0, my0 = Math.round(cy - M.mh / 2) - 8, wx = lx0 + M.mw + gap, base = Math.round(cy - 2);
+  const BW = 34, BH = 12, bx = wx + wordW - BW, by = base + 7, ruleY = by + 5;
+  sceneStars(u, clamp(u / 0.4));
+  // 1. the red power-on line (a three-row copper rule), ending at the badge
   const lp = eIO(clamp((u - HL_T.line) / HL_T.lineLen)), rx1 = Math.round(lerp(wx - 2, bx - 3, lp));
-  if (lp > 0) { for (let x = wx - 2; x <= rx1; x++) { putI(x, ruleY, P.crimson); putI(x, ruleY + 1, P.wine); } if (lp < 1) { putI(rx1 + 1, ruleY, P.pale); putI(rx1 + 2, ruleY, P.moon); putI(rx1 + 1, ruleY + 1, P.crimson); } }
-  // 2. the mark rasters in, top to bottom, behind a bright scanline; its grain lives while it holds
+  if (lp > 0) { for (let x = wx - 2; x <= rx1; x++) { putI(x, ruleY - 1, P.pale); putI(x, ruleY, P.crimson); putI(x, ruleY + 1, P.wine); } if (lp < 1) for (const [dx, idx] of [[1, P.moon], [2, P.pale], [3, P.crimson]]) putI(rx1 + dx, ruleY, idx); }
+  // 2. the mark rasters in, top to bottom, behind a bright scanline; its grain lives while it holds. Once the word
+  //    locks, the sticker gets the same extrusion, and sparkles on its rim
   const sp = clamp((u - HL_T.scan) / HL_T.scanLen), row = sp * (M.mh + 2), grainF = Math.floor(u * 8), held = sp >= 1;
+  const mDepth = u >= HL_T.fly + HL_T.flyLen ? Math.round(5 * eOut3(clamp((u - HL_T.fly - HL_T.flyLen) / 0.3))) : 0;
+  if (held && mDepth > 0) for (let d = mDepth + 1; d >= 1; d--) { const idx = d === mDepth + 1 ? P.void : [P.d2, P.s1, P.d1][Math.min(2, Math.floor(((d - 1) / mDepth) * 3))]; for (const [x, y] of M.px) putI(mx0 + x + d, my0 + y + d, idx); }
   if (sp > 0) for (const [x, y, kind, L] of M.px) {
     const X = mx0 + x, Y = my0 + y;
     if (y > row) continue;
-    if (!held && y > row - 1.5) { putI(X, Y, kind === 0 ? P.d6 : P.moon); continue; }   // the scanline
-    if (!held && y > row - 4 && kind !== 0 && ((y + x) & 1)) { putI(X, Y, P.d6); continue; }   // its afterglow
+    if (!held && y > row - 1.5) { putI(X, Y, kind === 0 ? P.d6 : P.moon); continue; }
+    if (!held && y > row - 4 && kind !== 0 && ((y + x) & 1)) { putI(X, Y, P.d6); continue; }
     let on = kind !== 0;
     if (held && kind === 1 && L <= 6 && hash(x, y, 9712 + grainF) < 0.07) on = false;
     putI(X, Y, on ? P.moon : P.void);
   }
-  // 3. HALSKY flies in from the right on speed lines (ghosts trailing), and locks
-  const fp = clamp((u - HL_T.fly) / HL_T.flyLen), dx = Math.round((1 - eOut3(fp)) * 230), locked = u >= HL_T.fly + HL_T.flyLen;
-  const flash = locked && u < HL_T.fly + HL_T.flyLen + 0.08;
+  // 3. HALSKY flies in from the right on speed lines (ghosts trailing), locks, and its extrusion pushes out
+  const fp = clamp((u - HL_T.fly) / HL_T.flyLen), dx = Math.round((1 - eOut3(fp)) * 230), lockAt = HL_T.fly + HL_T.flyLen, locked = u >= lockAt;
+  const flash = locked && u < lockAt + 0.08, depth = locked ? Math.round(5 * eOut3(clamp((u - lockAt) / 0.3))) : 0;
   const gl = u > HL_T.glint && u < HL_T.glint + HL_T.glintLen ? (u - HL_T.glint) / HL_T.glintLen : null;
-  const chrome = (sx, sy) => {   // 80s banded chrome, hard steps on the ramp's nodes (no dither): bright top, a dark horizon
-    const r = (sy - (base - cap)) / cap;   // just above the middle, then the lower half brightening toward the floor's reflection
-    return r < 0.24 ? 1 : r < 0.44 ? 0.8 : r < 0.52 ? 0.2 : r < 0.66 ? 0.4 : r < 0.84 ? 0.6 : 0.8;
-  };
+  const X0 = wx + dx - WMk.pad, Y0 = base + WMk.oy;
   if (fp > 0) {
-    if (!locked) for (const [k, col] of [[2, P.s2], [1, P.s3]]) {   // ghosts
-      const gx = wx + dx + k * Math.round(14 * (1 - fp)); if (k * (1 - fp) < 0.15) continue;
-      shadeMask(WMk, gx - WMk.pad, base + WMk.oy, { ramp: [col, col], B: 0, face: () => 1 });
-    }
-    shadeMask(WMk, wx + dx - WMk.pad, base + WMk.oy, { ramp: [P.s2, P.s3, P.s4, P.s5, P.s6, P.moon], B: 0, o1: P.void, face: flash ? () => 1.2 : chrome,
-      add: gl != null ? (sx, sy) => { const g = (sx - wx) / wordW - (gl * 1.5 - 0.25) - (sy - base) * 0.025; return Math.abs(g) < 0.035 ? 0.6 : Math.abs(g) < 0.07 ? 0.25 : 0; } : null });
-    if (!locked) for (const [yy, col, l0] of [[base - cap + 3, P.crimson, 60], [base - Math.round(cap * 0.55), P.s5, 90], [base - 3, P.crimson, 44], [base - Math.round(cap * 0.3), P.s3, 70]]) {   // speed lines
+    if (!locked) for (const [k, col] of [[2, P.s2], [1, P.s3]]) { const gx = wx + dx + k * Math.round(14 * (1 - fp)); if (k * (1 - fp) < 0.15) continue; shadeMask(WMk, gx - WMk.pad, Y0, { ramp: [col, col], B: 0, face: () => 1 }); }
+    chromeMask(WMk, X0, Y0, { depth, side: [P.d2, P.s1, P.d1], bands: HL_BANDS, capTop: base - cap, cap, flash, lipLow: P.s6, dark: P.s2,
+      glint: gl != null ? (X, Y) => { const g = (X - wx) / wordW - (gl * 1.5 - 0.25) - (Y - base) * 0.025; return Math.abs(g) < 0.03 ? P.moon : Math.abs(g) < 0.06 ? P.s6 : 0; } : null });
+    if (!locked) for (const [yy, col, l0] of [[base - cap + 3, P.crimson, 60], [base - Math.round(cap * 0.55), P.s5, 90], [base - 3, P.crimson, 44], [base - Math.round(cap * 0.3), P.s3, 70]]) {
       const x1 = wx + dx + wordW + 4, L = Math.round(l0 * (1 - fp) + 6);
       for (let x = x1; x < x1 + L; x++) if (x < W && ((x - x1) < L * 0.7 || lgBay(x, yy) < 0.5)) putI(x, yy, col);
     }
   }
-  // the lock: a lens streak through the word, and a four-point glint at its top right
-  const st = locked ? clamp((u - HL_T.fly - HL_T.flyLen) / 0.45) : 0;
-  if (st > 0 && st < 1) {
-    const yy = base - Math.round(cap * 0.62), half = Math.round(20 + 150 * eOut3(st)), mid = wx + wordW / 2;
-    for (let x = Math.round(mid - half); x <= Math.round(mid + half); x++) { const f = 1 - Math.abs(x - mid) / half; if (lgBay(x, yy) < f * (1 - st)) putI(x, yy, f > 0.6 ? P.moon : P.s6); }
-    const sx = wx + wordW - 3, sy = base - cap - 1, r = Math.round(6 * (1 - st));
-    for (let k = -r; k <= r; k++) { putI(sx + k, sy, Math.abs(k) < 2 ? P.moon : P.s6); putI(sx, sy + k, Math.abs(k) < 2 ? P.moon : P.s6); }
-  }
-  // 4. the LABS badge lights like a panel LED: two flickers, then on
+  // the lock: a lens streak through the word, a burst of sparkles, then they twinkle
+  const st = locked ? clamp((u - lockAt) / 0.45) : 0;
+  if (st > 0 && st < 1) { const yy = base - Math.round(cap * 0.62), half = Math.round(20 + 150 * eOut3(st)), mid = wx + wordW / 2; for (let x = Math.round(mid - half); x <= Math.round(mid + half); x++) { const f = 1 - Math.abs(x - mid) / half; if (lgBay(x, yy) < f * (1 - st)) putI(x, yy, f > 0.6 ? P.moon : P.s6); } }
+  if (locked) { sparkles(WMk, 'halsky', X0, Y0, u, 1, st < 1 ? 1 - st : 0); sparkles(halskyRimMask(), 'halskyRim', mx0 - 1, my0 - 1, u + 0.37, 0.8, 0); }
+  // 4. the LABS badge lights like a panel LED: two flickers, then on (screws in its corners)
   const bu = u - HL_T.badge, bon = bu >= 0 && !(bu > 0.05 && bu < 0.1) && !(bu > 0.15 && bu < 0.2);
   if (bu >= 0) {
-    if (bon) { rectI(bx, by, BW, BH, P.crimson); rectI(bx, by, BW, 1, P.pale); rectI(bx, by + BH - 1, BW, 1, P.wine); text('LABS', bx + BW / 2 + 1, by + 2, 'silkb', P.void, { align: 'c' }); }
-    else { frameI(bx, by, BW, BH, P.wine); }
+    if (bon) {
+      rectI(bx, by, BW, BH, P.crimson); rectI(bx, by, BW, 1, P.pale); rectI(bx, by + BH - 1, BW, 1, P.wine); rectI(bx + BW - 1, by + 1, 1, BH - 2, P.wine);
+      for (const [sx, sy] of [[bx + 2, by + 2], [bx + BW - 3, by + 2], [bx + 2, by + BH - 3], [bx + BW - 3, by + BH - 3]]) putI(sx, sy, P.wine);
+      text('LABS', bx + BW / 2 + 1, by + 3, 'silkb', P.void, { align: 'c' });
+    } else frameI(bx, by, BW, BH, P.wine);
   }
-  // 5. "presents", dithered in
-  const pr = clamp((u - HL_T.presents) / 0.4);
-  if (pr > 0) text('presents', cx, base + 34, 'tiny', fadeIdx(pr, [P.void, P.s2, P.s3, P.s4]), { align: 'c', ls: 2 });
+  // 5. PRESENTS, spaced, centred under the lockup between two rules as wide as it (they open from the middle)
+  const pr = clamp((u - HL_T.presents) / 0.45), py = my0 + M.mh + 12;
+  if (pr > 0) {
+    const pw = measure('PRESENTS', 'tinyL', 3), half = Math.round((lockW / 2) * eIO(pr)), gapW = pw / 2 + 8;
+    for (let x = cx - half; x <= cx + half; x++) { if (Math.abs(x - cx) < gapW) continue; putI(x, py + 4, P.s3); putI(x, py + 5, P.s1); }
+    textRows('PRESENTS', cx, py, 'tinyL', (dy) => (pr < 1 && lgBay(cx + dy, py + dy) > pr ? P.s2 : [P.moon, P.moon, P.s6, P.s6, P.s5, P.s5, P.s4, P.s4, P.s3, P.s3][Math.min(9, dy)]), { align: 'c', ls: 3, shadow: P.void });
+  }
   return { mx: wx + wordW / 2, my: base - cap / 2, glow: flash ? 1 : st > 0 ? 0.6 * (1 - st) : 0 };
 }
 
 // ---------------------------------------------------------------------------
-// PROCRASTINATION STUDIOS (#133, Paweł: the name and the tagline stay; more professional and sleek). A stacked lockup:
-// a thin ring with an hourglass inside (copper sand), PROCRASTINATION in Outfit SemiBold, spaced, a copper rule,
-// S T U D I O S, the tagline. In: the ring draws itself from the top; the hourglass fades in and its sand starts; the
-// letters rise from behind the baseline one after another, all but the last N, which arrives a beat late; the rule
-// opens from the middle; STUDIOS; "est. eventually" types itself, late; the hourglass turns over once. Then it holds
-// until the title fades in over it.
+// PROCRASTINATION STUDIOS (#133, Paweł: changed completely, after the old cracktros and demos the pirate scene put
+// before the games; the name and "est. eventually" kept). A big chrome PROCRASTINATION in a spiky display face (New
+// Rocker) with a deep extrusion, sparkles and a rippling mirror reflection; STUDIOS tagged at its right like an artist's
+// signature; "est. eventually" in uncial lettering, a copper gradient through it, in a dark band between two rules; a
+// sine scroller over two copper bars at the bottom; a parallax starfield. In: it fades in over Halsky Labs with the
+// stars; the logo drops in from above and bounces, wobbling, and lands in a burst of sparkles; its reflection; the band
+// opens; the copper bars swing in and the scroller starts. Then it holds until the title fades in over it.
 // ---------------------------------------------------------------------------
-const PS_T = { ring: 0.3, ringLen: 0.6, glass: 0.75, word: 1.1, late: 2.05, rule: 2.2, type: 2.8, flip: 3.55, flipLen: 0.4 };   // the ring starts during the fade in
-function psHourglass(cx, cy, rot, sand, stream, vis) {
-  // in local coords: caps at y = +-12, two glass triangles meeting at the centre; sand: 0 all on top, 1 all below
-  const c = Math.cos(rot), s2 = Math.sin(rot), topL = -11 + 10 * Math.sqrt(sand), botL = 11 - 10 * Math.sqrt(1 - (1 - sand));
-  for (let j = -14; j <= 14; j++) for (let i = -14; i <= 14; i++) {
-    const X = cx + i, Y = cy + j; if (vis < 1 && lgBay(X, Y) >= vis) continue;
-    const lx = (i + 0.5) * c + (j + 0.5) * s2, ly = -(i + 0.5) * s2 + (j + 0.5) * c, ax = Math.abs(lx), ay = Math.abs(ly);
-    if (ay >= 11.6 && ay <= 13 && ax <= 8.5) { putI(X, Y, P.moon); continue; }   // the caps
-    const half = 0.6 + 7 * (ay / 11.6); if (ay >= 11.6 || ax > half + 0.5) continue;
-    if (ax > half - 0.6) { putI(X, Y, P.s5); continue; }   // the glass, a fine line
-    if (ly < 0 && ly > topL) { putI(X, Y, P.copper); continue; }   // the sand still on top, draining
-    if (ly > 0 && ly > botL + ax * 0.6) { putI(X, Y, P.copper); continue; }   // the pile below
-    if (stream && ax < 0.7 && ly > -1 && ly < botL + 0.5) { putI(X, Y, P.copper); continue; }
-  }
-}
+const PS_T = { drop: 0.15, land: 0.55, refl: 0.8, band: 1.0, studios: 1.35, bars: 1.1, scroll: 1.2 };
+const PS_BANDS = [[0.1, P.moon], [0.24, P.s6], [0.36, P.s5], [0.44, P.d5], [0.52, P.s2], [0.6, P.d3], [0.72, P.d4], [0.86, P.d5], [1.01, P.d6]];
+const PS_SCROLL = 'YO! THIS INTRO WAS DUE IN MARCH.   GREETINGS TO DUTCH, HIXX, HUDZOR AND ARKBISHOP.   SEE YOU EVENTUALLY...   ';
 function procrastinationStudios(u, len, cx, cy) {
-  const mcx = cx, mcy = cy - 30, R = 19, base = cy + 10;
-  // 1. the ring draws itself clockwise from the top, a bright head
-  const rp = eIO(clamp((u - PS_T.ring) / PS_T.ringLen));
-  if (rp > 0) for (let a = 0; a < 240; a++) { const q = a / 240; if (q > rp) break; const an = q * Math.PI * 2 - Math.PI / 2; putI(Math.round(mcx + Math.cos(an) * R - 0.5), Math.round(mcy + Math.sin(an) * R - 0.5), rp < 1 && q > rp - 0.03 ? P.moon : P.s5); }
-  // 2. the hourglass fades in (dithered); its sand runs; it turns over once and starts again
-  const gv = clamp((u - PS_T.glass) / 0.4), fl = clamp((u - PS_T.flip) / PS_T.flipLen);
-  if (gv > 0) {
-    const s0 = clamp((u - PS_T.glass - 0.15) / 2.6), sAtFlip = clamp((PS_T.flip - PS_T.glass - 0.15) / 2.6);
-    const sand = fl <= 0 ? s0 : fl < 1 ? sAtFlip : clamp(1 - sAtFlip + (u - PS_T.flip - PS_T.flipLen) / 2.6);
-    psHourglass(mcx, mcy, Math.PI * eIO(fl), sand, fl <= 0 || fl >= 1, gv);
+  const font = '40px rock', LM = typeMask('PROCRASTINATION', font, { sy: 1.45 }), cap = LM.cap, base = 74;
+  const lx = Math.round(cx - LM.tw / 2) - 2;
+  sceneStars(u + 4.4, 1, 120, 11);
+  // the copper bars swing in at the bottom, the scroller rides over them
+  const bv = clamp((u - PS_T.bars) / 0.4);
+  if (bv > 0) { copperBar(182 + Math.sin(u * 2.1) * 12, COPPER_SEA, bv); copperBar(206 + Math.sin(u * 2.1 + 2.6) * 10, COPPER_DUSK, bv); }
+  if (u > PS_T.scroll) sineScroller(PS_SCROLL, 190, u - PS_T.scroll, { speed: 95, amp: 7, ramp: COPPER_FIRE.slice(1), rampOff: 0 });
+  // the logo drops in from above, bounces twice and lands; it wobbles row by row while it moves
+  let dy = 0;
+  if (u < PS_T.land) { const k = clamp((u - PS_T.drop) / (PS_T.land - PS_T.drop)); dy = -Math.round((1 - k * k) * 110); }
+  else { const q = u - PS_T.land; dy = -Math.round(Math.abs(Math.sin(q * 9)) * 14 * Math.exp(-q * 6)); }
+  const moving = u < PS_T.land + 0.55, wob = moving ? 3 * Math.exp(-Math.max(0, u - PS_T.land) * 5) : 0;
+  const X0 = lx - LM.pad, Y0 = base + LM.oy + dy;
+  if (u > PS_T.drop) {
+    chromeMask(LM, X0, Y0, { depth: 5, side: [P.d3, P.d2, P.s1, P.d1], bands: PS_BANDS, capTop: base - cap + dy, cap, lipLow: P.d6, dark: P.d2,
+      xoff: wob > 0.2 ? (Y) => Math.round(Math.sin(Y * 0.32 + u * 26) * wob) : null });   // it wobbles row by row while it bounces
+    // the reflection under it
+    if (u > PS_T.refl) reflectMask(LM, X0 + 2, base + 9, u, [P.d5, P.d5, P.d4, P.d4, P.d3, P.s2], Math.round(20 * clamp((u - PS_T.refl) / 0.4)), 1.5, -LM.oy - 1);
+    sparkles(LM, 'procrastination', X0, Y0, u, 1.2, u > PS_T.land && u < PS_T.land + 0.6 ? 1 - (u - PS_T.land) / 0.6 : 0);
   }
-  // 3. PROCRASTINATION: each letter rises from behind the baseline, one after another; the last N a beat late
-  const WORD = 'PROCRASTINATION', font = '18px outf', LS = 3, g = lgCtx(); g.font = font; g.letterSpacing = LS + 'px';
-  const ww = g.measureText(WORD).width - LS, wx = Math.round(cx - ww / 2);
-  for (let k = 0; k < WORD.length; k++) {
-    const late = k === WORD.length - 1, p = clamp((u - (late ? PS_T.late : PS_T.word + k * 0.035)) / 0.28); if (p <= 0) continue;
-    g.font = font; g.letterSpacing = LS + 'px'; const lx = wx + g.measureText(WORD.slice(0, k)).width;
-    const Mk = typeMask(WORD[k], font), dy = Math.round((1 - eOut3(p)) * 9);
-    shadeMask(Mk, Math.round(lx + Mk.ox), base + Mk.oy + dy, { ramp: [P.s6, P.moon], B: 0, face: () => 1, show: (sx, sy) => (sy <= base ? 0 : false) });
+  // STUDIOS tagged at its right under the reflection, like the artist's signature on a logo
+  const so = clamp((u - PS_T.studios) / 0.3);
+  if (so > 0) { const tw = measure('STUDIOS', 'silkb', 3), sy0 = base + 31; textRows('STUDIOS', lx + LM.tw - tw - 2, sy0, 'silkb', (dy2, X) => (lgBay(X, sy0 + dy2) < so ? [P.moon, P.s6, P.s6, P.s5, P.s5, P.s4][Math.min(5, dy2)] : P.void), { ls: 3, shadow: P.void }); }
+  // the tagline band: two rules opening from the middle, a dark band, "est. eventually" with a copper gradient
+  const ba = eIO(clamp((u - PS_T.band) / 0.45)), bandY = 136, half = Math.round(150 * ba);
+  if (half > 0) {
+    for (let x = cx - half; x <= cx + half; x++) {
+      const e = 1 - Math.abs(x - cx) / 152, bh = Math.round(9 * Math.sqrt(Math.max(0, e)));
+      for (let y = bandY - bh; y <= bandY + bh; y++) if (lgBay(x, y) < 0.75) putI(x, y, P.d1);
+      putI(x, bandY - 12, (x & 1) ? P.d4 : P.d3); putI(x, bandY + 12, (x & 1) ? P.d4 : P.d3);
+    }
+    const TM = typeMask('est. eventually', '18px unci'), tx = Math.round(cx - TM.tw / 2) - TM.pad, ty = bandY + 5 + TM.oy;
+    const tv = clamp((u - PS_T.band - 0.2) / 0.4);
+    shadeMask(TM, tx, ty, { ramp: [P.d4, P.d5, P.d6, P.pale, P.moon], B: 0, o1: P.void, face: (sx, sy) => 1 - clamp((sy - (bandY + 5 - TM.cap)) / TM.cap) * 0.85, show: (sx, sy) => (lgBay(sx, sy) < tv ? 0 : false) });
   }
-  // 4. the copper rule opens from the middle; S T U D I O S under it
-  const rl = eIO(clamp((u - PS_T.rule) / 0.4)), half = Math.round(rl * 46);
-  if (half > 0) for (let x = cx - half; x <= cx + half; x++) putI(x, base + 6, P.copper);
-  const so = clamp((u - PS_T.rule - 0.05) / 0.4);
-  if (so > 0) text('S T U D I O S', cx + 1, base + 11, 'tiny', fadeIdx(so, [P.void, P.s2, P.s4, P.s5]), { align: 'c' });
-  // 5. the tagline types itself, late
-  if (u > PS_T.type) {
-    const tag = 'est. eventually', n = Math.min(tag.length, Math.floor((u - PS_T.type) / 0.045)), done = n >= tag.length;
-    const caret = !done || (u - PS_T.type - tag.length * 0.045 < 0.6 && Math.floor(u * 3) % 2 === 0);
-    const tw = measure(tag, 'tiny'), tx = Math.round(cx - tw / 2);
-    text(tag.slice(0, n), tx, base + 24, 'tiny', P.s4);
-    if (caret) text('_', tx + measure(tag.slice(0, n), 'tiny') + 1, base + 24, 'tiny', P.s4);
-  }
-  return { bx: mcx, by: mcy, glow: 0.5 * gv };
+  return { bx: cx, by: base - cap / 2, glow: u > PS_T.land && u < PS_T.land + 0.3 ? 1 - (u - PS_T.land) / 0.3 : 0 };
 }

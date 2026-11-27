@@ -32,6 +32,17 @@ def game(x, decay=1.8, wet=0.22, pre=0.0):
     return ps1.from_psr(y)
 
 
+def amiga(x, rate=16726, lp=7200, room=0.12):
+    """The 16-bit home computer of the demo scene (#133): 8-bit samples at a low rate played back with no interpolation
+    (the zero-order hold's bright aliases), the machine's gentle output filter, a little baked echo as the trackers did."""
+    n = int(len(x) * rate / SR)
+    y = np.interp(np.arange(n) * SR / rate, np.arange(len(x)), x)
+    y = np.round(np.clip(y, -1, 1) * 127) / 127
+    idx = np.minimum((np.arange(int(n * SR / rate)) * rate / SR).astype(int), n - 1)
+    z = D.lp(y[idx], lp, 1)
+    return D.reverb(z, 0.35, room) if room > 0 else z
+
+
 def trim_tail(x, db=-60):
     """Cut the reverb's silent end."""
     thr = 10 ** (db / 20) * (np.max(np.abs(x)) + 1e-9)
@@ -268,7 +279,7 @@ def register(cue, write, level, kenney, out_dir):
         D.seed(5400)
         write('bootline', trim_tail(game(tick(1760, 0.05, 0.8), 1.2, 0.15)), 'desk')
 
-    # ------------------------------------------------ Halsky Labs (#133: an 80s studio-gear sting)
+    # ------------------------------------------------ Halsky Labs (#133: an 80s studio-gear sting, through the Amiga chain)
     def sweep_saw(f, d, fc0, fc1, bw=0.9, n=40):
         """A saw through a resonant filter sweeping from fc0 to fc1 (additive: each harmonic weighted by the filter)."""
         t = tt(d)
@@ -312,7 +323,7 @@ def register(cue, write, level, kenney, out_dir):
         y = sweep_saw(110, d, 220, 5200) * np.clip(t / 0.01, 0, 1) * np.exp(-np.clip(t - 0.42, 0, None) / 0.18) * 0.5
         y += 0.6 * sweep_saw(220.5, d, 200, 4000) * np.clip(t / 0.01, 0, 1) * np.exp(-np.clip(t - 0.42, 0, None) / 0.18) * 0.3
         place(y, dsine(2637, 0.4, 0.09) * 0.25, 0.42)   # it settles on a bright ping
-        write('hl_line', trim_tail(game(y * 0.6, 1.4, 0.18)), 'desk')
+        write('hl_line', trim_tail(amiga(y * 0.6)), 'desk')
 
     @cue('hl_scan')
     def _hl_scan():
@@ -326,7 +337,7 @@ def register(cue, write, level, kenney, out_dir):
             place(x, seg, at, D.rng.uniform(0.5, 1.0))
             at += D.rng.uniform(0.016, 0.03)
         x = D.bp(x, 700, 5000) * np.clip(tt(d) / 0.05, 0, 1) * np.clip((d - tt(d)) / 0.12, 0, 1)
-        write('hl_scan', trim_tail(game(x * 0.7, 0.8, 0.12)), 'desk')
+        write('hl_scan', trim_tail(amiga(x * 0.7)), 'desk')
 
     @cue('hl_fly')
     def _hl_fly():
@@ -335,7 +346,7 @@ def register(cue, write, level, kenney, out_dir):
         t = tt(d)
         env = (t / d) ** 1.6 * np.clip((d - t) / 0.02, 0, 1)
         y = swept_noise(d, 400, 4200, env)
-        write('hl_fly', trim_tail(game(y * 0.8, 0.8, 0.12)), 'desk')
+        write('hl_fly', trim_tail(amiga(y * 0.8)), 'desk')
 
     @cue('hl_hit')
     def _hl_hit():
@@ -358,7 +369,7 @@ def register(cue, write, level, kenney, out_dir):
         for f in (587.3, 698.5, 880.0):
             place(x, fm(f, 3.5, 2.2, 2.2, 0.25, 0.9) * 0.16, 0.03)
             place(x, fm(f / 2, 1.0, 2.2, 1.4, 0.4, 1.1) * 0.1, 0.03)
-        write('hl_hit', trim_tail(game(x, 1.6, 0.2)), 'desk')
+        write('hl_hit', trim_tail(amiga(x)), 'desk')
 
     @cue('hl_badge')
     def _hl_badge():
@@ -367,7 +378,7 @@ def register(cue, write, level, kenney, out_dir):
         for at, l in ((0.0, 0.035), (0.1, 0.035), (0.2, 0.09)):
             b = D.osc(1975, l, 'square', 0.5) * np.clip(tt(l) / 0.001, 0, 1) * np.clip((l - tt(l)) / 0.004, 0, 1)
             place(x, D.lp(b, 6000) * 0.35, at)
-        write('hl_badge', trim_tail(game(x, 0.7, 0.12)), 'desk')
+        write('hl_badge', trim_tail(amiga(x)), 'desk')
 
     @cue('hl_presents')
     def _hl_presents():
@@ -375,7 +386,7 @@ def register(cue, write, level, kenney, out_dir):
         x = np.zeros(secs(1.8))
         place(x, fm(880, 2.0, 1.4, 1.2, 0.2, 0.6) * 0.3, 0.0)
         place(x, fm(1174.7, 2.0, 1.4, 1.0, 0.2, 0.7) * 0.25, 0.16)
-        write('hl_presents', trim_tail(game(x, 1.4, 0.25)), 'desk')
+        write('hl_presents', trim_tail(amiga(x)), 'desk')
 
     @cue('hl_glint')
     def _hl_glint():
@@ -386,70 +397,75 @@ def register(cue, write, level, kenney, out_dir):
             f = 3000 + 3200 * k / 8 + D.rng.uniform(-150, 150)
             place(x, dsine(f, 0.18, 0.05) * 0.18 * np.sin(np.pi * (k + 0.5) / 9), 0.05 + k * 0.065)
         place(x, swept_noise(0.7, 3000, 9000, np.sin(np.pi * tt(0.7) / 0.7) ** 2) * 0.12, 0.0)
-        write('hl_glint', trim_tail(game(x, 1.0, 0.2)), 'desk')
+        write('hl_glint', trim_tail(amiga(x)), 'desk')
 
-    # ------------------------------------------------ Procrastination Studios (#133: sleek, light and never loud)
-    @cue('ps_arc')
-    def _ps_arc():
-        D.seed(6410)
-        d = 0.7
-        t = tt(d)
-        f = 660 * (990 / 660) ** np.clip(t / 0.6, 0, 1)
-        ph = 2 * np.pi * np.cumsum(f) / SR
-        y = (np.sin(ph) + 0.25 * np.sin(2 * ph) + 0.1 * np.sin(3 * ph)) * np.sin(np.pi * np.clip(t / d, 0, 1)) ** 1.5
-        write('ps_arc', trim_tail(game(y * 0.35, 1.0, 0.2)), 'desk')
-
-    @cue('ps_glass')
-    def _ps_glass():
-        D.seed(6510)
-        x = np.zeros(secs(2.0))
-        place(x, bellish(880, 1.2, [(1, 1, 0.5), (2.76, 0.3, 0.15), (5.4, 0.12, 0.06)]) * 0.35, 0.0)
-        place(x, bellish(1174.7, 1.2, [(1, 1, 0.55), (2.76, 0.3, 0.15), (5.4, 0.12, 0.06)]) * 0.3, 0.14)
-        st = tt(1.6)
-        sand = D.hp(D.white(1.6), 4000) * 0.05 * np.clip(st / 0.2, 0, 1) * np.exp(-st / 0.8) * (0.6 + 0.4 * D.smooth_rand(1.6, 40, 0, 1))
-        place(x, sand, 0.2)
-        write('ps_glass', trim_tail(game(x, 1.2, 0.2)), 'desk')
-
-    @cue('ps_word')
-    def _ps_word():
-        D.seed(6610)
-        x = np.zeros(secs(1.6))
-        sw = 0.55
-        place(x, swept_noise(sw, 1500, 5000, (tt(sw) / sw) ** 2) * 0.12, 0.0)
-        for k, f in enumerate((293.7, 349.2, 440.0)):
-            place(x, pluck(f, 1.0, 0.4, 0.8) * 0.18, sw + k * 0.012)
-        write('ps_word', trim_tail(game(x, 1.0, 0.2)), 'desk')
-
-    @cue('ps_late')
-    def _ps_late():
-        D.seed(6810)
-        write('ps_late', trim_tail(game(pluck(659.3, 0.9, 0.35, 0.9) * 0.25, 1.0, 0.2)), 'desk')
-
-    @cue('ps_rule')
-    def _ps_rule():
-        D.seed(6910)
+    # ------------------------------------------------ Procrastination Studios (#133: a cracktro, its tracker jingle)
+    @cue('ps_drop')
+    def _ps_drop():
+        D.seed(6420)
         d = 0.42
         t = tt(d)
-        y = swept_noise(d, 2500, 6000, np.sin(np.pi * t / d) ** 2) * 0.1 + np.sin(2 * np.pi * np.cumsum(1320 - 220 * t / d) / SR) * np.sin(np.pi * t / d) ** 2 * 0.06
-        write('ps_rule', trim_tail(game(y, 0.8, 0.15)), 'desk')
+        f = 1400 * (180 / 1400) ** (t / d)   # a falling whistle as the logo drops in
+        y = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.clip(t / 0.03, 0, 1) * np.clip((d - t) / 0.03, 0, 1) * 0.35
+        y += swept_noise(d, 3000, 600, (t / d) ** 1.5) * 0.25
+        write('ps_drop', trim_tail(amiga(y, room=0.05)), 'desk')
 
-    @cue('ps_type')
-    def _ps_type():
-        D.seed(6900)
-        x = np.zeros(secs(0.8))
-        for k in range(15):
-            place(x, tick(2200 + 300 * D.rng.random(), 0.025, 0.45), k * 0.045 + 0.005 * D.rng.random())
-        write('ps_type', trim_tail(game(x, 0.8, 0.1)), 'desk')
-
-    @cue('ps_flip')
-    def _ps_flip():
-        D.seed(7010)
-        x = np.zeros(secs(1.6))
-        place(x, swept_noise(0.36, 600, 1800, np.sin(np.pi * tt(0.36) / 0.36) ** 2) * 0.3, 0.0)
-        place(x, woodtap(520, 0.12, 0.6), 0.38)
-        st = tt(1.1)
-        place(x, D.hp(D.white(1.1), 4000) * 0.05 * np.clip(st / 0.15, 0, 1) * np.exp(-st / 0.6), 0.42)
-        write('ps_flip', trim_tail(game(x * 0.8, 0.9, 0.12)), 'desk')
+    @cue('ps_mod')
+    def _ps_mod():
+        """A 4-channel tracker jingle in D minor at 125 BPM (a row 0.12 s, speed 6 at 50 Hz): the logo lands on its first
+        kick; arpeggio chords (the effect that plays a chord on one channel, a note per tick), a bass, the drums, a lead;
+        a final chord on row 28 rings out by 15 s, as the title comes in. Original."""
+        D.seed(6520)
+        ROW, TICK, N = 0.12, 0.02, 28
+        out = np.zeros(secs(N * ROW + 0.62))
+        nf = lambda m: 440.0 * 2 ** ((m - 69) / 12)   # MIDI note to Hz
+        chords = [(0, 8, 62, 'min'), (8, 16, 58, 'maj'), (16, 22, 60, 'maj'), (22, 28, 57, 'maj')]   # D4 m, Bb3, C4, A3
+        # channel 1: the arpeggio, a 25% pulse, a note per tick
+        for r0, r1, root, kind in chords:
+            iv = [0, 3, 7] if kind == 'min' else [0, 4, 7]
+            ticks = int((r1 - r0) * ROW / TICK)
+            freq = np.concatenate([np.full(secs(TICK), nf(root + 12 + iv[k % 3])) for k in range(ticks)])
+            seg = D.osc(freq, ticks * TICK, 'square', 0.25)
+            env = 0.6 + 0.4 * np.exp(-np.mod(tt(ticks * TICK), ROW * 2) / 0.12)
+            place(out, seg * env * 0.13, r0 * ROW)
+        # channel 2: the bass, a filtered saw in eighths (root, root, octave, root)
+        for r0, r1, root, kind in chords:
+            for k, r in enumerate(range(r0, r1, 2)):
+                f = nf(root - 24 + (12 if k % 4 == 2 else 0))
+                b = D.lp(D.osc(f, 0.22, 'saw'), 900, 2) * np.exp(-tt(0.22) / 0.12) * np.clip(tt(0.22) / 0.004, 0, 1)
+                place(out, b * 0.3, r * ROW)
+        # channel 3: the drums
+        def kick():
+            kt = tt(0.16); k = np.sin(2 * np.pi * np.cumsum(45 + 90 * np.exp(-kt / 0.025)) / SR) * np.exp(-kt / 0.09)
+            place(k, D.click(0.005, 1500, 6000, 0.001) * 0.3, 0.0); return k
+        def snare():
+            return D.bp(D.white(0.14), 1200, 7000) * np.exp(-tt(0.14) / 0.05) * 0.8 + dsine(185, 0.14, 0.04) * 0.5
+        def hat():
+            return D.hp(D.white(0.04), 7000) * np.exp(-tt(0.04) / 0.012) * 0.5
+        for r in (0, 6, 8, 14, 16, 22, 24):
+            place(out, kick() * 0.5, r * ROW)
+        for r in (4, 12, 20, 26, 27):
+            place(out, snare() * (0.32 if r != 27 else 0.22), r * ROW)
+        for r in range(1, N, 2):
+            place(out, hat() * 0.12, r * ROW)
+        # channel 4: the lead, a 50% pulse with a little vibrato
+        melody = [(8, 69, 2), (10, 72, 2), (12, 74, 4), (16, 76, 2), (18, 77, 2), (20, 76, 2), (22, 73, 2), (24, 76, 4)]
+        for r, m, ln in melody:
+            d = ln * ROW
+            t = tt(d)
+            f = nf(m) * (1 + 0.012 * np.sin(2 * np.pi * 6 * t) * np.clip((t - 0.08) / 0.05, 0, 1))
+            place(out, D.osc(f, d, 'square', 0.5) * np.clip(t / 0.005, 0, 1) * (0.75 + 0.25 * np.exp(-t / 0.1)) * np.clip((d - t) / 0.01, 0, 1) * 0.11, r * ROW)
+        # row 28: the final D minor chord, everything at once, ringing out
+        r = N * ROW
+        place(out, kick() * 0.55, r)
+        place(out, D.hp(D.white(0.6), 3000) * np.exp(-tt(0.6) / 0.22) * 0.2, r)
+        for m, a in ((38, 0.3), (62, 0.09), (65, 0.08), (69, 0.08), (74, 0.12)):
+            wave = 'saw' if m < 50 else 'square'
+            tone = D.osc(nf(m), 0.6, wave, 0.5)
+            if m < 50:
+                tone = D.lp(tone, 900, 2)
+            place(out, tone * np.exp(-tt(0.6) / 0.22) * np.clip(tt(0.6) / 0.004, 0, 1) * a, r)
+        write('ps_mod', trim_tail(amiga(out, room=0.08)), 'desk')
 
     # ------------------------------------------------ the title: the heavy part
     @cue('thunder_near')

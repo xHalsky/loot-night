@@ -3,6 +3,35 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.101.0 (2026-11-27)
+
+- **Both studio logos are cracktros now** (#133, round two, Paweł; for his review): the feel of the intros the pirate
+  scene put before the games on the 16-bit home computers, all original and palette-exact Moonwell 32.
+  - **Halsky Labs**, more detail: a slow parallax starfield; HALSKY in banded chrome with a deep violet extrusion that
+    pushes out as it locks, twinkling sparkles and a burst on the lock; Paweł's mark gets an extrusion and sparkles on
+    its sticker rim; the red rule is three rows (pale, crimson, wine); the LABS badge has screws. **PRESENTS** is
+    bigger (doubled, spaced, a chrome gradient), centred under the whole lockup between two rules that open from the
+    middle, so it no longer sits in a random place.
+  - **Procrastination Studios, changed completely** (the name and "est. eventually" kept): a big spiky chrome
+    PROCRASTINATION (New Rocker, stretched tall) in cyan-to-pink bands with an extrusion, sparkles and a rippling
+    mirror reflection; it drops in, bounces twice wobbling row by row and lands in a burst of sparkles. STUDIOS signed
+    at its corner, the tagline in uncial lettering (Uncial Antiqua) in a dark band, two swinging copper bars and a
+    sine scroller ("YO! THIS INTRO WAS DUE IN MARCH. GREETINGS TO DUTCH, HIXX, HUDZOR AND ARKBISHOP. SEE YOU
+    EVENTUALLY..."), over a starfield. The ring, hourglass and late letter are gone.
+  - **The sound, through an 8-bit sampler chain** (`amiga()` in `tools/sfx/launch.py`: 8-bit, a low rate held without
+    interpolation, a low-pass, a small room): Halsky's seven cues re-baked through it, PRESENTS' chime at 8.2 s with
+    its new timing. Procrastination's seven cues become two: a falling whistle as the logo drops (`ps_drop`, 10.75 s)
+    and **a 4-channel tracker jingle** from the landing (`ps_mod`, 11.15 s): 125 BPM, arpeggio chords (D minor, B flat,
+    C, A), a saw bass, the drums, a pulse lead, ending on a D minor chord by 15 s. The cue sheet is now 51 cues.
+  - Fonts: Outfit removed; New Rocker and Uncial Antiqua added (SIL OFL 1.1, the licences beside them).
+- **The boys chat while it boots** (#133, Paweł): nine bubbles instead of five (`FIRST_CHAT`, `CHAT_LAUNCH_AT` 2.6,
+  5.0, 8.4, 10.2, 12.8, 21.4, 26.4, 30.6, 35.4 s): Mike can't skip the intro, Lance "good. it's the best part", Billy
+  "this intro looks like an old crack intro lol", Lance's "nine stars. strong password" as the password is typed.
+  None from 15 to 21 s (the title's sounds stand alone).
+- Tests: `test/launch.ts` checks the nine arrivals (in order, none on the title); `test/launch.py` the new cue;
+  `test/week.ts` and `test/week.py` the longer chat. Render time on the logos 10 to 17 ms a frame. Seeded sims (good,
+  idle) identical to 0.100.0: no balance change.
+
 ## 0.100.0 (2026-11-27)
 
 - **The two studio logos redrawn; they hold, and the next screen fades in over them** (#133, Paweł; for his review).

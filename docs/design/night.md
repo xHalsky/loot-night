@@ -38,10 +38,13 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   (the RPG's name in the fiction, #102) "aoj". Their lines riff on 80s and 90s action films and old MMOs and arena
   shooters (an inside joke for Paweł's friends) and read as plain gamer talk without them: no film, character or game is
   named, and a quote is kept exact only up to five words. **The first Monday** is their chat, live (`FIRST_CHAT`), paced
-  to **the launch** (#127, below): five bubbles, one at a time, each after the name and three hopping dots, arriving at
-  2.6, 10.2, 21.4, 26.4 and 35.4 s (`CHAT_LAUNCH_AT`, 1.6 s of dots each, `CHAT_LAUNCH_TYPING`; a soft tick as each
-  lands): Billy's realm is up, patch notes he didn't read, 11 sharp, "careful with her tonight"; Lance's "would you
-  like to know more?"; Mike's tip (Tab before the door opens). Until 38 s the pill reads "Age of Judgment is loading"
+  to **the launch** (#127, below): nine bubbles, one at a time, each after the name and three hopping dots, arriving at
+  2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 26.4, 30.6 and 35.4 s (`CHAT_LAUNCH_AT`, 1.6 s of dots each, `CHAT_LAUNCH_TYPING`; a
+  soft tick as each lands; none while the title's heavy sounds play): Billy's realm is up; then four lines to read while
+  it boots, setting the mood (#133, Paweł): Mike can't skip the intro, Lance "good. it's the best part", Billy's patch
+  notes he didn't read and "this intro looks like an old crack intro lol"; Lance's "would you like to know more?";
+  Billy's 11 sharp, "careful with her tonight"; Lance's "nine stars. strong password" as the password is typed; Mike's
+  tip (Tab before the door opens). Until 38 s the pill reads "Age of Judgment is loading"
   with the percentage, dim and not a button, and Let's go, Esc, Enter, the home bar and the close box do nothing.
   **The boys always text, never send voice notes**
   (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`) naming tonight's new
@@ -234,11 +237,22 @@ happening.
 
 - **The studio logos hold, and the next screen fades in over them** (0.100.0, #133; Paweł, 2026-11-27): a logo that
   animates out spends its last second taking itself apart; one that holds lets you read it, and the dithered fade
-  carries you to the next. Halsky Labs was redrawn with an 80s Japanese studio-gear flair (a wide heavy face in banded
-  chrome, a red rule and a LABS badge like a rack unit's, a power-on line, a raster scan, a fly-in that locks with an
-  orchestra stab), Procrastination Studios made professional and sleek (a thin ring and hourglass, a spaced
-  SemiBold wordmark, a copper rule): its joke stays in the name, the tagline and one late letter, not in a wobbly
-  badge. Rejected: keeping Sora and Fredoka (too soft for either), a real brand's lettering or stripes (original only).
+  carries you to the next.
+- **Both studio logos are cracktros** (0.101.0, #133; Paweł, 2026-11-27, with two old scene logos as reference): the
+  feel of the intros the pirate scene put before the games on the 16-bit home computers. Banded chrome on hard
+  palette steps, a deep extrusion, sparkles, starfields, copper bars, a mirror reflection and a sine scroller, all in
+  Moonwell 32; the sound through an 8-bit sampler chain, Procrastination's a 4-channel tracker jingle. Halsky Labs
+  keeps its studio-gear sting (the red rule, the LABS badge, the fly-in that locks with an orchestra stab) with more
+  detail, and PRESENTS is centred under the whole lockup between rules, bigger, so it no longer floats. Procrastination
+  Studios was changed completely (it had gone from a wobbly badge to a sleek ring and hourglass, neither landed): a
+  spiky chrome logo that drops in and bounces, STUDIOS signed at its corner, "est. eventually" in uncial lettering,
+  and the scroller carries the joke (the intro was due in March) and greets the boys. Rejected: Sora and Fredoka (too
+  soft), the ring and hourglass (too corporate for the scene), copying a real group's logo or a real crack's text
+  (original only), a scroller with real groups' names.
+- **The boys chat while it boots** (0.101.0, #133; Paweł): the launch is 38 s, and five bubbles left long gaps. Nine
+  now: four early lines set the mood (the intro you can't skip, "it's the best part", the crack intro look) and one
+  lands as the nine stars are typed. None from 15 to 21 s, where the title's sounds stand alone. Rejected: more lines
+  later (the login has its own beats), a skip button (the wait is the joke and the theme).
 
 - **The launch has its own clock, and holds the night** (#127, Paweł's v2 redesign, approved 2026-11-27): one T for the
   monitor, the chat and the sound, started when the chat comes up, stopped by pause, running in real seconds (not the
