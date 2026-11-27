@@ -3,6 +3,15 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.91.1 (2026-11-27)
+
+- **A gentler shake** (#114; Paweł: too much and too long): the wrong-class shake, in its square and in hand, is now
+  four 1 px hops over 0.2 s (was six hops of 2 then 1 px over 0.35 s). `WRONG_CLASS_SHAKE_HOPS` is new.
+- **Its slot lights when you pick it up** (#114): held on a bag item for `PICKUP_HOLD_SEC` (0.12 s), or dragging it,
+  the matching slot in the selected hero's gear gets a thin ring with its corners left out: gold, or crimson when he
+  can't wear it. An open item window closes when you pick another item up, so the slots show. A quick click still
+  just selects. `test/classgear.py` covers both.
+
 ## 0.91.0 (2026-11-27)
 
 - **Class gear** (#113; Paweł: per-class weapons and armour, trinkets shared). Weapons, helms and armor now belong to

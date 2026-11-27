@@ -353,6 +353,12 @@ function liveCell(x, y, c, o = {}) {
   if (c.sel) { frameI(x - 1, y - 1, 23, 23, P.pale); frameI(x, y, 21, 21, P.gold); }
   if (c.bad) frameI(x - 1, y - 1, 23, 23, P.crimson);
 }
+// the slot a picked-up item goes in (#114): a thin ring round the square with its corners left out (softer than the
+// selection's double frame); gold, or crimson when the selected hero can't wear it
+function aimRing(x, y, bad) {
+  const col = bad ? P.crimson : P.gold;
+  for (let i = 0; i < 21; i++) { putI(x + i, y - 1, col); putI(x + i, y + 21, col); putI(x - 1, y + i, col); putI(x + 21, y + i, col); }
+}
 function panelFrame() {
   leatherU(0, 0, W, H, { v: 0.16, vig: 0.45 });
   for (let j = 0; j < H; j++) { putU(0, j, 0.02); putU(1, j, 0.78 + 0.06 * (GR(1, j) - 0.5)); putU(2, j, 0.3); putU(3, j, 0.05); }
@@ -396,6 +402,7 @@ function livePartyPanel(st, t) {
     const gx = X0 + 2 + (k % 3) * 22, gy = 67 + Math.floor(k / 3) * 22, c = st.gear[slot];
     liveCell(gx, gy, c, { ghost: (st.ghosts && st.ghosts[slot]) || { weapon: 'sword', helm: 'helm', armor: 'armor', boots: 'boots', ring: 'ring', trinket: 'amulet' }[slot] });   // an empty slot shows his class's own shape (#113)
     panelHit(gx, gy, 21, 21, 'gearCell', slot, c ? 'gear:' + st.sel + ':' + slot : '');
+    if (st.aim && st.aim.slot === slot) aimRing(gx, gy, st.aim.bad);
   });
   const sx = X0 + 71;
   wellU(sx - 2, 66, PW - 71, 44, { v: 0.1 });

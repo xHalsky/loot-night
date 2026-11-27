@@ -141,11 +141,14 @@ a 3 × 2 grid (weapon, helm, armor / boots, ring, trinket; an empty slot shows a
 the weapon, helm and armor). Drag from the bag onto a slot or a party card to equip; drag off to unequip; right-click
 to equip on the selected hero. **Class gear on the wrong hero** (#113): hovered with a hero selected who can't wear
 it, the item's square gets a crimson ring; picked up, the item in your hand wears the ring (gone over the card of a
-hero who can wear it), and its square stays empty while it is in hand. Right-click: it shakes in its square
-(`WRONG_CLASS_SHAKE_SEC` 0.35 s, `WRONG_CLASS_SHAKE_PX` 2 grid px: three hops, then three at half). Dragged onto his
-slot or card it shakes in your hand, and let go it flies back to its square (`GHOST_RETURN_SEC` 0.16 s) and shakes
-there; the feed says "Mage only: Dutch (Knight) can't use it." Anything let go where it can't go flies back the same
-way. `python3 test/classgear.py` plays all of it. Hover tooltips show the
+hero who can wear it), and its square stays empty while it is in hand. **Picked up** (the button held on it for
+`PICKUP_HOLD_SEC` 0.12 s, or dragged; #114), its slot in the selected hero's gear lights with a thin ring, corners
+left out: gold when he can wear it, crimson when he can't; an open item window closes so the slots show. A quick click
+still just selects it. Right-click on the wrong hero: it shakes gently in its square (`WRONG_CLASS_SHAKE_HOPS` 4 hops
+of `WRONG_CLASS_SHAKE_PX` 1 grid px over `WRONG_CLASS_SHAKE_SEC` 0.2 s). Dragged onto his slot or card it shakes the
+same way in your hand, and let go it flies back to its square (`GHOST_RETURN_SEC` 0.16 s) and shakes there; the feed
+says "Mage only: Dutch (Knight) can't use it." Anything let go where it can't go flies back the same way.
+`python3 test/classgear.py` plays all of it. Hover tooltips show the
 name, rarity, slot and power, the stats and special affix, and for bag items whether it is better for the
 selected hero; the detailed stat comparison is in the item's click panel. Next to the grid, a stat block shows the selected
 hero's HP, ATK, ARM, SPD, CRIT and LUCK, with the share that comes from gear in green (red if gear lowers it).
@@ -177,7 +180,8 @@ Souls.
   rather than four stat sheets, and an upgrade is somebody's, which gives the bag a "who is this for" beat. The
   wrong-class signal lives on the item itself: a crimson ring under the pointer, a shake in its square or in your hand,
   and a flight back to the bag, so it reads without the tooltip; the feed line says why. Drops spread evenly over the
-  party. Measured: night 1 (32 good-bot nights each) 32 equips to 28, 20.5 to 18.2 of 24 slots filled, gear's share of attack 38% to 33% and of HP 27% to 23%, depth 6.2 to 6.1 floors and wipes 0.16 both; over four nights (8 campaigns) depth 6.1 / 8.8 / 9.2 / 9.0 before, 6.2 / 8.8 / 11.0 / 11.0 after (more unwearable drops get sold, so the city grows a little faster). Gear fills a little slower, the run doesn't suffer. Rejected: armor types (cloth, leather, plate) shared between classes (more rules to
+  party. The shake was 0.35 s of 2 px hops and read as too much (#114): it is a brief 1 px wiggle now, and the slot
+  the item goes in lights as soon as it is picked up, so the answer shows before you drop it. Measured: night 1 (32 good-bot nights each) 32 equips to 28, 20.5 to 18.2 of 24 slots filled, gear's share of attack 38% to 33% and of HP 27% to 23%, depth 6.2 to 6.1 floors and wipes 0.16 both; over four nights (8 campaigns) depth 6.1 / 8.8 / 9.2 / 9.0 before, 6.2 / 8.8 / 11.0 / 11.0 after (more unwearable drops get sold, so the city grows a little faster). Gear fills a little slower, the run doesn't suffer. Rejected: armor types (cloth, leather, plate) shared between classes (more rules to
   learn for four heroes); a class weighting toward whoever is behind (smart loot: kept for later, if the playtests
   find a hero starved); class trinkets (they stay the item anyone can use); a hint toast alone, without the ring and
   the shake (the feed is easy to miss mid-fight).

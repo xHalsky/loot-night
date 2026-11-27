@@ -248,8 +248,10 @@ export const T = {
   BAG_SIZE: 18,
   TREASURY_ROW: 6,                // the bag's last row: the Treasury opens 2 slots per level; the rest show a lock (#49)
   BAG_NEW_SEC: 1.5,               // a fresh item's bag slot shines with NEW this long
-  WRONG_CLASS_SHAKE_SEC: 0.35,    // class gear on the wrong hero (#113): the item shakes in its square (or in hand) this long
-  WRONG_CLASS_SHAKE_PX: 2,        // and this far either way, in grid px (x2 on the stage)
+  WRONG_CLASS_SHAKE_SEC: 0.2,     // class gear on the wrong hero (#113, gentler in #114): the item shakes in its square (or in hand) this long
+  WRONG_CLASS_SHAKE_PX: 1,        // this far either way, in grid px (x2 on the stage)
+  WRONG_CLASS_SHAKE_HOPS: 4,      // in this many hops (right, left, right, left), then still
+  PICKUP_HOLD_SEC: 0.12,          // held this long on a bag item (or dragged), it is picked up: its gear slot lights (#114)
   GHOST_RETURN_SEC: 0.16,         // an item let go where it can't go flies back to its square in this long
   LOOT_FLY_SEC: 1.6, LOOT_FLY_LEGENDARY_SEC: 2.6, LOOT_FLY_STAGGER_SEC: 0.3,   // picked-up loot: its name flies up from the floor (#49)
   POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots

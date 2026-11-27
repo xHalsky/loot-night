@@ -79,15 +79,22 @@ function itemIcon(it: Item): string {
   return SLOT_ICON[it.slot];
 }
 /** The pointer over the side panel (#113, from main.ts): the bag item under it (its ring when the selected hero can't
- *  wear it), and what is in your hand ('bag:id' or 'gear:slot': its square stays empty till it lands). */
-const panelPtr: { hover: string | null; lift: string | null } = { hover: null, lift: null };
+ *  wear it), what is in your hand ('bag:id' or 'gear:slot': its square stays empty till it lands), and the bag item the
+ *  button is held on (#114: once picked up, its slot in the selected hero's gear lights). */
+const panelPtr: { hover: string | null; lift: string | null; hold: { id: string; at: number } | null } = { hover: null, lift: null, hold: null };
+/** The gear slot a picked-up bag item goes in (#114): gold, or crimson when the selected hero can't wear it. */
+function aimOf(h: Hero): { slot: string; bad: boolean } | null {
+  const hd = panelPtr.hold;
+  if (!hd || (panelPtr.lift !== `bag:${hd.id}` && performance.now() - hd.at < T.PICKUP_HOLD_SEC * 1000)) return null;
+  const e = S.g.bag.find(x => x.id === hd.id);
+  return e && e.kind === 'item' ? { slot: e.item.slot, bad: !canWear(h, e.item) } : null;
+}
 export function setPanelPtr(p: Partial<typeof panelPtr>) { Object.assign(panelPtr, p); }
-/** A shake (#113) at p (0..1 of WRONG_CLASS_SHAKE_SEC), in whole grid px: six hops, right, left, right at full
- *  WRONG_CLASS_SHAKE_PX, then three at half, then still. The bag square and the item in hand use the same one. */
+/** A shake (#113; gentle since #114) at p (0..1 of WRONG_CLASS_SHAKE_SEC), in whole grid px: WRONG_CLASS_SHAKE_HOPS
+ *  hops of WRONG_CLASS_SHAKE_PX, right, left, right, left, then still. The bag square and the item in hand share it. */
 export function shakeDx(p: number): number {
   if (p < 0 || p >= 1) return 0;
-  const k = Math.floor(p * 6);
-  return (k % 2 ? -1 : 1) * (k < 3 ? T.WRONG_CLASS_SHAKE_PX : Math.ceil(T.WRONG_CLASS_SHAKE_PX / 2));
+  return (Math.floor(p * T.WRONG_CLASS_SHAKE_HOPS) % 2 ? -1 : 1) * T.WRONG_CLASS_SHAKE_PX;
 }
 /** The item's icon offset while it shakes in its square (a refused equip). */
 function shakeOf(id: string): number {
@@ -126,7 +133,7 @@ function partyPanelView() {
   const row = (k: Stat, label: string, f: (v: number) => string) => { const d = st[k] - base[k]; return [label, f(st[k]), Math.abs(d) >= 0.05 ? `${d > 0 ? '+' : ''}${f(d)}` : ''] as const; };
   const gear: Record<string, unknown> = {};
   for (const sl of ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'] as const) gear[sl] = gearCell(h.gear[sl], sl);
-  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: HERO_CLASS[h.id], pow: heroPower(h) }, gear, ghosts: CLASS_ICON[h.id],
+  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: HERO_CLASS[h.id], pow: heroPower(h) }, gear, ghosts: CLASS_ICON[h.id], aim: aimOf(h),
     stats: [row('hp', 'HP', r0), row('atk', 'ATK', r1), row('armor', 'ARM', r1), row('speed', 'SPD', r1), row('crit', 'CRIT', r1), row('luck', 'LUCK', r1)], ...bagView(true), ...foot() };
 }
 function townPanelView() {

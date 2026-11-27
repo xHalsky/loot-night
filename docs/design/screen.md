@@ -52,8 +52,9 @@ swap their positions; Skill Tree: [trees.md](trees.md)). The town map itself is 
 equip, from a slot onto the bag to unequip (the item under the pointer is its own cell, as the panel drew it, at the
 grid's pixel, in a 1 px border: #111; its square stays empty while it is in hand); right-click equips on the selected
 hero (or unequips); hover for the tooltip; L locks. Class gear the selected hero can't wear (#113,
-[loot.md](loot.md)): a crimson ring round its square under the pointer and round it in hand, a shake in its square
-on right-click and in hand over his slot or card; let go, it flies back to its square. Anything let go where it
+[loot.md](loot.md)): a crimson ring round its square under the pointer and round it in hand, a gentle shake in its
+square on right-click and in hand over his slot or card; let go, it flies back to its square. Held on a bag item (or
+dragging it), its slot in the selected hero's gear lights: a thin gold ring, crimson for the wrong class (#114). Anything let go where it
 can't go flies back. An empty weapon, helm or armor slot shows the selected hero's class shape (Hudzor's: a staff,
 a circlet, a robe). HP shows only on the battle sprites and the skill-bar portraits.
 

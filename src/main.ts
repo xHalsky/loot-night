@@ -299,6 +299,9 @@ function shakeGhost() {
   };
   step();
 }
+/** Held past PICKUP_HOLD_SEC, a bag item is picked up (#114): an open item window closes, so the gear slots it lights
+ *  (and could land on) show. Let go without a drag, it is a click as before and selects the item. */
+function pickUp(key: string) { window.setTimeout(() => { if (inv?.key === key && S.g.night) S.g.night.selected = null; }, T.PICKUP_HOLD_SEC * 1000); }
 /** Where a drag would land: a gear slot ('slot:weapon'), a party card ('hero:2'), the bag ('bag'), or nowhere (''). */
 function dropAt(ev: PointerEvent): string {
   const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
@@ -360,7 +363,7 @@ document.addEventListener('pointermove', ev => {
 });
 document.addEventListener('pointerup', ev => {
   if (inv && S.g.night) {
-    const { key, moved, rect, ring } = inv; inv = null;
+    const { key, moved, rect, ring } = inv; inv = null; setPanelPtr({ hold: null });
     const [kind, a, b] = key.split(':');
     let went = false;
     if (!moved) { if (kind === 'bag') clickBagSlot(a); else if (kind === 'hero') actions.heroTab(a); }
@@ -428,7 +431,7 @@ el('spArea').addEventListener('pointerdown', ev => {
   if (!h || !h.act) return;
   ev.preventDefault(); ev.stopPropagation(); hover.key = '';
   // an item: pick it up (drag to equip or unequip, as the DOM bag did); a click without a drag selects it
-  if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h), rect: h }; return; }
+  if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h), rect: h }; setPanelPtr({ hold: { id: h.arg, at: performance.now() } }); pickUp(`bag:${h.arg}`); return; }   // held: its slot lights (#114)
   if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h), rect: h }; return; }
   // a party card: a click picks the hero, a drag onto another card swaps their positions (the town had no reorder before)
   if (h.act === 'heroTab') { inv = { key: `hero:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
@@ -1002,6 +1005,7 @@ function drawTips() {
 
 (window as unknown as Record<string, unknown>).__lnPhone = () => { const r = phCanvas.getBoundingClientRect(); return phHits.map(h => ({ act: h.act, arg: h.arg, x: r.left + (h.x + h.w / 2) * r.width / phCanvas.width, y: r.top + (h.y + h.h / 2) * r.height / phCanvas.height })); };   // for the tests
 (window as unknown as Record<string, unknown>).__lnCoach = () => coachHits;   // for the tests: the close box, then the callout
+(window as unknown as Record<string, unknown>).__lnShakeDx = shakeDx;   // for the tests: the shake's hops (#114)
 (window as unknown as Record<string, unknown>).__lnCaught = () => ({ t: caughtT(performance.now()), ...caughtShot() });   // for the tests
 el('screen').addEventListener('pointerdown', () => { if (S.g.night?.unplugged && cablesHidden) { cablesHidden = false; sfx.click(); } });
 // ---------- The desk (V3, #68; grid doc §7): the renderer's right screen behind the monitor's live canvases ----------
