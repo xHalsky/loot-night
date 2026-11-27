@@ -316,7 +316,15 @@ rare or better.
 redesign's renderer (`src/render/page/live.js` from the view model in `src/render/rpgView.ts`) on the 334 × 232
 grid: a 64 px band where the curio card opens, the 142 px picture, the 26 px skill bar. The dark baroque ossuary in
 Moonwell 32, Bayer-dithered: far catacomb, the ossuary arcade, a perspective floor, ground mist, a foreground pillar
-pinned to the left edge in battle, warm candles against cold moonlight. The party walks in position, front on the right
+pinned to the left edge in battle, warm candles against cold moonlight. **Its tells** (#129, the v2 redesign,
+[aoj-world.md](aoj-world.md) §3: the crypt has iron under the stone): three colossal riveted iron ribs rise through the
+far hall, seen through the arches, a dim crimson eye-light on one; the moonlit saint in the alcove is **an iron angel**,
+one of the fallen set up as a saint (folded wings of riveted iron feathers rising above its head, the gilt broken halo
+with its spark, a serene iron face with one ember eye weeping rust, its hands on a great sword point down, a robe of
+iron folds with riveted bands, green patina low in the folds, the moon's rim down its right side, a carved plinth with
+its name worn away and wax down its front); the banner carries the broken halo in umber instead of the sun. Drawn once
+into the crypt's layers after they are built (`cryptTells` in `render/page/aoj.js`, the statue `ironAngelStatue` in
+`render/page/foes.js`). The party walks in position, front on the right
 (knight x 126, then 35 px apart); actors get the separation pass (fill light, rim, outline, halo). Enemies stand in
 the front lane (x 186, 226, 266), a boss behind them on the party's lane. The page's rigs stand in for the skeleton,
 the guardian (skeleton with helm and shield), the orc (zombie with a sword) and the shaman (necromancer); bats, imps,

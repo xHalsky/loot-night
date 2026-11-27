@@ -55,6 +55,38 @@ function rustPatch(x, y, w, h, seed, k = 0.62) { for (let j = 0; j < h; j++) for
 let LAUNCH_C = null;
 function launchCanvas() { if (!LAUNCH_C) { LAUNCH_C = document.createElement('canvas'); LAUNCH_C.width = GS_W; LAUNCH_C.height = GS_H; } return LAUNCH_C; }
 
+// ---------------------------------------------------------------- the Shadow Crypt's tells (W3, #129)
+// The crypt as approved, plus three tells: colossal riveted ribs in the far hall (seen through the arches), the iron
+// angel in the moonlit alcove (foes.js ironAngelStatue) and the Church's broken halo on the banner. Drawn once into the
+// crypt's layers after buildDungeon (facade.js pkInit); the build's crypt is the page's, so the coordinates hold.
+function ironRibV(x, y, x0, w, d) {   // a riveted iron beam's value across its width (lit from the left)
+  const u = (x + 0.5 - x0) / w;
+  if (u < 0 || u > 1) return -1;
+  let v = (0.1 + 0.34 * Math.sin(u * Math.PI) * (1 - 0.45 * u)) * d;
+  if (u < 0.12) v = 0.42 * d; if (u > 0.9) v = 0.05 * d;
+  if ((u > 0.18 && u < 0.26) || (u > 0.74 && u < 0.82)) { if (y % 6 === 0) v = 0.62 * d; else if (y % 6 === 1) v = 0.08 * d; }
+  if (y % 22 === 0) v *= 0.4;
+  return v;
+}
+function cryptTells() {
+  MAT = M_STONE; EMI = 0; TAG = 0; DXV = 0;
+  // FAR: three colossal bowed ribs rise through the far hall, a dim eye-light on one of them
+  bind(DG.far);
+  for (let k = 0; k < 3; k++) {
+    const xr = 40 + k * 110;
+    for (let y = 0; y < 128; y++) { const bow = 16 * ((y - 64) / 64) ** 2, x0 = xr + bow - 8 + (k === 1 ? -4 : 0); for (let x = Math.floor(x0) - 1; x < x0 + 18; x++) { const v = ironRibV(x, y, x0, 17, lerp(0.55, 0.95, y / 128)); if (v >= 0) put(((x % FAR_P) + FAR_P) % FAR_P, y, v, M_STONE); } }
+  }
+  put(155, 70, 0.75, M_DANGER, 1); put(156, 70, 0.45, M_DANGER, 1);
+  // MID: the saint's halo is broken, a spark in the gap; the banner's sun becomes the broken halo
+  bind(DG.mid);
+  { const cx = 165; for (let a = 0; a < 64; a++) { const an = (a / 64) * Math.PI * 2; put(Math.round(cx + Math.cos(an) * 8), Math.round(70 + Math.sin(an) * 8), 0.03); }
+    brokenHalo(cx + 0.5, 70.5, 8, 0.62, M_STONE, 0, { gap: 0.7 }); }
+  { const cx = 385; for (let y = 44; y <= 60; y++) for (let x = cx - 8; x <= cx + 8; x++) put(x, y, 0.32 + 0.3 * Math.sin(clamp((x - cx + 9.5) / 19) * Math.PI) - ((y - 32) % 10 === 0 ? 0.08 : 0), M_DUSK);
+    brokenHalo(cx + 0.5, 52.5, 6, 0.86, M_UMBER, 0, { w: 2, gap: 0.8 }); }
+  // MID: the saint in the moonlit alcove is an iron angel (foes.js: ironAngelStatue)
+  bind(DG.mid); ironAngelStatue(165);
+}
+
 // ---------------------------------------------------------------- Ravenhold, AoJ: rain, wet streets, the iron gate, the halo (W2, #128)
 // In the build: town.js screenTown runs ravenholdIron on its layer once, when it is built (and rebuilt for a building's
 // new level), and townRain every frame after the town's life, under its UI (signs and outlines are the UI layer).

@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.97.0 (2026-11-27)
+
+- **The Shadow Crypt's tells** (#129, W3 of the v2 redesign; aoj-world §3): three colossal riveted iron ribs rise through
+  the far hall behind the arches (a dim crimson eye-light on one); the moonlit saint in the alcove is now the iron angel
+  approved on 2026-11-27 (folded riveted wings, the gilt broken halo, one ember eye weeping rust, the sword point down,
+  the plinth with its name worn away); the banner carries the broken halo in umber. The samples page's `cryptTells` and
+  `ironAngelStatue` ported as they are (`render/page/aoj.js`, the new `render/page/foes.js`), drawn once after the
+  crypt's layers are built: the build's `buildDungeon` is the page's, so the alcove (mid x 165) and the banner (mid
+  x 385) needed no refit. Matches `design/v2/stills/world-crypt-walk-tells`; the parallax, the lights, the mist and the
+  party are as before. Dropped from the page: an unused helper (`spall`, masonry broken off to show iron plating, which
+  the page defined but never drew). Visual only.
+
 ## 0.96.0 (2026-11-27)
 
 - **Ravenhold in rain** (#128, W2 of the v2 redesign; aoj-world §5): it always rains over the town (about 340 slanted
