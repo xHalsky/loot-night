@@ -49,7 +49,8 @@ green ▲ when it is an upgrade for someone, dashes when it is unbanked, a gold 
 Souls, and the deepest floor ever. In town three tabs over it (Town: the build list, the way down and the bag, or
 the open service's page, [city.md](city.md); Inventory: as in the dungeon, and drag a party card onto another to
 swap their positions; Skill Tree: [trees.md](trees.md)). The town map itself is drawn on the battle area (0.62). Drag from the bag onto a gear slot or a card to
-equip, from a slot onto the bag to unequip; right-click equips on the selected hero (or unequips); hover for the
+equip, from a slot onto the bag to unequip (the item under the pointer is its own cell, as the panel drew it, at the
+grid's pixel: #111); right-click equips on the selected hero (or unequips); hover for the
 tooltip; L locks. HP shows only on the battle sprites and the skill-bar portraits.
 
 **Item windows** (details of a clicked item, the bag-full popup) open over the side panel's top block (the party and

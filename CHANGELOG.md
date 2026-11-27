@@ -3,6 +3,13 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.90.2 (2026-11-27)
+
+- **A dragged item looks like itself** (#111; Paweł: it showed the generic slot icon): picked up from the bag or a gear
+  slot, the item under the pointer is its own cell, copied from the side panel as drawn (its icon, rarity light, power,
+  the upgrade arrow) and shown at the grid's pixel (x2 on the stage). The old DOM icon by slot stays only as a fallback.
+  `test/ghost.py`.
+
 ## 0.90.1 (2026-11-27)
 
 - **Position, not rank** (#110; Paweł: it is the order in the formation): the hero tooltips ("Position 1", "Home

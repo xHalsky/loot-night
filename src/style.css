@@ -157,6 +157,9 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 .ico{ display: block; pointer-events: none; }
 #ghost{ position: absolute; z-index: 50; pointer-events: none; display: none; width: 40px; height: 40px; border: 2px solid #f2b84b; background: rgba(36,27,46,.85); align-items: center; justify-content: center; }
 #ghost .ico{ margin: 2px; }
+/* an item from the side panel: its own cell, copied from the panel and drawn at the stage's x2 (the grid's pixel) */
+#ghost.cell{ width: auto; height: auto; border: 0; background: none; }
+#ghost .ghost-cell{ display: block; image-rendering: pixelated; }
 
 /* ---------- Tooltip ---------- */
 #tooltipLayer{ position: absolute; inset: 0; pointer-events: none; z-index: 45; }

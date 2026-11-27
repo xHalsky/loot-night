@@ -267,7 +267,13 @@ function setDrag(p: number) { const g = S.g.night?.game; if (g && g.kind === 'ph
 function setHold(on: boolean) { if (!S.g.night) return; setPhoneHold(on); }
 
 // ---------- Inventory: hover tooltips, drag to equip / unequip, right-click to equip ----------
-let inv: { key: string; x0: number; y0: number; moved: boolean } | null = null;
+let inv: { key: string; x0: number; y0: number; moved: boolean; shot?: HTMLCanvasElement } | null = null;
+/** The item's own cell as the side panel drew it (grid px), for the drag ghost: the picked-up item looks the same as in the bag. */
+function cellShot(h: { x: number; y: number; w: number; h: number }): HTMLCanvasElement {
+  const c = document.createElement('canvas'); c.width = h.w; c.height = h.h; c.className = 'ghost-cell'; c.style.width = `${h.w * 2}px`; c.style.height = `${h.h * 2}px`;
+  c.getContext('2d')!.drawImage(el('spArea') as HTMLCanvasElement, h.x, h.y, h.w, h.h, 0, 0, h.w, h.h);
+  return c;
+}
 const toStage = (ev: PointerEvent | MouseEvent) => { const r = stage.getBoundingClientRect(); return { x: (ev.clientX - r.left) / stageScale, y: (ev.clientY - r.top) / stageScale }; };
 const ghost = () => el('ghost');
 
@@ -279,10 +285,11 @@ document.addEventListener('pointermove', ev => {
       const [kind, a, b] = inv.key.split(':');
       const entry = kind === 'bag' ? S.g.bag.find(e => e.id === a) : kind === 'gear' ? (() => { const it = S.g.heroes[Number(a)]?.gear[b as 'weapon']; return it ? { kind: 'item' as const, id: it.id, item: it } : undefined; })() : undefined;
       const h = kind === 'hero' ? S.g.heroes[Number(a)] : null;
-      ghost().innerHTML = entry ? entryIcon(entry, 34) : h ? `<span class="ghost-hero" style="border-color:${HERO_COLORS[h.id]}">${HERO_NAME[h.id]} <small>${HERO_CLASS[h.id]}</small></span>` : '';
-      ghost().classList.toggle('hero', !!h); ghost().style.display = 'block';
+      ghost().innerHTML = entry && inv.shot ? '' : entry ? entryIcon(entry, 34) : h ? `<span class="ghost-hero" style="border-color:${HERO_COLORS[h.id]}">${HERO_NAME[h.id]} <small>${HERO_CLASS[h.id]}</small></span>` : '';
+      if (entry && inv.shot) ghost().appendChild(inv.shot);   // the item's own cell, at the grid's pixel (x2 on the stage)
+      ghost().classList.toggle('hero', !!h); ghost().classList.toggle('cell', !!(entry && inv.shot)); ghost().style.display = 'block';
     }
-    if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
+    if (inv.moved) { const half = inv.shot ? inv.shot.width : 20; ghost().style.left = `${p.x - half}px`; ghost().style.top = `${p.y - half}px`; hover.key = ''; }
   } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea', 'ebArea', 'headHit'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases (V2, V3) and his head (#103) set their own hover
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
@@ -362,8 +369,8 @@ el('spArea').addEventListener('pointerdown', ev => {
   if (!h || !h.act) return;
   ev.preventDefault(); ev.stopPropagation(); hover.key = '';
   // an item: pick it up (drag to equip or unequip, as the DOM bag did); a click without a drag selects it
-  if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
-  if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
+  if (h.act === 'bagCell') { inv = { key: `bag:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h) }; return; }
+  if (h.act === 'gearCell') { const it = S.g.heroes[N().heroTab]?.gear[h.arg as 'weapon']; if (it) inv = { key: `gear:${N().heroTab}:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false, shot: cellShot(h) }; return; }
   // a party card: a click picks the hero, a drag onto another card swaps their positions (the town had no reorder before)
   if (h.act === 'heroTab') { inv = { key: `hero:${h.arg}`, x0: ev.clientX, y0: ev.clientY, moved: false }; return; }
   actions[h.act]?.(h.arg);
