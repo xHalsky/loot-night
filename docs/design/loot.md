@@ -118,7 +118,7 @@ is picked up (at least `WALK_SEC`), at `WALK_HURRY_PACE` (75) instead of `WALK_P
 the floor's last fight this is the walk out of the floor, over the drops, before the map. (0.62.2 to 0.86 a looter ran
 ahead of his place to each drop and back; the playtest read it as the Knight breaking ranks. Decision in
 [dungeon.md](dungeon.md). `python3 test/walk.py` shoots it.) A collected item's name flies up from where it lay, in its rarity colour, and its bag slot
-shines with NEW (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
+gets a bright yellow outline (#49; [screen.md](screen.md)). Floor loot is swept into the bag when you
 leave by portal or the floor ends. Everything picked up in a run is unbanked (a dashed mark on its bag cell) until
 the town portal banks it; a wipe loses it ([dungeon.md](dungeon.md), runs).
 
@@ -205,7 +205,7 @@ Souls.
 - **Loot at the kill, not in a popup** (0.11, 0.13): the floor becomes the reward moment, Diablo-style.
 - **Downsides from rare up** to avoid "bigger number wins" and give the comparison tooltip a job.
 - **A drop every battle again** (0.46, #49; it was cut to 60% after the first playtest so each drop was noticed):
-  gear is now how the party keeps up, and each pickup is noticed anyway (its name flies up, the slot shines NEW,
+  gear is now how the party keeps up, and each pickup is noticed anyway (its name flies up, the slot gets the yellow outline,
   the ▲ says if it is an upgrade). Rejected: keeping 60% (upgrades came every other battle and gear lagged two
   floors behind); fewer battles per floor instead (the floor rhythm and the curios need three).
 - **Gear over levels** (0.46, #49): before, a party that never equipped anything reached floor 9.8 on night 1,

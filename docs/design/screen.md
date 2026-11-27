@@ -44,7 +44,7 @@ for `FLOW_GLOW_SEC`. The town portal button sits under it. The city's corner rea
 click one to select it, drop an item on one to equip it. The selected hero: an engraved strip ("DUTCH Knight
 ◆44"), a 3 × 2 gear grid (weapon, helm, armor / boots, ring, trinket; power in the corner) and the six stats with the
 gear's share. The bag: "BAG 7/18" and the AUTO salvage switch in its header, 6 × 3 slots, then the Treasury row (the
-building opens 2 per level, the rest show a lock). A cell: the rarity light, the icon, its power, NEW, a lock, a
+building opens 2 per level, the rest show a lock). A cell: the rarity light, the icon, its power, a yellow outline while fresh (no NEW label, #116), a lock, a
 green ▲ when it is an upgrade for someone who can wear it, dashes when it is unbanked, a gold frame when picked. The footer: gold ·
 Souls, and the deepest floor ever. In town three tabs over it (Town: the build list, the way down and the bag, or
 the open service's page, [city.md](city.md); Inventory: as in the dungeon, and drag a party card onto another to

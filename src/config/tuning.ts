@@ -247,7 +247,7 @@ export const T = {
   // --- Loot ---
   BAG_SIZE: 18,
   TREASURY_ROW: 6,                // the bag's last row: the Treasury opens 2 slots per level; the rest show a lock (#49)
-  BAG_NEW_SEC: 1.5,               // a fresh item's bag slot shines with NEW this long
+  BAG_NEW_SEC: 1.5,               // a fresh item's bag slot gets a yellow outline this long
   WRONG_CLASS_SHAKE_SEC: 0.2,     // class gear on the wrong hero (#113, gentler in #114): the item shakes in its square (or in hand) this long
   WRONG_CLASS_SHAKE_PX: 1,        // this far either way, in grid px (x2 on the stage)
   WRONG_CLASS_SHAKE_HOPS: 4,      // in this many hops (right, left, right, left), then still

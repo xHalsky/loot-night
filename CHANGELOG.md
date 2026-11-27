@@ -3,6 +3,11 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.91.3 (2026-11-27)
+
+- **No NEW tag on fresh items** (#116; Paweł: the yellow outline is enough): the bag square keeps its bright outline for
+  `BAG_NEW_SEC` and the label bar over the icon is gone, so the icon stays fully visible.
+
 ## 0.91.2 (2026-11-27)
 
 - **The first group chat is five bubbles** (#115; Paweł: too vague for a new player, one piece of information too much):

@@ -267,10 +267,7 @@ function itemCell(x, y, it, o = {}) {
   icon(it.icon, x + 4 + (o.dx || 0), y + 3);   // o.dx: the item shaking in its square (class gear on the wrong hero, #113)
   if (it.pow != null) text(String(it.pow), x + s - 2, y + s - 7, 'tiny', P[RARITY_TEXT[it.r]], { align: 'r', outline: P.void });
   if (it.lock) sprite(x + 2, y + s - 7, ['.3.', '3.3', '222', '222']);
-  if (o.isNew) {
-    frameI(x - 1, y - 1, s + 2, s + 2, P.pale); frameI(x, y, s, s, P.gold);
-    rectI(x + 1, y + 1, 15, 7, P.pale); rectI(x + 1, y + 7, 15, 1, P.gold); text('NEW', x + 3, y + 2, 'tiny', P.void);
-  }
+  if (o.isNew) { frameI(x - 1, y - 1, s + 2, s + 2, P.pale); frameI(x, y, s, s, P.gold); }   // fresh item: the outline only, no NEW label (#116)
 }
 function partyCard(x, y, n, o) {
   const hero = HEROES[n], w = 33, h = 40, sel = o.selected === n;
