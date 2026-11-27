@@ -234,7 +234,7 @@ function dimRect(x, y, w, h, g) {
 function spr(x, y, rows, map) { rows.forEach((r, j) => [...r].forEach((c, i) => { if (map[c] != null) putI(x + i, y + j, map[c]); })); }
 
 // ---------- text (cached glyph masks, crisp at native size) ----------
-const FONTS = { silkb: { fam: 'silkb', size: 8, cap: 5 }, silk: { fam: 'silk', size: 8, cap: 5 }, tiny: { fam: 'tiny5', size: 8, cap: 5 }, micro: { fam: 'm5', size: 11, cap: 5 }, tinyL: { fam: 'tiny5', size: 16, cap: 10 }, black: { fam: 'jb9', size: 13, cap: 9 } };
+const FONTS = { silkb: { fam: 'silkb', size: 8, cap: 5 }, silk: { fam: 'silk', size: 8, cap: 5 }, tiny: { fam: 'tiny5', size: 8, cap: 5 }, micro: { fam: 'm5', size: 11, cap: 5 }, tinyL: { fam: 'tiny5', size: 16, cap: 10 }, black: { fam: 'jb9', size: 13, cap: 9 }, head: { fam: 'j10', size: 1400 / 75, cap: 10 } };   // head: Jersey 10 at its native size (a font pixel = a grid pixel), the big headings (#106); tinyL is Tiny5 doubled
 let TC = null, TX = null; const TCACHE = new Map();
 function glyphs(str, f, ls = 0) {
   const key = f + '|' + ls + '|' + str; let g = TCACHE.get(key); if (g) return g;

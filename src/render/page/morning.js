@@ -92,7 +92,7 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   const sh = 7 + 20 + 5 + headLines * 9 + 3 + 64 + (data.replay ? 13 + repLines * 9 : 0) + 11 + data.stars.length * 19 + 2 + (data.q4 ? 12 : 0) + 5 + noteLines * 9 + 8 + 20 + 7;
   win9(sx, sy, sw, sh);
   let y = sy + 7;
-  text('Morning', sx + 8, y, 'tinyL', C9.plum);
+  text('Morning', sx + 8, y, 'head', C9.plum);
   text(data.when || 'Tue 07:40', sx + sw - 8, y + 5, 'tiny', C9.brown, { align: 'r' });
   y += 20;
   for (let i = sx + 6; i < sx + sw - 6; i++) putI(i, y, (i & 1) ? C9.tan : C9.beige);
@@ -105,7 +105,7 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
     const bx = sx + 7 + (k % 2) * 90, by = y + Math.floor(k / 2) * 30;
     win9(bx, by, 87, 27, { fill: C9.moon, hi: C9.tan, lo: C9.moon, edge: C9.tan, shadow: false });
     text(lab, bx + 5, by + 4, 'tiny', C9.brown);
-    zl9(val, bx + 5, by + 12, 'tinyL', col);
+    zl9(val, bx + 5, by + 12, 'head', col);   // the same face as the card's heading (#106)
   });
   y += 64;
   // last night's stars, one reward each (the handoff's step 3)

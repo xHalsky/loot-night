@@ -95,7 +95,7 @@ function inspectWindow(t, o = INSPECT_PAGE) {
     smSprite('can76', cx - 36, 22 + bob);
     // the right column
     let x = 104, y = 22;
-    text('Goblin Fuel', x, y, 'tinyL', P.moon); y += 15;
+    text('Goblin Fuel', x, y, 'head', P.moon); y += 15;
     text('100% greed. Tastes like a loot drop.', x, y, 'tiny', P.u5); y += 13;
     y = smBullets(x, y, w - x - 10, o.bullets);
     y += 2;
@@ -188,7 +188,7 @@ function howtoCard(t, o = HOWTO_PAGE) {
   return smLayer(w, h, () => {
     smGlass(0, 0, w, h);
     text(o.head, 12, 9, 'tiny', P.s5); text(o.kicker || 'How to hide', 12 + measure(o.head, 'tiny') + 8, 9, 'tiny', P.gold);
-    text(o.title || 'Hide the game before she sees it.', 12, 25, 'silkb', P.moon);   // 1x bold (the one-resolution rule)
+    text(o.title || 'Hide the game before she sees it.', 12, 22, 'head', P.moon);   // Jersey 10 at its own size (the one-resolution rule, #106)
     const ids = o.ids, tw = howtoTW(o), th = HOWTO_TH(tw, o);
     ids.forEach((id, k) => {
       const x = 12 + k * (tw + 4), y = 42, isNew = o.isNew.includes(id);
@@ -306,7 +306,7 @@ function drawPause(ctx, t) {
   const w = 232, h = 92;
   const L = smLayer(w, h, () => {
     smGlass(0, 0, w, h);
-    text('Paused', 12, 10, 'tinyL', P.moon);
+    text('Paused', 12, 10, 'head', P.moon);
     wrapTiny('The screen is blacked out so pausing can\'t be used to peek.', w - 24).forEach((l, n) => text(l, 12, 28 + n * 8, 'tiny', P.s5));
     smBtn(12, h - 26, 100, 'Resume', { gold: true, key: 'Esc' });
     smBtn(120, h - 26, 100, 'How to hide');

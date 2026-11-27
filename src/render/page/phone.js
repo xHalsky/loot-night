@@ -128,7 +128,7 @@ PHONE_SCREENS.call = (t, o) => {
   // the caller, ringing: a pulse round the avatar
   const pr = 22 + ((t * 1.2) % 1) * 6; for (let a = 0; a < 64; a++) { const an = (a / 64) * 6.283; if (a % 2) px(Math.round(56 + Math.cos(an) * pr), Math.round(62 + Math.sin(an) * pr), P.s4); }
   avatar(C.av, 56, 62, 20);
-  tx(C.name, 56, 92, P.moon, { align: 'c', f: 'tinyL' });
+  tx(C.name, 56, 92, P.moon, { align: 'c', f: 'head' });
   tx(C.sub, 56, 111, P.s5, { align: 'c' });
   // Speaker (hands free, but you are heard) and Message
   for (const [k, lab, g, x] of [[0, 'Speaker', PG.spk, 32], [1, 'Message', PG.chat, 80]]) { disc(x, 140, 10, P.s3); disc(x, 139, 10, P.s2); gl(g, x - 2, 136 - (k ? 0 : 1), P.moon); tx(lab, x, 153, P.s5, { align: 'c' }); }
@@ -348,8 +348,8 @@ function deskScreen(st, t) {
     for (let j = 0; j < DT.h; j++) for (let i = 0; i < DT.w; i++) { const f = j / DT.h; px(i, j, f < 0.55 ? c0 : f < 0.7 ? (((i + j) & 1) ? c0 : c1) : c1); }
     mini();
     disc(32, 20, 9.5, P.void); avatar(C.av, 32, 20, 8);
-    const nm = C.name.replace(' (3)', ''), big = measure(nm, 'tinyL') <= 54;
-    tx(nm, 32, big ? 32 : 35, P.moon, { align: 'c', f: big ? 'tinyL' : 'tiny' });
+    const nm = C.name.replace(' (3)', ''), big = measure(nm, 'head') <= 54;
+    tx(nm, 32, big ? 32 : 35, P.moon, { align: 'c', f: big ? 'head' : 'tiny' });
     rrI(5, 53, 54, 11, 5, P.void); disc(10.5, 58.5, 4.5, P.g5); gl(PG.phone, 9, 56, P.moon); tx('slide', 36, 56, P.s4, { align: 'c' });
     disc(32, 73, 5.5, P.crimson); gl(PG.hang, 30, 72, P.moon);
   } else if (S === 'lock') {
@@ -499,7 +499,7 @@ const SHOP = {
 function shopScreen(t, tab, wallet) {
   flatBg(46);
   statusBar();
-  gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 18, P.moon, { f: 'silkb' });
+  gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 15, P.moon, { f: 'head' });
   zlP(String(wallet), PH.sw - 6, 19, P.g5, 'r');
   // For you | For her
   rrI(6, 33, PH.sw - 12, 11, 5, P.s2);
@@ -602,7 +602,7 @@ function devIcon(kind, u, v, state, t, st) {
 }
 function homeHead(b, sub) {
   flatBg(44); statusBar({ batt: b });
-  gl(PG.back, 7, 18, P.gold); tx('Home', 14, 18, P.moon, { f: 'silkb' });
+  gl(PG.back, 7, 18, P.gold); tx('Home', 14, 15, P.moon, { f: 'head' });
   battG(PH.sw - 22, 18, 15, 7, b); tx(b + '%', PH.sw - 25, 18, b <= 20 ? P.crimson : P.s5, { align: 'r' });
   tx(sub, 8, 33, P.s5);
 }
@@ -632,7 +632,7 @@ function homeSheet(t, st, d) {
   const y0 = d.y0;
   rrI(0, y0, PH.sw, PH.sh - y0, 10, P.s1); rrI(8, y0, PH.sw - 16, 1, 0, P.s3); rrI(46, y0 + 3, 20, 2, 1, P.s3);
   disc(14, y0 + 15, 6, P.s2); gl(DEV_G[d.kind], 11, y0 + 12, P.moon);
-  const big = measure(d.name, 'tinyL') <= PH.sw - 30; tx(d.name, 24, y0 + (big ? 10 : 12), P.moon, { f: big ? 'tinyL' : 'tiny' });
+  const big = measure(d.name, 'head') <= PH.sw - 30; tx(d.name, 24, y0 + (big ? 10 : 12), P.moon, { f: big ? 'head' : 'tiny' });
   let y = y0 + 27;
   for (const l of wrapT(d.what, PH.sw - 14)) { tx(l, 7, y, P.u6); y += 8; }
   if (d.note) { y += 2; for (const l of wrapT(d.note, PH.sw - 14)) { tx(l, 7, y, P.s4); y += 8; } }
@@ -870,7 +870,7 @@ const MSG_ROWS = [
 ];
 function msgList(t, o = {}) {
   flatBg(40); statusBar({ time: '00:44' });
-  tx('Messages', 8, 25, P.moon, { f: 'silkb' });
+  tx('Messages', 8, 22, P.moon, { f: 'head' });
   MSG_ROWS.forEach((r, k) => {
     const y = 46 + k * 34;
     if (o.tap === k && (t % 2) > 0.9) rrI(3, y - 2, PH.sw - 6, 32, 6, P.s1);
@@ -999,7 +999,7 @@ const LIVE = {
     rrI(PH.sw - 30, 15, 22, 9, 4, P.gold); tx(Math.ceil(v.left) + ' s', PH.sw - 19, 17, P.void, { align: 'c' });
     const pr = 22 + ((t * 1.2) % 1) * 6; for (let a = 0; a < 64; a++) { const an = (a / 64) * 6.283; if (a % 2) px(Math.round(56 + Math.cos(an) * pr), Math.round(62 + Math.sin(an) * pr), P.s4); }
     avatar(C.av, 56, 62, 20);
-    tx(C.name, 56, 92, P.moon, { align: 'c', f: 'tinyL' });
+    tx(C.name, 56, 92, P.moon, { align: 'c', f: 'head' });
     tx(C.sub, 56, 111, P.s5, { align: 'c' });
     disc(56, 140, 10, P.s3); disc(56, 139, 10, P.s2); gl(PG.spk, 54, 135, P.moon); tx('Speaker', 56, 153, P.s5, { align: 'c' });
     tx('hands free, loud', 56, 161, P.s4, { align: 'c' });
@@ -1087,7 +1087,7 @@ const LIVE = {
   // what you already have; the row flashes moss when bought. v: { tab, wallet, items [{ id, g, name, zl, fx, state }], flash }
   shop(t, v) {
     flatBg(46); statusBar({ time: v.time });
-    gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 18, P.moon, { f: 'silkb' }); backHit('phApp', 'home');
+    gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 15, P.moon, { f: 'head' }); backHit('phApp', 'home');
     zlP(String(v.wallet), PH.sw - 6, 19, P.g5, 'r');
     rrI(6, 33, PH.sw - 12, 11, 5, P.s2);
     const TABS = [['you', 'For you', P.s4], ['her', 'For her', P.d4], ['home', 'Home', P.steel]].filter(([id]) => (v.tabs || ['you', 'her']).includes(id)), hw = (PH.sw - 14) / TABS.length;   // Home from step 6 (#57)
@@ -1113,7 +1113,7 @@ const LIVE = {
   // Messages: her chat and The Boys'
   messages(t, v) {
     flatBg(40); statusBar({ time: v.time }); gl(PG.back, 6, 22, P.moon); backHit('phApp', 'home');
-    tx('Messages', 14, 25, P.moon, { f: 'silkb' });
+    tx('Messages', 14, 22, P.moon, { f: 'head' });
     v.rows.forEach((r, k) => {
       const y = 46 + k * 34;
       avatar(r.av, 18, y + 13, 10);

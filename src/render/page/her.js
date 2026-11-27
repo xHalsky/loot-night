@@ -93,7 +93,7 @@ const MOOD9 = { flustered: [C9.rose, 'flustered'], happy: [C9.moss, 'happy'], an
 function herUI(st, t) {
   // header, over the dark wall: a rose heart and her name; her mood in a pill
   heart9(4, 4, true);
-  text('Babe', 14, 2, 'tinyL', C9.pink, { shadow: C9.void });
+  text('Babe', 14, 2, 'head', C9.pink, { shadow: C9.void });
   const [mc, mw] = MOOD9[st.mood], pw = measure(mw, 'tiny') + 8;
   win9(HP_W - 4 - pw, 3, pw, 10, { fill: C9.plum, hi: C9.purple, lo: C9.plum, edge: C9.purple });
   text(mw, HP_W - 4 - pw + 4, 5, 'tiny', mc);
@@ -515,7 +515,7 @@ function pill9(x, y, w, h, top, bot, o = {}) {   // her pink answer: a name and 
 function herUILive(st, t) {
   // header over the dark wall: a rose heart and her name; her mood in a pill
   heart9(4, 4, true);
-  text('Babe', 14, 2, 'tinyL', C9.pink, { shadow: C9.void });
+  text('Babe', 14, 2, 'head', C9.pink, { shadow: C9.void });
   const [mc, mw] = MOOD9[st.mood] || MOOD9.happy, pw = measure(mw, 'tiny') + 8;
   win9(HP_W - 4 - pw, 3, pw, 10, { fill: C9.plum, hi: C9.purple, lo: C9.plum, edge: C9.purple });
   text(mw, HP_W - 4 - pw + 4, 5, 'tiny', mc);

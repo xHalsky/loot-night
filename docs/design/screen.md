@@ -12,11 +12,15 @@ one grid pixel is one block of the same size everywhere. No pixel art scaled up 
 at 2x, a sprite blown up in blocks), and no high-resolution DOM widgets, outlines or glows over the grid (a CSS circle
 with a glow, an Inter label, a native browser tooltip). A picture that needs to be bigger is drawn bigger at 1x. What
 broke it and went: the Tonight note at 2x (#101), the headset's hover ring and label (#103), the phone's iOS close
-button (#104), and (0.88.1) the 2x titles on How to hide and tonight's stars, the phone's app titles (Shop, Home,
-Messages) and the "?!" in How to hide's Answer her picture. **A heading at 1x is Silkscreen bold (`silkb`)**: small
-caps that still stand out from Tiny5's body text; the "?!" went crimson, as pink was too faint on the paper at 1x.
-Still at 2x (Tiny5 `tinyL`), waiting for Paweł's call one by one: her name on her panel, the plan's title, the caught
-screen, the cuddle break, the morning, the phone's caller names, clock and battery, "Goblin Fuel", "Paused" (#106).
+button (#104), and Tiny5 doubled (`tinyL`) on the headings. **Big headings are Jersey 10 at its own size** (`head`,
+0.88.2, #106; Fontsource, OFL): 10 px capitals like the doubled Tiny5 had, but drawn on the grid, so a bigger heading
+gets more pixels (1-pixel steps in its curves and corners) instead of bigger ones. It sets her name on her panel, How to
+hide's and tonight's stars' titles, the plan, the caught screen, the cuddle break, the morning (its heading and its four
+numbers), the phone's caller and app titles and the Home app's device names, the Goblin Fuel window and Paused. The
+"?!" in How to hide's Answer her picture is Silkscreen bold at 1x, crimson (pink was too faint on the paper). Kept at
+2x where the size is the point and it sits together with the phone's look: the lock-screen clock, the battery's %, the
+dead phone's 0%, the boss's sum, the microsleep's "zzz" (Paweł, 2026-11-27). Rejected: Silkscreen bold for the
+headings (0.88.1: 1x but small caps and small), Pixelify Sans (off the grid: uneven strokes at any size).
 
 | Zone | Where | Shows |
 |---|---|---|

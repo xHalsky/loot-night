@@ -81,8 +81,8 @@ function cuddleWindow(st, t) {
   win9(10, 0, 42, 13, { fill: C9.pink, hi: C9.skin, lo: C9.rose, edge: C9.plum, shadow: false });
   heart9(14, 3, true); text('Babe', 24, 3, 'tiny', C9.plum);
   // the title, the hint, the close box (pulling away: she won't like it)
-  text('Cuddle break', 9, oy + 5, 'tinyL', C9.skin, { shadow: C9.void });
-  text('stay on her breathing, slowly', 9 + measure('Cuddle break', 'tinyL') + 7, oy + 10, 'tiny', C9.lilac);
+  text('Cuddle break', 9, oy + 5, 'head', C9.skin, { shadow: C9.void });
+  text('stay on her breathing, slowly', 9 + measure('Cuddle break', 'head') + 7, oy + 10, 'tiny', C9.lilac);
   win9(w - 17, oy + 5, 12, 12, { fill: C9.plum, hi: C9.purple, lo: C9.void, edge: C9.lilac, shadow: false });
   [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [0, 4], [1, 3], [3, 1], [4, 0]].forEach(([i, j]) => putI(w - 13 + i, oy + 9 + j, C9.crimson));
   // the field: plum; inside the heart, warmth: plum and purple at first, purple, then rose once she's warm enough

@@ -143,7 +143,7 @@ happening.
   your job is to listen, hide and keep everyone happy) and "turn the sound on".
 - **How-to-hide card** (the renderer's glass card over the dimmed frame, grid doc 7k; `HOWTO_GAME` in `main.ts`):
   opens before the first Monday and before any night with a new tile (the week), and the night waits until "Got it"
-  (or Esc / Enter). "Monday, 20:00", "Hide the game before she sees it." (1x bold since 0.88.1), one tile per thing that is on tonight, each
+  (or Esc / Enter). "Monday, 20:00", "Hide the game before she sees it." (Jersey 10, [screen.md](screen.md)), one tile per thing that is on tonight, each
   with a small picture, its number, its name and what to do, filling the card (104 wide for four, 82 for five):
   1 Listen (the sounds, the last-heard line, hold the door to peek), 2 Tab to Excel (footsteps: switch now, never wait
   for the handle), 3 Answer her (each visit wants something else: Monday snack runs, Tuesday humming too, from Thursday

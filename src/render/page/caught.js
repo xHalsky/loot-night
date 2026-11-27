@@ -44,7 +44,7 @@ function drawCaught(n, T, cost = CAUGHT_COST[n - 1]) {
     win9(wx + 10, wy - 9, 42, 13, { fill: C9.pink, hi: C9.skin, lo: C9.rose, edge: C9.plum });
     heart9(wx + 14, wy - 6, true);
     text('Babe', wx + 24, wy - 6, 'tiny', C9.plum);
-    text('WE NEED TO TALK.', wx + 18, wy + 12, 'tinyL', C9.crimson, { shadow: C9.void });
+    text('WE NEED TO TALK.', wx + 18, wy + 12, 'head', C9.crimson, { shadow: C9.void });
     text(cost, wx + 18, wy + 40, 'tiny', C9.lilac);
     if (Math.floor(T * 2.5) % 2 === 0) spr(wx + ww - 18, wy + wh - 13, ['xxxxx', '.xxx.', '..x..'], { x: C9.moon });
   }

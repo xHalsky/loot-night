@@ -95,7 +95,7 @@ function planSheet(t, L = PLAN_PAGE) {
   rectI(0, oy, W, H, PL.paper); frameI(0, oy, W, H, PL.edge);
   for (let j = oy + 1; j < oy + H - 1; j++) for (let i = 1; i < W - 1; i++) if ((i - PLAN_O[0]) % 8 === 0 || (j - oy - PLAN_O[1]) % 8 === 0) putI(i, j, PL.grid);
   // title, subtitle, the close box
-  text('THE PLAN', 7, oy + 8, 'tinyL', C9.moon);
+  text('THE PLAN', 7, oy + 8, 'head', C9.moon);
   text('who hears you, what the crack shows', 7, oy + 24, 'tiny', PL.pencil);
   win9(W - 17, oy + 8, 12, 12, { fill: PL.edge, hi: PL.grid, lo: C9.void, edge: PL.pencil, shadow: false });
   [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [0, 4], [1, 3], [3, 1], [4, 0]].forEach(([i, j]) => putI(W - 13 + i, oy + 12 + j, C9.rose));

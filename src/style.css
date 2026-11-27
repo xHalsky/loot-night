@@ -3,6 +3,7 @@
 @font-face { font-family: tiny5; src: url(./assets/fonts/tiny5-400.woff2) format('woff2'); }
 @font-face { font-family: m5; src: url(./assets/fonts/micro5-400.woff2) format('woff2'); }
 @font-face { font-family: jb9; src: url(./assets/fonts/jacquarda-bastarda-9-400.woff2) format('woff2'); }
+@font-face { font-family: j10; src: url(./assets/fonts/jersey10-400.woff2) format('woff2'); }   /* the headings at their own size (#106): Jersey 10, 10 px capitals drawn 1:1 */
 *{ box-sizing: border-box; }
 html, body{ margin: 0; height: 100%; background: #050407; overflow: hidden; }
 body{ display: flex; align-items: center; justify-content: center; font-family: 'Pixelify Sans', monospace; color: #f2e9d8; user-select: none; -webkit-user-select: none; }

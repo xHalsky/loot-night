@@ -3,6 +3,15 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.88.2 (2026-11-27)
+
+- **Big headings in a font drawn at their size** (#106; Paweł: a bigger heading can afford more pixels): Jersey 10
+  (Fontsource, OFL) at its native size, 10 px capitals like the doubled Tiny5 but with 1-pixel detail. Her name
+  "Babe", How to hide's and tonight's stars' titles (back to their size and sentence case after 0.88.1's small caps),
+  THE PLAN, WE NEED TO TALK., Cuddle break, Morning and its numbers, the phone's caller names, Shop, Home, Messages and
+  the Home app's devices, Goblin Fuel, Paused. Kept doubled: the phone's lock clock, battery %, 0%, the boss's sum and
+  the microsleep's zzz (the size is the point there). Rejected: Pixelify Sans (off the grid).
+
 ## 0.88.1 (2026-11-27)
 
 - **More of the screen at 1x** (the one-resolution rule; Paweł: down to 1x where it stays readable): How to hide's and
