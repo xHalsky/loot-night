@@ -45,10 +45,10 @@ function drawQ4(t, v = DESK_VARIANT) {
   rectI(0, 0, W, H, P.u6);
   // ---- the window: title, menu, toolbar, formula bar
   w98Title(1, 1, W - 2, 'Microsoft Excel - Q4_report_FINAL_v3.xls', { icon: xlIcon8 });
-  let mx = 6; for (const m of ['File', 'Edit', 'View', 'Insert', 'Format', 'Tools', 'Data', 'Window', 'Help']) { text(m, mx, 15, 'tiny', P.u1); putI(mx, 20, P.u1); mx += measure(m, 'tiny') + 9; }
+  let mx = 6; for (const m of ['File', 'Edit', 'View', 'Insert', 'Format', 'Tools', 'Data', 'Window', 'Help']) { text(m, mx, 15, 'tiny', P.u4); putI(mx, 20, P.u4); mx += measure(m, 'tiny') + 9; }
   rectI(0, 22, W, 1, P.u5); rectI(0, 23, W, 1, P.moon);
   let tx = 4;
-  const tool = (draw, pressed) => { if (pressed) w98Sunken(tx, 25, 14, 13, P.u6); draw(tx + 3, 27); tx += 15; };
+  const tool = (draw, pressed) => { if (pressed) w98Sunken(tx, 25, 14, 13, P.u6); draw(tx + 3, 27); dimI(tx + 2, 26, 11, 11); tx += 15; };
   const sep = () => { rectI(tx + 1, 26, 1, 11, P.u5); rectI(tx + 2, 26, 1, 11, P.moon); tx += 5; };
   tool((x, y) => { rectI(x + 1, y, 6, 8, P.moon); frameI(x + 1, y, 6, 8, P.u1); });
   tool((x, y) => { rectI(x, y + 2, 8, 6, P.gold); frameI(x, y + 2, 8, 6, P.u1); rectI(x, y + 1, 3, 1, P.u1); });
@@ -64,7 +64,7 @@ function drawQ4(t, v = DESK_VARIANT) {
   sep();
   w98Sunken(tx + 2, 26, 30, 11, P.moon); text('100%', tx + 5, 29, 'tiny', P.u1); tx += 36;
   // the Macros pane's toggle, held down
-  w98Down(W - 50, 25, 46, 13); text('Macros', W - 27, 29, 'tiny', P.u1, { align: 'c' });
+  w98Down(W - 50, 25, 46, 13); text('Macros', W - 27, 29, 'tiny', P.u4, { align: 'c' });
   // formula bar
   rectI(0, 39, W, 1, P.u5);
   w98Sunken(2, 41, 40, 11); w98Sunken(56, 41, W - 58, 11);
@@ -173,11 +173,11 @@ function drawQ4(t, v = DESK_VARIANT) {
   // ---- the scroll bar, the sheet tabs, the status bar
   const sh = 150;
   rectI(314, top, 9, sh, P.u6); for (let j = top; j < top + sh; j++) for (let i = 314; i < 323; i++) if ((i + j) & 1) putI(i, j, P.moon);
-  w98Raised(314, top, 9, 9); w98Raised(314, top + sh - 9, 9, 9); w98Raised(314, top + 12, 9, 30);
+  w98Soft(314, top, 9, 9); w98Soft(314, top + sh - 9, 9, 9); w98Soft(314, top + 12, 9, 30);
   const sy2 = top + sh + 1;
   rectI(0, sy2 - 1, 323, 1, P.u5);
-  [['Q4', true], ['Q3_old', false], ['Sheet3', false]].forEach(([n, on], k) => { const x = 30 + k * 44; rectI(x, sy2, 42, 10, on ? P.moon : P.u6); frameI(x, sy2 - (on ? 1 : 0), 42, on ? 11 : 10, P.u1); if (on) rectI(x + 1, sy2 - 1, 40, 1, P.moon); text(n, x + 21, sy2 + 3, 'tiny', P.u1, { align: 'c' }); });
-  for (const k of [0, 1]) w98Raised(4 + k * 11, sy2, 10, 10);
+  [['Q4', true], ['Q3_old', false], ['Sheet3', false]].forEach(([n, on], k) => { const x = 30 + k * 44; rectI(x, sy2, 42, 10, on ? P.moon : P.u6); frameI(x, sy2 - (on ? 1 : 0), 42, on ? 11 : 10, P.u1); if (on) rectI(x + 1, sy2 - 1, 40, 1, P.moon); text(n, x + 21, sy2 + 3, 'tiny', on ? P.u1 : P.u4, { align: 'c' }); });
+  for (const k of [0, 1]) w98Soft(4 + k * 11, sy2, 10, 10);
   const stY = H - 12;
   rectI(0, stY - 1, W, 1, P.moon);
   w98Sunken(2, stY, 120, 11, P.u6); text(sortOn ? 'Sorted. Everything x2.' : S === 'fill' ? 'Drag to fill' : 'Ready', 5, stY + 3, 'tiny', P.u1);
@@ -267,10 +267,10 @@ function drawQ4Live(st, t, v = DESK_VARIANT) {
   rectI(0, 0, W, H, P.u6);
   // ---- the window: title, menu, toolbar, formula bar
   w98Title(1, 1, W - 2, 'Microsoft Excel - Q4_report_FINAL_v3.xls', { icon: xlIcon8 });
-  let mx = 6; for (const m of ['File', 'Edit', 'View', 'Insert', 'Format', 'Tools', 'Data', 'Window', 'Help']) { text(m, mx, 15, 'tiny', P.u1); putI(mx, 20, P.u1); mx += measure(m, 'tiny') + 9; }
+  let mx = 6; for (const m of ['File', 'Edit', 'View', 'Insert', 'Format', 'Tools', 'Data', 'Window', 'Help']) { text(m, mx, 15, 'tiny', P.u4); putI(mx, 20, P.u4); mx += measure(m, 'tiny') + 9; }
   rectI(0, 22, W, 1, P.u5); rectI(0, 23, W, 1, P.moon);
   let tx = 4;
-  const tool = (draw) => { draw(tx + 3, 27); tx += 15; };
+  const tool = (draw) => { draw(tx + 3, 27); dimI(tx + 2, 26, 11, 11); tx += 15; };
   const sep = () => { rectI(tx + 1, 26, 1, 11, P.u5); rectI(tx + 2, 26, 1, 11, P.moon); tx += 5; };
   tool((x, y) => { rectI(x + 1, y, 6, 8, P.moon); frameI(x + 1, y, 6, 8, P.u1); });
   tool((x, y) => { rectI(x, y + 2, 8, 6, P.gold); frameI(x, y + 2, 8, 6, P.u1); rectI(x, y + 1, 3, 1, P.u1); });
@@ -285,7 +285,7 @@ function drawQ4Live(st, t, v = DESK_VARIANT) {
   tool((x, y) => { rectI(x, y + 4, 2, 4, P.wblue); rectI(x + 3, y + 1, 2, 7, P.crimson); rectI(x + 6, y + 3, 2, 5, P.g5); });
   sep();
   w98Sunken(tx + 2, 26, 30, 11, P.moon); text('100%', tx + 5, 29, 'tiny', P.u1);
-  w98Down(W - 50, 25, 46, 13); text('Macros', W - 27, 29, 'tiny', P.u1, { align: 'c' });
+  w98Down(W - 50, 25, 46, 13); text('Macros', W - 27, 29, 'tiny', P.u4, { align: 'c' });
   rectI(0, 39, W, 1, P.u5);
   w98Sunken(2, 41, 40, 11); w98Sunken(56, 41, W - 58, 11);
   const L = st.last, sel = L === 'fill' ? 'C5' : L === 'sort' ? 'D5' : L === 'pivot' ? 'E5' : 'B12';
@@ -384,11 +384,11 @@ function drawQ4Live(st, t, v = DESK_VARIANT) {
   // ---- the scroll bar, the sheet tabs, the status bar
   const shh = 150;
   rectI(314, top, 9, shh, P.u6); for (let j = top; j < top + shh; j++) for (let i = 314; i < 323; i++) if ((i + j) & 1) putI(i, j, P.moon);
-  w98Raised(314, top, 9, 9); w98Raised(314, top + shh - 9, 9, 9); w98Raised(314, top + 12, 9, 30);
+  w98Soft(314, top, 9, 9); w98Soft(314, top + shh - 9, 9, 9); w98Soft(314, top + 12, 9, 30);
   const sy2 = top + shh + 1;
   rectI(0, sy2 - 1, 323, 1, P.u5);
-  [['Q4', true], ['Q3_old', false], ['Sheet3', false]].forEach(([nm, on], k) => { const x = 30 + k * 44; rectI(x, sy2, 42, 10, on ? P.moon : P.u6); frameI(x, sy2 - (on ? 1 : 0), 42, on ? 11 : 10, P.u1); if (on) rectI(x + 1, sy2 - 1, 40, 1, P.moon); text(nm, x + 21, sy2 + 3, 'tiny', P.u1, { align: 'c' }); });
-  for (const k of [0, 1]) w98Raised(4 + k * 11, sy2, 10, 10);
+  [['Q4', true], ['Q3_old', false], ['Sheet3', false]].forEach(([nm, on], k) => { const x = 30 + k * 44; rectI(x, sy2, 42, 10, on ? P.moon : P.u6); frameI(x, sy2 - (on ? 1 : 0), 42, on ? 11 : 10, P.u1); if (on) rectI(x + 1, sy2 - 1, 40, 1, P.moon); text(nm, x + 21, sy2 + 3, 'tiny', on ? P.u1 : P.u4, { align: 'c' }); });
+  for (const k of [0, 1]) w98Soft(4 + k * 11, sy2, 10, 10);
   const stY = H - 12;
   rectI(0, stY - 1, W, 1, P.moon);
   w98Sunken(2, stY, 120, 11, P.u6); text(st.status, 5, stY + 3, 'tiny', P.u1);

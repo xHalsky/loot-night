@@ -148,7 +148,10 @@ one-demand rule). `npx tsx test/phone.ts` checks the script, the spacing, each e
 dollars into the wallet the Auction House pays into. The RPG fights on behind it, recklessly ([dungeon.md](dungeon.md)).
 - **The sheet:** your job title and an Excel data bar to the next one (lifetime dollars); what the macros pay a
   second; Sort's x2 chip; the Hustle bar; the report (five regions and a Total) with the four toys in its columns;
-  the Macros pane on the right; the status bar with "Q4 tonight: +$N" and the wallet. Excel's own pointers.
+  the Macros pane on the right; the status bar with "Q4 tonight: +$N" and the wallet. Excel's own pointers. **Only the toys, Buy and OK are clickable** (and the taskbar's two apps and Sleep):
+  the rest of the chrome (Start, caption buttons, menus, toolbar, Macros toggle, scroll bar, sheet tabs) is drawn softer
+  (#117: `w98Soft`, `dimI`, u4 labels) so it still reads as UI but nobody wastes a click. Rejected: flat greyed-out
+  controls (they stop looking like buttons) and removing the chrome (the window stops looking like Excel).
 - **The toys, each pays** (times the title, Sort and Hustle), each with its sound, a moss "+$N" rising over it and
   a little animation: **AutoSum** (the big Σ or Space, `Q4_SUM`; the column rolls `Q4_ROLL_SEC`; `Q4_BALANCED_CHANCE`
   lands a BALANCED stamp with a shake, x`Q4_BALANCED_MULT`); the **fill flick** (drag the corner of C4 down and let

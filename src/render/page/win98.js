@@ -11,6 +11,15 @@ function w98Raised(x, y, w, h, face = P.u6) {
   rectI(x, y + h - 1, w, 1, P.u1); rectI(x + w - 1, y, 1, h, P.u1);
   rectI(x + 1, y + h - 2, w - 2, 1, P.u5); rectI(x + w - 2, y + 1, 1, h - 2, P.u5);
 }
+// a button that does nothing (Excel's window chrome, Start): the same bevel, softer: no dark outline, no inner shadow,
+// so it still reads as a UI button but pulls less of the eye (#117). Labels on it use u4.
+function w98Soft(x, y, w, h) {
+  rectI(x, y, w, h, P.u6);
+  rectI(x, y, w - 1, 1, P.moon); rectI(x, y, 1, h - 1, P.moon);
+  rectI(x, y + h - 1, w, 1, P.u5); rectI(x + w - 1, y, 1, h, P.u5);
+}
+// fade a small picture toward the face colour: every other pixel back to u6 (palette-exact, one resolution)
+function dimI(x, y, w, h) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if ((i + j) & 1) putI(i, j, P.u6); }
 // sunken: a field, the tray, a pressed button
 function w98Sunken(x, y, w, h, face = P.moon) {
   rectI(x, y, w, h, face);
@@ -36,7 +45,7 @@ function w98Title(x, y, w, title, o = {}) {
   text(title, tx, y + 3, 'tiny', act ? P.moon : P.u6);
   // caption buttons: minimise, maximise, close
   const bx = x + w - 2;
-  const cap = (bx0, g) => { w98Raised(bx0, y + 2, 9, 8); g(bx0, y + 2); };
+  const cap = (bx0, g) => { w98Soft(bx0, y + 2, 9, 8); g(bx0, y + 2); dimI(bx0 + 1, y + 3, 7, 6); };   // they never do anything: soft (#117)
   cap(bx - 9, (a, b) => { rectI(a + 2, b + 2, 4, 1, P.u1); putI(a + 2, b + 3, P.u1); putI(a + 5, b + 3, P.u1); for (let k = 0; k < 4; k++) { putI(a + 2 + k, b + 2 + k, P.u1); putI(a + 5 - k, b + 2 + k, P.u1); } });
   if (!o.dialog) {
     cap(bx - 20, (a, b) => { rectI(a + 2, b + 2, 5, 4, P.u1); rectI(a + 3, b + 4, 3, 1, P.u6); rectI(a + 3, b + 3, 3, 1, P.u6); rectI(a + 2, b + 2, 5, 1, P.u1); });
@@ -74,7 +83,7 @@ function taskbar98(st, t, screen) {
   const [x0, y0, w] = RSZ.task, x1 = x0 + w - 1;
   rectI(x0, y0, w, 15, P.u6); rectI(x0, y0, w, 1, P.u6); rectI(x0, y0 + 1, w, 1, P.moon);
   // Start
-  w98Raised(x0 + 2, y0 + 3, 38, 11); w98Flag(x0 + 5, y0 + 5); text('Start', x0 + 16, y0 + 6, 'tiny', P.u1);
+  w98Soft(x0 + 2, y0 + 3, 38, 11); w98Flag(x0 + 5, y0 + 5); dimI(x0 + 5, y0 + 5, 9, 8); text('Start', x0 + 16, y0 + 6, 'tiny', P.u4);   // does nothing: soft (#117)
   rectI(x0 + 43, y0 + 3, 1, 11, P.u5); rectI(x0 + 44, y0 + 3, 1, 11, P.moon);
   // task buttons
   const flash = st.flash && Math.floor(t * 2.5) % 2 === 0;

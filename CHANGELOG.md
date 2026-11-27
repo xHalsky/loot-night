@@ -3,6 +3,14 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.91.4 (2026-11-27)
+
+- **Dead buttons look dead** (#117; Paweł: slightly dim, still UI buttons): Start, the window's minimise, maximise and
+  close, Excel's menu bar, toolbar icons, Macros toggle, scroll bar arrows and thumb, sheet tab arrows and the other
+  tabs are softer now: no dark outline or inner shadow (`w98Soft`), icons faded toward the face colour (`dimI`, every
+  other pixel, palette-exact), labels in u4. The ones that work (Sum, Fill, Sort, Pivot, Buy, OK, the two task buttons,
+  Sleep) are untouched, so they stand out more.
+
 ## 0.91.3 (2026-11-27)
 
 - **No NEW tag on fresh items** (#116; Paweł: the yellow outline is enough): the bag square keeps its bright outline for
