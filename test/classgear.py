@@ -10,6 +10,8 @@ fails = []
 def check(ok, msg): print(('ok   ' if ok else 'FAIL ') + msg); (None if ok else fails.append(msg))
 # crimson pixels in the 1 px ring round a bag square (panel px), read off the panel's own canvas
 RING = "([x,y])=>{const d=document.getElementById('spArea').getContext('2d').getImageData(x-1,y-1,23,23).data; let n=0; for(let j=0;j<23;j++) for(let i=0;i<23;i++){ if(i>0&&i<22&&j>0&&j<22) continue; const k=(j*23+i)*4; if(d[k]===210&&d[k+1]===60&&d[k+2]===90) n++; } return n}"
+# the class glow round a portrait (#121): pixels of its class colour in the 3 px band just outside the 22 x 24 portrait
+GLOW = "([x,y,r,g,b])=>{const d=document.getElementById('spArea').getContext('2d').getImageData(x-3,y-3,28,30).data; let n=0; for(let j=0;j<30;j++) for(let i=0;i<28;i++){ if(i>=3&&i<25&&j>=3&&j<27) continue; const k=(j*28+i)*4; if(d[k]===r&&d[k+1]===g&&d[k+2]===b) n++; } return n}"
 CELL = "([x,y])=>Array.from(document.getElementById('spArea').getContext('2d').getImageData(x,y,21,21).data).join(',')"
 async def main():
     os.makedirs('test/shots', exist_ok=True)
@@ -55,28 +57,35 @@ async def main():
         await ev(f"n.heroTab={ki}; 0"); await pg.wait_for_timeout(150)
         # right-click: refused, it shakes in its square, then sits still again
         still = await pg.evaluate(CELL, list(cell(k_st)))
+        mage_glow = lambda: pg.evaluate(GLOW, [4 + mi * 34 + 5, 12 + 3, 139, 90, 214])
+        glow0 = await mage_glow()
         await pg.mouse.click(*centre(k_st), button='right'); frames = []
         for i in range(8): await pg.wait_for_timeout(15); frames.append(await pg.evaluate(CELL, list(cell(k_st))))
+        glow1 = await mage_glow()
+        await pg.screenshot(path='test/shots/classgear_glow.png', clip={'x': sp[0], 'y': sp[1], 'width': 140 * sp[2], 'height': 60 * sp[2]})
         await pg.screenshot(path='test/shots/classgear_shake.png', clip={'x': sp[0], 'y': sp[1] + 110 * sp[2], 'width': 140 * sp[2], 'height': 60 * sp[2]})
         await pg.wait_for_timeout(500); after = await pg.evaluate(CELL, list(cell(k_st)))
         moved = sum(1 for f in frames if f != still)
         check(await ev("g.bag.some(e=>e.id==='st')") and not await ev("g.heroes[%d].gear.weapon && g.heroes[%d].gear.weapon.id==='st'" % (ki, ki)), 'right-click on the knight: the staff stays in the bag')
         dxs = await ev("[0,0.1,0.3,0.6,0.9,1].map(p=>window.__lnShakeDx(p))")
         check(moved >= 1 and after == still and max(abs(d) for d in dxs) == 1, f'it shakes gently in its square ({moved} of 8 frames moved, hops {dxs}) and settles')
+        await pg.wait_for_timeout(900); glow2 = await mage_glow()
+        check(glow0 == 0 and glow1 >= 40 and glow2 == 0, f'and Hudzor\'s portrait glows violet, whose staff it is, then fades ({glow0} -> {glow1} -> {glow2} px)')
         # held (#114): the item's slot in his gear lights, gold when he can wear it, crimson when not
         SLOTRING = "([x,y])=>{const d=document.getElementById('spArea').getContext('2d').getImageData(x-1,y-1,23,23).data; const c={gold:0,crimson:0}; for(let j=0;j<23;j++) for(let i=0;i<23;i++){ if(i>0&&i<22&&j>0&&j<22) continue; const k=(j*23+i)*4; if(d[k]===241&&d[k+1]===169&&d[k+2]===52) c.gold++; if(d[k]===210&&d[k+1]===60&&d[k+2]===90) c.crimson++; } return c}"
         WEAPON, RINGSLOT = (4 + 2, 67), (4 + 2 + 22, 67 + 22)
         async def held(k, slot, name):
             await pg.mouse.move(*centre(k)); await pg.mouse.down(); await pg.wait_for_timeout(60)
             early = await pg.evaluate(SLOTRING, list(slot)); await pg.wait_for_timeout(200)
-            r = await pg.evaluate(SLOTRING, list(slot)); r['window'] = await pg.evaluate("()=>!!document.querySelector('.sp-pop')")
+            r = await pg.evaluate(SLOTRING, list(slot)); r['window'] = await pg.evaluate("()=>!!document.querySelector('.sp-pop')"); r['glow'] = await mage_glow()
             await pg.screenshot(path=f'test/shots/classgear_held_{name}.png', clip={'x': sp[0], 'y': sp[1] + 54 * sp[2], 'width': 140 * sp[2], 'height': 120 * sp[2]})
             await pg.mouse.up(); await pg.wait_for_timeout(150); after = await pg.evaluate(SLOTRING, list(slot))
             return early, r, after
         e0, r0, a0 = await held(k_st, WEAPON, 'staff')
         check(e0 == {'gold': 0, 'crimson': 0} and r0['crimson'] >= 80 and r0['gold'] == 0 and a0 == {'gold': 0, 'crimson': 0}, f'held, the staff lights his weapon slot crimson ({e0} at 60 ms, {r0} held, {a0} let go)')
+        check(r0['glow'] >= 40 and await mage_glow() == 0, f'held, the staff lights Hudzor\'s portrait too ({r0["glow"]} px), gone when let go')
         e1, r1, a1 = await held(k_sw, WEAPON, 'sword')
-        check(r1['gold'] >= 80 and r1['crimson'] == 0 and a1 == {'gold': 0, 'crimson': 0}, f'held, his own sword lights it gold ({r1})')
+        check(r1['gold'] >= 80 and r1['crimson'] == 0 and a1 == {'gold': 0, 'crimson': 0} and r1['glow'] == 0, f'held, his own sword lights it gold, no portrait glows ({r1})')
         k_rg0 = await slot_of('rg'); e2, r2, a2 = await held(k_rg0, RINGSLOT, 'ring')
         check(r2['gold'] >= 80, f'a ring lights his ring slot gold ({r2})')
         await ev("n.selected=null; 0"); await pg.wait_for_timeout(100)

@@ -54,7 +54,8 @@ grid's pixel, in a 1 px border: #111; its square stays empty while it is in hand
 hero (or unequips); hover for the tooltip; L locks. Class gear the selected hero can't wear (#113,
 [loot.md](loot.md)): a crimson ring round its square under the pointer and round it in hand, a gentle shake in its
 square on right-click and in hand over his slot or card; let go, it flies back to its square. Held on a bag item (or
-dragging it), its slot in the selected hero's gear lights: a thin gold ring, crimson for the wrong class (#114). Anything let go where it
+dragging it), its slot in the selected hero's gear lights: a thin gold ring, crimson for the wrong class (#114); with
+the wrong class, the portrait of the hero it is for glows in his class colour, and for 1.2 s after a refusal (#121). Anything let go where it
 can't go flies back. An empty weapon, helm or armor slot shows the selected hero's class shape (Hudzor's: a staff,
 a circlet, a robe). HP shows only on the battle sprites and the skill-bar portraits.
 

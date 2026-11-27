@@ -147,7 +147,10 @@ left out: gold when he can wear it, crimson when he can't; an open item window c
 still just selects it. Right-click on the wrong hero: it shakes gently in its square (`WRONG_CLASS_SHAKE_HOPS` 4 hops
 of `WRONG_CLASS_SHAKE_PX` 1 grid px over `WRONG_CLASS_SHAKE_SEC` 0.2 s). Dragged onto his slot or card it shakes the
 same way in your hand, and let go it flies back to its square (`GHOST_RETURN_SEC` 0.16 s) and shakes there; the feed
-says "Mage only: Dutch (Knight) can't use it." Anything let go where it can't go flies back the same way.
+says "Mage only: Dutch (Knight) can't use it." **Whose it is shows too** (#121): while it is picked up, and for
+`RIGHT_CLASS_GLOW_SEC` (1.2 s) after a refusal (right-click, or let go on his slot), the portrait of the hero who can
+wear it glows in his class colour: a second ring of it just outside his portrait's outline and a checkered halo
+beyond that, breathing (not the gold of the selection frame). Anything let go where it can't go flies back the same way.
 `python3 test/classgear.py` plays all of it. Hover tooltips show the
 name, rarity, slot and power, the stats and special affix, and for bag items whether it is better for the
 selected hero; the detailed stat comparison is in the item's click panel. Next to the grid, a stat block shows the selected
@@ -181,7 +184,9 @@ Souls.
   wrong-class signal lives on the item itself: a crimson ring under the pointer, a shake in its square or in your hand,
   and a flight back to the bag, so it reads without the tooltip; the feed line says why. Drops spread evenly over the
   party. The shake was 0.35 s of 2 px hops and read as too much (#114): it is a brief 1 px wiggle now, and the slot
-  the item goes in lights as soon as it is picked up, so the answer shows before you drop it. Measured: night 1 (32 good-bot nights each) 32 equips to 28, 20.5 to 18.2 of 24 slots filled, gear's share of attack 38% to 33% and of HP 27% to 23%, depth 6.2 to 6.1 floors and wipes 0.16 both; over four nights (8 campaigns) depth 6.1 / 8.8 / 9.2 / 9.0 before, 6.2 / 8.8 / 11.0 / 11.0 after (more unwearable drops get sold, so the city grows a little faster). Gear fills a little slower, the run doesn't suffer. Rejected: armor types (cloth, leather, plate) shared between classes (more rules to
+  the item goes in lights as soon as it is picked up, so the answer shows before you drop it. The right hero's
+  portrait glows in his class colour (#121; Paweł), so "not him" comes with "him": the class colours already link the
+  portraits, the keys and now the gear. Measured: night 1 (32 good-bot nights each) 32 equips to 28, 20.5 to 18.2 of 24 slots filled, gear's share of attack 38% to 33% and of HP 27% to 23%, depth 6.2 to 6.1 floors and wipes 0.16 both; over four nights (8 campaigns) depth 6.1 / 8.8 / 9.2 / 9.0 before, 6.2 / 8.8 / 11.0 / 11.0 after (more unwearable drops get sold, so the city grows a little faster). Gear fills a little slower, the run doesn't suffer. Rejected: armor types (cloth, leather, plate) shared between classes (more rules to
   learn for four heroes); a class weighting toward whoever is behind (smart loot: kept for later, if the playtests
   find a hero starved); class trinkets (they stay the item anyone can use); a hint toast alone, without the ring and
   the shake (the feed is easy to miss mid-fight).

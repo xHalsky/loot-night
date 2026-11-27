@@ -30,7 +30,7 @@ export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string):
   const h = S.g.heroes[heroIdx];
   if (!e || e.kind !== 'item' || !h) { if (e && e.kind === 'feather') useFeather(e.id); return false; }
   if (!canWear(h, e.item)) {
-    n.reject = { id: e.id, t: T.WRONG_CLASS_SHAKE_SEC };
+    n.reject = { id: e.id, t: T.WRONG_CLASS_SHAKE_SEC, glow: T.RIGHT_CLASS_GLOW_SEC };   // shakes; whose it is glows (#121)
     toast(`${HERO_CLASS[e.item.cls!]} only: ${heroLabel(h.id)} can't use it.`, '#ff8a80'); sfx.bad(); return false;
   }
   if (wantSlot && e.item.slot !== wantSlot) { toast(`That goes in the ${e.item.slot} slot.`, '#a999bd'); sfx.bad(); return false; }

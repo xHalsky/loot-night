@@ -184,7 +184,7 @@ export interface Night {
   dropQueue: BagEntry[];
   floorLoot: { entry: BagEntry; x: number; t: number }[];   // drops lying on the dungeon floor (screen x)
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
-  reject: { id: string; t: number } | null;                 // a bag item that wouldn't go on (#113): it shakes in its square for t s
+  reject: { id: string; t: number; glow?: number } | null;  // a bag item that wouldn't go on (#113): it shakes in its square for t s; its class's portrait glows for glow s (#121)
   lootFly: { x: number; text: string; color: string; t: number; max: number; delay: number; dx: number }[];   // picked-up loot: names flying up from the floor (#49)
   dropPopup: { entry: BagEntry; t: number } | null;
   reserve: { defId: string; elite: boolean }[];   // the pack waiting off screen (#52, 1.3)

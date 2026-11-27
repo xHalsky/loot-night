@@ -233,7 +233,7 @@ export function updateDrops(dt: number) {
   n.lootFly = n.lootFly.filter(f => f.t < f.delay + f.max);
   for (const f of n.fresh) f.t -= dt;
   n.fresh = n.fresh.filter(f => f.t > 0);
-  if (n.reject && (n.reject.t -= dt) <= 0) n.reject = null;
+  if (n.reject) { n.reject.t = Math.max(0, n.reject.t - dt); n.reject.glow = Math.max(0, (n.reject.glow ?? 0) - dt); if (n.reject.t <= 0 && n.reject.glow <= 0) n.reject = null; }
   if (n.dropPopup) {
     n.dropPopup.t -= dt;
     if (n.dropPopup.t <= 0) { toast(`Lost: ${entryName(n.dropPopup.entry)}`, '#ff8a80'); n.dropPopup = null; }

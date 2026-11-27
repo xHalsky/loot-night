@@ -360,6 +360,16 @@ function liveCell(x, y, c, o = {}) {
 }
 // the slot a picked-up item goes in (#114): a thin ring round the square with its corners left out (softer than the
 // selection's double frame); gold, or crimson when the selected hero can't wear it
+// a portrait's class outline glowing (#121): a second ring of his class colour just outside it, and a checkered halo
+// beyond that breathing in and out, so it reads as a glow and not as the gold selection frame. x, y: the portrait
+function classGlow(x, y, kind, t) {
+  const col = P[CLASS_COL[kind]], w = 22, h = 24, ring = (d, on) => {
+    for (let i = -d + 1; i < w + d - 1; i++) { if (on(i, -d)) putI(x + i, y - d, col); if (on(i, h - 1 + d)) putI(x + i, y + h - 1 + d, col); }
+    for (let j = -d + 1; j < h + d - 1; j++) { if (on(-d, j)) putI(x - d, y + j, col); if (on(w - 1 + d, j)) putI(x + w - 1 + d, y + j, col); }
+  };
+  ring(1, () => true);
+  if (Math.sin(t * 5) > -0.3) ring(2, (i, j) => ((i + j) & 1) === 0);
+}
 function aimRing(x, y, bad) {
   const col = bad ? P.crimson : P.gold;
   for (let i = 0; i < 21; i++) { putI(x + i, y - 1, col); putI(x + i, y + 21, col); putI(x - 1, y + i, col); putI(x + 21, y + i, col); }
@@ -393,6 +403,7 @@ function livePartyPanel(st, t) {
   st.party.forEach((c, n) => {
     const x = X0 + n * 34, y = 12;
     livePartyCard(x, y, c, n === st.sel);
+    if (c.glow) classGlow(x + 5, y + 3, c.id, t);   // the hero this wrong-class item is for (#121)
     if (c.alert) {
       for (let j = -2; j <= 7; j++) for (let i = -2; i <= 7; i++) { const dx = (i - 2.5) / 4.6, dy = (j - 2.5) / 4.6, d = dx * dx + dy * dy; if (d <= 1) putU(x + 33 - 6 + i, y - 2 + j, d > 0.66 ? 0 : clamp(1 - 0.4 * (dx + dy)), M_DANGER); }
       rectI(x + 33 - 4, y, 1, 4, P.moon); putI(x + 33 - 4, y + 5, P.moon);

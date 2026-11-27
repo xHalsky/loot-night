@@ -3,6 +3,16 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.92.3 (2026-11-27)
+
+- **Whose it is: the right hero's portrait glows** (#121; Paweł). With a hero selected who can't wear a class item,
+  picking it up (held past `PICKUP_HOLD_SEC` or dragged) lights the portrait of the hero who can, for as long as it is
+  in hand; a refusal (right-click, or let go on his slot) lights it for `RIGHT_CLASS_GLOW_SEC` (1.2 s). The glow is a
+  second ring of his class colour just outside the portrait's own outline and a checkered halo beyond it that breathes
+  (Hudzor violet, Hixx copper, Arkbishop gold, Dutch steel), so it doesn't read as the gold selection frame.
+  `Night.reject` carries the glow's time. `test/classgear.py` checks the glow on right-click, while held, and none for
+  the selected hero's own sword.
+
 ## 0.92.2 (2026-11-27)
 
 - **The pack's "!" is red and brief** (#120; Paweł on 0.92.0: less visible, just a pop, half a second). It is crimson

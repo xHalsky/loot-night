@@ -90,6 +90,17 @@ function aimOf(h: Hero): { slot: string; bad: boolean } | null {
   return e && e.kind === 'item' ? { slot: e.item.slot, bad: !canWear(h, e.item) } : null;
 }
 export function setPanelPtr(p: Partial<typeof panelPtr>) { Object.assign(panelPtr, p); }
+/** Whose it is (#121): with the wrong hero selected, a class item picked up (held past PICKUP_HOLD_SEC or dragged) or
+ *  just refused (right-click, let go on his slot) lights the portrait of the hero who can wear it. */
+function rightClassOf(h: Hero | undefined): HeroId | null {
+  const n = N(), hd = panelPtr.hold;
+  let id: string | null = null;
+  if (hd && (panelPtr.lift === `bag:${hd.id}` || performance.now() - hd.at >= T.PICKUP_HOLD_SEC * 1000)) id = hd.id;
+  else if (panelPtr.lift?.startsWith('bag:')) id = panelPtr.lift.slice(4);
+  else if (n.reject && (n.reject.glow ?? 0) > 0) id = n.reject.id;
+  const e = id ? S.g.bag.find(x => x.id === id) : undefined;
+  return h && e && e.kind === 'item' && e.item.cls && !canWear(h, e.item) ? e.item.cls : null;
+}
 /** A shake (#113; gentle since #114) at p (0..1 of WRONG_CLASS_SHAKE_SEC), in whole grid px: WRONG_CLASS_SHAKE_HOPS
  *  hops of WRONG_CLASS_SHAKE_PX, right, left, right, left, then still. The bag square and the item in hand share it. */
 export function shakeDx(p: number): number {
@@ -123,9 +134,10 @@ function bagView(ring = false) {
   return { bag: cells, bagCount: g.bag.length, bagSize: g.bagSize, autoSalvage: g.autoSalvage };
 }
 const foot = () => ({ gold: S.g.gold, souls: S.g.mats, record: Math.max(S.g.record, N().deepest) });
-function partyCards() {
+function partyCards(glowFor: HeroId | null = null) {
   const powers = S.g.heroes.map(h => heroPower(h)), best = Math.max(...powers);
-  return S.g.heroes.map((h, i) => ({ hero: h.id, id: PAGE_ID[h.id], short: HERO_NAME[h.id], lv: h.level, pow: powers[i], xp: h.xp / xpNeeded(h), down: h.downed, alert: best > 0 && powers[i] < best * T.POWER_BEHIND }));
+  return S.g.heroes.map((h, i) => ({ hero: h.id, id: PAGE_ID[h.id], short: HERO_NAME[h.id], lv: h.level, pow: powers[i], xp: h.xp / xpNeeded(h), down: h.downed, alert: best > 0 && powers[i] < best * T.POWER_BEHIND,
+    glow: h.id === glowFor }));   // the hero this wrong-class item is for (#121)
 }
 function partyPanelView() {
   const n = N(), h = S.g.heroes[n.heroTab] ?? S.g.heroes[0], st = heroStats(h), base = heroBaseStats(h);
@@ -133,7 +145,7 @@ function partyPanelView() {
   const row = (k: Stat, label: string, f: (v: number) => string) => { const d = st[k] - base[k]; return [label, f(st[k]), Math.abs(d) >= 0.05 ? `${d > 0 ? '+' : ''}${f(d)}` : ''] as const; };
   const gear: Record<string, unknown> = {};
   for (const sl of ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'] as const) gear[sl] = gearCell(h.gear[sl], sl);
-  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: HERO_CLASS[h.id], pow: heroPower(h) }, gear, ghosts: CLASS_ICON[h.id], aim: aimOf(h),
+  return { party: partyCards(rightClassOf(h)), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: HERO_CLASS[h.id], pow: heroPower(h) }, gear, ghosts: CLASS_ICON[h.id], aim: aimOf(h),
     stats: [row('hp', 'HP', r0), row('atk', 'ATK', r1), row('armor', 'ARM', r1), row('speed', 'SPD', r1), row('crit', 'CRIT', r1), row('luck', 'LUCK', r1)], ...bagView(true), ...foot() };
 }
 function townPanelView() {
