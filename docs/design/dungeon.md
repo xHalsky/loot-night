@@ -287,9 +287,9 @@ in the battle corner and on the floor map; with nothing to bank it says "15 min"
 line and drawn in two flat bands (the name on arcane, the line on deep dusk), so neither sits on a dither.
 Floor bounty and the other RPG gold go to the run first. Each floor cleared gives `SOULS_PER_FLOOR_BASE` + floor
 Souls; Souls go straight to the pool and are never lost. **When the night ends mid-run,** your choice banks and a
-forced end loses: Sleep (and "Coming, babe" when it lands, which ends the night like Sleep) banks the run, what lies
-on the floor included; dawn, unplugged and any other forced end (Monday's 01:00 in the week, #56) lose it like a
-wipe, Souls kept, floor loot gone. The feed warns once of each while a run is going: `RUN_WARN_DAWN_MIN` (15) game
+forced end loses: Sleep (and "Coming, babe" when it lands, and Monday's 01:00 bedtime in the week, #56: both end
+the night like Sleep) banks the run, what lies on the floor included; dawn, unplugged and any other forced end lose it
+like a wipe, Souls kept, floor loot gone. The feed warns once of each while a run is going: `RUN_WARN_DAWN_MIN` (15) game
 minutes before dawn, and when her Mood reaches red. The results say what the run banked or lost. A run end card
 shows for `RUN_CARD_SEC` over the city: the deepest floor, what was banked or lost, the Souls.
 `npx tsx test/runend.ts` checks the three endings and the warnings.

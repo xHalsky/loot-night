@@ -18,7 +18,7 @@ export const TIPS: Record<TipId, { who: 'her' | 'mage' | 'healer'; text: string 
   mirror: { who: 'mage', text: 'the mirror shows round the corner. works both ways tho' },
   map: { who: 'mage', text: 'pick the next floor. hover a node to see what is there' },
   shower: { who: 'healer', text: 'shower = 90 s of freedom. go loud' },
-  q4: { who: 'healer', text: 'q4 pays real money btw. space = autosum, drag the cell corner, sort for x2. quick visits pay best' },
+  q4: { who: 'healer', text: 'excel pays best right after you tab in. space = autosum' },   // one idea: the Hustle (the job card has the rest, #124)
 };
 /** On the first night her note names the cue that ends each activity (the tell that she is about to move). */
 export const END_HINT: Record<string, string> = {

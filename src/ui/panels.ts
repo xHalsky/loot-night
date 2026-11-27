@@ -234,7 +234,7 @@ export function screenHtml(): string {
   }
   if (g.screen === 'results' && g.results) {
     const r = g.results;
-    const STAR: [keyof typeof r.goals, string, string][] = [['deep', 'Deep', `floor ${r.goals.target}`], ['unseen', 'Unseen', 'never caught'], ['sweet', 'Sweet', 'she ended happy']];
+    const STAR: [keyof typeof r.goals, string, string][] = [['deep', 'Deep', `floor ${r.goals.target}`], ['unseen', 'Unseen', 'never caught'], ['sweet', 'Sweet', 'she ended not furious']];
     const stars = STAR.map(([k, name, why]) => `<span class="star-n ${r.goals[k] ? 'on' : ''}"><span class="star">★</span><b>${name}</b><small>${why}</small></span>`).join('');
     const endTxt = r.ending === 'sleep' ? (r.bedtime ? `${fmtClock(r.endClock)}: bedtime. You log off.` : `Logged off at ${fmtClock(r.endClock)}`) : r.ending === 'dawn' ? 'Dawn. The sun is up and so are you.' : `Unplugged. She pulled the plug. Half the bag is gone. ${dayName(r.day)}, again.`;
     return `<div class="screen"><div class="card">

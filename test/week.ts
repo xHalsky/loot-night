@@ -91,10 +91,10 @@ ok(Math.abs(g0 - T.DOOR_MAX_GAP_SEC) < 0.5 && Math.abs(g6 - T.DOOR_MAX_GAP_SEC /
 
 // --- How to hide ---
 const tiles = (d: number) => { S.g.day = d; const k = howtoTiles(); return `${k.ids.join(',')}|${k.isNew.join(',')}|${k.answer}|${howtoOpens()}`; };
-ok(tiles(0) === 'listen,tab,answer||mon|true', `Monday: three tiles, the card opens (${tiles(0)})`);
-ok(tiles(1) === 'listen,tab,answer,headset,lean|headset,lean|tue|true', `Tuesday: the headset and lean in new (${tiles(1)})`);
+ok(tiles(0) === 'listen,tab,peek,answer||mon|true', `Monday: four tiles (the door's crack until lean in), the card opens (${tiles(0)})`);
+ok(tiles(1) === 'listen,tab,answer,headset,lean|headset,lean,answer|tue|true', `Tuesday: the headset, lean in and the chat in What she wants new (${tiles(1)})`);
 ok(tiles(2) === 'listen,tab,answer,headset,lean||tue|false', `Wednesday: nothing new to hide from, no card (${tiles(2)})`);
-ok(tiles(3) === 'listen,tab,answer,headset,lean|answer|thu|true', `Thursday: the cans and the cuddle in Answer her (${tiles(3)})`);
+ok(tiles(3) === 'listen,tab,answer,headset,lean|answer|thu|true', `Thursday: the cans and the cuddle in What she wants (${tiles(3)})`);
 ok(tiles(7) === 'listen,tab,answer,headset,lean||thu|false', `week two: no card (${tiles(7)})`);
 
 // --- the boys at 20:00: always their chat, never a voice note (#102, #108) ---

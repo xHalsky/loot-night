@@ -51,13 +51,13 @@ export const dayName = (day = S.g.day ?? 0) => WEEK()[((day % WEEK().length) + W
 /** When she goes to bed tonight (Infinity: she stays up). */
 export const bedAt = () => { const b = rules().bed; return b ? b - (S.g.night?.wear?.top === 'pjset' ? T.GIFT_PJ_BED_MIN : 0) : Infinity; };   // the pajama set (#91): 30 min earlier
 
-/** How to hide's tiles tonight (grid doc 7k): one per thing that is on, tonight's new ones framed gold. The third
- *  tile's words follow the visit types that are on (mon: peek and snack; tue: + chat; thu: + cuddle, the cans). */
+/** How to hide's tiles tonight (grid doc 7k): one per thing that is on, tonight's new ones framed gold. What she
+ *  wants' words follow the visit types that are on (mon: peek and snack; tue: + chat; thu: + cuddle, the cans). */
 export function howtoTiles(): { ids: string[]; isNew: string[]; answer: 'mon' | 'tue' | 'thu' } {
-  const ids = ['listen', 'tab', 'answer'], isNew: string[] = [];
+  const ids = on('lean') ? ['listen', 'tab', 'answer'] : ['listen', 'tab', 'peek', 'answer'], isNew: string[] = [];   // holding the door: a peek on Monday, lean in from Tuesday (#124)
   if (on('headset')) { ids.push('headset'); if (isNewTonight('headset')) isNew.push('headset'); }
   if (on('lean')) { ids.push('lean'); if (isNewTonight('lean')) isNew.push('lean'); }   // lean in (#77): five tiles from Tuesday
-  if (isNewTonight('cuddle') || isNewTonight('fuel')) isNew.push('answer');
+  if (isNewTonight('chat') || isNewTonight('cuddle') || isNewTonight('fuel')) isNew.push('answer');   // What she wants grows: the chat on Tuesday (#124), the cuddle and the cans on Thursday
   return { ids, isNew, answer: on('cuddle') || on('fuel') ? 'thu' : on('chat') ? 'tue' : 'mon' };
 }
 /** How to hide opens before the night: the first Monday, and any night with a new tile. */

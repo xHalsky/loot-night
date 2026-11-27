@@ -24,7 +24,7 @@ export const CHAT_QS: { q: string; a: [string, string, string] }[] = [
 // The hallway cue for each visit type (shown as a label on the first night; later nights rely on sound).
 export const VISIT_CUE: Record<string, string> = {
   peek: 'Quick light steps. She is checking on you: Excel!',
-  snack: 'Plates clinking. Snack run: hide the cans!',
+  snack: 'Plates clinking. A snack for you: take the plate.',   // only the first Monday shows these (no cans yet, #124)
   chat: 'She is humming. She wants to talk: Excel, headset off.',
   cuddle: 'Slow slipper steps. She wants a cuddle.',
   night: 'Soft, sleepy steps. She is going to bed.',

@@ -62,7 +62,7 @@ export function startNight() {
   // before the night (#28, #56): the boys' chat on the phone, then How to hide on the first Monday and a night with a new tile
   S.g.voice = voiceNote();
   S.g.howto = howtoOpens() || !!S.g.voice;
-  toast(`${dayName()}, 20:00. Town is quiet. Hit the Dungeon Gate.`, '#8fb3ff');
+  toast(`${dayName()}, 20:00. Town is quiet. Head down through the Dungeon Portal.`, '#8fb3ff');   // its name on the map (#124)
 }
 
 /** Checks the three ways a night ends (docs/design/night.md). */

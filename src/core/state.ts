@@ -289,7 +289,8 @@ export interface GameState {
   mapPath: (string | null)[];    // the dungeon map (#48): what each floor was the last time you entered it, by floor number
   tipsSeen: string[];   // first-time tips already shown (#28)
   howto: boolean;       // the night waits before it starts: the boys' message, then How to hide, then tonight's stars (#28, #56, #101)
-  howtoPage?: number;   // 0 How to hide, 1 tonight's stars (#101; not saved)
+  howtoPage?: number;   // which card of tonight's deck (#101, #124; not saved)
+  howtoAll?: boolean;   // the pause menu's How to play: all four cards (#124; not saved)
   voice?: { date: string; chat: [string, string][] } | null;   // the boys' chat at 20:00 while it is up (#102, #108; not saved)
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back

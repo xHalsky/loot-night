@@ -246,7 +246,7 @@ export function travelToDungeon(floor = S.g.startFloor) {
   n.clock += T.COST_TRAVEL_MIN;
   startRun(start);
   enterDungeon(start);
-  toast(`Dungeon gate: floor ${start} (15 min)`, '#8fb3ff');
+  toast(`Dungeon Portal: floor ${start} (15 min)`, '#8fb3ff');
 }
 /** The town's floor picker: floor 1 and every unlocked checkpoint. */
 export function pickStartFloor(step: number) {

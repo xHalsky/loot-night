@@ -3,6 +3,30 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.94.0 (2026-11-27)
+
+- **The first night is explained one area at a time** (#124; Paweł: the two cards didn't cover the first night, and
+  some lines were pieced together from different areas). The first Monday now shows four cards before the night, each
+  about one area, with a picture per tile, "1 of 4" in the corner and Next until the last one's Got it:
+  1. **Your party**: Runs (the Dungeon Portal, the party fights on its own, the map at each floor's end), Skills (the
+     lit keys 1, Z, Q, A; grey means locked or nothing to hit), Loot (drops, the green arrow, right-click, class
+     gear), Bank it (the town portal banks the run, a wipe loses it); the foot is the city.
+  2. **How to hide**: Listen, Tab to Excel, Peek (holding your door, until lean in takes over on Tuesday), What she
+     wants (was Answer her: each visit's hallway cue and what to do; Monday's snack run only checks the desk, so you
+     take the plate, it heals the party); the foot is her patience (it wears thin, visits you get through win some
+     back, catches cost a lot and weaken the party, out of it she pulls the plug and the night starts over).
+  3. **Your job** (new): your cover, what pays (Sum or Space, the Fill corner, Sort, Hustle) and what dollars buy
+     (macros, the phone's Shop); the foot is staying busy while she peeks. Excel's pay is taught here now.
+  4. **Tonight**: the three stars, as before; the foot now says Monday ends by itself at 01:00 with the run banked.
+- Later nights with a new tile show How to hide and Tonight as before; What she wants is also marked new on Tuesday (the
+  chat). The pause menu's button is **How to play** and opens all four cards.
+- Fixed on the way: the first Monday's snack-run note said "hide the cans!" (no cans until Thursday): it says to take
+  the plate. The feed's "Hit the Dungeon Gate" and "Dungeon gate: floor 1" say Dungeon Portal, its name on the map.
+  Lance's first-Excel tip is one idea now ("excel pays best right after you tab in. space = autosum"). The results'
+  Sweet star said "she ended happy"; it is "not furious" (annoyed counts).
+- `test/week.py` pages through the four cards (shots `test/shots/week_1*_monday_*.png`); `test/week.ts` has the Peek
+  tile and Tuesday's new What she wants.
+
 ## 0.93.1 (2026-11-27)
 
 - **Colour means usable now on the skill bar** (#123; Paweł: in play it was hard to see what can be used, and the

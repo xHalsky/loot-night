@@ -155,21 +155,36 @@ Goblin Fuel lowers Tiredness and blocks microsleeps while the boost lasts (see [
 happening.
 - **Title:** two lines (raid night, your girlfriend thinks you are doing spreadsheets; the RPG plays itself,
   your job is to listen, hide and keep everyone happy) and "turn the sound on".
-- **How-to-hide card** (the renderer's glass card over the dimmed frame, grid doc 7k; `HOWTO_GAME` in `main.ts`):
-  opens before the first Monday and before any night with a new tile (the week), and the night waits until "Got it"
-  (or Esc / Enter). "Monday, 20:00", "Hide the game before she sees it." (Jersey 10, [screen.md](screen.md)), one tile per thing that is on tonight, each
-  with a small picture, its number, its name and what to do, filling the card (104 wide for four, 82 for five):
-  1 Listen (the sounds, the last-heard line, hold the door to peek), 2 Tab to Excel (footsteps: switch now, never wait
-  for the handle), 3 Answer her (each visit wants something else: Monday snack runs, Tuesday humming too, from Thursday
-  hide your cans and a cuddle), 4 Headset from Tuesday (the Zone, but you are deaf to her). Tonight's new ones are
-  framed gold with "new tonight": the headset on Tuesday, Answer her on Thursday. The pause menu reopens it. Its Got it
-  (or Enter) opens the next card; Esc skips both.
-- **Tonight's three stars** (#101, 0.88; the same card, after How to hide): "Monday, 20:00 · Tonight", "Three stars
-  make a good night.", three tiles with a picture each (stairs down to tonight's floor, an eye struck through, a
-  heart) and one sentence each: Floor N (reach it in any run tonight: a chest with an item in the morning), Don't get
-  caught (never seen: tomorrow starts with `STAR_UNSEEN_GOODWILL` more Goodwill), Keep her happy (log off before the
-  tag by her name says furious: she makes you breakfast). The foot: stars count when you log off, Sleep opens at
-  23:00, a pulled plug gives none. Got it starts the night.
+- **The cards before the night** (the renderer's glass card over the dimmed frame, grid doc 7k; `howtoGame` in
+  `main.ts`; #124). **The first Monday shows four, one area each**, and the night waits until the last one's "Got it"
+  (Enter: the next card, "Next" on the others; Esc skips them all; "1 of 4" in the corner). The pause menu's **How to
+  play** opens all four on any night. A later night with a new tile shows How to hide and Tonight. Each card has a
+  kicker, a title (Jersey 10, [screen.md](screen.md)), its tiles (a small picture, a number, a name, one to three
+  sentences) and a foot, **and every line on a card is about that card's area only** (Paweł, #124: the old How to hide
+  mixed a snack run that said nothing about what to do, a door peek tacked onto listening, and the party's controls in
+  her foot).
+  1. **Your party** · "The party fights by itself.": Runs (down through the Dungeon Portal, the party fights on its
+     own, pick the next floor on the map), Skills (each hero's under the fight, the lit ones' keys 1, Z, Q or A; grey
+     is locked or has nothing to hit, #123), Loot (drops where enemies fall, the front hero picks them up, the green
+     arrow and right-click, class gear), Bank it (the town portal banks the run; a wipe loses its loot and gold).
+     Foot: the city (Merchant for gold, Salvage Forge for Souls, buildings and skills; each trip 15 minutes).
+  2. **How to hide** · "Hide the game before she sees it.": Listen (where she is by sound, the last-heard line,
+     footsteps mean she is coming), Tab to Excel (now, never wait for the handle; seen = caught), Peek (until lean in
+     replaces it on Tuesday: hold the door, the wider the more she sees you), What she wants (each visit's hallway cue
+     and its answer: Monday a peek and a snack run, which only looks at the desk, so you take the plate; Tuesday the
+     chat; Thursday the cans and the cuddle), then the Headset and Lean in from Tuesday. Foot: her patience (the
+     hearts): it wears thin, a visit you get through wins some back, a catch costs a lot and weakens the party, and
+     at none she pulls the plug and the night starts over. Tonight's new tiles are framed gold with "new tonight":
+     the headset, lean in and What she wants (the chat) on Tuesday, What she wants on Thursday.
+  3. **Your job** · "Excel is your cover. It pays, too.": Your cover (Tab or the taskbar; the party fights on without
+     your skills), Work (Sum or Space, the Fill cell's corner, Sort x2, Hustle up to x3 right after you tab in), Spend
+     (macros, and the Shop on your phone). Foot: busy while she peeks, she leaves sooner; idle, she lingers and asks.
+     This is where Excel's pay is taught since Lance's line left the first chat (0.91.2).
+  4. **Tonight** · "Three stars make a good night.": Floor N (reach it in any run tonight: a chest with an item in
+     the morning), Don't get caught (tomorrow starts with `STAR_UNSEEN_GOODWILL` more Goodwill), Keep her happy (log
+     off before the tag by her name says furious: she makes you breakfast). Foot: stars count when you log off with
+     Sleep on the taskbar from 23:00; on Monday the night also ends by itself at 01:00, the run banked; a pulled plug
+     gives none.
 - **Coach marks for the core loop** (`COACH` in `src/data/tips.ts`, `src/systems/coach.ts`, #42): the first
   footsteps, her first time in the doorway, the first phone, the first loot and the first boss wind-up get a
   callout next to the thing itself, and the game crawls at `COACH_SLOW` (a quarter speed). The renderer draws them
@@ -184,7 +199,8 @@ happening.
   save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`) and the plan on the wall
   (`TIP_PLAN_AT`). On events: a pass, a catch, an end cue, the dog, a yawn, the headset, her bedtime, a peek,
   the first floor choice, the shower.
-- **Labelled cues on the first night:** the her-note names the hallway cue of each visit type (`VISIT_CUE`) and,
+- **Labelled cues on the first night:** the her-note names the hallway cue of each visit type (`VISIT_CUE`; a snack
+  run's says to take the plate: there are no cans on Monday, #124) and,
   new, the cue that ends each activity (`END_HINT`: "The kettle clicked off. Tea, then maybe a snack run.").
   Later nights rely on the sound.
 - Tests: `npx tsx test/tips.ts`, `python3 test/onboarding.py` (screens: `test/onb_*.png`), `python3 test/coach.py`
@@ -201,6 +217,13 @@ happening.
   instead of pausing it, so the first footsteps are still a timing lesson (press Tab while she walks), just a
   readable one. Rejected: a scripted tutorial level (teaches the script, not the listening); pausing on each
   coach mark (teaches acting on a frozen screen); a safe first visit (kept the first catch possible).
+- **Four cards on the first Monday, one area each** (0.94, #124; Paweł: the two cards weren't enough for the first
+  night, and some lines were pieced together from different areas). The party, How to hide, the job and Tonight; every
+  line on a card belongs to its area, and the facts were checked against the rules (a snack run only checks the desk,
+  so the old "Plates clinking: a snack run" sent players to Excel for nothing). Rejected: more tiles on the two
+  cards (a card per area reads faster), a fifth card for the city (one foot covers what the first night needs), and
+  teaching the floor map, the Merchant and the skill tree on their own cards (their first-time tips and screens do it
+  in place).
 - **Onboarding by happening, not by a tutorial** (0.39): the slice is meant to be understood within 2 minutes
   without being told. One card for the one rule you cannot learn by watching (Excel up before the door
   opens), then each system explains itself once, in a friend's or her voice, when it first shows up. Tips go

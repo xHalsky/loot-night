@@ -143,9 +143,9 @@ const actions: Record<string, (arg: string) => void> = {
   startNight: () => startNight(),
   morning: () => toMorning(),
   resume: () => { S.g.paused = false; },
-  howtoOpen: () => { S.g.paused = false; S.g.howto = true; S.g.howtoPage = 0; },
-  howtoNext: () => { S.g.howtoPage = 1; sfx.click(); },   // How to hide's Got it: tonight's stars next (#101)
-  howtoClose: () => { S.g.howto = false; S.g.voice = null; S.g.howtoPage = 0; },
+  howtoOpen: () => { S.g.paused = false; S.g.howto = true; S.g.howtoPage = 0; S.g.howtoAll = true; },   // the pause menu's How to play: all four cards (#124)
+  howtoNext: () => { S.g.howtoPage = (S.g.howtoPage ?? 0) + 1; sfx.click(); },   // Next: the next card (#101, #124)
+  howtoClose: () => { S.g.howto = false; S.g.voice = null; S.g.howtoPage = 0; S.g.howtoAll = false; },
   voiceOk: () => voiceOk(),   // the boys' chat at 20:00: Let's go (the week, #56)
   altTab: () => { if (S.g.night) altTab(); },
   showRpg: () => { if (S.g.night && N().monitor !== 'rpg') altTab(); },
@@ -630,7 +630,7 @@ window.addEventListener('keydown', ev => {
     if (ev.key === 'Escape' || ev.key === 'Enter') { ev.preventDefault(); actions.inspectClose(''); return; }
   }
   if (caughtT(performance.now()) >= 0) { ev.preventDefault(); caughtEnd(performance.now()); return; }   // her screen takes the key (V7)
-  if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (g.voice) voiceOk(); else if (ev.key !== 'Escape' && !g.howtoPage) actions.howtoNext(''); else actions.howtoClose(''); } return; }   // the voice note, the cards (Enter: the next one; Esc skips them): the night waits
+  if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (g.voice) voiceOk(); else if (ev.key !== 'Escape' && howtoGame().next) actions.howtoNext(''); else actions.howtoClose(''); } return; }   // the voice note, the cards (Enter: the next one; Esc skips them): the night waits
   if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } if (g.night?.photo) { closePhoto(); return; } g.paused = !g.paused; return; }   // her photo (#92): Esc closes it
   if (g.paused) return;
   if (n.switching) { ev.preventDefault(); return; }
@@ -840,34 +840,58 @@ function voiceOk() {
   boysLog([['sys', v.date], ...v.chat.map(([w, s]) => ['l', `${w}: ${s}`] as ['l', string])]);   // their chat stays in The Boys (#102)
   S.g.voice = null; S.g.howto = howtoOpens(); sfx.click();
 }
-// How to hide (grid doc 7k): tonight's tiles (the week, #56: systems/week.ts howtoTiles), the new ones framed gold
+// The cards before the night (#124): the first Monday (and the pause menu's How to play) shows all four, one area
+// each: the party, How to hide, the job, tonight's stars. A later night with a new tile shows How to hide and the
+// stars (#101). Each card's tiles and its foot are about its own area only.
 const HOWTO_ANSWER = {
-  mon: 'Each visit wants something else. Plates clinking: a snack run.',
-  tue: 'Each visit wants something else. Plates clinking: a snack run. Humming: she wants to talk.',
-  thu: 'Each visit wants something else. Plates clinking: hide your cans. Humming: talk to her. Slow steps: a cuddle.',
+  mon: 'Quick light steps: she checks your screen, so have Excel up. Plates clinking: a snack. She only looks at the desk; take the plate from her note, it heals the party.',
+  tue: 'Quick light steps: she checks your screen, so have Excel up. Plates clinking: a snack; take the plate. Humming: a chat. Excel up, headset off, answer her.',
+  thu: 'Quick light steps: she checks your screen. Plates clinking: a snack; hide your cans (G), take the plate. Humming: a chat; headset off, answer her. Slow steps: a cuddle.',
 };
+type HowtoCardId = 'party' | 'her' | 'job' | 'stars';
+function howtoDeck(): HowtoCardId[] { return rules().day === 0 || S.g.howtoAll ? ['party', 'her', 'job', 'stars'] : ['her', 'stars']; }
 function howtoGame() {
-  const k = howtoTiles();
-  if (S.g.howtoPage) {   // tonight's stars (#101): what a good night is, after How to hide (the sticky note's old job)
-    const f = N().deepTarget;
-    return { ids: ['deep', 'unseen', 'sweet'], isNew: [], head: `${dayName()}, 20:00`, kicker: 'Tonight', title: 'Three stars make a good night.', floor: f,
+  const deck = howtoDeck(), page = Math.min(S.g.howtoPage ?? 0, deck.length - 1), id = deck[page];
+  const base = { head: `${dayName()}, 20:00`, isNew: [] as string[], next: page < deck.length - 1, page: deck.length > 2 ? [page + 1, deck.length] : null };
+  if (id === 'party') return { ...base, kicker: 'Your party', title: 'The party fights by itself.', ids: ['runs', 'skills', 'loot', 'bank'],
+    tiles: {
+      runs: ['Runs', 'Go down through the Dungeon Portal. The party walks and fights on its own, floor after floor. At each floor\'s end you pick the next floor on the map.'],
+      skills: ['Skills', 'Each hero\'s skills sit under the fight. Press a lit one\'s key to cast it: 1, Z, Q or A. Grey ones are locked, or have nothing to hit.'],
+      loot: ['Loot', 'Drops land where enemies fall; the front hero picks them up. A green arrow marks an upgrade: right-click it to equip. Weapons, helms and armor fit one class.'],
+      bank: ['Bank it', 'A run\'s loot is safe once the town portal (top left, between fights) takes you to the city. If the whole party falls, the run\'s loot and gold are lost.'],
+    },
+    foot: `In the city, sell loot to the Merchant for gold or melt it at the Salvage Forge for Souls, then spend them on buildings and skills. Each trip costs ${T.COST_TRAVEL_MIN} minutes of the night.`,
+  };
+  if (id === 'job') return { ...base, kicker: 'Your job', title: 'Excel is your cover. It pays, too.', ids: ['cover', 'work', 'spend'],
+    tiles: {
+      cover: ['Your cover', 'Tab (or the taskbar) flips between the game and Excel. The party fights on behind it, but without your skills.'],
+      work: ['Work', `Click the sheet to earn dollars: Sum (or Space), drag the corner of the Fill cell, Sort for x${T.Q4_SORT_MULT}. Right after you tab in, Hustle pays up to x${T.Q4_HUSTLE_MAX}.`],
+      spend: ['Spend', 'Dollars buy macros in Excel\'s right pane (they earn while you play) and things in the Shop on your phone: flowers for her, upgrades for you.'],
+    },
+    foot: 'When she peeks, keep working: busy, she leaves sooner; idle, she lingers and asks what you are doing.',
+  };
+  if (id === 'stars') {   // tonight's stars (#101): what a good night is (the sticky note's old job)
+    const f = N().deepTarget, end = rules().end;
+    return { ...base, ids: ['deep', 'unseen', 'sweet'], kicker: 'Tonight', title: 'Three stars make a good night.', floor: f,
       tiles: {
         deep: [`Floor ${f}`, `Reach floor ${f} in any run tonight, and a chest with an item waits in the morning.`],
         unseen: ["Don't get caught", `Never let her see the game, and she starts tomorrow with ${T.STAR_UNSEEN_GOODWILL} more Goodwill.`],
         sweet: ['Keep her happy', 'Log off before the tag by her name says furious, and she makes you breakfast.'],
       },
-      foot: `Stars count when you log off: Sleep opens at ${fmtClock(T.EARLIEST_SLEEP)}. If she pulls the plug, you get none.`,
+      foot: `Stars count when you log off with Sleep on the taskbar, from ${fmtClock(T.EARLIEST_SLEEP)}.${end ? ` Tonight the night also ends by itself at ${fmtClock(end)}, your run banked.` : ''} If she pulls the plug, you get none.`,
     };
   }
-  return { ids: k.ids, isNew: k.isNew, head: `${dayName()}, 20:00`, next: true,
+  const k = howtoTiles();
+  return { ...base, ids: k.ids, isNew: k.isNew,
     tiles: {
-      listen: ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.'],
-      tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle.'],
-      answer: ['Answer her', HOWTO_ANSWER[k.answer]],
+      listen: ['Listen', 'Her TV, the kettle, the shower: you hear where she is. The line under your door names the last sound. Footsteps mean she is coming to you.'],
+      tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle. If she sees the game, you are caught.'],
+      peek: ['Peek', 'Hold your door to open it a crack and see where she is. The wider it opens, the more you see, and the more she can see you.'],
+      answer: ['What she wants', HOWTO_ANSWER[k.answer]],
       headset: ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.'],
       lean: ['Lean in', 'Hold the door open: you lean in and see what she is doing. Move the mouse to look. While you look you cannot play, and she can see you.'],
     },
-    foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.',
+    foot: 'Her hearts are her patience. It wears thin as the night goes on; every visit you get through wins some back, and every catch costs a lot and weakens the party for a while. When it runs out, she pulls the plug and the night starts over.',
   };
 }
 function inspectView() {
@@ -886,7 +910,7 @@ function drawSmallPieces() {
   if (ready && !inspectOpen && on('fuel') && g.monsters > 0 && !g.tipsSeen.includes('inspect:fuel') && !g.paused && !g.howto && n.tired >= T.TIRED_YAWN && !demandActive() && !n.switching && n.monitor === 'rpg') { g.tipsSeen.push('inspect:fuel'); inspectOpen = true; }
   if (inspectOpen && (!ready || n.game || n.pre || n.switching)) inspectOpen = false;
   // pause, How to hide
-  const modal = !ready ? '' : g.paused ? 'pause' : g.howto && !g.voice ? 'howto' : n.photo ? 'photo' : '';   // the boys' chat comes first (#56); her photo beside the phone (#92)
+  const modal = !ready ? '' : g.paused ? 'pause' : g.howto && !g.voice ? `howto${g.howtoPage ?? 0}` : n.photo ? 'photo' : '';   // each card draws its own dimmed frame (#124: they differ in height)   // the boys' chat comes first (#56); her photo beside the phone (#92)
   if (modal !== modalWas) { modalWas = modal; modalCanvas.style.display = modal ? 'block' : 'none'; modalAt = 0; if (!modal) modalHits = []; }
   if (modal && now - modalAt >= 66) {
     const first = modalAt === 0; modalAt = now;

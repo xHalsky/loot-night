@@ -54,12 +54,13 @@ async def main():
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
         check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'Esc puts the phone down; How to hide next')
         check(await ev("g.boysThread && g.boysThread[1].text.startsWith(`Billy: yo. realm's up`)"), 'the chat stays in The Boys\' chat')
-        await shot('1_monday_howto')
-        await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
-        check(await ev("g.howto && g.howtoPage === 1"), 'Enter: tonight\'s stars next (#101)')
-        await shot('1b_monday_stars')
+        await shot('1_monday_party')   # the first Monday's four cards, one area each (#124): the party, How to hide, the job, tonight's stars
+        for k, name in enumerate(['1a_monday_howto', '1b_monday_job', '1c_monday_stars']):
+            await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
+            check(await ev("g.howto && g.howtoPage === %d" % (k + 1)), f'Enter: card {k + 2} of 4 ({name[3:]})')
+            await shot(name)
         await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)
-        check(await ev("!g.howto"), 'Enter again: the night starts')
+        check(await ev("!g.howto"), 'Enter on the last card: the night starts')
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(900)
         hits = await pg.evaluate("()=>(window.__lootnight.deskHits||[]).map(h=>h.tip||h.act)")
         check(not any(h in ('tired', 'zone', 'drink') for h in hits), 'Monday: no YOU card (no Tired, Zone or Drink)')

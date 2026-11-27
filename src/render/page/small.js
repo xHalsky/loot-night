@@ -118,9 +118,9 @@ function inspectWindow(t, o = INSPECT_PAGE) {
 // ---------------------------------------------------------------- How to hide
 // The night waits. Only tonight's tiles show (handoff step 5); what came in tonight carries a gold "new tonight".
 const HOWTO_TILES = {
-  listen: ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.'],
-  tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle.'],
-  answer: ['Answer her', 'Each visit wants something else. Plates clinking: a snack run. Humming: she wants to talk.'],
+  listen: ['Listen', 'Her TV, the kettle, the shower: you hear where she is. The line under your door names the last sound. Footsteps mean she is coming to you.'],
+  tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle. If she sees the game, you are caught.'],
+  answer: ['What she wants', 'Quick light steps: she checks your screen, so have Excel up. Plates clinking: a snack; take the plate. Humming: a chat. Excel up, headset off, answer her.'],
   headset: ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.'],
   lean: ['Lean in', 'Hold the door open: you lean in and see what she is doing. Move the mouse to look. While you look you cannot play, and she can see you.'],
 };
@@ -145,6 +145,56 @@ function howtoArt(id, x, y, t, o = {}) {   // 64 x 40 pictures in the desk's col
       const rim = out(0.09, -0.09), lit = out(-0.13, 0.13), shine = (i === -Math.round(R * 0.45) || i === -Math.round(R * 0.45) + 1) && j === -Math.round(R * 0.4) + (i + Math.round(R * 0.45));
       putI(x + 32 + i, y + 21 + j, shine ? P.pale : rim ? P.wine : lit ? P.d6 : P.crimson);
     }
+  }
+  // the first Monday's other cards (#124): the party's, the job's, and the door's crack on How to hide
+  if (id === 'runs') {   // a floor's map (three rooms, you are here) over the party walking right
+    const N3 = [[10, 9], [32, 5], [54, 11]];
+    for (let k = 0; k < 2; k++) { const [ax, ay] = N3[k], [bx, by] = N3[k + 1]; for (let s = 0; s <= 10; s++) if (s & 1) putI(x + Math.round(ax + (bx - ax) * s / 10), y + Math.round(ay + (by - ay) * s / 10), P.s4); }
+    N3.forEach(([nx, ny], k) => { frameI(x + nx - 3, y + ny - 3, 7, 7, k === 0 ? P.gold : P.s4); rectI(x + nx - 2, y + ny - 2, 5, 5, k === 0 ? P.copper : P.s2); });
+    rectI(x + 4, y + 35, 56, 1, P.s3);
+    const step = Math.floor(t * 4) % 2;
+    [[P.s5, 0], [P.copper, 9], [P.arcane, 18], [P.gold, 27]].forEach(([c, dx], k) => { const hx = x + 40 - dx, by = y + 34 - ((step + k) & 1); rectI(hx, by - 7, 3, 3, P.pale); rectI(hx, by - 4, 3, 4, c); putI(hx + 3, by - 4, c); });
+    rectI(x + 46, y + 26, 1, 8, P.moon); putI(x + 47, y + 26, P.moon);   // the knight's sword, up front
+  } else if (id === 'skills') {   // two wells: one lit with its key, one grey and locked
+    const well = (wx, lit, key) => {
+      rectI(x + wx - 1, y + 3, 17, 20, P.void); rectI(x + wx, y + 4, 15, 18, lit ? P.s3 : P.s1);
+      if (lit) { frameI(x + wx - 1, y + 3, 17, 20, P.gold); for (let k = 0; k < 9; k++) { putI(x + wx + 3 + k, y + 16 - k, P.moon); putI(x + wx + 4 + k, y + 16 - k, P.s5); } rectI(x + wx + 3, y + 14, 5, 1, P.gold); }
+      else { rectI(x + wx + 5, y + 10, 5, 6, P.s3); frameI(x + wx + 5, y + 7, 5, 4, P.s3); rectI(x + wx + 7, y + 12, 1, 2, P.void); }
+      rectI(x + wx + 3, y + 26, 9, 10, lit ? P.s4 : P.s1); rectI(x + wx + 3, y + 26, 9, 1, lit ? P.s5 : P.s2); text(key, x + wx + 8, y + 28, 'tiny', lit ? P.void : P.s3, { align: 'c' });
+    };
+    well(12, true, '1'); well(37, false, '2');
+    if (Math.floor(t * 2) % 2) { putI(x + 27, y + 2, P.pale); putI(x + 28, y + 3, P.gold); }
+  } else if (id === 'loot') {   // a bag square with a sword, its rarity frame and the green upgrade arrow
+    rectI(x + 21, y + 9, 23, 23, P.void); frameI(x + 21, y + 9, 23, 23, P.arcane); rectI(x + 22, y + 10, 21, 21, P.s1);
+    for (let k = 0; k < 12; k++) { putI(x + 26 + k, y + 27 - k, P.moon); putI(x + 27 + k, y + 27 - k, P.s5); }
+    rectI(x + 25, y + 24, 6, 1, P.gold); rectI(x + 26, y + 25, 2, 3, P.copper);
+    const b = Math.floor(t * 3) % 2;
+    rectI(x + 44, y + 9 - b, 1, 7, P.g5); rectI(x + 45, y + 9 - b, 1, 7, P.g5); for (let k = 1; k <= 3; k++) { rectI(x + 44 - k, y + 9 - b + k, 1, 1, P.g5); rectI(x + 45 + k, y + 9 - b + k, 1, 1, P.g5); }
+  } else if (id === 'bank') {   // the town portal swallowing the run's coins
+    for (let r = 0; r < 4; r++) for (let a = 0; a < 40; a++) { const an = a / 40 * 6.283 + t * (1 + r * 0.4); putI(x + 42 + Math.round(Math.cos(an) * (13 - r * 3)), y + 20 + Math.round(Math.sin(an) * (16 - r * 3.6)), r & 1 ? P.d4 : P.arcane); }
+    rectI(x + 40, y + 16, 4, 8, P.pale);
+    const fly = (t * 14) % 22;
+    for (let k = 0; k < 3; k++) { const cx = x + 6 + k * 6 + Math.round(k === 2 ? fly : 0); rectI(cx, y + 18 - k * 2, 5, 4, P.gold); rectI(cx, y + 18 - k * 2, 5, 1, P.pale); rectI(cx, y + 21 - k * 2, 5, 1, P.copper); }
+  } else if (id === 'peek') {   // your door open a crack: the hallway lit, her small at its far end
+    rectI(x + 10, y + 3, 26, 34, P.s2); frameI(x + 10, y + 3, 26, 34, P.s3); rectI(x + 31, y + 19, 2, 3, P.s4);
+    rectI(x + 36, y + 3, 4, 34, P.u5); rectI(x + 37, y + 3, 2, 34, P.u6);
+    const bob = Math.floor(t * 2) % 2; rectI(x + 37, y + 16 - bob, 2, 2, P.void); rectI(x + 37, y + 18 - bob, 2, 5, P.d6);
+    rectI(x + 40, y + 3, 5, 34, P.s3); rectI(x + 45, y + 3, 2, 34, P.s1);
+  } else if (id === 'cover') {   // the game behind, Excel over it
+    rectI(x + 4, y + 4, 34, 24, P.s1); frameI(x + 4, y + 4, 34, 24, P.s3); rectI(x + 8, y + 18, 3, 6, P.s5); rectI(x + 14, y + 18, 3, 6, P.copper); rectI(x + 28, y + 16, 4, 8, P.crimson);
+    rectI(x + 22, y + 12, 38, 26, P.u6); rectI(x + 22, y + 12, 38, 4, P.wnavy); rectI(x + 40, y + 12, 20, 4, P.wsky);
+    for (let j = 0; j < 4; j++) for (let i = 0; i < 6; i++) frameI(x + 23 + i * 6, y + 17 + j * 5, 7, 6, P.u4);
+    rectI(x + 24, y + 18, 5, 4, P.g5);
+  } else if (id === 'work') {   // the big sum button, and the dollars it pays rising off it
+    rectI(x + 8, y + 12, 26, 22, P.u6); rectI(x + 8, y + 12, 26, 1, P.moon); rectI(x + 8, y + 12, 1, 22, P.moon); rectI(x + 8, y + 33, 26, 1, P.u1); rectI(x + 33, y + 12, 1, 22, P.u1);
+    rectI(x + 15, y + 16, 12, 2, P.u1); rectI(x + 15, y + 30, 12, 2, P.u1); for (let k = 0; k < 6; k++) { putI(x + 16 + k, y + 18 + k, P.u1); putI(x + 16 + k, y + 29 - k, P.u1); putI(x + 17 + k, y + 18 + k, P.u1); putI(x + 17 + k, y + 29 - k, P.u1); }
+    const k = (t * 0.8) % 1, ry = y + 22 - Math.round(k * 16);
+    text('+$4', x + 50, ry, 'tiny', P.g5, { align: 'c' });
+  } else if (id === 'spend') {   // your phone: the Shop, flowers for her with their price
+    rectI(x + 20, y + 1, 24, 38, P.void); rectI(x + 22, y + 3, 20, 34, P.s1); rectI(x + 28, y + 4, 8, 2, P.void);
+    rectI(x + 25, y + 21, 1, 7, P.g4); rectI(x + 29, y + 20, 1, 8, P.g4); rectI(x + 33, y + 21, 1, 7, P.g4);
+    for (const [fx, fy] of [[25, 18], [29, 16], [33, 18]]) { rectI(x + fx - 1, y + fy, 3, 3, P.d6); putI(x + fx, y + fy + 1, P.gold); }
+    rectI(x + 24, y + 30, 16, 6, P.gold); rectI(x + 24, y + 30, 16, 1, P.pale); text('$49', x + 32, y + 30, 'tiny', P.void, { align: 'c' });
   }
   if (id === 'listen') {   // your door, the light under it, her sound coming through
     rectI(x + 14, y + 4, 24, 32, P.s2); frameI(x + 14, y + 4, 24, 32, P.s3); rectI(x + 33, y + 19, 2, 3, P.s4);
@@ -179,7 +229,7 @@ function howtoArt(id, x, y, t, o = {}) {   // 64 x 40 pictures in the desk's col
 // Tuesday (week one): the listening tiles, then the two that came in tonight, the headset and lean in
 const HOWTO_IDS = ['listen', 'tab', 'answer', 'headset', 'lean'], HOWTO_NEW = ['headset', 'lean'];
 const HOWTO_PAGE = { ids: HOWTO_IDS, isNew: HOWTO_NEW, tiles: HOWTO_TILES, head: 'Tuesday, 20:00',
-  foot: 'The party fights by itself. Fire skills and pick floors when you like. Every catch costs her patience (the hearts): when they run out, she pulls the plug.' };
+  foot: 'Her hearts are her patience. It wears thin as the night goes on; every visit you get through wins some back, and every catch costs a lot and weakens the party for a while. When it runs out, she pulls the plug and the night starts over.' };
 const HOWTO_TH = (tw, o = HOWTO_PAGE) => 70 + Math.max(...o.ids.map((id) => wrapTiny(o.tiles[id][1], tw - 12).length)) * 8 + 4;
 const howtoTW = (o) => Math.floor((452 - 24 - 4 * (o.ids.length - 1)) / o.ids.length);   // 104 for four, 82 for five; three (Monday) fill the card
 function howtoH(o = HOWTO_PAGE) { const tw = howtoTW(o); return 42 + HOWTO_TH(tw, o) + 8 + wrapTiny(o.foot, 452 - 24).length * 8 + 6 + 24; }
@@ -188,6 +238,7 @@ function howtoCard(t, o = HOWTO_PAGE) {
   return smLayer(w, h, () => {
     smGlass(0, 0, w, h);
     text(o.head, 12, 9, 'tiny', P.s5); text(o.kicker || 'How to hide', 12 + measure(o.head, 'tiny') + 8, 9, 'tiny', P.gold);
+    if (o.page) text(o.page[0] + ' of ' + o.page[1], w - 12, 9, 'tiny', P.s4, { align: 'r' });   // the first Monday's four cards (#124)
     text(o.title || 'Hide the game before she sees it.', 12, 22, 'head', P.moon);   // Jersey 10 at its own size (the one-resolution rule, #106)
     const ids = o.ids, tw = howtoTW(o), th = HOWTO_TH(tw, o);
     ids.forEach((id, k) => {
@@ -203,7 +254,7 @@ function howtoCard(t, o = HOWTO_PAGE) {
     });
     const foot = wrapTiny(o.foot, w - 24);
     foot.forEach((l, n) => text(l, 12, 42 + th + 8 + n * 8, 'tiny', P.s5));
-    smBtn(w / 2 - 50, h - 24, 100, 'Got it', { gold: true });
+    smBtn(w / 2 - 50, h - 24, 100, o.next ? 'Next' : 'Got it', { gold: true });
   });
 }
 
@@ -309,7 +360,7 @@ function drawPause(ctx, t) {
     text('Paused', 12, 10, 'head', P.moon);
     wrapTiny('The screen is blacked out so pausing can\'t be used to peek.', w - 24).forEach((l, n) => text(l, 12, 28 + n * 8, 'tiny', P.s5));
     smBtn(12, h - 26, 100, 'Resume', { gold: true, key: 'Esc' });
-    smBtn(120, h - 26, 100, 'How to hide');
+    smBtn(120, h - 26, 100, 'How to play');   // all four cards (#124)
   });
   ctx.drawImage(L, 320 - w / 2, 180 - h / 2);
 }
