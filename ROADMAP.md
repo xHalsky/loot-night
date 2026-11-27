@@ -43,7 +43,13 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    to, with a "!" when they see it, in 0.92 (#118); party skills between fights in 0.93 (#122). Next,
    the rest of his notes; his 15-minute
    RPG session (real life off, F1) and the real-life-on night.
-3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
+3. **The v2 redesign, Age of Judgment** (Paweł approved 2026-11-27, to be built before the playtests; spec
+   [`docs/design/aoj-world.md`](docs/design/aoj-world.md), package `design/v2/`): done (0.95 to 0.99.2). The launch on
+   the first Monday with its sound and music (W1, #127), Ravenhold in the rain (W2, #128), the crypt's iron angel (W3,
+   #129), the roster (W4, #130), the curios (W5, #131), the check (W6, #132: stills against the references, frame times,
+   the seeded bot nights and `test/` identical to before W1). #127 waits on Paweł's ear (the launch audio) and #131 on
+   his eye (the curio stills) before they close.
+4. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
    night, tools in `test/balance.py` and `test/campaign.py`). Next: playtests with `docs/playtest.md`, then tune
    from what they show. Repeat until three testers in a row pass.
     If panic-switching on fake-outs is still free, revisit the parked crash (#16).

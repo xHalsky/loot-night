@@ -67,6 +67,9 @@ and "Redesign frame": the mockup's frame (Dungeon, Battle, Map, Town, Q4) drawn 
 **Tests.**
 - `npx tsx test/sim.ts good` / `idle`: a headless bot plays one night and prints a JSON summary
   (depth, stars, catches, wakes). Run both on every balance change and note before/after in the changelog.
+- `SEED=3 npx tsx --import ./test/seed.mjs test/sim.ts good` (any test): seeds `Math.random`, so a night or a test
+  replays exactly. Run it in an older checkout too to prove a change moved no number (the v2 redesign, #132: the
+  seeded bot nights and every `test/*.ts` came out identical before W1 and after W5).
 - `npx tsx test/alttab.ts`: the alt-tab timing acceptance test.
 - `npx tsx test/noise.ts`: Noise by distance and masking (shower vs. next door).
 - `npx tsx test/autopilot.ts [trials]`: three players at the same fight (smart: answers the boss wind-up;

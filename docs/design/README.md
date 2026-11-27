@@ -24,6 +24,7 @@ section in place; never append "round N" notes.
 | [screen.md](screen.md) | Screen layout, the three UI flavours, art direction, audio |
 | [preemptive.md](preemptive.md) | Actions before a visit: the framework, Text her, the Raid pass, Charge; the rest planned (the smart home is desk.md's) |
 | [eye-candy.md](eye-candy.md) | Her moments: built and planned, with tone rules |
+| [aoj-world.md](aoj-world.md) | The v2 redesign, Age of Judgment: the world, its lore and look, the roster, the curios, Ravenhold, the launch and its sound (the spec as approved; the build follows it, see dungeon.md, city.md, night.md) |
 | [redesign-build.md](redesign-build.md) | How the handoff and the visual redesign come into the build, step by step, and where they stand |
 | [handoff-redesign.md](handoff-redesign.md) | Planned, the next build (#52 to #58): real-time RPG, runs, trees and Souls, stars and phone, Q4, the week, the smart home. Where it disagrees with a "Now" section here, it is the plan, not the build |
 | [campaign.md](campaign.md) | Planned: 7 nights, star gates, desk shop, milestones, ending (replaced by the stars, the Shop and the week: night.md, desk.md) |

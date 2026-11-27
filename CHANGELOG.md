@@ -3,6 +3,18 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.99.2 (2026-11-27)
+
+- **The v2 redesign's check and docs** (#132, W6). Stills from the build at every reference beat, side by side with
+  `design/v2/stills/` (`python3 test/v2_stills.py`; `design/v2/review/w6-*.png`), the differences and why in
+  `design/v2/review/README.md` (the monitor matches beat for beat; the build's own HUD, data and staging account for
+  the rest). F1 frame times before W1 and now: the town 6.5 to 6.9 ms, a crypt battle with Cherubs and a Confessor
+  21.0 to 21.1, the bosses through their attacks 19 to 21 (up to 1.7 ms more), the launch's title and login 27 to
+  32 ms, all inside a 30 fps frame. **No number moved:** seeded bot nights (six good, six idle) and every `test/*.ts`
+  give the same output, byte for byte, before W1 and now (`test/seed.mjs` seeds `Math.random`), except the new
+  `test/launch.ts` and `test/week.ts`'s week-two line (0.99.1). The design index points to `aoj-world.md`; in the
+  ROADMAP the v2 redesign is in Phase 1, done (#127 and #131 wait on Paweł's ear and eye).
+
 ## 0.99.1 (2026-11-27)
 
 - **Every night after the first Monday starts from the login** (#127, W1; Paweł, 2026-11-27, added to W1 while it was
