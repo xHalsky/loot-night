@@ -160,10 +160,11 @@ export const T = {
   STEP_IN_SEC: 0.6,               // a waiting enemy takes this long to step into a free position (it doesn't attack meanwhile); it comes in from off the right edge
   // the pack stands in the corridor and the party walks up to it (#118; systems/dungeon.ts): it is placed off the right
   // edge once the walk has gone PACK_PLANT_SEC (and any loot is behind it), comes in at PACK_PACE, and the fight starts
-  // when it is in position. Its front enemy in view (x at most PACK_SPOT_X): "!" over every head until the fight.
+  // when it is in position. Its front enemy in view (x at most PACK_SPOT_X): a red "!" pops over every head for
+  // PACK_ALERT_SEC and is gone (#120).
   PACK_PLANT_SEC: 1, PACK_PACE: 75,
   PACK_ENTER_X: 350, PACK_SPOT_X: 326,   // grid px (core/arena.ts): the front enemy starts here, just off the 334 px area; spotted here
-  PACK_ALERT_POP_SEC: 0.3,        // the "!" hops up this long when the pack sees the party
+  PACK_ALERT_SEC: 0.5,            // the "!" when the pack sees the party: it hops up, then is gone (#120; was until the fight)
   // Drops per kill (#52, 1.3): they fall where the enemy died; the front hero walks over them on the next walk (#95)
   DROP_CHANCE: 0.35,              // each kill drops an item; elites always; bosses BOSS_DROPS
   LEGENDARY_FIRST_BY: 40,         // the first legendary of a save drops within its first 40 drops (night 1 has 45 to 75)

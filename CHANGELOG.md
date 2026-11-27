@@ -3,6 +3,13 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.92.2 (2026-11-27)
+
+- **The pack's "!" is red and brief** (#120; Paweł on 0.92.0: less visible, just a pop, half a second). It is crimson
+  with a wine shade and the void outline (was gold with a pale edge), hops up 3 px and settles, and is gone after
+  `PACK_ALERT_SEC` (0.5 s); it used to stay until the fight started. `PACK_ALERT_POP_SEC` is gone. The chirp stays.
+  `test/pack.py` checks it is red and gone half a second later.
+
 ## 0.92.1 (2026-11-27)
 
 - **Every contact's name is in their own colour** (#119; Paweł: easier to read chats, above all the group chat). One

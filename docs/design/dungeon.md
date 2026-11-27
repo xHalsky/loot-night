@@ -30,8 +30,9 @@ ring, trinket). Old saves are renamed on load.
 the walk has gone `PACK_PLANT_SEC` (1 s) the pack stands in the corridor just off the right edge (`PACK_ENTER_X`, or
 further if loot still lies ahead, so it is all picked up first; after a curio once the curio will be off the left edge
 by the time the pack is reached). It stands still, idling, and the corridor brings it in at `PACK_PACE` (about 3 s).
-When its front enemy is in view (`PACK_SPOT_X`) it has seen the party: a gold **"!"** hops up over every head
-(`PACK_ALERT_POP_SEC`) with a short rising chirp, and stays until the fight. No HP bars while it comes up, and nothing
+When its front enemy is in view (`PACK_SPOT_X`) it has seen the party: a red **"!"** (crimson, a wine shade, the void
+outline) pops over every head with a short rising chirp, hops up 3 px and settles, and is gone after `PACK_ALERT_SEC`
+(0.5 s; #120). No HP bars while it comes up, and nothing
 can be hit ("No enemies in reach"). In position, the fight starts. A walk with no loot lasts about 4.1 s, as the old
 `WALK_SEC` (4 s) one did. The rest of the pack waits off screen and steps into a free position as the front ones die
 (`STEP_IN_SEC`, 0.6 s, running in from off the right edge). A pack member has `PACK_HP_MULT` (1.25) of a lone enemy's HP and
@@ -422,7 +423,8 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   is as long as before (1 s, then about 3 s of approach), so the night's pace and the balance barely move. Rejected:
   the pack walking towards the party (they wait for you; the walk is yours), the "!" on each enemy as it comes into
   view (the pack sees the party at once), keeping the HP bars on the way in (full bars are noise next to the "!"), and
-  a longer approach (it adds up over three fights a floor).
+  a longer approach (it adds up over three fights a floor). **The "!" is red and gone in half a second** (0.92.2, #120;
+  Paweł on 0.92.0): first it was gold and stayed until the fight, which shouted; it only has to say they noticed you.
 - **Curios stand in the corridor** (0.87, #99; Paweł after the first playtest): they used to pop up halfway through
   the walk and vanish after the choice. Walking up to one and past it costs about 4 s a curio; the hurry pace on the
   way past keeps it short. Rejected: starting the next fight while it is still behind the party (it would stand
