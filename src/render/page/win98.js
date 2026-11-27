@@ -74,7 +74,10 @@ function w98Flag(x, y) {
 }
 // the green Excel sheet icon, 8 x 8; and Loot Night's crossed swords on arcane
 function xlIcon8(x, y) { rectI(x, y, 8, 8, P.g4); rectI(x + 1, y + 1, 6, 6, P.moon); rectI(x + 1, y + 3, 6, 1, P.g4); rectI(x + 3, y + 1, 1, 6, P.g4); lineI(x, y, x + 3, y + 3, P.g5); rectI(x, y, 4, 4, P.g5); putI(x + 1, y + 1, P.moon); putI(x + 2, y + 2, P.moon); }
-function lnIcon8(x, y) { rectI(x, y, 8, 8, P.arcane); rectI(x, y + 7, 8, 1, P.d2); lineI(x + 1, y + 1, x + 6, y + 6, P.moon); lineI(x + 6, y + 1, x + 1, y + 6, P.moon); putI(x + 1, y + 6, P.gold); putI(x + 6, y + 6, P.gold); }
+// Age of Judgment's icon at 8 x 8 (#127, the v2 redesign): the broken halo, an umber ring on a dark tile, its gap at the
+// upper right with a crimson pixel in it (the desktop's is the 18 x 18 one in aoj.js)
+const HALO8 = ['..lll...', '.l....c.', 'l......d', 'l......d', 'l......d', 'l......d', '.l....d.', '..dddd..'];
+function lnIcon8(x, y) { rectI(x, y, 8, 8, P.void); HALO8.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') putI(x + i, y + j, ch === 'c' ? P.crimson : ch === 'l' ? P.u6 : P.u4); })); }
 
 // ---------------------------------------------------------------- the taskbar (474 x 15 at the screen's foot)
 // Start, the two task buttons (the front one pressed; Loot Night flashes navy when it needs you), "Tab = switch",

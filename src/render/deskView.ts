@@ -1,5 +1,6 @@
 // The right screen around the monitor (V3, #68; grid doc §7) as a view model for the renderer's live desk
 import { on } from '../systems/week';
+import { launchHolds } from '../systems/launch';
 import { battOn, battery } from '../systems/home';
 import { isWitching } from '../systems/affixes';
 // (desk.js drawDeskLive): the taskbar, the Tonight note, the keyboard's lights, the phone lying on the desk, the YOU
@@ -27,6 +28,7 @@ function feedRows(): [string, string, string, string?][] {
     const tag = (l.tag ?? '').toUpperCase();
     rows.push([l.time, tag, l.text, tag === 'LOOT' ? RARITY_SLOT[l.color] ?? 'u6' : undefined]);
   }
+  if (launchHolds()) return [];   // the launch (#127): the feed is empty until the town comes in with its welcome
   return rows.length ? rows.slice(0, 6) : [[fmtClock(n.clock), 'GAME', "Welcome to Age of Judgment. Have fun, don't get caught."]];
 }
 

@@ -37,15 +37,31 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   calm organizer (he posts the raid time), **Lance** dry and deadpan, a few words a line. They call **Age of Judgment**
   (the RPG's name in the fiction, #102) "aoj". Their lines riff on 80s and 90s action films and old MMOs and arena
   shooters (an inside joke for Paweł's friends) and read as plain gamer talk without them: no film, character or game is
-  named, and a quote is kept exact only up to five words. **The first Monday** is their chat, live (`FIRST_CHAT`): five
-  bubbles, one at a time, each after the name and three hopping dots (`CHAT_*`: about 0.6 s of typing a bubble, all in
-  by about 6 s, a soft tick as each lands): Billy's realm is up, patch notes he didn't read, 11 sharp, "careful with her
-  tonight"; Lance's "would you like to know more?"; Mike's tip (Tab before the door opens). "Let's go" works from the first bubble. **The boys always text, never send voice notes**
+  named, and a quote is kept exact only up to five words. **The first Monday** is their chat, live (`FIRST_CHAT`), paced
+  to **the launch** (#127, below): five bubbles, one at a time, each after the name and three hopping dots, arriving at
+  2.6, 10.2, 21.4, 26.4 and 35.4 s (`CHAT_LAUNCH_AT`, 1.6 s of dots each, `CHAT_LAUNCH_TYPING`; a soft tick as each
+  lands): Billy's realm is up, patch notes he didn't read, 11 sharp, "careful with her tonight"; Lance's "would you
+  like to know more?"; Mike's tip (Tab before the door opens). Until 38 s the pill reads "Age of Judgment is loading"
+  with the percentage, dim and not a button, and Let's go, Esc, Enter, the home bar and the close box do nothing.
+  **The boys always text, never send voice notes**
   (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`) naming tonight's new
   things in their chat voice; after the plug the boys react the same way (Billy "game over man. GAME OVER.", "tuesday again
   then.", Lance "all that loot, gone like tears in rain", Mike's Tab tip; `replayChat`), under "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
   down; How to hide follows on a night with a new tile, then tonight's stars; then the night starts. The message stays
   in The Boys' chat until the next call. Week two has none (nothing new).
+- **The launch on the first Monday** (#127, the v2 redesign; [aoj-world.md](aoj-world.md) §6 to §7b; `systems/launch.ts`,
+  the screens `render/page/aoj.js` and `logos.js`, the sound `ui/launchSound.ts`): before the first night the PC
+  launches Age of Judgment on the monitor for 38 s (`LAUNCH_SEC`) while the boys' first chat comes in. Not interactive:
+  it sets the mood. One clock for the monitor, the chat and the sound: T starts when the chat comes up and stops while
+  paused; the night's clock waits all through it. The beats: Windows 98 and the Age of Judgment icon (the broken halo)
+  double-clicked (0 to 3.2 s); the engine's start-up lines (to 6.2); **Halsky Labs**, the publisher, its mark Paweł's
+  logo as a two-tone pixel mark (`HALSKY_MARK`, `tools/halsky_mark.py` from `design/v2/assets/`; to 10.6);
+  **Procrastination Studios**, the developer, whose logo is late (to 15); the title, rain and lightning over the fallen
+  angel, the halo forged, JUDGMENT struck (to 23); the login, "dutch" and nine stars typed, Log in (to 31); logging in
+  and the world loading (to 38). Then the town fades in from black (dithered, 0.9 s, `LAUNCH_FADE_SEC`) and the feed
+  gets "Welcome to Age of Judgment. Have fun, don't get caught." (empty before). **Only the first Monday**: not on
+  Monday's replay, later nights or week two (`voiceNote`'s `launch` flag). F1's "Skip the launch" goes straight to its
+  end and stops its sound; the bot sims and `test/` skip it. Its sound and music: [screen.md](screen.md), Audio.
 - **The boys' chat between the calls** (#109; `data/boys.ts`, `systems/boys.ts`): moments of the night post a line (or
   a short exchange) in The Boys' chat, grey, quiet (no banner, no sound, no effect on play), kept until the next call
   or 20:00 chat: the raid invite on the night's first trip down (or one of its exchanges; "it's 20:15" only near
@@ -208,6 +224,13 @@ happening.
 
 ## Decisions
 
+- **The launch has its own clock, and holds the night** (#127, Paweł's v2 redesign, approved 2026-11-27): one T for the
+  monitor, the chat and the sound, started when the chat comes up, stopped by pause, running in real seconds (not the
+  game's time scale), so the bubbles, the beats and the music never drift apart. Nothing starts the night before 38 s,
+  and the close box is hidden: the 38 s are the waiting the night already did while the chat was up, and the launch is
+  there to set the mood. Rejected: letting Let's go cut it short (the boys' last line and the theme's downbeat would be
+  skipped by most players); drawing it as a video (it is the renderer's code, palette-exact, and stays editable). The
+  sims never run it; F1 skips it. **Open, Paweł's call:** the launch on later nights, whole or from the login.
 - **The goal before the night, the core loop coached in place** (0.41, #42; the card since 0.88, #101): the 0.39
   onboarding taught how to hide but not what you play for, and its feed lines were easy to miss while the RPG scrolls.
   From 0.41 to 0.87 tonight's goals were a sticky note on the monitor. It was unreadable at 1x and, enlarged to 2x

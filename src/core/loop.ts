@@ -21,6 +21,7 @@ import { updateTips } from '../systems/tips';
 import { updateCoach, coachScale } from '../systems/coach';
 import { updatePacing } from '../systems/pacing';
 import { updateBoys } from '../systems/boys';
+import { updateLaunch } from '../systems/launch';
 
 const STEP = 1 / 60;
 
@@ -56,6 +57,7 @@ export function startLoop(render: () => void) {
   const frame = (now: number) => {
     const real = Math.min(0.25, (now - last) / 1000);
     updateCoach(real);
+    updateLaunch(real);   // the first Monday's launch (#127): its own clock, real seconds
     acc += real * S.g.timeScale * coachScale();   // a coach mark makes the game crawl (#42)
     last = now;
     while (acc >= STEP) { step(STEP); acc -= STEP; }

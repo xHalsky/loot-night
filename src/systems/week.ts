@@ -65,11 +65,11 @@ export const howtoOpens = () => rules().day === 0 || howtoTiles().isNew.length >
 
 /** The boys at 20:00 (grid doc 7m), always in their chat (#108): the first Monday they're stoked (#102); after that
  *  tonight's new thing, week one only; after the plug, the replay's. */
-export function voiceNote(): { date: string; chat: [string, string][] } | null {
+export function voiceNote(): { date: string; chat: [string, string][]; launch?: boolean } | null {
   const r = rules(), res = S.g.results;
   if (res?.ending === 'unplugged' && res.day === r.day) return { date: `${r.name}, again`, chat: replayChat(r.name) };
   if (r.week > 1) return null;
-  if (r.day === 0) return { date: 'Today 20:00', chat: FIRST_CHAT };
+  if (r.day === 0) return { date: 'Today 20:00', chat: FIRST_CHAT, launch: true };   // the launch plays with it (#127): the first Monday only
   if (!NIGHT_CHAT[r.name]) return null;
   return { date: 'Today 20:00', chat: NIGHT_CHAT[r.name] };
 }

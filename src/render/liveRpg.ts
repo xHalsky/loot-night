@@ -3,6 +3,13 @@
 import { PK } from 'virtual:pagekit';
 import { S } from '../core/state';
 import { buildBattleView, liveActive, panelActive, panelView, type PartyPointer } from './rpgView';
+import { launchT } from '../systems/launch';
+import { T } from '../config/tuning';
+
+/** The launch (#127): its frame (474 x 232) while it runs, drawn once per frame for both canvases; then the town fades in. */
+const launchOn = () => { const lt = launchT(); return lt >= 0 && lt < T.LAUNCH_SEC; };
+/** 0..1 of black over the town as it fades in after the launch. */
+const launchFadeK = () => { const lt = launchT(); return lt >= T.LAUNCH_SEC && lt < T.LAUNCH_SEC + T.LAUNCH_FADE_SEC ? 1 - (lt - T.LAUNCH_SEC) / T.LAUNCH_FADE_SEC : 0; };
 
 type Hit = { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string };
 let started = false, ready = false, lastDraw = 0, shown = false;
@@ -51,6 +58,15 @@ export function drawLiveRpg(cv: HTMLCanvasElement) {
   const now = performance.now();
   if (now - lastDraw < FRAME_MS - 1) return;
   lastDraw = now;
+  if (launchOn()) {   // the launch (#127): the monitor runs it instead, the battle area and the panel from one frame
+    const lf = PK.launch(launchT()) as HTMLCanvasElement | null;
+    if (lf) {
+      cv.getContext('2d')!.drawImage(lf, 0, 0, 334, 232, 0, 0, 334, 232); hits = [];
+      const sp = document.getElementById('spArea') as HTMLCanvasElement | null;
+      if (sp && panelShown) { sp.getContext('2d')!.drawImage(lf, 334, 0, 140, 232, 0, 0, 140, 232); panelHits = []; }
+      const ms = performance.now() - now; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms; return;
+    }
+  }
   const h = ptr ? liveHitAt(ptr[0], ptr[1]) : null, hp = h?.act === 'path' ? Number(h.arg) : -1;
   if (hp !== hovPath) { hovPath = hp; hovT = now / 1000; }
   const pp: PartyPointer = { drag: drag?.moved ? { from: drag.from, x: drag.x, y: drag.y, over: heroAt(drag.x, drag.y) } : null, hover: h?.act === 'hero' ? Number(h.arg) : -1 };
@@ -62,6 +78,7 @@ export function drawLiveRpg(cv: HTMLCanvasElement) {
   if (rpgTip?.area === 'ba' || !rpgTip) rpgTipDrawn = tipHere;
   const r = PK.battleArea(vm, now / 1000);
   cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
+  const fk = launchFadeK(); if (fk > 0) { PK.ditherBlack(cv, fk); hits = []; }   // after the launch the town fades in from black (#127)
   const ms = performance.now() - now; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms;
   hits = r.hits;
 }
@@ -76,11 +93,13 @@ export function drawLivePanel(cv: HTMLCanvasElement) {
   const now = performance.now();
   if (now - lastPanel < FRAME_MS - 1) return;
   lastPanel = now;
+  if (launchOn()) { panelHits = []; return; }   // the launch (#127): drawLiveRpg draws its right part here
   const pv = panelView(treeHov) as Record<string, unknown>;
   if (rpgTip?.area === 'sp') { pv.tip = rpgTip; rpgTipDrawn = true; }
   const r = PK.panel(pv, now / 1000);
   cv.getContext('2d')!.drawImage(r.canvas, 0, 0);
   panelHits = r.hits;
+  const fk = launchFadeK(); if (fk > 0) { PK.ditherBlack(cv, fk); panelHits = []; }
 }
 export function panelHitAt(x: number, y: number): Hit | null {
   for (let i = panelHits.length - 1; i >= 0; i--) { const h = panelHits[i]; if (x >= h.x && x < h.x + h.w && y >= h.y && y < h.y + h.h) return h; }

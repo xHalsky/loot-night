@@ -291,7 +291,7 @@ export interface GameState {
   howto: boolean;       // the night waits before it starts: the boys' message, then How to hide, then tonight's stars (#28, #56, #101)
   howtoPage?: number;   // which card of tonight's deck (#101, #124; not saved)
   howtoAll?: boolean;   // the pause menu's How to play: all four cards (#124; not saved)
-  voice?: { date: string; chat: [string, string][] } | null;   // the boys' chat at 20:00 while it is up (#102, #108; not saved)
+  voice?: { date: string; chat: [string, string][]; launch?: boolean } | null;   // the boys' chat at 20:00 while it is up (#102, #108; not saved); launch: the first Monday's, paced to Age of Judgment launching on the PC (#127)
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back
   goodwill: number;              // her Goodwill bank, 0-100 (systems/goodwill.ts); half carries over

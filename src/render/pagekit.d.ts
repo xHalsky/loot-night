@@ -5,6 +5,10 @@ declare module 'virtual:pagekit' {
     heroNames(t: Record<string, { name: string; cls: string }>): void;
     classHex(cls: string): string;
     ready(): boolean;
+    launch(t: number): HTMLCanvasElement | null;
+    ditherBlack(c: HTMLCanvasElement, a: number): void;
+    aojIcon(): HTMLCanvasElement;
+    launchSheet(): { sound: [number, string, string][]; loops: [string, number, number, number, number][]; music: { cue: string; at: number; end: number; parts: [number, number, string][] }; end: number };
     battleArea(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     panel(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     ebreak(bg: HTMLCanvasElement | null, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };

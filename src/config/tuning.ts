@@ -151,7 +151,12 @@ export const T = {
   BOYS_SAME_GAP_SEC: 240,         // ...and between two posts for the same moment
   BOYS_RANDOM_SEC: [150, 240] as [number, number],   // a line with no moment of its own, now and then in the dungeon
   BOYS_THREAD_MAX: 30,            // The Boys' chat keeps this many lines
-  CHAT_FIRST_SEC: 0.4, CHAT_TYPE_SEC: 0.25, CHAT_TYPE_PER_CHAR: 0.012, CHAT_TYPE_MAX: 0.8, CHAT_GAP_SEC: 0.2,   // Monday's first chat (#102): typing dots, then the bubble; about 6 s for six
+  CHAT_FIRST_SEC: 0.4, CHAT_TYPE_SEC: 0.25, CHAT_TYPE_PER_CHAR: 0.012, CHAT_TYPE_MAX: 0.8, CHAT_GAP_SEC: 0.2,   // the other 20:00 chats (#102): typing dots, then the bubble
+  // The launch on the first Monday (#127, the v2 redesign; aoj-world §7): Age of Judgment launches on the PC for 38 s while
+  // the boys' first chat comes in, its bubbles arriving at these launch seconds, each after the typing dots. Nothing
+  // starts the night before the launch ends; then the town fades in from black, dithered.
+  LAUNCH_SEC: 38, LAUNCH_FADE_SEC: 0.9, LAUNCH_SOUND_END: 40,
+  CHAT_LAUNCH_AT: [2.6, 10.2, 21.4, 26.4, 35.4], CHAT_LAUNCH_TYPING: 1.6,
   WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))

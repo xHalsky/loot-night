@@ -3,6 +3,37 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.95.0 (2026-11-27)
+
+- **The launch on the first Monday** (#127, W1 of the v2 redesign, Age of Judgment; spec `docs/design/aoj-world.md`
+  §6 to §7b, package `design/v2/`). Before the first night the PC launches Age of Judgment on the monitor for 38 s while
+  the boys' first chat comes in: Windows 98 and the icon double-clicked, the engine's start-up lines, the publisher
+  Halsky Labs (its mark Paweł's logo, `HALSKY_MARK`), the developer Procrastination Studios, the title (the fallen
+  angel in rain, the halo forged, JUDGMENT struck), the login, logging in and the world loading; then the town fades in
+  from black, dithered, and the feed gets its welcome. The chat's five bubbles arrive at 2.6, 10.2, 21.4, 26.4 and
+  35.4 s; until 38 s the pill reads "Age of Judgment is loading" and nothing starts the night (Let's go, Esc, Enter, the
+  home bar; the close box is hidden). The first Monday only: Monday's replay and the later nights are as before. The
+  screens are the samples page's code (`render/page/logos.js`, the launch part of `render/page/aoj.js`), drawn
+  palette-exact into the battle area and the side panel from one frame; they match `design/v2/stills/launch-*` beat for
+  beat. Fit to the build: the town at 38 s is the live town (the page drew its own); the phone pacing merged into the
+  build's 20:00 chat (`intro`); the icon's 18 x 18 drawing is one function the monitor's own desktop also shows.
+- **Its sound and music** (aoj-world §7b): the cue sheet in `aoj.js` (62 cues, the rain, the theme from 6.2 s) played on
+  the launch's clock by `ui/launchSound.ts` (each cue once as T passes it, never for a jump; the theme re-synced when
+  it drifts over 0.1 s; pause holds it all; the skip stops it). The real PC's sounds clean; the game's own and the
+  theme baked through a console chain in `tools/sfx/ps1.py` (22,050 Hz, 4-bit ADPCM, the console's hall reverb, 24
+  voices at most). 36 new files (`mouse`, `hdd`, `crt`, `cdspin`, `bootline`, `hl_*`, `ps_*`, `thunder_near`,
+  `thunder_far`, `rain`, `aoj_*`, `ui_panel`, `ui_login`, `ui_verified`, `aoj_theme` in stereo), about 0.8 MB.
+  Waiting for Paweł's ear before W1 closes (`design/v2/audio/`: the whole launch as one file, and the theme alone).
+- **The emblem in the UI:** the desktop's Age of Judgment icon is the broken halo (18 x 18), on the launch and on the
+  alt-tab desktop; the taskbar's Age of Judgment button has it at 8 x 8.
+- **The fonts** for the logos: Cinzel Decorative Black, Cinzel Black, Sora ExtraBold and Fredoka Bold (SIL OFL 1.1,
+  `src/assets/fonts/`, the licences beside them), loaded before the first frame.
+- **For testing:** F1's "Skip the launch" (to its end, its sound stopped); `test/launch.ts` (when it plays, the clock,
+  the chat's pacing, the cue sheet at speed: each cue once, in order, nothing for a jump), `test/launch.py` (in Chrome:
+  what it holds back, pause, the cues as they play, the skip, the render time: title 24 ms, login 27 ms, Halsky Labs
+  11 ms a frame at 30 fps), `test/sound.py` checks the rain's loop. `tools/halsky_mark.py` remakes the mark from
+  Paweł's PNG in one command. Visual, text and sound only: no balance change (the sims don't run it).
+
 ## 0.94.2 (2026-11-27)
 
 - **Locked and unusable skills are grayscale** (#126; Paweł: the knight's skills are blue-ish and the locked ones were

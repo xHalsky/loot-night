@@ -7,7 +7,7 @@ let PK_READY = null;
 function pkInit() {
   if (PK_READY) return PK_READY;
   PK_READY = (async () => {
-    await Promise.all([document.fonts.load('8px silkb'), document.fonts.load('8px tiny5'), document.fonts.load('11px m5'), document.fonts.load('13px jb9'), document.fonts.load(`${1400 / 75}px j10`), HER_READY, CAUGHT_READY, MORNING_READY]);
+    await Promise.all([document.fonts.load('60px czd'), document.fonts.load('16px cz'), document.fonts.load('30px sora'), document.fonts.load('24px fred'), document.fonts.load('8px silkb'), document.fonts.load('8px tiny5'), document.fonts.load('11px m5'), document.fonts.load('13px jb9'), document.fonts.load(`${1400 / 75}px j10`), HER_READY, CAUGHT_READY, MORNING_READY]);
     TC = document.createElement('canvas'); TC.width = 600; TC.height = 64; TX = TC.getContext('2d', { willReadFrequently: true });
     setRes(334, 232); buildDungeon();
   })();
@@ -38,7 +38,16 @@ function pkHeroNames(t) {
     h.name = n.name; h.short = n.name; h.cls = n.cls; HNAME[h.id] = n.name;
   }
 }
+/** The launch on the first Monday (#127): the game screen at launch second T, 474 x 232 (null once it is the game). */
+function pkLaunch(T) { const c = launchScreen(T); if (c) setRes(BA_W, GS_H); return c; }
 export const PK = {
+  /** The launch (#127, aoj.js): the game screen at its second T (474 x 232: the battle area, then the side panel), or null
+   *  from LAUNCH_END on; ditherBlack(canvas, a) is its palette-exact fade to black (the town fading in); its cue sheet. */
+  launch: pkLaunch,
+  ditherBlack: (c, a) => ditherBlack(c, a),
+  /** Age of Judgment's desktop icon, the broken halo, 18 x 18 (the monitor's own desktop, ui/monitor.ts). */
+  aojIcon: () => { const c = aojIconCanvas(); setRes(BA_W, GS_H); return c; },
+  launchSheet: () => ({ sound: LAUNCH_SOUND, loops: LAUNCH_LOOPS, music: LAUNCH_MUSIC, end: LAUNCH_END }),
   ready: () => !!PK_READY && TC !== null,
   /** The party's names and classes (see pkHeroNames), once at start. */
   heroNames: pkHeroNames,

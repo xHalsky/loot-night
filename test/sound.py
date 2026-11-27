@@ -2,7 +2,7 @@
 # the headset does not stop them, and the F1 sound board renders. Run after `npm run build`.
 import asyncio, json
 from playwright.async_api import async_playwright
-LOOPS = {'tv': 9, 'kettle': 4, 'shower': 4}
+LOOPS = {'tv': 9, 'kettle': 4, 'shower': 4, 'rain': 6}   # the rain: the launch's (#127)
 async def act(pg, sel):
     await pg.evaluate("s=>{const e=document.querySelector(s); const m=/^\\[data-act=\\x22?(\\w+)\\x22?\\](?:\\[data-arg=\\x22?([^\\x22\\]]*)\\x22?\\])?$/.exec(s); if(!e && m){const b=document.createElement('button'); b.dataset.act=m[1]; if(m[2]!=null) b.dataset.arg=m[2]; document.getElementById('stage').appendChild(b); b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); b.remove(); return;} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(150)
 async def main():

@@ -237,7 +237,7 @@ function taskbar(st, t, screen) {
     text(label, x + 15, y0 + 5, 'tiny', flash ? P.moon : front ? P.u1 : P.u3);
     return tw;
   };
-  const lnIcon = (x, y) => { rectI(x, y, 8, 8, P.arcane); rectI(x, y + 7, 8, 1, P.d2); lineI(x + 1, y + 1, x + 6, y + 6, P.moon); lineI(x + 6, y + 1, x + 1, y + 6, P.moon); putI(x + 1, y + 6, P.gold); putI(x + 6, y + 6, P.gold); };
+  const lnIcon = (x, y) => lnIcon8(x, y);   // the broken halo (#127)
   const xlIcon = (x, y) => { rectI(x, y, 8, 8, P.g3); rectI(x + 1, y + 2, 6, 5, P.moon); rectI(x + 3, y + 2, 1, 5, P.g4); rectI(x + 1, y + 4, 6, 1, P.g4); rectI(x, y, 8, 1, P.g4); };
   const flash = st.flash && Math.floor(t * 2.5) % 2 === 0;
   let x = x0 + 21;

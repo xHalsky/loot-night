@@ -128,6 +128,32 @@ export function play(cue: string, o: PlayOpts = {}): boolean {
   return true;
 }
 
+// ---------- timeline-locked sources (the launch, #127) ----------
+
+/** A source started at an offset into its cue, for sounds locked to a timeline (the launch's cue sheet, its theme and
+ *  its rain): the launch stops them on pause and restarts them where its clock says. */
+export interface TimedSrc { cue: string; started: number; offset: number; gain: GainNode; src: AudioBufferSourceNode; stop(fade?: number): void }
+/** How many files a cue has (0 = not loaded yet). */
+export const cueVariants = (cue: string) => buffers[cue]?.length ?? 0;
+/** A cue's length in seconds (a loop's: its loop), or -1 when it is not loaded. */
+export function cueLen(cue: string, k = 0): number { const b = buffers[cue]?.[k]; if (!b) return -1; if (LOOP_SEC[cue]) { const [a, e] = loopAt[cue]; return e - a; } return b.duration; }
+export const audioTime = () => (ctx ? ctx.currentTime : 0);
+export function startAt(cue: string, k: number, offset: number, vol = 1): TimedSrc | null {
+  const b = buffers[cue]?.[k], dest = out('game');
+  if (!ctx || !dest || !b) return null;
+  const src = ctx.createBufferSource(); src.buffer = b;
+  let off = Math.max(0, offset);
+  if (LOOP_SEC[cue]) { const [ls, le] = loopAt[cue]; src.loop = true; src.loopStart = ls; src.loopEnd = le; off = ls + (off % (le - ls)); }
+  else if (off >= b.duration) return null;
+  const g = ctx.createGain(); g.gain.value = vol * (MIX[cue] ?? 0.5);
+  src.connect(g); g.connect(dest);
+  const now = ctx.currentTime; src.start(now, off);
+  const c = ctx;
+  return { cue, started: now, offset: off, gain: g, src, stop(fade = 0.03) { try { const t = c.currentTime; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0, t + fade); src.stop(t + fade + 0.02); } catch { /* already stopped */ } } };
+}
+/** Sets a timed source's level (a loop's fade in and out), smoothed a little. */
+export function setTimedVol(h: TimedSrc, vol: number) { if (ctx) h.gain.gain.setTargetAtTime(vol * (MIX[h.cue] ?? 0.5), ctx.currentTime, 0.03); }
+
 // ---------- her continuous sounds (TV, kettle, shower) ----------
 
 let amb: { cue: string; room: Room; level: number; src: AudioBufferSourceNode; gain: GainNode } | null = null;

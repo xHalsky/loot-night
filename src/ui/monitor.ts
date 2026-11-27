@@ -106,8 +106,8 @@ function desktop(c: CanvasRenderingContext2D) {
   const icons = ['My Computer', 'Recycle Bin', 'Age of Judgment', 'Q3_report.xls'];
   icons.forEach((name, i) => {
     const y = 14 + i * 58;
-    c.fillStyle = i === 3 ? '#1f7a3a' : i === 2 ? '#5b3aa8' : '#c0c0c0'; c.fillRect(22, y, 28, 24);
-    c.fillStyle = '#000'; c.fillRect(22, y + 24, 28, 2);
+    if (i === 2 && PK.ready()) { c.imageSmoothingEnabled = false; c.drawImage(PK.aojIcon(), 18, y - 6, 36, 36); }   // the broken halo (#127)
+    else { c.fillStyle = i === 3 ? '#1f7a3a' : '#c0c0c0'; c.fillRect(22, y, 28, 24); c.fillStyle = '#000'; c.fillRect(22, y + 24, 28, 2); }
     c.font = '10px "MS Sans Serif", Tahoma, Arial, sans-serif'; c.textAlign = 'center'; c.fillStyle = '#fff'; c.fillText(name, 36, y + 38);
   });
   // taskbar

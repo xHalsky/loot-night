@@ -14,10 +14,20 @@ export const MIX: Record<string, number> = {
   // the RPG: the five events you must hear while Excel covers the screen (synergy.md, audio-first loot)
   legendary: 0.85, bagfull: 0.6, goblin: 0.6, goblincatch: 0.65, goblinlost: 0.5, down: 0.6, enrage: 0.8,
   wipe: 0.65, slam: 0.75, coins: 0.5,
+  // the launch on the first Monday (#127, aoj-world §7b): the real PC clean and quiet; the game's own through the console
+  // chain: Halsky Labs, Procrastination Studios light, the title the heavy part (the strike the loudest), the theme
+  // under the title's sounds
+  mouse: 0.35, hdd: 0.22, crt: 0.4, cdspin: 0.14, bootline: 0.25,
+  hl_point: 0.5, hl_trace: 0.45, hl_seal: 0.45, hl_develop: 0.45, hl_land: 0.62, hl_slide: 0.35, hl_labs: 0.35, hl_out: 0.4, hl_blink: 0.3,
+  ps_wait: 0.22, ps_pop: 0.35, ps_move: 0.22, ps_letters: 0.3, ps_late: 0.32, ps_type: 0.22, ps_flip: 0.3,
+  thunder_near: 0.8, thunder_far: 0.45, rain: 0.32,
+  aoj_ring: 0.8, aoj_spark: 0.6, aoj_word: 0.75, aoj_strike: 1.0, aoj_quench: 0.4, aoj_ageof: 0.65, aoj_glint: 0.3,
+  ui_panel: 0.45, ui_login: 0.55, ui_verified: 0.5,
+  aoj_theme: 0.6,
 };
 
 /** Seamless loops: their loop length in seconds (the baked files carry LOOP_PAD of wrap-around on both sides). */
-export const LOOP_SEC: Record<string, number> = { tv: 9, kettle: 4, shower: 4, bath: 8 };
+export const LOOP_SEC: Record<string, number> = { tv: 9, kettle: 4, shower: 4, bath: 8, rain: 6 };
 export const LOOP_PAD = 0.25;
 
 /** Her activity -> its continuous sound while she is at it. */

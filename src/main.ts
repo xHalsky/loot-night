@@ -1,4 +1,6 @@
 import './style.css';
+import { launchHolds, skipLaunch, launchT, launchSeek } from './systems/launch';
+import { stopLaunchSound, updateLaunchSound, launchFired } from './ui/launchSound';
 import { fmtClock } from './core/fx';
 import { on, rules, dayName, howtoTiles, howtoOpens } from './systems/week';
 import './ios.css';
@@ -73,7 +75,7 @@ import { COACH } from './data/tips';
 // the renderer's hero tables read the game's names and classes (data/heroes.ts, the one table; cast of 2026-11-27)
 PK.heroNames(Object.fromEntries((['knight', 'rogue', 'mage', 'healer'] as const).map(id => [id === 'healer' ? 'priest' : id, { name: HERO_NAME[id], cls: HERO_CLASS[id] }])));
 
-(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints }, herView: () => herView() };   // test hook for the Playwright scripts
+(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints }, herView: () => herView(), launch: { t: launchT, seek: launchSeek, skip: () => actions.dbgSkipLaunch(''), fired: launchFired } };   // test hook for the Playwright scripts
 
 // ---------- DOM skeleton (#49, monitor-first; docs/design/screen.md) ----------
 // Left: the webcam view and her panel. Right: the desk, with the monitor on top. All RPG UI lives inside the game
@@ -247,6 +249,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgMood: () => addMood(20),
   dbgClock: () => { N().clock += 60; },
   dbgFloor: () => debugEndFloor(),
+  dbgSkipLaunch: () => { skipLaunch(); stopLaunchSound(); },   // the launch (#127): straight to its end, its sound stopped
   dbgDay: a => { S.g.day = Number(a); startNight(); S.g.howto = false; },   // the week (#56): play this night (0 = Monday) from 20:00
   dbgRogue: () => { if (!S.g.heroes.some(h => h.id === 'rogue')) { S.g.day = Math.max(1, S.g.day); ensureParty(); S.g.heroes.forEach(h => { h.hp = maxHp(h); }); } },   // #52, 1.7
   dbgHook: () => hookLine(),
@@ -836,7 +839,7 @@ let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt =
  *  next call; How to hide next on a night with a new tile, else the night starts. */
 function voiceOk() {
   const v = S.g.voice;
-  if (!v) return;
+  if (!v || launchHolds()) return;   // the first Monday: nothing starts the night before Age of Judgment has loaded (#127)
   boysLog([['sys', v.date], ...v.chat.map(([w, s]) => ['l', `${w}: ${s}`] as ['l', string])]);   // their chat stays in The Boys (#102)
   S.g.voice = null; S.g.howto = howtoOpens(); sfx.click();
 }
@@ -1118,6 +1121,7 @@ function drawPhone() {
   if (!on) return;
   const now = performance.now(), k = Math.min(1, (now - (n!.phUp ?? 0)) / PH_RISE_MS), dy = Math.round((1 - (1 - (1 - k) ** 3)) * 540);
   phCanvas.style.transform = dy ? `translateY(${dy}px)` : '';
+  el('phClose').style.visibility = launchHolds() ? 'hidden' : '';   // the launch (#127): not escapable, it sets the mood; its 38 s are the night's waiting
   el('phClose').dataset.act = voiceUp() ? 'voiceOk' : n!.game?.kind === 'phone' ? 'closeGame' : phoneAction() ? 'preCancel' : 'preMenu';
   if (now - phLast < 33) return;   // 30 fps is plenty for a phone
   phLast = now;
@@ -1155,6 +1159,7 @@ function render() {
     drawDesk();    // V3 (#68): the right screen round the monitor, drawn by the renderer
   }
   drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
+  updateLaunchSound();   // the launch's sound and music (#127), on its clock
   drawEnergyBreak();   // V5 (#70): the energy break over the right screen, drawn by the renderer
   { const di = el('deskInner'), a = deskShake * 6, tt = performance.now() / 1000;   // the dog's slam: the whole desk jolts (V6)
     di.style.transform = a > 0.2 ? `translate(${Math.round(Math.sin(tt * 61) * a)}px, ${Math.round(Math.cos(tt * 47) * a * 0.7)}px)` : ''; }

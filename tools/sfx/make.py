@@ -796,6 +796,11 @@ def _slam():
         write(f'slam_{k}', x, 'desk')
 
 
+# the launch's cues and its theme (#127): tools/sfx/launch.py, through the console chain in ps1.py
+import launch as _launch  # noqa: E402
+_launch.register(cue, write, level, kenney, OUT)
+
+
 if __name__ == '__main__':
     want = sys.argv[1:] or list(CUES)
     for name in want:
