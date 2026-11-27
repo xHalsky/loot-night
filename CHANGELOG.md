@@ -3,6 +3,13 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.88.1 (2026-11-27)
+
+- **More of the screen at 1x** (the one-resolution rule; Paweł: down to 1x where it stays readable): How to hide's and
+  tonight's stars' titles, the phone's app titles (Shop, Home, Messages) and the "?!" in the Answer her picture. Headings
+  at 1x are Silkscreen bold (`silkb`, small caps); the "?!" is crimson (pink was too faint at 1x). The rest of the 2x
+  headings are listed in #106 for a call one by one.
+
 ## 0.88.0 (2026-11-27)
 
 Playtest fixes, round 2 (Paweł).

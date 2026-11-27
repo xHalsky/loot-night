@@ -499,7 +499,7 @@ const SHOP = {
 function shopScreen(t, tab, wallet) {
   flatBg(46);
   statusBar();
-  gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 15, P.moon, { f: 'tinyL' });
+  gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 18, P.moon, { f: 'silkb' });
   zlP(String(wallet), PH.sw - 6, 19, P.g5, 'r');
   // For you | For her
   rrI(6, 33, PH.sw - 12, 11, 5, P.s2);
@@ -602,7 +602,7 @@ function devIcon(kind, u, v, state, t, st) {
 }
 function homeHead(b, sub) {
   flatBg(44); statusBar({ batt: b });
-  gl(PG.back, 7, 18, P.gold); tx('Home', 14, 15, P.moon, { f: 'tinyL' });
+  gl(PG.back, 7, 18, P.gold); tx('Home', 14, 18, P.moon, { f: 'silkb' });
   battG(PH.sw - 22, 18, 15, 7, b); tx(b + '%', PH.sw - 25, 18, b <= 20 ? P.crimson : P.s5, { align: 'r' });
   tx(sub, 8, 33, P.s5);
 }
@@ -870,7 +870,7 @@ const MSG_ROWS = [
 ];
 function msgList(t, o = {}) {
   flatBg(40); statusBar({ time: '00:44' });
-  tx('Messages', 8, 22, P.moon, { f: 'tinyL' });
+  tx('Messages', 8, 25, P.moon, { f: 'silkb' });
   MSG_ROWS.forEach((r, k) => {
     const y = 46 + k * 34;
     if (o.tap === k && (t % 2) > 0.9) rrI(3, y - 2, PH.sw - 6, 32, 6, P.s1);
@@ -1087,7 +1087,7 @@ const LIVE = {
   // what you already have; the row flashes moss when bought. v: { tab, wallet, items [{ id, g, name, zl, fx, state }], flash }
   shop(t, v) {
     flatBg(46); statusBar({ time: v.time });
-    gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 15, P.moon, { f: 'tinyL' }); backHit('phApp', 'home');
+    gl(PG.back, 7, 18, P.gold); tx('Shop', 14, 18, P.moon, { f: 'silkb' }); backHit('phApp', 'home');
     zlP(String(v.wallet), PH.sw - 6, 19, P.g5, 'r');
     rrI(6, 33, PH.sw - 12, 11, 5, P.s2);
     const TABS = [['you', 'For you', P.s4], ['her', 'For her', P.d4], ['home', 'Home', P.steel]].filter(([id]) => (v.tabs || ['you', 'her']).includes(id)), hw = (PH.sw - 14) / TABS.length;   // Home from step 6 (#57)
@@ -1113,7 +1113,7 @@ const LIVE = {
   // Messages: her chat and The Boys'
   messages(t, v) {
     flatBg(40); statusBar({ time: v.time }); gl(PG.back, 6, 22, P.moon); backHit('phApp', 'home');
-    tx('Messages', 14, 22, P.moon, { f: 'tinyL' });
+    tx('Messages', 14, 25, P.moon, { f: 'silkb' });
     v.rows.forEach((r, k) => {
       const y = 46 + k * 34;
       avatar(r.av, 18, y + 13, 10);

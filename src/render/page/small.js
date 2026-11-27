@@ -160,7 +160,7 @@ function howtoArt(id, x, y, t, o = {}) {   // 64 x 40 pictures in the desk's col
   } else if (id === 'answer') {   // her note at your door, a question
     rectI(x + 8, y + 6, 48, 26, P.u6); frameI(x + 8, y + 6, 48, 26, P.d3); rectI(x + 9, y + 7, 46, 1, P.moon);
     rectI(x + 16, y + 32, 6, 2, P.u6); putI(x + 16, y + 34, P.u6); putI(x + 15, y + 35, P.u6);
-    text('?!', x + 32, y + 15, 'tinyL', P.d6, { align: 'c' });
+    text('?!', x + 32, y + 17, 'silkb', P.crimson, { align: 'c' });   // 1x (the one-resolution rule), crimson: pink is too faint on the paper at 1x
   } else if (id === 'lean') {   // your door held open: a slit of her flat, lit warm, her small in it; the lean's stops
     rectI(x + 8, y + 3, 24, 34, P.s2); frameI(x + 8, y + 3, 24, 34, P.s3); rectI(x + 27, y + 19, 2, 3, P.s4);
     rectI(x + 32, y + 3, 6, 34, P.u5); rectI(x + 33, y + 3, 4, 34, P.u6); rectI(x + 32, y + 30, 6, 7, P.u4);
@@ -188,7 +188,7 @@ function howtoCard(t, o = HOWTO_PAGE) {
   return smLayer(w, h, () => {
     smGlass(0, 0, w, h);
     text(o.head, 12, 9, 'tiny', P.s5); text(o.kicker || 'How to hide', 12 + measure(o.head, 'tiny') + 8, 9, 'tiny', P.gold);
-    text(o.title || 'Hide the game before she sees it.', 12, 22, 'tinyL', P.moon);
+    text(o.title || 'Hide the game before she sees it.', 12, 25, 'silkb', P.moon);   // 1x bold (the one-resolution rule)
     const ids = o.ids, tw = howtoTW(o), th = HOWTO_TH(tw, o);
     ids.forEach((id, k) => {
       const x = 12 + k * (tw + 4), y = 42, isNew = o.isNew.includes(id);
