@@ -66,6 +66,19 @@ export const PK = {
    *  transparent, 640 x 360. o { say: her line by her head ('ooh, shiny'), mouse }. */
   /** Her photo opened beside the phone (fan-service 5, #92): 640 x 360, transparent; hits: the close box, the window
    *  (nothing), then the rest of the frame (closes it). o { first (the Goodwill chip), time }. */
+  /** The phone's close box (#104): the grey disc with the red cross (the old .mg-close), at the grid's own pixel,
+   *  12 x 12, a dark rim so it reads on anything; hot = pointed at. */
+  closeBox: (hot) => {
+    const c = document.createElement('canvas'); c.width = 12; c.height = 12;
+    c.getContext('2d').drawImage(smLayer(12, 12, () => {
+      for (let j = 0; j < 12; j++) for (let i = 0; i < 12; i++) {
+        const d = Math.hypot(i + 0.5 - 6, j + 0.5 - 6); if (d > 6) continue;
+        putI(i, j, d > 5 ? P.void : d > 4.1 ? P.moon : j < 5 ? (hot ? P.moon : P.s5) : (hot ? P.s5 : P.s4));
+      }
+      for (let k = 0; k < 5; k++) for (const o of [0, 1]) { putI(3 + k + o, 3 + k, P.crimson); putI(8 - k - o, 3 + k, P.crimson); }
+    }), 0, 0);
+    return c;
+  },
   photo: (key, t, o) => {
     const c = smCanvas('photo', 640, 360), g = c.getContext('2d'); g.clearRect(0, 0, 640, 360);
     PHONEOS.photoWindow(g, key, t, o || {});

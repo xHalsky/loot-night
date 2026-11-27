@@ -1,4 +1,4 @@
-import { VOICE_NOTES, voiceReplay } from '../data/voice';
+import { VOICE_NOTES, FIRST_CHAT, voiceReplay } from '../data/voice';
 import { T, type NightPlan } from '../config/tuning';
 import { S } from '../core/state';
 
@@ -63,10 +63,13 @@ export function howtoTiles(): { ids: string[]; isNew: string[]; answer: 'mon' | 
 /** How to hide opens before the night: the first Monday, and any night with a new tile. */
 export const howtoOpens = () => rules().day === 0 || howtoTiles().isNew.length > 0;
 
-/** Danny's 20:00 voice note (grid doc 7m): tonight's, week one only; after the plug, the replay's. */
-export function voiceNote(): { lines: string[]; date: string } | null {
+/** The boys at 20:00 (grid doc 7m): the first Monday, the three of them typing (#102); after that Billy's voice note,
+ *  tonight's, week one only; after the plug, the replay's. */
+export function voiceNote(): { lines: string[]; date: string; chat?: [string, string][] } | null {
   const r = rules(), res = S.g.results;
   if (res?.ending === 'unplugged' && res.day === r.day) return { lines: voiceReplay(r.name), date: `${r.name}, again` };
-  if (r.week > 1 || !VOICE_NOTES[r.name]) return null;
+  if (r.week > 1) return null;
+  if (r.day === 0) return { lines: [], date: 'Today 20:00', chat: FIRST_CHAT };
+  if (!VOICE_NOTES[r.name]) return null;
   return { lines: VOICE_NOTES[r.name], date: 'Today 20:00' };
 }

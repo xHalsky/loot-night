@@ -31,11 +31,17 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
 - **The night's name** is everywhere: the feed's 20:00 line, How to hide, the phone's date and her chat's separators,
   the results ("TUESDAY · RESULTS"), the morning ("Tue 07:40", "Start Tuesday night"; after the plug UNPLUGGED, what
   it cost and "Tuesday, again"), the title ("Continue · Tuesday", read from the save).
-- **Danny's 20:00 voice note** (grid doc 7m; `data/voice.ts`): every night of week one the phone rises into your hand
-  while the night waits, at The Boys' chat: his voice note (the waveform fills gold over 14 s, the transcript comes in
-  at 0, 4.5 and 9.5 s) names tonight's new things in his chat voice. After the plug it is the replay's ("F. she
-  pulled the plug", "tuesday again then..."), under "Tuesday, again". Got it (or the home bar, the close box, Esc,
-  Enter) puts the phone down; How to hide follows on a night with a new tile; then the night starts. The note stays
+- **The boys at 20:00** (grid doc 7m; `data/voice.ts`): every night of week one the phone rises into your hand while
+  the night waits, at The Boys' chat. The boys are **Billy, Mike and Lance** (#102, an Aliens in-joke for Paweł's
+  friends; Magoo, Healero and Garrote are theirs). **The first Monday** is their chat, live (`FIRST_CHAT`): six bubbles
+  from all three, one at a time, each after their name and three hopping dots (`CHAT_*`: about 0.6 s of typing a
+  bubble, all in by about 6 s, a soft tick as each lands), stoked to finally play a session of **Age of Judgment**
+  (the RPG's name in the fiction, #102), with the premise and two tips in their banter (Tab before the door opens; Q4
+  pays real money, the Shop). "Let's go" works from the first bubble. **From Tuesday** it is Billy's voice note (the
+  waveform fills gold over 14 s, the transcript comes in at 0, 4.5 and 9.5 s), naming tonight's new things in his
+  chat voice. After the plug it is the replay's ("F. she pulled the plug", "tuesday again then..."), under
+  "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
+  down; How to hide follows on a night with a new tile, then tonight's stars; then the night starts. The message stays
   in The Boys' chat until the next call. Week two has none (nothing new).
 - **The first chance** (`first` in the schedule, week one): her first visit tonight is the night's new type, within
   `VISIT_FIRST_DELAY_SEC` (35 s), never a fake-out, and safe. Tuesday a chat visit: caught on it, she lets it go ("Raid
@@ -104,9 +110,9 @@ foot end; yellow, turned away with one foot out and her phone lit on your pillow
 in the duvet, the TV the only light; unplugged, the empty bed, her clip on her pillow and a note on yours. The caption
 in a night-plum window at the bottom; the summary in her beige paper window on the right: what the auction house sold,
 Wallet, Gold, Sleep debt and Best stars, LAST NIGHT's three stars with the reward each earned or "missed", what Q4
-paid ("Q4 last night: +N zł", [desk.md](desk.md)), the
+paid ("Q4 last night: +$N", [desk.md](desk.md)), the
 sleep-debt line, and her pink button for the next night (Enter and Esc too). The CGs are baked placeholders until
-Paweł's stills. Auction listings pay out here in zł. **One reward per star** (`toMorning`): loot only comes from the game, so only
+Paweł's stills. Auction listings pay out here in dollars. **One reward per star** (`toMorning`): loot only comes from the game, so only
 the RPG star pays in loot.
 - **Deep: a chest:** one item from the normal drop table at tonight's deepest floor, into the bag; a full bag keeps
   it as the next night's first drop (the bag-full window takes it from there).
@@ -142,18 +148,14 @@ happening.
   1 Listen (the sounds, the last-heard line, hold the door to peek), 2 Tab to Excel (footsteps: switch now, never wait
   for the handle), 3 Answer her (each visit wants something else: Monday snack runs, Tuesday humming too, from Thursday
   hide your cans and a cuddle), 4 Headset from Tuesday (the Zone, but you are deaf to her). Tonight's new ones are
-  framed gold with "new tonight": the headset on Tuesday, Answer her on Thursday. The pause menu reopens it.
-- **Tonight, a sticky note** (#42; drawn on the desk since 0.66, `tonightNote` in `render/page/desk.js`): stuck on
-  the monitor's bottom edge over the middle of the taskbar (#49), right of the lit skill keys, visible in the game and
-  in Excel. "Tonight" and three lines, the night's goals, with a live mark each and no star ladder: "floor N"
-  (! until a run reaches it, then ✓ for good), "don't get caught" (✓, ✗ once caught), "keep her happy" (✓ green or
-  yellow, ! red). Written big enough to read (#98, 0.87): Tiny5 at 2x on a 134 × 66 note (it was Tiny5 at 1x, sheared
-  into a slant, and unreadable at 1280 × 720). Hover: each is a star that pays in the morning, and a click takes the
-  note off. **A click peels it off for good** (`noteOff`, saved; the feed says the stars still count): it is a
-  tutorial note and the desk needs the room. Sleep's time is on the taskbar's Sleep button, so the note no longer
-  repeats it. Before the note the stars first appeared on the results screen, so a new player knew the rules but not
-  what a good night was. Rejected: a smaller 2x note with shorter lines ("not caught": the star's own words read
-  better), the handwriting's slant at 2x (Tiny5's 2x2 pixels break up), bringing it back each night.
+  framed gold with "new tonight": the headset on Tuesday, Answer her on Thursday. The pause menu reopens it. Its Got it
+  (or Enter) opens the next card; Esc skips both.
+- **Tonight's three stars** (#101, 0.88; the same card, after How to hide): "Monday, 20:00 · Tonight", "Three stars
+  make a good night.", three tiles with a picture each (stairs down to tonight's floor, an eye struck through, a
+  heart) and one sentence each: Floor N (reach it in any run tonight: a chest with an item in the morning), Don't get
+  caught (never seen: tomorrow starts with `STAR_UNSEEN_GOODWILL` more Goodwill), Keep her happy (log off before the
+  tag by her name says furious: she makes you breakfast). The foot: stars count when you log off, Sleep opens at
+  23:00, a pulled plug gives none. Got it starts the night.
 - **Coach marks for the core loop** (`COACH` in `src/data/tips.ts`, `src/systems/coach.ts`, #42): the first
   footsteps, her first time in the doorway, the first phone, the first loot and the first boss wind-up get a
   callout next to the thing itself, and the game crawls at `COACH_SLOW` (a quarter speed). The renderer draws them
@@ -176,10 +178,12 @@ happening.
 
 ## Decisions
 
-- **The goal on a sticky note, the core loop coached in place** (0.41, #42): the 0.39 onboarding taught how to
-  hide but not what you play for, and its feed lines were easy to miss while the RPG scrolls. The note is
-  diegetic (he wrote tonight's goals down) and lives on the desk because the right panel had no room: as a
-  panel section it squeezed the feed to two lines and cut the party's stats. Coach marks slow the game
+- **The goal before the night, the core loop coached in place** (0.41, #42; the card since 0.88, #101): the 0.39
+  onboarding taught how to hide but not what you play for, and its feed lines were easy to miss while the RPG scrolls.
+  From 0.41 to 0.87 tonight's goals were a sticky note on the monitor. It was unreadable at 1x and, enlarged to 2x
+  (0.87), broke the main visual rule (one resolution: [screen.md](screen.md)), so it went (Paweł, 2026-11-27): the
+  goals are a card after How to hide, in its look, a sentence each with what the star pays. Rejected: keeping a live
+  goal list on screen (the desk has no room for it at 1x); the note at 2x. Coach marks slow the game
   instead of pausing it, so the first footsteps are still a timing lesson (press Tab while she walks), just a
   readable one. Rejected: a scripted tutorial level (teaches the script, not the listening); pausing on each
   coach mark (teaches acting on a frozen screen); a safe first visit (kept the first catch possible).
@@ -208,7 +212,12 @@ happening.
   +25% instead of +60%. Rejected: tea and the towel on Tuesday (the week doc gives it to lean in) or dropped now
   (Thursday would have nothing to prevent with until step 6); replaying week one's rules in week two (easy with a
   week of RPG growth); one `SATURDAY_VISIT_MULT` (the handoff's: the week doc wants a ramp).
-- **Taught the night it unlocks** (0.78, #56; the week doc 2b, grid doc 7m). Danny's voice note is on the phone, in
+- **Nothing offers what is not on yet** (0.88, #103; Paweł after the first playtest: "why can't I put on headphones
+  on night 1?"). The headset stays Tuesday's (Monday teaches listening; the headset trades hearing for Zone, which only
+  makes sense once you know her sounds; decided 2026-11-27). What was wrong was Monday showing it anyway: the icon by
+  his head, the head as a button with its tip, H lit on the desk keyboard. Before Tuesday none of them shows. Rejected:
+  the headset from Monday (Tuesday loses one of its new things, and night 1 teaches two opposite things).
+- **Taught the night it unlocks** (0.78, #56; the week doc 2b, grid doc 7m). Billy's voice note is on the phone, in
   The Boys' chat, because everything on the phone happens inside it (decided 2026-11-24); it comes before How to hide
   so the night opens with a friend's voice and the card only shows when there is a new tile. Tuesday's note opens
   with the night that runs to dawn ("no curfew tonight", since Garrote is in from night 1, #96), then lean in. The first chance is a

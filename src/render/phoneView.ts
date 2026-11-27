@@ -13,6 +13,7 @@ import { fmtClock } from '../core/fx';
 import { phoneAction } from '../systems/interrupts';
 import { preBlocked } from '../systems/preemptive';
 import { herUnread } from '../systems/messages';
+import { sfx } from '../ui/audio';
 
 const unquote = (s: string) => s.replace(/"/g, '');
 
@@ -74,16 +75,33 @@ function chatAction(id: 'text' | 'raid') {
 let shopFlash: { id: string; at: number } | null = null;
 export function shopFlashed(id: string) { shopFlash = { id, at: performance.now() }; }
 
-/** Danny's 20:00 voice note is up (the week, #56): the phone is in your hand while the night waits. */
+/** Billy's 20:00 voice note is up (the week, #56): the phone is in your hand while the night waits. */
 export const voiceUp = () => !!S.g.voice && S.g.howto && !S.g.paused;
-let voiceOf: unknown = null, voiceAt = 0;
+let voiceOf: unknown = null, voiceAt = 0, chatSeen = 0;
+/** Monday's chat at tt seconds (#102): how many bubbles are in, and who is typing the next one (null when done). */
+export function chatAt(chat: [string, string][], tt: number): { shown: number; typing: string | null } {
+  let at = T.CHAT_FIRST_SEC;
+  for (let k = 0; k < chat.length; k++) {
+    const type = Math.min(T.CHAT_TYPE_MAX, T.CHAT_TYPE_SEC + chat[k][1].length * T.CHAT_TYPE_PER_CHAR);
+    if (tt < at) return { shown: k, typing: null };
+    if (tt < at + type) return { shown: k, typing: chat[k][0] };
+    at += type + T.CHAT_GAP_SEC;
+  }
+  return { shown: chat.length, typing: null };
+}
 
 export function phoneView() {
   const n = N(), g = S.g;
   const base = { time: fmtClock(n.clock), date: `${dayName()} night`, batt: battOn() ? battery() : undefined };
   if (voiceUp()) {   // its time played runs from when it came up
-    if (voiceOf !== g.voice) { voiceOf = g.voice; voiceAt = performance.now(); n.phUp = voiceAt; }   // it rises into your hand
-    return { ...base, screen: 'voice', lines: g.voice!.lines, date: g.voice!.date, tt: (performance.now() - voiceAt) / 1000 };
+    if (voiceOf !== g.voice) { voiceOf = g.voice; voiceAt = performance.now(); n.phUp = voiceAt; chatSeen = 0; }   // it rises into your hand
+    const tt = (performance.now() - voiceAt) / 1000;
+    if (g.voice!.chat) {   // Monday (#102): the boys typing, a bubble at a time
+      const { shown, typing } = chatAt(g.voice!.chat, tt);
+      if (shown > chatSeen) { chatSeen = shown; sfx.chatIn(); }
+      return { ...base, screen: 'intro', date: g.voice!.date, items: g.voice!.chat.slice(0, shown).map(([w, s]) => ['l', `${w}: ${s}`]), typing };
+    }
+    return { ...base, screen: 'voice', lines: g.voice!.lines, date: g.voice!.date, tt };
   }
   if (n.game?.kind === 'phone') return gameView(n.game, base);
   const p = n.pre;

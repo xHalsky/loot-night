@@ -27,7 +27,7 @@ function feedRows(): [string, string, string, string?][] {
     const tag = (l.tag ?? '').toUpperCase();
     rows.push([l.time, tag, l.text, tag === 'LOOT' ? RARITY_SLOT[l.color] ?? 'u6' : undefined]);
   }
-  return rows.length ? rows.slice(0, 6) : [[fmtClock(n.clock), 'GAME', "Welcome to Loot Night. Have fun, don't get caught."]];
+  return rows.length ? rows.slice(0, 6) : [[fmtClock(n.clock), 'GAME', "Welcome to Age of Judgment. Have fun, don't get caught."]];
 }
 
 /** What the phone lying on the desk shows (phone.js deskScreen): a call, banners, face down, or in your hand. */
@@ -39,7 +39,7 @@ function deskPhone() {
 function deskPhone0(n: ReturnType<typeof N>, it: ReturnType<typeof N>['interrupts'][number] | undefined, h: ReturnType<typeof N>['home']) {
   if (battOn() && h.deadShow > 0 && !(S.g.voice && S.g.howto) && n.game?.kind !== 'phone' && n.preMenu !== 'phone') return { phone: 'dead' };   // it died: the empty battery for a moment
   if (battOn() && h.lowShow > 0 && !it && n.preMenu !== 'phone' && n.game?.kind !== 'phone') return { phone: 'lowbat' };   // 20% and 10%: a crimson block
-  if ((S.g.voice && S.g.howto) || n.game?.kind === 'phone' || n.preMenu === 'phone' || (n.pre && (n.pre.id === 'text' || n.pre.id === 'raid'))) return { phone: 'hand' };   // Danny's voice note too (#56)
+  if ((S.g.voice && S.g.howto) || n.game?.kind === 'phone' || n.preMenu === 'phone' || (n.pre && (n.pre.id === 'text' || n.pre.id === 'raid'))) return { phone: 'hand' };   // Billy's voice note too (#56)
   if (n.phoneDown > 0) return it ? { phone: 'downGlow', glowKind: CALLS.has(it.kind) ? 'call' : 'msg' } : { phone: 'down' };
   if (it && CALLS.has(it.kind)) return { phone: 'call', caller: CALLER[it.kind], ringLeft: it.t };
   if (it) return { phone: 'lock', banners: it.msgs.map(m => ({ app: it.kind === 'boss' ? 'work' : 'msg', who: it.kind === 'boss' ? 'Boss' : 'Babe', what: m })) };
@@ -64,7 +64,6 @@ export function deskView(phoneHover = false) {
     you: { tired: on('tired'), zone: on('headset'), fuel },   // the YOU card shows what is in tonight (#56)
     tired: Math.round(n.tired), yawn: T.TIRED_YAWN, zone: n.headset ? Math.round(n.zone * 30) : 0, headset: n.headset,
     cans: g.monsters, hideCans, cansHidden: cansHidden && !hideCans, drinkAct: hideCans ? 'hideCans' : canDrink && !cansHidden ? 'openMonster' : '',
-    note: g.noteOff ? null : [n.deepest >= n.deepTarget ? 'y' : '!', n.everCaught ? 'x' : 'y', red ? '!' : 'y'], floorGoal: n.deepTarget,   // peeled off for good (#98)
     feed: feedRows(),
     dog: dogDesk(),   // V6 (#71): the dog on the desk (render/dogView.ts)
     ...ph, hover: phoneHover && ph.phone === 'off' ? true : undefined,
@@ -75,13 +74,12 @@ export function deskView(phoneHover = false) {
 export function deskTip(key: string): string {
   const n = N();
   switch (key) {
-    case 'tonight': return "Tonight's three stars, counted when you log off. Each pays a reward in the morning. Click to take the note off.";
     case 'tired': return `Tired ${Math.round(n.tired)}: from ${T.TIRED_YAWN} you yawn and nod off. Goblin Fuel or Sleep bring it down.`;
     case 'zone': return n.headset ? 'Zone fills while the headset is on: Flow and loot luck up, but you hear nothing.' : 'Zone: put the headset on (H). It empties the moment you take it off.';
     case 'drink': return S.g.monsters ? 'Goblin Fuel: drink one (G). While she is coming: hide the cans.' : 'No cans left. The Shop has more.';
     case 'decline': return 'Decline. Mom calls back once, the others give up.';
     case 'phone': return 'Your phone: click to pick it up. Swipe it over: face down, Do Not Disturb.';
-    case 'tab:rpg': return 'Loot Night (Tab)';
+    case 'tab:rpg': return 'Age of Judgment (Tab)';
     case 'tab:excel': return 'Excel (Tab): it looks like work.';
     case 'sleep': return n.clock >= T.EARLIEST_SLEEP ? 'Log off and sleep: banks the run.' : 'Sleep opens at 23:00.';
     case 'witching': return 'Witching Hour: better drops, more sleep debt.';

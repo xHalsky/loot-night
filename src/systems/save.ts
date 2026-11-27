@@ -9,7 +9,7 @@ import { itemName, nameIsCurrent } from './loot';
 const KEY = 'lootnight.save.v3';
 const OLD_KEYS = ['lootnight.save.v1', 'lootnight.save.v2'];
 try { OLD_KEYS.forEach(k => localStorage.removeItem(k)); } catch { /* no storage: nothing to clear */ }
-const PERSIST: (keyof GameState)[] = ['heroes', 'bag', 'bagSize', 'gold', 'mats', 'zl', 'furniture', 'sleepDebt', 'monsters', 'q4', 'owned', 'bestStars', 'record', 'nightsPlayed', 'day', 'mapPath', 'tipsSeen', 'pendingListings', 'pity', 'uid', 'autoSalvage', 'seen', 'curiosSeen', 'goodwill', 'floorCans', 'checkpoints', 'startFloor', 'drops', 'legendaryFound', 'orderSet', 'trees', 'autocast', 'carry', 'herThread', 'boysThread', 'herSeen', 'giftNew', 'giftWorn', 'noteOff'];
+const PERSIST: (keyof GameState)[] = ['heroes', 'bag', 'bagSize', 'gold', 'mats', 'zl', 'furniture', 'sleepDebt', 'monsters', 'q4', 'owned', 'bestStars', 'record', 'nightsPlayed', 'day', 'mapPath', 'tipsSeen', 'pendingListings', 'pity', 'uid', 'autoSalvage', 'seen', 'curiosSeen', 'goodwill', 'floorCans', 'checkpoints', 'startFloor', 'drops', 'legendaryFound', 'orderSet', 'trees', 'autocast', 'carry', 'herThread', 'boysThread', 'herSeen', 'giftNew', 'giftWorn'];
 
 export function save() {
   try {

@@ -72,7 +72,7 @@ pre-emptive action (decided 2026-11-16, see preemptive.md).
 
 (Alibi stacks were dropped in 0.20 together with Looks busy: there is no Busy threshold left to excuse.)
 
-**Overtime zł:** a 4-row clear pays 2 zł, capped at 20 per night.
+**Overtime zł:** a 4-row clear pays $2, capped at 20 per night.
 
 ## Witching Hour (built 0.31, numbers `WITCHING_*`)
 

@@ -26,11 +26,11 @@ const PTR_ARROW = ['v.......', 'vv......', 'vMv.....', 'vMMv....', 'vMMMv...', '
 const PTR_CELL = ['...vvvv...', '...vMMv...', '...vMMv...', 'vvvvMMvvvv', 'vMMMMMMMMv', 'vMMMMMMMMv', 'vvvvMMvvvv', '...vMMv...', '...vMMv...', '...vvvv...'];
 const PTR_FILL = ['...v...', '...v...', '...v...', 'vvvvvvv', '...v...', '...v...', '...v...'];
 const ptr = (rows, x, y) => sprite(Math.round(x), Math.round(y), rows);
-// "N zł": Tiny5 has no ł, so the l is the hand-drawn glyph after the z (as on the taskbar)
+// money: "$N", the sign before the dollar ("+$1.3"); it was "N zł" until the dollar (#105)
+const usd = (s) => String(s).replace(/([+~-]?)(\d[\d.,]*)(?!.*\d)/, '$1$$$2');   // the last number in it: "Wallet $52", "Q4 tonight: +$2"
 function zlText(s, x, y, col, al = 'l', o = {}) {
-  const str = s + ' z', w = measure(str, 'tiny') + 5, x0 = al === 'c' ? Math.round(x - w / 2) : al === 'r' ? x - w : x;
-  text(str, x0, y, 'tiny', col, o); if (o.outline != null) for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) glyph('lstroke', x0 + w - 4 + dx, y - 1 + dy, o.outline);
-  glyph('lstroke', x0 + w - 4, y - 1, col); return w;
+  const str = usd(s), w = measure(str, 'tiny'), x0 = al === 'c' ? Math.round(x - w / 2) : al === 'r' ? x - w : x;
+  text(str, x0, y, 'tiny', col, o); return w;
 }
 function q4Pop(s, x, y, k, col = P.g3) { if (k < 0 || k > 1) return; const Y = Math.round(y - k * 16); if (s.endsWith(' zl')) zlText(s.slice(0, -3), Math.round(x), Y, col, 'c', { outline: P.moon }); else text(s, Math.round(x), Y, 'tiny', col, { align: 'c', outline: P.moon }); }
 // a cell's box in the sheet: column letter, row number (1-based)

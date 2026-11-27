@@ -37,16 +37,16 @@ panel's Town tab, never in a window over the town:
 | Building | Where | Looks like | Click: action | Cost |
 |---|---|---|---|---|
 | Appraiser | top left | A violet-slate tower: a crystal glowing on the spire with runes circling it, the eye window, star banners, a brass telescope; a curio shop with a crystal ball at its foot; the appraiser stands in a rune circle on the street | identify epics (`IDENTIFY_COST.epic`) and legendaries, one at a time; the reveal | gold, 10 min |
-| Auction House | right of the portal | A pale guildhall: columned porch, a gold coin in the pediment, coin banners, a bell tower, lots glowing on two pedestals; the auctioneer on the steps, bidders raising paddles | list for zł, paid next morning, price × the night's market factor (`MARKET_RANGE`) | 5 min each |
+| Auction House | right of the portal | A pale guildhall: columned porch, a gold coin in the pediment, coin banners, a bell tower, lots glowing on two pedestals; the auctioneer on the steps, bidders raising paddles | list for dollars, paid next morning, price × the night's market factor (`MARKET_RANGE`) | 5 min each |
 | Merchant | east side of the plaza | A wooden shop with a striped awning, a window of bottles, a counter of fruit and potions, two market stalls on the plaza | sell for gold (unidentified items at `UNIDENTIFIED_VENDOR_MULT`) | free |
 | Salvage Forge | south, right of the avenue | A stone smithy with its hearth open to the street, a tall chimney; a lean-to with tools on the wall, a heap of broken blades, helms and shields, the anvil, a steaming quench barrel; the smith hammering, sparks | break into Souls (`SALVAGE_YIELD` 1/2/4/8/16 by rarity) | free |
 | Dungeon Portal | top centre | See above | goes down: enter the dungeon at the checkpoint | 15 min |
 
 **A service is a page of the Town tab** (`servicePanelView` / `liveServicePanel`): a header with its name, mark and
 one line ("◂" goes back to the build list), then the bag. Each item it takes shows what it pays in its corner
-(+Souls, gold or zł); the ones it refuses (locked, unknown at the merchant's or the forge, maps) are dimmed. Click
+(+Souls, gold or $); the ones it refuses (locked, unknown at the merchant's or the forge, maps) are dimmed. Click
 items to pick them (a gold frame and a tick), then one button does them all: "Salvage 2 · +3", "Sell 1 · +40 g",
-"List 2 · ~14 zł", "Identify · 40 g". The Merchant warns when a picked item is rare or better (the Auction House
+"List 2 · ~$14", "Identify · 40 g". The Merchant warns when a picked item is rare or better (the Auction House
 may pay more); the Forge reminds you that AUTO melts commons and uncommons as they drop. The Appraiser takes one
 item at a time: "Looking closely..." with a ring of sparks, then a flash and the IDENTIFIED card (the item, its
 lines, its special or legendary rule) that stays for a few seconds. Locked items refuse every action. The Town
@@ -83,7 +83,7 @@ Upgrades apply instantly.
 |---|---|---|
 | Gold | Selling, a bounty per cleared floor (`FLOOR_GOLD_BASE` + `FLOOR_GOLD_PER` × floor), Excel overtime, answering the boss | Identifying, buildings, wipe repairs |
 | Scraps | Salvage, auto-salvage | Buildings |
-| zł | Auction house only, paid in the morning | Nothing yet (see #4) |
+| $ | Auction house only, paid in the morning | Nothing yet (see #4) |
 
 Start: `START_GOLD` 100, `START_ZL` 50.
 
@@ -143,7 +143,7 @@ results screen counts your bag too: "Sell and salvage your bag in the city: it p
 - City dangers (ideas, #24): dungeon queue with a 10 s accept and a Deserter debuff, timed buyer offers on
   listings in the Feed, AFK disconnect and login queue.
 
-- Real-life upgrade store paid in zł (better mouse, quieter keyboard, shorter alt-tab lag): #4.
+- Real-life upgrade store paid in dollars (better mouse, quieter keyboard, shorter alt-tab lag): #4.
 - A city that opens one or two buildings per night, a Quest board with bounties, town players who
   remember last night: [synergy.md](synergy.md).
 - Per-dungeon scraps (Swamp Ink on Tuesday, and so on): [campaign.md](campaign.md).

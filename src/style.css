@@ -390,10 +390,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 
 /* his head is the headset button (#49): a ring and a one-line tip on hover */
 #headHit{ position: absolute; left: 98px; top: 378px; width: 100px; height: 100px; border-radius: 50%; cursor: pointer; z-index: 3; }
-#headHit:hover{ box-shadow: 0 0 0 2px rgba(79,209,232,.75), 0 0 14px rgba(79,209,232,.5); }
-#headHit .hh-tip{ display: none; position: absolute; left: 50%; top: 104px; transform: translateX(-50%); white-space: nowrap; padding: 3px 8px; border-radius: 6px;
-  background: rgba(18,15,26,.92); border: 1px solid rgba(79,209,232,.6); font: 12px Inter, sans-serif; color: #dff7fb; pointer-events: none; }
-#headHit:hover .hh-tip{ display: block; }
+/* #103: no high-res hover ring or DOM tip: the hover is the shared tooltip (her panel's), set in main.ts */
 
 /* windows over the battle area */
 
@@ -455,7 +452,9 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 /* the phone in your hand (V8, #73): the renderer's 126 x 252 phone at 2x over the battle area and the desk, its bottom
    off the frame; it rises from below (main.ts drawPhone). Its close box sits outside its top-right corner. */
 #phHand { position: absolute; left: 22px; top: 224px; width: 252px; height: 504px; z-index: 9; image-rendering: pixelated; display: none; touch-action: none; }
-#phClose { position: absolute; left: 270px; top: 212px; z-index: 10; display: none; }
+#phClose { position: absolute; left: 270px; top: 212px; width: 24px; height: 24px; padding: 0; border: 0; z-index: 10; display: none; cursor: pointer;
+  background: var(--x) 0 0 / 24px 24px no-repeat; image-rendering: pixelated; }   /* the renderer's close box at 2x (#104) */
+#phClose:hover { background-image: var(--x-hot); }
 /* the right screen round the monitor (V3, #68): the renderer's desk, bezel, taskbar, keyboard, phone and cards at 2x,
    under the monitor's live canvases; #deskPhone is a DOM stand-in over the phone for the coach mark */
 #rsArea{ position: absolute; left: 0; top: 0; width: 984px; height: 720px; z-index: 0; image-rendering: pixelated; display: none; }

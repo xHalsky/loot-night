@@ -9,7 +9,8 @@ import { S, N, initialState } from '../src/core/state';
 import { startNight, checkNightEnd, endNight } from '../src/systems/night';
 import { rulesFor, rules, on, dayName, howtoTiles, howtoOpens, bedAt } from '../src/systems/week';
 import { pickKind, startVisit, updateVisits } from '../src/systems/visits';
-import { VOICE_NOTES } from '../src/data/voice';
+import { VOICE_NOTES, FIRST_CHAT } from '../src/data/voice';
+import { chatAt } from '../src/render/phoneView';
 import { updateTired } from '../src/systems/tired';
 import { openMonster } from '../src/systems/monster';
 import { shopState } from '../src/systems/shop';
@@ -96,8 +97,11 @@ ok(tiles(2) === 'listen,tab,answer,headset,lean||tue|false', `Wednesday: nothing
 ok(tiles(3) === 'listen,tab,answer,headset,lean|answer|thu|true', `Thursday: the cans and the cuddle in Answer her (${tiles(3)})`);
 ok(tiles(7) === 'listen,tab,answer,headset,lean||thu|false', `week two: no card (${tiles(7)})`);
 
-// --- Danny's 20:00 voice note ---
-n = night(0); ok(S.g.voice?.lines[0].startsWith('yo its raid night') === true && S.g.voice?.date === 'Today 20:00', 'Monday: Danny\'s voice note');
+// --- the boys at 20:00: Monday's chat (#102), then Billy's voice notes ---
+n = night(0); ok(S.g.voice?.chat?.length === FIRST_CHAT.length && new Set(S.g.voice.chat.map(c => c[0])).size === 3 && S.g.voice?.date === 'Today 20:00', 'Monday: the boys\' chat, all three of them');
+ok(S.g.voice!.chat!.some(c => c[1].includes('AGE OF JUDGMENT')), 'they are stoked: Age of Judgment tonight');
+{ const end = chatAt(FIRST_CHAT, 99), mid = chatAt(FIRST_CHAT, 1.0); let t = 0; while (chatAt(FIRST_CHAT, t).shown < FIRST_CHAT.length) t += 0.05;
+  ok(end.shown === FIRST_CHAT.length && !end.typing && mid.shown < FIRST_CHAT.length && t <= 7, `the bubbles come one at a time with typing dots, all in by ${t.toFixed(1)} s`); }
 S.g = initialState(); S.g.day = 0; startNight(); ok(S.g.howto && !!S.g.voice, 'the night waits for it (howto), the card after it');
 ok([1, 2, 3, 4, 5, 6].every(d => { S.g = initialState(); S.g.day = d; startNight(); return !!S.g.voice && S.g.voice.lines.length === 3; }), 'a note every night of week one');
 ok(Object.values(VOICE_NOTES).flat().every(l => !/[\u2013\u2014]/.test(l) && l.replace(/BEFORE|\(G\)|^F\./g, '') === l.replace(/BEFORE|\(G\)|^F\./g, '').toLowerCase()), 'his voice: lowercase (his BEFORE aside), no dashes');

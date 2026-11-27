@@ -21,7 +21,7 @@ Goodwill ([screen.md](screen.md)).
 
 One iPhone on the desk (iPhone proportions, Dynamic Island, left of the keyboard), one thing at a time. The screen
 stays off until something arrives; it rings from Wednesday (the week; Monday and Tuesday you only pick it up for the
-Shop and her chat). At 20:00 in week one it comes into your hand for Danny's voice note in The Boys' chat
+Shop and her chat). At 20:00 in week one it comes into your hand for Billy's voice note in The Boys' chat
 ([night.md](night.md), the week). **Fewer events, each worth taking** (#54, 3.2; `systems/interrupts.ts`): a night
 has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 
@@ -31,12 +31,12 @@ has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 |---|---|---|---|---|
 | 20:30 to 21:30, once | Courier (call) | Two steps of his line and three replies, get the parcel left with a neighbour; one wrong reply and he leaves (`COURIER_TALK_SEC`). **Your new gaming mouse: skill cooldowns -`COURIER_MOUSE_CD` (10%) until dawn** | No parcel | No parcel ("he leaves a note") |
 | about 21:00, once (+1 callback) | Mom (call) | `MOM_BEATS` (2) lines; her line's ending (… ? !) tells the reply (mhm / really?! / wow), tapped while a marker sweeps through a zone; `MOM_MAX_MISSES` (3). **Party fully healed, the fallen get up** | Mood +`MOM_FAIL_MOOD` and she calls your girlfriend (next visit soon) | Mood +`MOM_DECLINE_MOOD`, she calls back once in 40 to 60 s |
-| about 22:00, once | Boss (texts, with an optional follow-up) | One row of sums (`BOSS_ROWS`), `BOSS_WINDOW_SEC`; wrong total -2 s. **Overtime pay +`BOSS_ZL` (50) zł** | Nothing ("The boss gave up. No overtime tonight.") | (texts can't be declined) |
+| about 22:00, once | Boss (texts, with an optional follow-up) | One row of sums (`BOSS_ROWS`), `BOSS_WINDOW_SEC`; wrong total -2 s. **Overtime pay +$50 (`BOSS_ZL`)** | Nothing ("The boss gave up. No overtime tonight.") | (texts can't be declined) |
 | from Thursday, once a night (`NIGHT_SCHEDULE` friends), on the floor before a boss floor | The Boys (group call) | Two steps of declining politely; a rude reply = Noise +8 on speaker and a miss, `FRIENDS_MAX_MISSES` misses = fail. **Raid buff: +20% damage, +10% speed until that boss fight ends** | Discord on the PC rings at full volume: Noise +`FRIENDS_FAIL_NOISE` (30); headset on: in your ears, no Noise | Group chat spam: Noise +`FRIENDS_DECLINE_NOISE` (15); headset: none |
 | when she wakes (from Friday, in bed) | Her (text) | Tap "Five more minutes, love": waking `TEXT_REPLY_WAKE` | Waking +`TEXT_IGNORE_WAKE`, Mood +`TEXT_IGNORE_MOOD` | (texts can't be declined) |
 
 Each time is picked in its window at 20:00; nothing comes before `PHONE_FIRST_SEC` (45 s) into the night. Money rule:
-real life pays in zł or buffs, never RPG loot or gold (the courier's parcel was an item; the boss paid gold).
+real life pays in dollars or buffs, never RPG loot or gold (the courier's parcel was an item; the boss paid gold).
 
 **One demand at a time from real life** (`systems/reallife.ts`): a phone event or the dog's arrival starts only when
 nothing else asks for you (the phone, a minigame, a pre-emptive action, the dog, her visit), `REAL_LIFE_GAP_SEC` (15 s)
@@ -70,8 +70,12 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   Work chat (his texts, one row of sums, three gold totals); her text in her chat (her thread, the one reply); Mom's
   call (her line, the beat bar, mhm / really?! / wow, misses, End); the courier and the boys (their line, the time,
   the goal, three replies, a wine "She can hear it" strip on speaker). Every screen can be left (Decline, Put down,
-  End, the back chevron, the home bar, the grey/red close box outside the top-right corner); leaving counts as
-  ignoring. A bubble that would be cut is left out (#45).
+  End, the back chevron, the home bar, the close box at the top-right corner, a click outside); leaving counts as
+  ignoring. A bubble that would be cut is left out (#45). **The close box** (#104) is the grey disc with the red cross
+  drawn by the renderer at the grid's pixel (12 × 12, `PK.closeBox`, lighter when pointed at), not the old iOS DOM
+  button. **A click outside the phone closes it** as the close box does, unless it lands on the RPG (the monitor) or on
+  something that does something there (a button, a desk thing with an action, her panel's buttons, the door in the
+  webcam, a window of its own).
 - **The idle phone, picked up** (tap it on the desk): the home screen (the night, the big clock, the apps: Messages
   with her unread count, and the Shop; from Thursday the battery widget instead of the clock, and Home, below). **Messages** lists Babe and The Boys (3).
   **Her chat is kept for good** (`S.g.herThread`, `systems/messages.ts`): her texts, your answers, Text her and her
@@ -80,13 +84,13 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   why, when it can't). **The Boys' chat** shows the last call's exchange (their lines, your replies, how it ended)
   until the next, with Raid night? at the bottom (dim with "Needs 40 Goodwill" while it can't). Sending types the
   message into the chat (hands busy), then Delivered.
-- **The Shop** (step 4.6, #55; grid doc 7i and 7f; `systems/shop.ts`, `data/shop.ts`): real-life things for złoty,
+- **The Shop** (step 4.6, #55; grid doc 7i and 7f; `systems/shop.ts`, `data/shop.ts`): real-life things for dollars,
   the money Q4 pays. The header has the back chevron, "Shop" and the wallet; tabs **For you**, **For her** and, from
   Thursday, **Home** (the smart home's devices). Each row: an icon, the name, what it does, and the price as a button (gold when you can
   pay, dim when you can't) or its state: *owned*, *tonight* (one use, bought tonight), *full*, *soon*. Buying is
   instant, with a coin and a line in the feed; the phone is in your hand (hands busy) the whole time.
 
-  | Item | zł (`SHOP_ZL`) | Does |
+  | Item | $ (`SHOP_ZL`) | Does |
   |---|---|---|
   | Goblin Fuel | 29 | `SHOP_FUEL_CANS` (4) cans into the drawer, up to its 8; *full* when it is |
   | Dog chew | 29 | His next visit comes `SHOP_CHEW_SEC` (2 min) later (bought while he is in: the one after); once a night |
@@ -126,7 +130,7 @@ phone itself (she is awake and wondering; holding it back would let her walk in 
   | Speakers (a pair: kitchen, bath; tap the one you want) | 10% | A timer rings: she goes to check it, next visit `SPEAKER_CALM` (30) s later. From the 3rd in a night, Mood +5 | `SPEAKER_REST` 60 s, the pair together |
   | TV cast | 8% | While her show's credits roll (its end cue): Next episode, she stays on the couch for one more. Any other time nothing happens. Twice a night; the 3rd time she notices: Mood +10, she comes to your door | `TV_REST` 90 s |
   | Door seal | 4% a toggle | The towel's effect and downside: your Noise `SEAL_NOISE` (40%) quieter, her routine 30% slower, her steps half as loud; no light under your door; every visit "Why is your door sealed?" Mood +5 | none |
-  | Bubble tea (an order) | 6%, 25 zł | The doorbell `TEA_DELAY_SEC` (120 s) later, sliding later while real life isn't free: she takes it to the couch, no visits for `TEA_CALM` (120 s). Asleep: it wakes her a bit (+30). Twice a night | |
+  | Bubble tea (an order) | 6%, $25 | The doorbell `TEA_DELAY_SEC` (120 s) later, sliding later while real life isn't free: she takes it to the couch, no visits for `TEA_CALM` (120 s). Asleep: it wakes her a bit (+30). Twice a night | |
 
   A device she has to walk to works while she is up: asleep she sleeps through it, the shower is hers. She walks to
   the room and stays there `CHECK_SEC`, then back to her own things. `npx tsx test/home.ts` checks every rule;
@@ -141,11 +145,11 @@ one-demand rule). `npx tsx test/phone.ts` checks the script, the spacing, each e
 **Excel is the cover, and your job: Q4** (step 4, #55; grid doc 7i; `systems/q4.ts`, `render/q4View.ts`). Alt-tab
 (Tab or the taskbar buttons) flips the monitor between the game and a maximised Windows 98 Excel,
 "Q4_report_FINAL_v3.xls", over the whole game screen. Being on Excel is what passes her check; working in it pays
-złoty into the wallet the Auction House pays into. The RPG fights on behind it, recklessly ([dungeon.md](dungeon.md)).
-- **The sheet:** your job title and an Excel data bar to the next one (lifetime złoty); what the macros pay a
+dollars into the wallet the Auction House pays into. The RPG fights on behind it, recklessly ([dungeon.md](dungeon.md)).
+- **The sheet:** your job title and an Excel data bar to the next one (lifetime dollars); what the macros pay a
   second; Sort's x2 chip; the Hustle bar; the report (five regions and a Total) with the four toys in its columns;
-  the Macros pane on the right; the status bar with "Q4 tonight: +N zł" and the wallet. Excel's own pointers.
-- **The toys, each pays** (times the title, Sort and Hustle), each with its sound, a moss "+N zł" rising over it and
+  the Macros pane on the right; the status bar with "Q4 tonight: +$N" and the wallet. Excel's own pointers.
+- **The toys, each pays** (times the title, Sort and Hustle), each with its sound, a moss "+$N" rising over it and
   a little animation: **AutoSum** (the big Σ or Space, `Q4_SUM`; the column rolls `Q4_ROLL_SEC`; `Q4_BALANCED_CHANCE`
   lands a BALANCED stamp with a shake, x`Q4_BALANCED_MULT`); the **fill flick** (drag the corner of C4 down and let
   go: the further and faster, the more cells, up to `Q4_FILL_MAX`; they fill in a cascade, `Q4_FILL_CELL` each, then
@@ -157,7 +161,7 @@ złoty into the wallet the Auction House pays into. The RPG fights on behind it,
   Intern (AutoSum by itself), AutoFill (cells a second), VLOOKUP (+25% a filled cell), Conditional Formatting (+2%
   BALANCED, 40% at most), Pivot macro (turns a second), Power Query (+100% of all the macros earn, a level). They run
   all night, in the RPG and the town too (not while paused); Hustle doesn't touch them.
-- **Titles** by lifetime złoty (`Q4_TITLE_AT`): Intern, Junior Analyst, Analyst, Senior Analyst, Team Lead, Manager,
+- **Titles** by lifetime dollars (`Q4_TITLE_AT`): Intern, Junior Analyst, Analyst, Senior Analyst, Team Lead, Manager,
   Director; each x`Q4_TITLE_MULT` on all of Q4. A promotion is Excel's dialog ("Congrats on your promotion!", the new
   title, what it unlocked, OK or Enter) with confetti; earned in the RPG, it waits for Excel and the feed says so.
   Q4 lasts across nights (the save); the morning shows what it paid.
@@ -184,7 +188,7 @@ Excel on screen when she looks is a pass. Verified by
 `test/alttab.ts` (200/200 pass on the hallway cue, 200/200 caught on the handle cue).
 
 **The switch looks like an old Windows mode change**, stretched over the lag: the last frame freezes
-and tears; the teal desktop shows through (icons, grey taskbar with Start, Loot Night and
+and tears; the teal desktop shows through (icons, grey taskbar with Start, Age of Judgment and
 Q3_report.xls) while the window shrinks toward the taskbar in stutters, smearing stale copies; black
 with a monitor label ("1024 x 768 60Hz / Analog"); the new screen arrives blocky and sharpens.
 A Win9x hourglass cursor throughout; a relay click at the start, mode change and end.
@@ -196,7 +200,7 @@ the Drink button lights) with cans in the drawer and nothing else asking for you
 the Drink button), whichever comes first. A glass window over the dimmed right screen: "In your drawer" (and "New
 tonight" the night the drink comes in, Thursday), the can at full size on an acid glow, bobbing; "Goblin Fuel", "100% greed. Tastes like a
 loot drop."; what it does as + and - lines and how to pour it, from the tuning; the cans you have as eight slots
-(`MONSTER_DRAWER`), the empty ones dark; "More in the Shop: 29 zł for four." (from the tuning);
+(`MONSTER_DRAWER`), the empty ones dark; "More in the Shop: $29 for four." (from the tuning);
 Drink (G) goes on to the energy break, Later, the close box, Esc or Enter shut it. After that G and Drink go straight
 to the break.
 
@@ -294,6 +298,15 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
 
 ## Decisions
 
+- **Real money is dollars** (0.88, #105; Paweł after the first playtest). The same numbers relabelled (`SHOP_ZL`,
+  `BOSS_ZL`, Q4's pay, the Auction House's `ZL_PER_VALUE`; the names and the save's `zl` field stay so saves carry
+  over): balance and friends' saves are untouched. Some prices read high in dollars (knee socks $99, the cat hoodie
+  $199); they are tuned with the economy, not here. Rejected: converting at about 4 to 1 (a one-time conversion of
+  every saved wallet).
+- **A click outside puts the phone down** (0.88, #104): the phone covers the battle area and the desk, so reaching
+  for the close box was the slowest part of putting it down. The RPG and anything with an action are left alone so a
+  click there still does its own thing.
+
 - **The phone in the renderer** (0.65, V8 #73). The DOM iPhone was the prototype's placeholder; the redesign's
   phone is the game's pixel OS, so the phone matches the battle area and the desk. Left out for now: the incoming
   call's Message button (no rule behind it; Speaker sits alone), the battery widget and the Home app (step 6; the
@@ -305,7 +318,7 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   your girlfriend). Rejected: making the desk phone a picture you only pick up (a red button that does nothing).
 - **The phone retune: fewer events, each worth taking** (0.64, #54 3.2; Paweł's brief from testing v0.48). A
   random timer every 20 to 35 s made the phone noise: Mood taxes you could only avoid by stopping play. Now a night
-  script places 4 to 6 events, each pays something you want (a heal and revive, zł, a cooldown mouse, a raid buff)
+  script places 4 to 6 events, each pays something you want (a heal and revive, dollars, a cooldown mouse, a raid buff)
   and takes about 5 s. Speaker gives every call a choice (hands free but loud), face-down is an honest Do Not
   Disturb, and real life asks for one thing at a time. Ignoring the boss costs nothing: he is an offer, not a
   threat. Rejected: keeping the random timer with lower odds (still noise); Mood for ignoring the boss (a tax);
@@ -339,8 +352,8 @@ Flow, Zone and Tired are not here (#49): they have their own place (the corner, 
   time Excel needed to fill it). The reckless autopilot now carries the cost of hiding. Rejected: keeping
   the meter but filling it faster (the same thing with extra UI).
 - **Q4 instead of Tetris** (0.75, step 4, #55). The handoff made Excel your job: it must be fun to touch, pay
-  something on every action, level up fast and keep earning while you play, in złoty (the real-life money; gold
-  stays the RPG's). The numbers are grid doc 7i's (2026-11-20), not the handoff's first ones: AutoSum 0.4 zł, a cell
+  something on every action, level up fast and keep earning while you play, in dollars (the real-life money; gold
+  stays the RPG's). The numbers are grid doc 7i's (2026-11-20), not the handoff's first ones: AutoSum $0.4, a cell
   0.15, a turn 1.2, titles x1.25, macros at base x 1.5^level and Power Query added, not multiplied (doubling made
   millions a night). Looking busy brings back a reason to act in Excel without the old meter's flaw: it never
   causes a catch, it only decides how long she stays. Rejected: keeping Tetris beside Q4 (two jobs on one sheet);

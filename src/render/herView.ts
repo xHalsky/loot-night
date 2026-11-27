@@ -149,6 +149,7 @@ export function herTip(key: string): string {
     case 'cuddleYes': return 'Go to her. The party fights on without you.';
     case 'cuddleNo': return 'Stay. She will not be happy.';
     case 'door': return 'Your door. Hold it to peek out: the crack shows what she is doing.';
+    case 'headset': return n.headset ? 'Headset: on. Click your head or press H to take it off and hear her again.' : `Headset: click your head or press H. After ${T.ZONE_FILL_SEC} s you are in the Zone, but you can't hear her.`;   // the shared tooltip (#103)
     case 'plan': return 'The plan: who hears you, what the crack shows. Click it to open it.';
     default: return '';
   }

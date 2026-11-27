@@ -28,15 +28,8 @@ const MORNING_DEMO = {
   sold: 0, paid: 0, zl: 80, gold: 100, debt: 0, best: 2, q4: 35, night: 'Monday',
   stars: [{ name: 'Deep', got: true, reward: 'a chest: 1 item, floor 4' }, { name: 'Unseen', got: false, reward: 'Trust: Goodwill +20' }, { name: 'Sweet', got: true, reward: 'Breakfast: sleep debt -1' }],
 };
-function zl9(str, x, y, font, col, o = {}) {   // text with every 'zl' written as zł: a short slash across the l
-  const w = text(str, x, y, font, col, o), big = font === 'tinyL' ? 2 : 1, x0 = o.align === 'r' ? x - w : x;
-  let k = str.indexOf('zl');
-  while (k >= 0) {
-    const lx = x0 + measure(str.slice(0, k + 1), font), my = y + 3 * big;
-    for (let i = 0; i < 3 * big; i++) putI(lx - big + i, my + Math.round((1.5 * big - i) * 0.85) - (big > 1 ? 1 : 0), col);
-    k = str.indexOf('zl', k + 2);
-  }
-  return w;
+function zl9(str, x, y, font, col, o = {}) {   // text with every "N zl" written as dollars, "+$N" (#105; it drew zł)
+  return text(str.replace(/([+~-]?)(\d[\d.,]*) ?zl\b/g, '$1$$$2'), x, y, font, col, o);
 }
 function star9(x, y, on) {   // a 7 x 7 star: gold with a plum edge when earned, a purple outline when not
   const S = ['...x...', '..xxx..', 'xxxxxxx', '.xxxxx.', '.xx.xx.', 'x.....x'];
@@ -94,7 +87,7 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   const sx = 440, sy = 14, sw = 192;
   const NOTE = data.note || (data.replay ? `Tonight is ${data.night} again. Party, gear, gold, Souls and city carry over.` : (data.debt > 0 ? `Sleep debt ${data.debt}: tonight starts at Tiredness ${10 + data.debt * 3}.` : 'No sleep debt: tonight starts fresh.') + ' Party, gear, gold and city carry over.');
   const noteLines = wrap9(NOTE, sw - 16).length;
-  const headLines = wrap9(data.sold ? `Auction house sold ${data.sold} items: +${data.paid} zl` : 'Nothing sold overnight.', sw - 16).length;
+  const headLines = wrap9(data.sold ? `Auction house sold ${data.sold} items: +$${data.paid}` : 'Nothing sold overnight.', sw - 16).length;
   const repLines = data.replay ? wrap9('She pulled the plug. No stars, and the cheaper half of your bag is gone.', sw - 16).length : 0;
   const sh = 7 + 20 + 5 + headLines * 9 + 3 + 64 + (data.replay ? 13 + repLines * 9 : 0) + 11 + data.stars.length * 19 + 2 + (data.q4 ? 12 : 0) + 5 + noteLines * 9 + 8 + 20 + 7;
   win9(sx, sy, sw, sh);
@@ -104,10 +97,10 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
   y += 20;
   for (let i = sx + 6; i < sx + sw - 6; i++) putI(i, y, (i & 1) ? C9.tan : C9.beige);
   y += 5;
-  wrap9(data.sold ? `Auction house sold ${data.sold} item${data.sold > 1 ? 's' : ''}: +${data.paid} zl` : 'Nothing sold overnight.', sw - 16).forEach((l) => { zl9(l, sx + 8, y, 'tiny', C9.plum); y += 9; });
+  wrap9(data.sold ? `Auction house sold ${data.sold} item${data.sold > 1 ? 's' : ''}: +$${data.paid}` : 'Nothing sold overnight.', sw - 16).forEach((l) => { zl9(l, sx + 8, y, 'tiny', C9.plum); y += 9; });
   y += 3;
   // four numbers in small inset cells
-  const cells = [['Wallet', data.zl + ' zl', C9.moss], ['Gold', String(data.gold), C9.brown], ['Sleep debt', String(data.debt), data.debt ? C9.crimson : C9.plum], ['Best stars', data.best + ' / 3', C9.plum]];
+  const cells = [['Wallet', '$' + data.zl, C9.moss], ['Gold', String(data.gold), C9.brown], ['Sleep debt', String(data.debt), data.debt ? C9.crimson : C9.plum], ['Best stars', data.best + ' / 3', C9.plum]];
   cells.forEach(([lab, val, col], k) => {
     const bx = sx + 7 + (k % 2) * 90, by = y + Math.floor(k / 2) * 30;
     win9(bx, by, 87, 27, { fill: C9.moon, hi: C9.tan, lo: C9.moon, edge: C9.tan, shadow: false });
@@ -129,7 +122,7 @@ function drawMorning(scene, T, data = MORNING_DEMO, o = {}) {
     y += 19;
   }
   y += 2;
-  if (data.q4) { zl9('Q4 last night: +' + data.q4 + ' zl', sx + 8, y, 'tiny', C9.moss); y += 12; }
+  if (data.q4) { zl9('Q4 last night: +$' + data.q4, sx + 8, y, 'tiny', C9.moss); y += 12; }
   for (let i = sx + 6; i < sx + sw - 6; i++) putI(i, y, (i & 1) ? C9.tan : C9.beige);
   y += 5;
   wrap9(NOTE, sw - 16).forEach((l) => { text(l, sx + 8, y, 'tiny', C9.brown); y += 9; });

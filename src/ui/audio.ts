@@ -248,6 +248,7 @@ export const sfx = {
   // ----- the desk -----
   ring() { for (let i = 0; i < 4; i++) { tone(880, 0.08, 'sine', 0.2, i * 0.16); tone(660, 0.08, 'sine', 0.2, i * 0.16 + 0.08); } },
   ping() { tone(1320, 0.08, 'sine', 0.25); tone(1760, 0.12, 'sine', 0.2, 0.08); },
+  chatIn() { tone(1175, 0.04, 'sine', 0.12); tone(1568, 0.06, 'sine', 0.09, 0.04); },   // a bubble lands in Monday's chat (#102): soft, they come fast
   // the smart home (#57): synthesised until they get files
   doorbell() { tone(784, 0.45, 'sine', 0.16, 0, undefined, 'apt'); tone(622, 0.7, 'sine', 0.16, 0.42, undefined, 'apt'); },
   timer() { for (let k = 0; k < 3; k++) tone(2093, 0.07, 'square', 0.05, k * 0.18, undefined, 'apt'); },

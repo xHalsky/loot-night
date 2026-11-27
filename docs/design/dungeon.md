@@ -2,9 +2,12 @@
 
 ## Now
 
+**The RPG is called Age of Judgment** in the fiction (#102): the MMO he plays, on the taskbar, the desktop icon, the
+feed's welcome and the boys' chat. The game itself keeps its own title on the title screen.
+
 **Party.** Four heroes from night 1 (#96), persistent across nights (data: `src/data/heroes.ts`,
 `HERO_NAME`): Knightenstein (Knight, tank, in front, carries the torch: you), **Garrote** (Rogue, #52 1.7), Magoo
-(Mage) and Healero (Healer), the characters of your friends Danny and Mike. A save from before Garrote was in from
+(Mage) and Healero (Healer), the characters of your friends Lance, Billy and Mike. A save from before Garrote was in from
 night 1 gets him at the next night, second in line, at the party's lowest level, with a feed line. Whoever walks in
 front picks up the loot by walking over it (#95; see Loot drops in [loot.md](loot.md)), so no role line says it.
 Party and guild chat use the character names, as an MMO would; the friends' phone calls use their real names. Garrote's colour is ember (`#c16229`); Z, X and C light up ember on the desk keyboard.

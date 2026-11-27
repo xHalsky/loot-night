@@ -8,7 +8,7 @@ const SPOTS = [
   { id: 'portal', name: 'Dungeon Portal', kind: 'gate', box: [138, 0, 58, 61], line: 'Down into the dungeon', sub: '15 min' },
   { id: 'appraiser', name: 'Appraiser', kind: 'service', box: [2, 0, 65, 69], line: 'Identifies unknown items', sign: [34, 70], mark: 'eye' },
   { id: 'library', name: 'Library', kind: 'plot', lv: 1, box: [79, 5, 50, 64], sign: [104, 70], mark: 'book' },
-  { id: 'auction', name: 'Auction House', kind: 'service', box: [204, 0, 60, 69], line: 'Sells loot for real złoty', sign: [234, 70], mark: 'gavel' },
+  { id: 'auction', name: 'Auction House', kind: 'service', box: [204, 0, 60, 69], line: 'Sells loot for real money', sign: [234, 70], mark: 'gavel' },
   { id: 'treasury', name: 'Treasury', kind: 'plot', lv: 0, box: [276, 15, 56, 54], sign: [304, 70], mark: 'coin' },
   { id: 'merchant', name: 'Merchant', kind: 'service', box: [199, 81, 65, 49], line: 'Buys loot for gold', sign: [242, 132], mark: 'scales' },
   { id: 'training', name: 'Training Grounds', kind: 'plot', lv: 1, box: [79, 143, 77, 47], sign: [117, 192], mark: 'swords' },

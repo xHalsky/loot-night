@@ -81,7 +81,7 @@ export function list() {
   if (!e) return;
   S.g.pendingListings.push({ name: entryName(e), zl });
   n.clock += T.COST_LIST_MIN;
-  toast(`Listed ${entryName(e)} for ~${zl} zł. Pays tomorrow morning. (5 min)`, '#6fcf7f'); sfx.good();
+  toast(`Listed ${entryName(e)} for ~$${zl}. Pays tomorrow morning. (5 min)`, '#6fcf7f'); sfx.good();
 }
 
 export function buildCity(id: CityId) {
@@ -128,7 +128,7 @@ export function servicePick(id: string) {
   if (p.includes(id)) p.splice(p.indexOf(id), 1); else p.push(id);
   sfx.click();
 }
-/** The picked items' total: Souls at the forge, gold at the Merchant and the Appraiser (a cost), złoty at the auction. */
+/** The picked items' total: Souls at the forge, gold at the Merchant and the Appraiser (a cost), dollars at the auction. */
 export function serviceSum(svc: ServiceSpot, ids: string[]): number {
   return ids.reduce((a, id) => a + (svc === 'forge' ? salvageYield(id) : svc === 'merchant' ? vendorValue(id) : svc === 'auction' ? listValue(id) : identifyCost(id)), 0);
 }

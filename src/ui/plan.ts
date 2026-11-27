@@ -20,6 +20,6 @@ export const PLAN_WALLS: [number, number, number, number][] = [
 export const PLAN_YOU: [number, number] = [152, 140];
 
 /** The whole plan for the renderer's blueprint (V9, #74; grid doc 7g): the page's approved sheet (page: true; its
- *  furniture, door swings, stops, labels and note are the page's), with or without the hall mirror (199 zł, #77). */
+ *  furniture, door swings, stops, labels and note are the page's), with or without the hall mirror ($199, #77). */
 export const PLAN = { page: true, mirror: false, walls: PLAN_WALLS };
 export const PLAN_MIRROR = { page: true, mirror: true, walls: PLAN_WALLS };

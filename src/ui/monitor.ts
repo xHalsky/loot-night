@@ -103,7 +103,7 @@ function tear(c: CanvasRenderingContext2D, img: HTMLCanvasElement, amount: numbe
 }
 function desktop(c: CanvasRenderingContext2D) {
   c.fillStyle = '#008080'; c.fillRect(0, 0, MON_W, MON_H);
-  const icons = ['My Computer', 'Recycle Bin', 'Loot Night', 'Q3_report.xls'];
+  const icons = ['My Computer', 'Recycle Bin', 'Age of Judgment', 'Q3_report.xls'];
   icons.forEach((name, i) => {
     const y = 14 + i * 58;
     c.fillStyle = i === 3 ? '#1f7a3a' : i === 2 ? '#5b3aa8' : '#c0c0c0'; c.fillRect(22, y, 28, 24);
@@ -118,7 +118,7 @@ function desktop(c: CanvasRenderingContext2D) {
   c.strokeStyle = '#404040'; c.beginPath(); c.moveTo(56.5, MON_H - 18.5); c.lineTo(56.5, MON_H - 3.5); c.lineTo(3.5, MON_H - 3.5); c.stroke();
   c.fillStyle = '#000'; c.font = 'bold 11px Tahoma, Arial, sans-serif'; c.textAlign = 'left'; c.fillText('Start', 22, MON_H - 7);
   c.fillStyle = '#e04a2a'; c.fillRect(8, MON_H - 15, 5, 4); c.fillStyle = '#3aa83a'; c.fillRect(13, MON_H - 15, 5, 4); c.fillStyle = '#2a5ae0'; c.fillRect(8, MON_H - 11, 5, 4); c.fillStyle = '#e0c02a'; c.fillRect(13, MON_H - 11, 5, 4);
-  ['Loot Night', 'Q3_report.xls'].forEach((name, i) => {
+  ['Age of Judgment', 'Q3_report.xls'].forEach((name, i) => {
     const x = 62 + i * 140;
     c.fillStyle = '#c0c0c0'; c.fillRect(x, MON_H - 19, 134, 16);
     c.strokeStyle = '#fff'; c.strokeRect(x + 0.5, MON_H - 18.5, 133, 15);

@@ -32,11 +32,15 @@ async def main():
             return None
         await pg.add_init_script('window.__lnDay = 1'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(600)
-        await go('voiceOk'); await pg.wait_for_timeout(200)   # Danny's voice note comes first (test/week.py has it)
+        await go('voiceOk'); await pg.wait_for_timeout(200)   # Billy's voice note comes first (test/week.py has it)
 
         # How to hide at the start of the night: the night waits; Got it
         check(await ev("g.howto") and await disp(pg, 'modalArea') == 'block', 'How to hide opens on Tuesday (the headset is new)')
         await shot('1_howto', 300)
+        btn = await find('modalArea', 640, 360, x0=250, x1=390, y0=250, y1=330)
+        check(btn is not None, 'its Got it button'); await pg.mouse.click(*btn); await pg.wait_for_timeout(300)
+        check(await ev("g.howto && g.howtoPage === 1") and await disp(pg, 'modalArea') == 'block', 'Got it: tonight\'s stars next (#101)')
+        await shot('1b_stars', 200)
         btn = await find('modalArea', 640, 360, x0=250, x1=390, y0=250, y1=330)
         check(btn is not None, 'its Got it button'); await pg.mouse.click(*btn); await pg.wait_for_timeout(200)
         check(not await ev("g.howto") and await disp(pg, 'modalArea') == 'none', 'Got it closes it')

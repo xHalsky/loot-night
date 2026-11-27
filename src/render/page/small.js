@@ -106,8 +106,8 @@ function inspectWindow(t, o = INSPECT_PAGE) {
     y += 40;
     text(o.cans + ' of ' + o.max + ' in the drawer.', x, y, 'tiny', P.u6);
     if (o.shop) {
-      const sh = typeof o.shop === 'object' ? o.shop : { zl: 29, cans: 'four' }, s1 = 'More in the Shop: ' + sh.zl + ' z', zw = measure(s1, 'tiny');
-      text(s1, x, y + 9, 'tiny', P.s5); glyph('lstroke', x + zw - 1, y + 8, P.s5); text('for ' + sh.cans + '.', x + zw + 5, y + 9, 'tiny', P.s5);
+      const sh = typeof o.shop === 'object' ? o.shop : { zl: 29, cans: 'four' };
+      text('More in the Shop: $' + sh.zl + ' for ' + sh.cans + '.', x, y + 9, 'tiny', P.s5);   // dollars (#105)
     } else if (o.more) text(o.more, x, y + 9, 'tiny', P.s5);
     // what to do
     smBtn(x, h - 22, 104, 'Drink', { gold: true, key: 'G' });
@@ -124,8 +124,28 @@ const HOWTO_TILES = {
   headset: ['Headset (H)', 'Click your head or press H. After 30 s you are in the Zone: faster Flow, more loot. But you cannot hear her coming.'],
   lean: ['Lean in', 'Hold the door open: you lean in and see what she is doing. Move the mouse to look. While you look you cannot play, and she can see you.'],
 };
-function howtoArt(id, x, y, t) {   // 64 x 40 pictures in the desk's colours
+function howtoArt(id, x, y, t, o = {}) {   // 64 x 40 pictures in the desk's colours
   rectI(x, y, 64, 40, P.void);
+  if (id === 'deep') {   // tonight's stars (#101): stairs down into the crypt, tonight's floor over the door
+    for (let k = 0; k < 4; k++) { const sx = x + 6 + k * 8, sy = y + 14 + k * 6; rectI(sx, sy, 40 - k * 8 + 4, 2, P.s4); rectI(sx, sy + 2, 40 - k * 8 + 4, 4, P.s2); }
+    rectI(x + 44, y + 12, 14, 26, P.s1); frameI(x + 43, y + 11, 16, 27, P.s3); rectI(x + 46, y + 30, 10, 8, P.void);
+    rectI(x + 45, y + 3, 12, 8, P.copper); rectI(x + 46, y + 4, 10, 6, P.gold); text(String(o.floor ?? 3), x + 51, y + 5, 'tiny', P.void, { align: 'c' });
+    const fl = Math.floor(t * 5) % 2; putI(x + 50, y + 26 - fl, P.gold); putI(x + 51, y + 25, P.copper);
+  } else if (id === 'unseen') {   // an eye, shut out: you were never seen
+    for (let i = -14; i <= 14; i++) { const h = Math.round(7 * Math.sqrt(1 - (i / 15) ** 2)); putI(x + 32 + i, y + 20 - h, P.moon); putI(x + 32 + i, y + 20 + h, P.moon); }
+    for (let j = -4; j <= 4; j++) for (let i = -4; i <= 4; i++) if (i * i + j * j <= 16) putI(x + 32 + i, y + 20 + j, i * i + j * j <= 4 ? P.void : P.arcane);
+    putI(x + 30, y + 18, P.moon);
+    for (let k = 0; k < 28; k++) { putI(x + 18 + k, y + 6 + k, P.crimson); putI(x + 19 + k, y + 6 + k, P.crimson); }
+  } else if (id === 'sweet') {   // a heart, beating, drawn at the grid's own pixel (no scaled sprite)
+    const R = Math.floor(t * 2.4) % 3 === 0 ? 15 : 14;
+    for (let j = -R; j <= R; j++) for (let i = -R - 2; i <= R + 2; i++) {
+      const u = i / R * 1.15, v = -(j / R * 1.2 - 0.25), f = (u * u + v * v - 1) ** 3 - u * u * v * v * v;
+      if (f > 0) continue;
+      const out = (du, dv) => { const U = u + du, V = v + dv; return (U * U + V * V - 1) ** 3 - U * U * V * V * V > 0; };
+      const rim = out(0.09, -0.09), lit = out(-0.13, 0.13), shine = (i === -Math.round(R * 0.45) || i === -Math.round(R * 0.45) + 1) && j === -Math.round(R * 0.4) + (i + Math.round(R * 0.45));
+      putI(x + 32 + i, y + 21 + j, shine ? P.pale : rim ? P.wine : lit ? P.d6 : P.crimson);
+    }
+  }
   if (id === 'listen') {   // your door, the light under it, her sound coming through
     rectI(x + 14, y + 4, 24, 32, P.s2); frameI(x + 14, y + 4, 24, 32, P.s3); rectI(x + 33, y + 19, 2, 3, P.s4);
     rectI(x + 14, y + 36, 24, 2, P.gold); rectI(x + 14, y + 38, 24, 1, P.copper);
@@ -167,14 +187,14 @@ function howtoCard(t, o = HOWTO_PAGE) {
   const w = 452, h = howtoH(o);
   return smLayer(w, h, () => {
     smGlass(0, 0, w, h);
-    text(o.head, 12, 9, 'tiny', P.s5); text('How to hide', 12 + measure(o.head, 'tiny') + 8, 9, 'tiny', P.gold);
-    text('Hide the game before she sees it.', 12, 22, 'tinyL', P.moon);
+    text(o.head, 12, 9, 'tiny', P.s5); text(o.kicker || 'How to hide', 12 + measure(o.head, 'tiny') + 8, 9, 'tiny', P.gold);
+    text(o.title || 'Hide the game before she sees it.', 12, 22, 'tinyL', P.moon);
     const ids = o.ids, tw = howtoTW(o), th = HOWTO_TH(tw, o);
     ids.forEach((id, k) => {
       const x = 12 + k * (tw + 4), y = 42, isNew = o.isNew.includes(id);
       rectI(x, y, tw, th, P.s2); rectI(x, y, tw, 1, P.s3);
       if (isNew) frameI(x - 1, y - 1, tw + 2, th + 2, P.gold);
-      howtoArt(id, x + Math.round((tw - 64) / 2), y + 8, t);
+      howtoArt(id, x + Math.round((tw - 64) / 2), y + 8, t, o);
       const [ti, body] = o.tiles[id];
       rectI(x + 6, y + 55, 9, 9, isNew ? P.gold : P.s4); text(String(k + 1), x + 10, y + 57, 'tiny', P.void, { align: 'c' });
       text(ti, x + 19, y + 57, 'tiny', P.moon);
@@ -405,7 +425,7 @@ function drawHowtoLive(frame, o, t, black) {
   }
   ctx.drawImage(SML.bg || smCanvas('bg', 640, 360), 0, 0);
   ctx.drawImage(howtoCard(t, o), 94, y); usePal(PAL_BASE);
-  return { canvas: c, hits: [{ x: 94 + 452 / 2 - 50, y: y + h - 24, w: 100, h: 14, act: 'howtoClose', arg: '', tip: '' }] };
+  return { canvas: c, hits: [{ x: 94 + 452 / 2 - 50, y: y + h - 24, w: 100, h: 14, act: o.next ? 'howtoNext' : 'howtoClose', arg: '', tip: '' }] };   // How to hide, then tonight's stars (#101)
 }
 // the microsleep: lid 0..1 (1 shut) over the frame
 // shut, the picture only changes with the zzz (twice a second): it is drawn again only then

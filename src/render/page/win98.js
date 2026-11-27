@@ -78,8 +78,7 @@ function taskbar98(st, t, screen) {
   rectI(x0 + 43, y0 + 3, 1, 11, P.u5); rectI(x0 + 44, y0 + 3, 1, 11, P.moon);
   // task buttons
   const flash = st.flash && Math.floor(t * 2.5) % 2 === 0;
-  const task = (x, label, ic, front, fl) => {
-    const tw = 76;
+  const task = (x, label, ic, front, fl, tw = 76) => {
     if (fl) { rectI(x, y0 + 3, tw, 11, P.wnavy); frameI(x, y0 + 3, tw, 11, P.u1); rectI(x, y0 + 3, tw - 1, 1, P.moon); rectI(x, y0 + 3, 1, 10, P.moon); }
     else if (front) w98Down(x, y0 + 3, tw, 11); else w98Raised(x, y0 + 3, tw, 11);
     ic(x + 3, y0 + 5);
@@ -87,15 +86,17 @@ function taskbar98(st, t, screen) {
     return tw;
   };
   let x = x0 + 48;
-  // the app in front is pressed; the other one carries the key that switches to it (the Tonight note is taped from x 208)
-  if (typeof dhit === 'function') { dhit(x, y0 + 3, 76, 11, 'showRpg', '', 'tab:rpg'); dhit(x + 79, y0 + 3, 76, 11, 'showExcel', '', 'tab:excel'); }
-  x += task(x, screen === 'excel' ? 'Loot Night · Tab' : 'Loot Night', lnIcon8, screen !== 'excel', flash) + 3;
+  // the app in front is pressed; the other one carries the key that switches to it. The RPG's button fits its name
+  // with "· Tab" (Age of Judgment, #102)
+  const rw = Math.max(76, measure('Age of Judgment · Tab', 'tiny') + 18);
+  if (typeof dhit === 'function') { dhit(x, y0 + 3, rw, 11, 'showRpg', '', 'tab:rpg'); dhit(x + rw + 3, y0 + 3, 76, 11, 'showExcel', '', 'tab:excel'); }
+  x += task(x, screen === 'excel' ? 'Age of Judgment · Tab' : 'Age of Judgment', lnIcon8, screen !== 'excel', flash, rw) + 3;   // the RPG he plays (#102)
   x += task(x, screen === 'excel' ? 'Excel' : 'Excel · Tab', xlIcon8, screen === 'excel', false) + 6;
   // tray: the wallet and the clock in a sunken well
-  const zs = st.zl + ' z', zw = measure(zs, 'tiny') + 4, cs = st.clock, cw = measure(cs, 'tiny');
+  const zs = '$' + st.zl, zw = measure(zs, 'tiny') + 4, cs = st.clock, cw = measure(cs, 'tiny');   // the wallet in dollars (#105)
   const tw = zw + cw + 16 + (st.witching ? 0 : 0), tx = x1 - tw - 2;
   w98Sunken(tx, y0 + 3, tw, 11, P.u6);
-  text(zs, tx + 4, y0 + 6, 'tiny', P.g3); glyph('lstroke', tx + 4 + measure(zs, 'tiny') - 1, y0 + 5, P.g3);
+  text(zs, tx + 4, y0 + 6, 'tiny', P.g3);
   text(cs, tx + tw - 4, y0 + 6, 'tiny', st.witching ? P.crimson : P.u1, { align: 'r' });
   // Sleep: a button with the power glyph, greyed until 23:00
   const on = st.sleepOk ?? (st.clock < '20' && st.clock >= '00' ? true : st.clock >= '23');

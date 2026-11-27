@@ -43,7 +43,7 @@ self-contained `dist/index.html` that runs from any static host or as a claude.a
 listener; microsleeps swallow the first input.
 
 **Save.** `localStorage` key `lootnight.save.v3` (since 0.80; the game removes the v1 and v2 keys when it loads):
-progress only (heroes, bag, gold, scraps, zł, buildings, sleep debt, cans, stars, record, pending listings,
+progress only (heroes, bag, gold, scraps, dollars (the save field is still `zl`), buildings, sleep debt, cans, stars, record, pending listings,
 auto-salvage). Saved at night end, morning and on building. A night in progress is not saved. **During the friends'
 playtest the key and the URL stay as they are** (#100): a new key, a save-format change that needs a new key, or a
 new address resets every friend's progress, so none of them happens without telling Paweł first. `localStorage`

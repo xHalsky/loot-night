@@ -157,7 +157,7 @@ function powerCompare(h: Hero, item: Item): string {
  *  the battle stays in view. One Equip button per hero with the power change. */
 function detailHtml(e: BagEntry): string {
   const town = N().location === 'town';
-  const close = '<button class="mg-close" data-act="closeSel" title="Close">\u2715</button>';
+  const close = '<button class="mg-close" data-act="closeSel" aria-label="Close">\u2715</button>';
   let body = '';
   if (e.kind === 'item') {
     const it = e.item;

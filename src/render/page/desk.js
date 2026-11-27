@@ -5,7 +5,7 @@
 // the Tonight note in a slanted ballpoint hand. The game screen (474 × 232) is pasted in at 9, 8.
 // ===========================================================================
 const RS_W = 492, RS_H = 360;
-const RSZ = { bezel: [4, 3, 484, 260], game: [9, 8, 474, 232], task: [9, 241, 474, 15], desk: [0, 263, 492, 97], phone: [0, 268, 120, 92], keys: [96, 282, 360, 78], note: [214, 246, 134, 66], you: [355, 267, 133, 26], feed: [355, 296, 133, 61] };
+const RSZ = { bezel: [4, 3, 484, 260], game: [9, 8, 474, 232], task: [9, 241, 474, 15], desk: [0, 263, 492, 97], phone: [0, 268, 120, 92], keys: [96, 282, 360, 78], you: [355, 267, 133, 26], feed: [355, 296, 133, 61] };
 
 // ---------------------------------------------------------------- the desk's own palette (three variants + backup)
 // Three worlds, one core. Every world palette keeps the same eight anchors in the same slots: the ink (void), the
@@ -76,19 +76,18 @@ const GL = {
   wifi: ['.xxx.', 'x...x', '.xxx.', '..x..'],
 };
 const glyph = (g, x, y, idx) => GL[g].forEach((r, j) => [...r].forEach((c, i) => { if (c === 'x') putI(x + i, y + j, idx); }));
-const glyph2 = (g, x, y, idx) => GL[g].forEach((r, j) => [...r].forEach((c, i) => { if (c === 'x') for (const [a, b] of [[0, 0], [1, 0], [0, 1], [1, 1]]) putI(x + i * 2 + a, y + j * 2 + b, idx); }));   // at 2x, for the big note
 // handwriting: Tiny5 sheared into a slant, each word on its own slightly wandering baseline, plus a tilt
 function scrawl(str, x, y, idx, o = {}) {
-  const tilt = o.tilt ?? 20, sd = o.sd ?? 1, big = o.font === 'tinyL', sp = big ? 6 : 3; let cx = x;   // tinyL: the note at 2x (#98), not sheared (its pixels are 2x2)
+  const tilt = o.tilt ?? 20, sd = o.sd ?? 1; let cx = x;
   for (const [k, word] of str.split(' ').entries()) {
     if (word) {
-      const g = glyphs(word, big ? 'tinyL' : 'tiny'), dy = (hash(k, y, sd) < 0.3 ? 1 : 0) - Math.floor((cx - (o.x0 ?? x)) / tilt);
-      for (let n = 0; n < g.pts.length; n += 2) { const px = g.pts[n], py = g.pts[n + 1]; putI(cx + px + (big ? 0 : Math.floor((6 - py) / 4)), y + py + dy, idx); }
+      const g = glyphs(word, 'tiny'), dy = (hash(k, y, sd) < 0.3 ? 1 : 0) - Math.floor((cx - (o.x0 ?? x)) / tilt);
+      for (let n = 0; n < g.pts.length; n += 2) { const px = g.pts[n], py = g.pts[n + 1]; putI(cx + px + Math.floor((6 - py) / 4), y + py + dy, idx); }
       cx += g.w;
     }
-    cx += sp;
+    cx += 3;
   }
-  return cx - x - sp;
+  return cx - x - 3;
 }
 
 // ---------------------------------------------------------------- the static layer: room, bezel, desk, mat, keyboard
@@ -186,7 +185,10 @@ function buildDeskLayer() {
     // front hides the face's last rows)
     const yTop = Math.round(K.T0[1]), yEnd = Math.round(K.T3[1]); let yl = yEnd;
     for (let x = K.sx0 + 1; x <= K.sx1 - 1; x++) { let yb = -1; for (let y = yTop; y <= yEnd; y++) if (KID[y * W + x] === n + 1) yb = y; if (yb >= 0) yl = Math.min(yl, yb); }
-    if (yl >= 0 && yl < RS_H) for (let x = K.sx0; x <= K.sx1; x++) if (KID[yl * W + x] === n + 1) B.I[yl * W + x] = P[K.lit];
+    if (yl < 0 || yl >= RS_H) return;
+    const row = []; for (let x = K.sx0; x <= K.sx1; x++) if (KID[yl * W + x] === n + 1) row.push(yl * W + x);
+    if (K.lab === 'H') { K.ul = row; return; }   // H's glow is drawn per frame: dark until the headset is in (#103)
+    for (const i of row) B.I[i] = P[K.lit];
   });
   DXV = 0;
   return (DESK_LAYER = L);
@@ -239,7 +241,7 @@ function taskbar(st, t, screen) {
   const xlIcon = (x, y) => { rectI(x, y, 8, 8, P.g3); rectI(x + 1, y + 2, 6, 5, P.moon); rectI(x + 3, y + 2, 1, 5, P.g4); rectI(x + 1, y + 4, 6, 1, P.g4); rectI(x, y, 8, 1, P.g4); };
   const flash = st.flash && Math.floor(t * 2.5) % 2 === 0;
   let x = x0 + 21;
-  x += tab(x, 'Loot Night', lnIcon, screen !== 'excel', flash) + 2;
+  x += tab(x, 'Age of Judgment', lnIcon, screen !== 'excel', flash) + 2;
   x += tab(x, 'Excel', xlIcon, screen === 'excel', false) + 6;
   text('Tab = switch', x, y0 + 5, 'tiny', P.u4);
   // right: Sleep (power), clock, wallet
@@ -249,38 +251,9 @@ function taskbar(st, t, screen) {
   let cx = sx - 6;
   if (st.witching) { const ww = measure('witching hour', 'tiny'); text('witching hour', cx, y0 + 5, 'tiny', P.wine, { align: 'r' }); cx -= ww + 4; }
   const cw = text(st.clock, cx, y0 + 5, 'tiny', st.witching ? P.crimson : P.u1, { align: 'r' }); cx -= cw + 7;
-  // wallet in zl (the l with its stroke drawn by hand)
-  glyph('lstroke', cx - 3, y0 + 4, P.g3); const zs = st.zl + ' z', zw = measure(zs, 'tiny') + 4; text(zs, cx - 3, y0 + 5, 'tiny', P.g3, { align: 'r' });
-  rectI(cx - zw - 5, y0 + 3, 1, 10, P.u4); rectI(cx - zw - 4, y0 + 3, 1, 10, P.moon);
-}
-// the Tonight note, stuck on the bezel's bottom edge, tilted a little, in a big ballpoint hand you can read (#98);
-// a click peels it off for good (the game hands st.note = null)
-function tonightNote(st) {
-  if (!st.note) return;
-  const [x0, y0, w, h] = RSZ.note, tiltAt = (x) => Math.floor((x - x0) / 45);
-  shadowU(x0, y0 + 1, w, h, { k: 0.6, r: 3, dx: 1, dy: 2 });
-  // flat paper, stepped for the tilt, a lifted lower-right corner
-  for (let x = x0; x < x0 + w; x++) {
-    const top = y0 - tiltAt(x), bot = y0 + h - 1 - tiltAt(x);
-    for (let y = top; y <= bot; y++) {
-      const cx = x - (x0 + w - 8), cy = y - (bot - 8); if (cx > 0 && cy > 0 && cx + cy > 8) continue;
-      const fold = cx > 0 && cy > 0 && cx + cy >= 7;
-      putI(x, y, fold ? P.copper : y === bot || x === x0 + w - 1 ? P.gold : y > bot - 4 ? (x + y) % 2 ? P.pale : P.gold : P.pale);
-    }
-  }
-  for (let k = 1; k <= 7; k++) for (let j = 0; j < k; j++) { const x = x0 + w - 8 + j + 1, y = y0 + h - 1 - tiltAt(x) - k + (k - j) - 1; putI(x, y, j === k - 1 ? P.copper : P.gold); }
-  // a strip of tape over the bezel edge
-  for (let x = x0 + 44; x < x0 + 80; x++) for (let y = y0 - 4; y <= y0 + 1; y++) putI(x, y - tiltAt(x), y === y0 - 4 || y === y0 + 1 ? P.u5 : (x + y) % 7 === 0 ? P.moon : P.u6);
-  const ink = P.s2, ok = { y: ['check', P.g3], '!': ['bang', P.copper], x: ['cross', P.crimson] };
-  const line = (k) => y0 + 5 + k * 14;
-  scrawl('Tonight', x0 + 5, line(0), ink, { x0, sd: 3, tilt: 45, font: 'tinyL' });
-  dhit(x0, y0 - 4, w, h + 4, 'noteOff', '', 'tonight');
-  // tonight's three stars as three handwritten lines (Deep, Unseen, Sweet), each ticked, warned or crossed out
-  for (let k = 0; k < 3; k++) {
-    let xx = x0 + 5; const y = line(k + 1);
-    xx += scrawl(['floor ' + (st.floorGoal || 8), 'don\'t get caught', 'keep her happy'][k], xx, y, ink, { x0, sd: 5 + k, tilt: 45, font: 'tinyL' }) + 4;
-    const [g, c] = ok[st.note[k]]; glyph2(g, xx, y + 1 - tiltAt(xx), c);
-  }
+  // the wallet in dollars (#105)
+  const zs = '$' + st.zl, zw = measure(zs, 'tiny'); text(zs, cx + 1, y0 + 5, 'tiny', P.g3, { align: 'r' });
+  rectI(cx + 1 - zw - 6, y0 + 3, 1, 10, P.u4); rectI(cx + 1 - zw - 5, y0 + 3, 1, 10, P.moon);
 }
 // flat glass cards (iOS widgets): a solid fill, a lit top edge, rounded corners, a soft shadow on the desk
 function glassCard(x, y, w, h) {
@@ -455,8 +428,10 @@ function phone(st, t, lights) {
 function keyLights(lights, st, lightsOnly, v = DESK_VARIANT) {
   for (const k of KEYS) {
     if (k.cy >= RS_H - 2) continue;
-    if (lightsOnly) { if (k.lit) lights.push({ x: k.base[0], y: k.base[1] + 1, r: 13, i: 0.35, c: KEYGLOW[k.lit] }); continue; }
-    let idx = k.lit ? P[k.lit] : P.s3;
+    const off = k.lab === 'H' && st.you && !st.you.zone;   // the headset is Tuesday's: H stays dark before it (#103)
+    if (lightsOnly) { if (k.lit && !off) lights.push({ x: k.base[0], y: k.base[1] + 1, r: 13, i: 0.35, c: KEYGLOW[k.lit] }); continue; }
+    let idx = k.lit && !off ? P[k.lit] : P.s3;
+    if (k.ul && !off) for (const i of k.ul) putI(i % W, Math.floor(i / W), P[k.lit]);
     if (k.lab === 'R' || k.lab === 'F' || k.lab === '4') idx = P.u2;          // the locked fourth skills
     if (k.lab === 'G' && st.cans === 0) idx = P.u2;                         // Goblin Fuel: dark with no cans
     const { cx, cy } = k;
@@ -588,7 +563,6 @@ function drawDesk(screen, tScreen, t, moment = 'calm', o = {}) {
   phone(st, t, lights);
   zoneAura(st, t, lights);
   if (D.led) ledWash(t);
-  tonightNote(st);
   const DGV = DV ? drawDog(st, t, set, o, DV) : null;
   youCard(st, t);
   feedCard(st);
@@ -639,7 +613,6 @@ function drawDeskLive(src, st, t, phase = 0) {
   phone(st, t, lights);
   zoneAura(st, t, lights);
   if (D.led) ledWash(t);
-  tonightNote(st);
   // the dog (V6, #71): drawn into the desk, under the cards; his hearts, marks and sounds float over the monitor
   const DV = st.dog ? dogView(st, t, { dog: 'game', g: st.dog }) : null, DGV = DV ? drawDog(st, t, set, {}, DV) : null;
   youCard(st, t);

@@ -276,14 +276,14 @@ export interface GameState {
   monsters: number;
   q4: Q4Save;           // Q4: lifetime zl and the macros (#55)
   owned: string[];      // the Shop's lasting things you bought (#55, 4.6)
-  noteOff?: boolean;             // the Tonight note on the monitor was clicked off, for good (#98)
   giftNew?: string[]; giftWorn?: string[];   // her gifts (#91): bought and not worn yet (she wears the newest next); worn at least once (the Goodwill)
   bestStars: number; record: number; nightsPlayed: number;
   day: number;          // the week (#56): the night being played, 0 = the first Monday; an unplugged night is played again
   mapPath: (string | null)[];    // the dungeon map (#48): what each floor was the last time you entered it, by floor number
   tipsSeen: string[];   // first-time tips already shown (#28)
-  howto: boolean;       // the night waits before it starts: Danny's voice note, then How to hide (#28, #56)
-  voice?: { lines: string[]; date: string } | null;   // Danny's 20:00 voice note while it is up (not saved)
+  howto: boolean;       // the night waits before it starts: the boys' message, then How to hide, then tonight's stars (#28, #56, #101)
+  howtoPage?: number;   // 0 How to hide, 1 tonight's stars (#101; not saved)
+  voice?: { lines: string[]; date: string; chat?: [string, string][] } | null;   // the boys at 20:00 while it is up: Billy's voice note, or Monday's chat (#102; not saved)
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back
   goodwill: number;              // her Goodwill bank, 0-100 (systems/goodwill.ts); half carries over

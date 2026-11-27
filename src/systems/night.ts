@@ -59,7 +59,7 @@ export function startNight() {
   planPhone();   // tonight's phone events (#54, 3.2)
   S.g.screen = 'night';
   S.g.paused = false;
-  // before the night (#28, #56): Danny's voice note on the phone, then How to hide on the first Monday and a night with a new tile
+  // before the night (#28, #56): Billy's voice note on the phone, then How to hide on the first Monday and a night with a new tile
   S.g.voice = voiceNote();
   S.g.howto = howtoOpens() || !!S.g.voice;
   toast(`${dayName()}, 20:00. Town is quiet. Hit the Dungeon Gate.`, '#8fb3ff');

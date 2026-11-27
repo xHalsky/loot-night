@@ -1,5 +1,5 @@
 // First-time tips (docs/design/night.md, Onboarding; #28). Each one shows once per save, the first time its thing
-// happens, as a line in the feed from her or from the guild chat (Magoo and Healero are your party: your friends Danny and Mike). Short, in their
+// happens, as a line in the feed from her or from the guild chat (Magoo and Healero are your party: your friends Billy and Mike). Short, in their
 // voice, no walls of text. Plain text only (no em dashes).
 export type TipId = 'her_show' | 'plan' | 'pass' | 'caught' | 'endcue' | 'dog' | 'yawn'
   | 'headset' | 'bed' | 'peek' | 'map' | 'shower' | 'q4' | 'mirror';   // the core loop's firsts are coach marks instead (COACH below)
@@ -17,7 +17,7 @@ export const TIPS: Record<TipId, { who: 'her' | 'Magoo' | 'Healero'; text: strin
   mirror: { who: 'Magoo', text: 'the mirror shows round the corner. works both ways tho' },
   map: { who: 'Magoo', text: 'pick the next floor. hover a node to see what is there' },
   shower: { who: 'Healero', text: 'shower = 90 s of freedom. go loud' },
-  q4: { who: 'Healero', text: 'q4 pays real zl btw. space = autosum, drag the cell corner, sort for x2. quick visits pay best' },
+  q4: { who: 'Healero', text: 'q4 pays real money btw. space = autosum, drag the cell corner, sort for x2. quick visits pay best' },
 };
 /** On the first night her note names the cue that ends each activity (the tell that she is about to move). */
 export const END_HINT: Record<string, string> = {

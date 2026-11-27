@@ -69,7 +69,7 @@ export function deviceBlocked(id: DeviceId | 'tea'): string {
   if (phoneDead()) return 'The phone is dead';
   if (id === 'tea') {
     if ((h.uses.tea ?? 0) >= T.TEA_MAX) return `${T.TEA_MAX} of ${T.TEA_MAX} tonight`;
-    if (S.g.zl < T.SHOP_ZL.tea) return `Needs ${T.SHOP_ZL.tea} zł`;
+    if (S.g.zl < T.SHOP_ZL.tea) return `Needs $${T.SHOP_ZL.tea}`;
   } else {
     if (!owns(id)) return 'Not installed';
     if (id === 'vacuum' && h.vac) return 'Running';
@@ -113,7 +113,7 @@ export function useDevice(id: DeviceId, room: Room = 'living'): boolean {
   return true;
 }
 
-/** Bubble tea: 25 zł, the doorbell 120 s later. Twice a night. */
+/** Bubble tea: $25, the doorbell 120 s later. Twice a night. */
 export function orderTea(): boolean {
   if (deviceBlocked('tea')) { sfx.bad(); return false; }
   const h = H();

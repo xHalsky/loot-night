@@ -31,7 +31,7 @@ gameplay steps). This file says how the build gets there and where it stands. It
   step 6.
 - **Step 5 (#56), the week, 0.77.0:** Monday to Sunday from `NIGHT_SCHEDULE`, each night's things gated, the replay
   after the plug (the renderer's replay morning), the night's name everywhere, How to hide's tiles by night
-  (night.md, the week). **0.78.0:** Danny's 20:00 voice note on the phone (V13, #78), each night's first chance
+  (night.md, the week). **0.78.0:** Billy's 20:00 voice note on the phone (V13, #78), each night's first chance
   early and safe, the snack run's "Made you a plate". V13's other pieces (Eyes busy, She has the mouse, the tease, the
   towel and the wine, come to bed, the lap sit) go with #59.
 - **Step 6 (#57), the smart home and the battery, 0.79.0:** the battery (FNAF's power), Charge, the Home app on the
@@ -104,7 +104,7 @@ gameplay steps). This file says how the build gets there and where it stands. It
 | 16 | V9 (#74): her windows (the cuddle break, the plan) | 0.71.0 |
 | 17 | V10 (#75): the morning | 0.72.0 |
 | 19 | #55: Q4, the Excel clicker; the Shop app | 0.75.0: Q4; 0.76.0: the Shop |
-| 20 | #56: the week | 0.77.0: the schedule, the replay; 0.78.0: Danny's voice note, the first chances |
+| 20 | #56: the week | 0.77.0: the schedule, the replay; 0.78.0: Billy's voice note, the first chances |
 | 21 | #57: the smart home and the battery | 0.79.0 |
 | 22 | #58: before the playtest | 0.80.0 |
 | 18 | V11 (#76): the small pieces | 0.73.0: pause, How to hide, microsleep, away, the inspect window; 0.74.0: coach marks, tooltips |

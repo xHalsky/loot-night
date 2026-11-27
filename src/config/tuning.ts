@@ -146,6 +146,7 @@ export const T = {
   CHECKPOINT_EVERY: 5,
   WALK_SEC: 4,
   SWING_SEC: 0.42,                // a melee hit's weapon swing (the Knight, Garrote; #97): wind-up, the cut, back to the guard
+  CHAT_FIRST_SEC: 0.4, CHAT_TYPE_SEC: 0.25, CHAT_TYPE_PER_CHAR: 0.012, CHAT_TYPE_MAX: 0.8, CHAT_GAP_SEC: 0.2,   // Monday's first chat (#102): typing dots, then the bubble; about 6 s for six
   WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))
@@ -454,7 +455,7 @@ export const T = {
   FRIENDS_FAIL_NOISE: 30, FRIENDS_DECLINE_NOISE: 15, FRIENDS_BUFF_DMG: 0.2, FRIENDS_BUFF_SPD: 0.1,
   MOM_TIMER: 8, MOM_FAIL_MOOD: 10, MOM_BEATS: 2, MOM_MAX_MISSES: 3, MOM_SWEEP_SEC: 2.4, MOM_ZONE: 0.3, MOM_READ_SEC: 1.6,   // she talks first (marker waits), then you reply
   BOSS_WINDOW_SEC: 10, BOSS_ROWS: 1,
-  BOSS_ZL: 50,                    // answering the boss: overtime pay in zł (not gold: money rule). Ignoring him costs nothing
+  BOSS_ZL: 50,                    // answering the boss: overtime pay in dollars (not gold: money rule). Ignoring him costs nothing
   TEXT_CHAT_SEC: 8,
   FACE_UNLOCK_SEC: 1.2,           // hold the phone to your face
   SLIDE_DIST: 150, DOOR_DIST: 70, TAKE_DIST: 170, PULL_DIST: 60, TOSS_DIST: 130,
@@ -498,7 +499,7 @@ export const T = {
   SHOP_CHAIR_TIRED: 0.85,         // the ergo chair: Tiredness builds at this rate
   SHOP_FLOWERS_GOODWILL: 20,      // flowers for her: Goodwill at once
 
-  // --- Economy ---
+  // --- Economy --- (real money: the names say ZL and the save field is `zl`, from when it was złoty; it shows in dollars, the same numbers, #105)
   START_GOLD: 100, START_ZL: 50,
   FLOOR_GOLD_BASE: 5, FLOOR_GOLD_PER: 3,   // a cleared floor pays BASE + PER x floor: steady income besides selling drops (#2)
   // Alt-tab lag: every switch between the game and Excel blacks out the screen like a fullscreen game

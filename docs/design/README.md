@@ -81,4 +81,4 @@ be done at a time, so the skill is triage.
 | Power (◆) | Average power of a hero's 6 gear slots (item power = item level × rarity). Shows who needs gear. |
 | Tiredness | Live 0 to 100 meter; sleep debt from earlier nights raises its start. |
 | Scraps | Crafting material from salvage. |
-| zł | Real money. Only from the auction house. |
+| $ | Real money (dollars; it was złoty until 0.88, #105). From Q4, the boss, the Auction House. |

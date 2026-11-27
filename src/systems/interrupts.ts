@@ -240,7 +240,7 @@ export function closeGame(success: boolean) {
   n.game = null; n.action = 'none';
   // the chats keep what was said (V8): her texts and your answer; the boys' exchange and how it ended
   if (g.app === 'text') { g.msgs.forEach(m => herSay('l', m)); if (success) herSay('r', 'Five more minutes, love ♥'); herRead(); }
-  if (g.app === 'friends' && g.log?.length) boysLog([...g.log, ['l', success ? 'Danny: ok np, buffing you from here' : "Mike: fine, raid's on without you"]]);
+  if (g.app === 'friends' && g.log?.length) boysLog([...g.log, ['l', success ? 'Billy: ok np, buffing you from here' : "Mike: fine, raid's on without you"]]);
   if (success) succeed(g.app);
   else if (g.stage === 'ringing' && isCall(g.app)) declined(g.app);   // Decline on the ringing screen: Mom calls back, the others give up
   else fail(g.app, 'failed');
@@ -250,15 +250,15 @@ function succeed(kind: InterruptKind) {
   if (kind === 'mom') {   // a whole party back on its feet
     S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); });
     toast('Mom: "Love you, eat something!" Party fully healed, the fallen get up.', '#6fcf7f'); sfx.heal();
-  } else if (kind === 'boss') {   // money rule: real life pays in zł
+  } else if (kind === 'boss') {   // money rule: real life pays in dollars
     S.g.zl += T.BOSS_ZL;
-    toast(`Report fixed. Overtime pay +${T.BOSS_ZL} zł.`, '#6fcf7f'); sfx.good();
+    toast(`Report fixed. Overtime pay +$${T.BOSS_ZL}.`, '#6fcf7f'); sfx.good();
   } else if (kind === 'courier') {
     addBuff({ name: 'Gaming mouse', dmg: 0, speed: 0, cd: T.COURIER_MOUSE_CD, t: 1, max: 1, icon: 'mouse', night: true });
     toast(`"Okay, flat 12." Your new gaming mouse: skill cooldowns -${Math.round(T.COURIER_MOUSE_CD * 100)}% until dawn.`, '#6fcf7f'); sfx.good();
   } else if (kind === 'friends') {
     addBuff({ name: 'Raid buff', dmg: T.FRIENDS_BUFF_DMG, speed: T.FRIENDS_BUFF_SPD, t: 1, max: 1, icon: 'raid', untilBoss: true });
-    toast(`Danny: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage until the boss is down.`, '#6fcf7f'); sfx.good();
+    toast(`Billy: "ok np, buffing you from here." Raid buff: party +${Math.round(T.FRIENDS_BUFF_DMG * 100)}% damage until the boss is down.`, '#6fcf7f'); sfx.good();
   } else replyText(true);
 }
 

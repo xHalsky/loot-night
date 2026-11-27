@@ -11,6 +11,7 @@ declare module 'virtual:pagekit' {
     caught(rung: number, T: number, cost: string): HTMLCanvasElement;
     cuddle(bg: HTMLCanvasElement | null, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     pause(t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
+    closeBox(hot: boolean): HTMLCanvasElement;
     howto(frame: HTMLCanvasElement | null, o: unknown, t: number, black: boolean): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     micro(frame: HTMLCanvasElement | null, lid: number, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     away(bg: HTMLCanvasElement | null, st: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };

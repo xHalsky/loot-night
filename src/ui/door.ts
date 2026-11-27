@@ -6,6 +6,7 @@ import { drawHer, drawHerFrosted, drawHerBack, drawShowerPanel, type Face } from
 import { drawHim, drawChair, drawChairWrap } from './him';
 import { hisLook } from '../systems/him';
 import { T } from '../config/tuning';
+import { on } from '../systems/week';
 import { ACT_BY_ID } from '../data/apartment';
 import { PLAN_WALLS, PLAN_YOU } from './plan';
 
@@ -135,7 +136,7 @@ export function webcamSide(): { door: number[] | null; strip: number[]; bubbles:
 const HEADSET_ICON = new Path2D('M4 13 V10 C4 5 16 5 16 10 V13 M2.5 11 h4 v6 h-4 z M13.5 11 h4 v6 h-4 z');
 function drawHeadsetIcon(c: CanvasRenderingContext2D) {
   const n = S.g.night;
-  if (!n) return;
+  if (!n || !on('headset')) return;   // Tuesday's (#56): no headset on Monday, so nothing offers it (#103)
   c.save(); c.translate(HIM_X + 60, HIM_Y + 4); c.scale(0.95, 0.95);   // 5 grid px right of where it was: the chair is wider (V4)
   c.strokeStyle = n.headset ? '#4fd1e8' : '#8a8a96'; c.lineWidth = 1.8; c.lineJoin = 'round'; c.lineCap = 'round';
   c.stroke(HEADSET_ICON);

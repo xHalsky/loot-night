@@ -71,7 +71,7 @@ PHONE = [
   ('call_mom_reply_timing', dict(app='mom', stage='call', line='Did you see my message on Facebook?', need=1, misses=1, beat=1, feedback='Too slow. She keeps talking.')),
   ('call_mom_listening', dict(app='mom', stage='call', line='So Basia said the pierogi were too salty...', need=0, read=1)),
   ('call_courier_talk', dict(app='courier', stage='talk', line='"Hi, courier. Intercom is broken. Can you come out?"', opts=['Can a neighbour take it?', 'Leave it on the street', 'One sec, boss fight'], need=0)),
-  ('call_friends_talk', dict(app='friends', stage='talk', line='Danny: "BRO. Raid. Now. Bring snacks."', opts=["Shh, she's next door. Text only, love you guys.", "WHAT? I CAN'T HEAR YOU", 'Nah'], need=0, misses=1, feedback='On speaker!')),
+  ('call_friends_talk', dict(app='friends', stage='talk', line='Billy: "BRO. Raid. Now. Bring snacks."', opts=["Shh, she's next door. Text only, love you guys.", "WHAT? I CAN'T HEAR YOU", 'Nah'], need=0, misses=1, feedback='On speaker!')),
 ]
 
 async def main():

@@ -3,6 +3,31 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.88.0 (2026-11-27)
+
+Playtest fixes, round 2 (Paweł).
+
+- **The Tonight note is gone** (#101): at 2x it broke the main visual rule, one resolution (now written down in
+  `screen.md`). Tonight's three stars are a card after How to hide, in its look: Floor N, Don't get caught, Keep her
+  happy, a picture and one sentence each (what it takes, what it pays), Sleep's time and the plug in the foot. Got it on
+  How to hide (or Enter) opens it; Esc skips both. The heart is drawn at 1x, not a blown-up sprite.
+- **The boys are Billy, Mike and Lance** (#102; Danny and Kuba before): an Aliens in-joke. Garrote is Lance's.
+- **Monday opens with their chat, live** (#102): six bubbles from all three, one at a time after typing dots, about
+  6 s in all with a soft tick each, stoked to finally play **Age of Judgment**. "Let's go" works from the start. From
+  Tuesday it is still Billy's voice note. The chat stays in The Boys.
+- **The RPG is Age of Judgment** in the fiction (#102): the taskbar button (wider, so "Age of Judgment · Tab" fits),
+  the desktop icon, the feed's welcome, the tooltip. The title screen keeps the game's title.
+- **No headset on Monday** (#103): it stays Tuesday's (decided 2026-11-27), and Monday no longer offers it: no icon by
+  his head, no head button, H dark on the desk keyboard.
+- **The headset's tooltip is the shared one** (#103): her panel's paper card ("Headset" and what it does), not a CSS
+  ring and an Inter label. No element uses a browser `title` tooltip any more.
+- **The phone's close box is pixel art** (#104): the grey disc with the red cross, drawn by the renderer at 12 × 12
+  grid px. **A click outside the phone closes it**, unless it lands on the RPG or on something with an action.
+- **Real money is dollars** (#105): "$50", "+$1.3", "$249"; the same numbers (balance and saves untouched; the save
+  field is still `zl`). The Auction House sells for real money.
+- No rule changes: sims as 0.87 (good bot Monday 3 stars, idle bot caught). Tests: `week.ts`, `week.py`, `stars.py`,
+  `small.py` follow the chat and the second card; `note.py` is gone.
+
 ## 0.87.2 (2026-11-26)
 
 - **The playtest build on GitHub Pages** (#100): https://xhalsky.github.io/loot-night/ for close friends. A push to

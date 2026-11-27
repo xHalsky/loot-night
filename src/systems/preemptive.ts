@@ -93,7 +93,7 @@ function land(id: PreId) {
     return;
   }
   // the raid pass: paid with Goodwill, the strongest calm, and noise does not end it
-  finishPre(); boysLog([['r', 'raid night? need a carry'], ['l', 'Danny: SAY LESS']]);
+  finishPre(); boysLog([['r', 'raid night? need a carry'], ['l', 'Billy: SAY LESS']]);
   if (S.g.goodwill < T.GOODWILL_RAID || a.asleep) { toast('"Not tonight."', '#ffb07a'); return; }
   S.g.goodwill -= T.GOODWILL_RAID;
   a.calm = Math.max(a.calm, T.RAID_CALM_SEC); a.calmHard = true;

@@ -123,7 +123,7 @@ const SVC: Record<ServiceSpot, { name: string; mark: string; line: string }> = {
   forge: { name: 'SALVAGE FORGE', mark: 'anvil', line: 'Melt gear into Souls.' },
   merchant: { name: 'MERCHANT', mark: 'scales', line: 'Buys loot for gold.' },
   appraiser: { name: 'APPRAISER', mark: 'eye', line: `Epics ${T.IDENTIFY_COST.epic} g, legendaries ${T.IDENTIFY_COST.legendary} g.` },
-  auction: { name: 'AUCTION HOUSE', mark: 'gavel', line: 'Sells loot for real money, in zl.' },
+  auction: { name: 'AUCTION HOUSE', mark: 'gavel', line: 'Sells loot for real money, in dollars.' },
 };
 function servicePanelView(svc: ServiceSpot) {
   const n = N(), g = S.g, picked = (n.svcPick ?? []).filter(id => g.bag.some(e => e.id === id));
@@ -132,7 +132,7 @@ function servicePanelView(svc: ServiceSpot) {
     const e = g.bag[k], c = cellOf(e);
     if (e) {
       const ok = serviceApplies(svc, e), v = ok ? serviceSum(svc, [e.id]) : 0;
-      Object.assign(c, { applies: ok, picked: picked.includes(e.id), sel: false, badge: !ok ? '' : svc === 'forge' ? `+${v}` : svc === 'auction' ? `${v}zl` : `${v}g`, badgeCol: svc === 'forge' ? 'u6' : 'gold' });
+      Object.assign(c, { applies: ok, picked: picked.includes(e.id), sel: false, badge: !ok ? '' : svc === 'forge' ? `+${v}` : svc === 'auction' ? `$${v}` : `${v}g`, badgeCol: svc === 'forge' ? 'u6' : 'gold' });
     }
     cells.push(c);
   }
@@ -144,7 +144,7 @@ function servicePanelView(svc: ServiceSpot) {
     const rare = picked.map(id => g.bag.find(e => e.id === id)).find(e => e?.kind === 'item' && RARITIES.indexOf(e.item.rarity) >= 2);
     if (rare && rare.kind === 'item') S0.note = `${rare.item.name} is ${rare.item.rarity}: the Auction House may pay more for it.`;
   }
-  if (svc === 'auction') { S0.summary = `${k} picked: ~${sum} zl`; S0.button = `List ${k} · ~${sum} zl`; S0.note = `Pays tomorrow morning. ${T.COST_LIST_MIN} min each.`; }
+  if (svc === 'auction') { S0.summary = `${k} picked: ~$${sum}`; S0.button = `List ${k} · ~$${sum}`; S0.note = `Pays tomorrow morning. ${T.COST_LIST_MIN} min each.`; }
   if (svc === 'appraiser') {
     S0.why = 'Only the unknown ones: epics and legendaries.';
     S0.summary = k ? `Identify: ${sum} g (${T.COST_IDENTIFY_MIN} min)` : 'Pick an unknown item.'; S0.button = `Identify · ${sum} g`; S0.ok = k > 0 && g.gold >= sum;

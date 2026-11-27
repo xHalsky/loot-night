@@ -76,7 +76,7 @@ import { COACH } from './data/tips';
 // screen (the battle canvas, its overlay and the side panel); the YOU card and the feed sit on the desk.
 const stage = document.getElementById('stage')!;
 stage.innerHTML = `
-  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><canvas id="herArea" width="148" height="360"></canvas><div id="herNote" aria-hidden="true"></div><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"><span class="hh-tip" id="hhTip"></span></div></div>
+  <div id="door"><canvas id="doorCanvas" width="${DOOR_W}" height="${DOOR_H}"></canvas><canvas id="herArea" width="148" height="360"></canvas><div id="herNote" aria-hidden="true"></div><div id="headHit" data-act="headset" aria-label="Your head: click to put the headset on or off (H)"></div></div>
   <div id="desk">
     <div id="deskInner">
       <canvas id="rsArea" width="492" height="360"></canvas><div id="deskPhone" aria-hidden="true"></div><canvas id="ebArea" width="492" height="360"></canvas><canvas id="rsSmall" width="492" height="360"></canvas>
@@ -90,7 +90,7 @@ stage.innerHTML = `
       </div>
       <canvas id="dogOv" width="492" height="360"></canvas>
       <div id="preUi"></div>
-      <canvas id="phHand" width="126" height="252"></canvas><button id="phClose" class="mg-close" data-act="closeGame" title="Put the phone down">✕</button>
+      <canvas id="phHand" width="126" height="252"></canvas><button id="phClose" data-act="closeGame" aria-label="Put the phone down"></button>
     </div>
   </div>
   <canvas id="lapFx" width="1280" height="720"></canvas>
@@ -139,9 +139,10 @@ const actions: Record<string, (arg: string) => void> = {
   startNight: () => startNight(),
   morning: () => toMorning(),
   resume: () => { S.g.paused = false; },
-  howtoOpen: () => { S.g.paused = false; S.g.howto = true; },
-  howtoClose: () => { S.g.howto = false; S.g.voice = null; },
-  voiceOk: () => voiceOk(),   // Danny's voice note: Got it (the week, #56)
+  howtoOpen: () => { S.g.paused = false; S.g.howto = true; S.g.howtoPage = 0; },
+  howtoNext: () => { S.g.howtoPage = 1; sfx.click(); },   // How to hide's Got it: tonight's stars next (#101)
+  howtoClose: () => { S.g.howto = false; S.g.voice = null; S.g.howtoPage = 0; },
+  voiceOk: () => voiceOk(),   // Billy's voice note: Got it (the week, #56)
   altTab: () => { if (S.g.night) altTab(); },
   showRpg: () => { if (S.g.night && N().monitor !== 'rpg') altTab(); },
   showExcel: () => { if (S.g.night && N().monitor !== 'excel') altTab(); },
@@ -224,7 +225,6 @@ const actions: Record<string, (arg: string) => void> = {
   dbgLapSit: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('chat'); n.visit.lapSit = true; },   // the lap sit (#86)
   dbgBedTease: () => { const n = N(); if (n.visit.stage !== 'idle') return; triggerVisitNow('tease'); n.visit.bed = true; n.visit.from = 'night'; n.apt.asleep = false; },   // come to bed (#89)
   hideCans: () => { hideCans(); },
-  noteOff: () => { S.g.noteOff = true; hover.key = ''; sfx.click(); toast('Note off. Tonight\'s stars still count.', '#a999bd'); },   // the Tonight note (#98); its tooltip goes with it
   takePlate: () => takePlate(),
   chatAnswer: a => chatAnswer(Number(a)),
   cuddle: a => cuddleAnswer(a === '1'),
@@ -281,7 +281,7 @@ document.addEventListener('pointermove', ev => {
       ghost().classList.toggle('hero', !!h); ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
-  } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea', 'ebArea'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases set their own hover (V2, V3)
+  } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea', 'ebArea', 'headHit'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases (V2, V3) and his head (#103) set their own hover
     const t = (ev.target as HTMLElement).closest('[data-item],[data-tip]') as HTMLElement | null;
     hover.key = t ? (t.dataset.item ?? t.dataset.tip!) : ''; hover.x = p.x; hover.y = p.y;
   }
@@ -458,6 +458,9 @@ herCanvas.addEventListener('pointermove', ev => {
   hover.key = tip || ''; hover.x = p.x; hover.y = p.y; hover.src = 'her';
 });
 herCanvas.addEventListener('pointerleave', () => { if (herHover) herDirty = true; herHover = ''; hover.key = ''; if (S.g.night) S.g.night.looking = false; });
+// his head is the headset's button (#103): its tip is the shared one in her panel's look, not a DOM label of its own
+el('headHit').addEventListener('pointermove', ev => { const p = toStage(ev); hover.key = S.g.night ? `text:${herTip('headset')}` : ''; hover.x = p.x; hover.y = p.y; hover.src = 'her'; });
+el('headHit').addEventListener('pointerleave', () => { hover.key = ''; });
 document.addEventListener('pointerup', () => { if (S.g.night) setPeeking(false); });
 // lean in (#77): the mouse across the right screen leans, the wheel opens the door a notch, the right button looks closer
 // the buttons as pointer events report them (a second button pressed or let go fires pointermove, not down or up)
@@ -495,6 +498,19 @@ document.addEventListener('pointerdown', ev => {
   ev.preventDefault();
   if (t.dataset.tip) hover.key = '';   // the button you just used: its tooltip goes (it may be gone, e.g. a chat in the phone)
   actions[act]?.(t.dataset.arg ?? '');
+});
+
+// A click outside the phone closes it, as its close box does (#104): not on the RPG (the monitor), not on anything that
+// does something (a button, a desk thing, her panel's buttons, the door in the webcam). Runs after the clicks above.
+document.addEventListener('pointerdown', ev => {
+  if (!phWas || ev.button !== 0 || !S.g.night) return;
+  const t = ev.target as HTMLElement;
+  if (t.closest('#phHand, #phClose, #screen, [data-act], [data-item], [data-drag], [data-hold]')) return;
+  if (t.id === 'rsArea' && deskHitAt(ev)?.act) return;
+  if (t.id === 'herArea' && (herHitAt(ev)?.act || (camXY(ev)[1] < DOOR_H && doorHit(...camXY(ev))))) return;
+  if (['rsSmall', 'ebArea', 'modalArea', 'microArea', 'dogOv', 'lapFx'].includes(t.id) && t.style.display !== 'none') return;   // a window of its own is up there
+  const act = el('phClose').dataset.act;
+  if (act) actions[act]?.('');
 });
 
 document.addEventListener('contextmenu', ev => {
@@ -542,7 +558,7 @@ window.addEventListener('keydown', ev => {
     if (ev.key === 'Escape' || ev.key === 'Enter') { ev.preventDefault(); actions.inspectClose(''); return; }
   }
   if (caughtT(performance.now()) >= 0) { ev.preventDefault(); caughtEnd(performance.now()); return; }   // her screen takes the key (V7)
-  if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (g.voice) voiceOk(); else g.howto = false; } return; }   // the voice note, the card: the night waits
+  if (g.howto) { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (g.voice) voiceOk(); else if (ev.key !== 'Escape' && !g.howtoPage) actions.howtoNext(''); else actions.howtoClose(''); } return; }   // the voice note, the cards (Enter: the next one; Esc skips them): the night waits
   if (ev.key === 'Escape') { if (planOpen) { planOpen = false; return; } if (g.night?.photo) { closePhoto(); return; } g.paused = !g.paused; return; }   // her photo (#92): Esc closes it
   if (g.paused) return;
   if (n.switching) { ev.preventDefault(); return; }
@@ -744,12 +760,12 @@ const microCanvas = el('microArea') as HTMLCanvasElement, microCtx = microCanvas
 const rsSmallCanvas = el('rsSmall') as HTMLCanvasElement, rsSmallCtx = rsSmallCanvas.getContext('2d')!;
 type SmHit = { x: number; y: number; w: number; h: number; act: string; arg: string };
 let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt = 0, rsSmallAt = 0, rsSmallBg = 0, microAt = 0, inspectOpen = false;
-/** Got it on Danny's voice note (the week, #56): the phone goes down, the note stays in The Boys' chat until the next
+/** Got it on Billy's voice note (the week, #56): the phone goes down, the note stays in The Boys' chat until the next
  *  call; How to hide next on a night with a new tile, else the night starts. */
 function voiceOk() {
   const v = S.g.voice;
   if (!v) return;
-  boysLog([['sys', `Danny · voice note · ${v.date}`], ...v.lines.map(l => ['l', l] as ['l', string])]);
+  boysLog(v.chat ? [['sys', v.date], ...v.chat.map(([w, s]) => ['l', `${w}: ${s}`] as ['l', string])] : [['sys', `Billy · voice note · ${v.date}`], ...v.lines.map(l => ['l', l] as ['l', string])]);   // Monday's chat stays in The Boys (#102)
   S.g.voice = null; S.g.howto = howtoOpens(); sfx.click();
 }
 // How to hide (grid doc 7k): tonight's tiles (the week, #56: systems/week.ts howtoTiles), the new ones framed gold
@@ -760,7 +776,18 @@ const HOWTO_ANSWER = {
 };
 function howtoGame() {
   const k = howtoTiles();
-  return { ids: k.ids, isNew: k.isNew, head: `${dayName()}, 20:00`,
+  if (S.g.howtoPage) {   // tonight's stars (#101): what a good night is, after How to hide (the sticky note's old job)
+    const f = N().deepTarget;
+    return { ids: ['deep', 'unseen', 'sweet'], isNew: [], head: `${dayName()}, 20:00`, kicker: 'Tonight', title: 'Three stars make a good night.', floor: f,
+      tiles: {
+        deep: [`Floor ${f}`, `Reach floor ${f} in any run tonight, and a chest with an item waits in the morning.`],
+        unseen: ["Don't get caught", `Never let her see the game, and she starts tomorrow with ${T.STAR_UNSEEN_GOODWILL} more Goodwill.`],
+        sweet: ['Keep her happy', 'Log off before the tag by her name says furious, and she makes you breakfast.'],
+      },
+      foot: `Stars count when you log off: Sleep opens at ${fmtClock(T.EARLIEST_SLEEP)}. If she pulls the plug, you get none.`,
+    };
+  }
+  return { ids: k.ids, isNew: k.isNew, head: `${dayName()}, 20:00`, next: true,
     tiles: {
       listen: ['Listen', 'Her TV, kettle, shower, steps. The line under your door says what you heard last. Hold the door to peek.'],
       tab: ['Tab to Excel', 'Footsteps? Press Tab now. Switching takes a second or two, so never wait for the handle.'],
@@ -982,9 +1009,14 @@ rsCanvas.addEventListener('pointerleave', () => { deskPhoneHover = false; stroke
 const phCanvas = el('phHand') as HTMLCanvasElement, phCtx = phCanvas.getContext('2d')!;
 let phHits: { x: number; y: number; w: number; h: number; act: string; arg: string }[] = [], phLast = 0, phWas = false;
 const PH_RISE_MS = 320;
+let phCloseArt = false;
 function drawPhone() {
   const n = S.g.night, on = !!n && phoneShown() && PK.ready() && !S.g.paused;
-  if (on !== phWas) { phWas = on; phCanvas.style.display = on ? 'block' : 'none'; el('phClose').style.display = on ? 'grid' : 'none'; if (!on) phHits = []; }
+  if (!phCloseArt && PK.ready()) {   // the close box in pixels (#104): the renderer's, set once as the button's picture
+    phCloseArt = true; const b = el('phClose');
+    b.style.setProperty('--x', `url(${PK.closeBox(false).toDataURL()})`); b.style.setProperty('--x-hot', `url(${PK.closeBox(true).toDataURL()})`);
+  }
+  if (on !== phWas) { phWas = on; phCanvas.style.display = on ? 'block' : 'none'; el('phClose').style.display = on ? 'block' : 'none'; if (!on) phHits = []; }
   if (!on) return;
   const now = performance.now(), k = Math.min(1, (now - (n!.phUp ?? 0)) / PH_RISE_MS), dy = Math.round((1 - (1 - (1 - k) ** 3)) * 540);
   phCanvas.style.transform = dy ? `translateY(${dy}px)` : '';
@@ -1031,7 +1063,7 @@ function render() {
   document.querySelector('.keyboard')?.classList.toggle('rogue', S.g.heroes.some(h => h.id === 'rogue'));   // V2 (#67): the battle area in the new look
   drawMonitor(monCtx, liveShown());
   if (n) {
-    setHtml('hhTip', n.headset ? 'Click: headset off (H)' : 'Click: headset on (H)');
+    el('headHit').style.display = on('headset') ? 'block' : 'none';   // Tuesday's (#56): nothing to click on Monday (#103)
     setHtml('monUi', monUiLiveHtml());   // the run end card over the town; the rest of the RPG is the renderer's
     el('ui').classList.toggle('cv', livePanelShown());   // the panel is drawn by the renderer: the DOM keeps only its item windows
     setHtml('ui', livePanelShown() ? `<div class="sp-top cvtop ${N().location === 'town' ? 'cvtown' : ''}">${uiPopHtml()}</div>` : '');   // dark until the renderer's fonts load

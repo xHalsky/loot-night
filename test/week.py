@@ -46,16 +46,20 @@ async def main():
         await shot('00_title', 100)
         await go('newGame'); await pg.wait_for_timeout(600)
 
-        # --- Monday: Danny's voice note first, on the phone in your hand; Esc; How to hide ---
-        check(await ev("g.day") == 0 and await ev("!!g.voice && g.howto"), 'a new game is Monday: Danny\'s voice note first, the night waits')
+        # --- Monday: the boys' chat first (#102), on the phone in your hand; Esc; How to hide; tonight's stars ---
+        check(await ev("g.day") == 0 and await ev("!!g.voice && g.howto"), 'a new game is Monday: the boys\' chat first, the night waits')
         check(await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'block', 'the phone is in your hand')
-        await shot('0_monday_voice', 10800)   # the waveform plays, the transcript comes in line by line
-        check(await ev("g.voice.lines[0].startsWith('yo its raid night')") and await ev("n.threat") < 0.5, 'Monday\'s note; the night has not started')
+        await shot('0_monday_chat', 7000)   # Billy, Mike and Lance typing, a bubble at a time
+        check(await ev("g.voice.chat.length") == 6 and await ev("n.threat") < 0.5, 'Monday\'s chat; the night has not started')
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
         check(await ev("!g.voice && g.howto") and await pg.evaluate("()=>document.getElementById('phHand').style.display") == 'none', 'Esc puts the phone down; How to hide next')
-        check(await ev("g.boysThread && g.boysThread[0].text.startsWith('Danny · voice note')"), 'the note stays in The Boys\' chat')
+        check(await ev("g.boysThread && g.boysThread[1].text.startsWith('Billy: AGE OF JUDGMENT')"), 'the chat stays in The Boys\' chat')
         await shot('1_monday_howto')
+        await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
+        check(await ev("g.howto && g.howtoPage === 1"), 'Enter: tonight\'s stars next (#101)')
+        await shot('1b_monday_stars')
         await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)
+        check(await ev("!g.howto"), 'Enter again: the night starts')
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(900)
         hits = await pg.evaluate("()=>(window.__lootnight.deskHits||[]).map(h=>h.tip||h.act)")
         check(not any(h in ('tired', 'zone', 'drink') for h in hits), 'Monday: no YOU card (no Tired, Zone or Drink)')
@@ -83,13 +87,13 @@ async def main():
         await pg.mouse.click(*spot); await pg.wait_for_timeout(700)
 
         # --- Tuesday: the voice note (Got it with the mouse), then How to hide with the headset new ---
-        check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.lines[0].startsWith(\"no curfew\")"), 'Tuesday: Danny\'s note: no curfew')
+        check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.lines[0].startsWith(\"no curfew\")"), 'Tuesday: Billy\'s note: no curfew')
         await pg.wait_for_timeout(400)
         check(await tap('voiceOk'), 'Got it on the phone')
         check(await ev("g.day") == 1 and await ev("g.howto && !g.voice"), 'Tuesday: How to hide, the headset new')
         check(await ev("n.apt.forceKind") == 'chat' and await ev("n.firstSafe") == 'chat', 'Tuesday: her first visit will be a chat, and safe')
         await shot('7_tuesday_howto')
-        await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)
+        await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)   # How to hide, then tonight's stars
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(900)
         hits = await pg.evaluate("()=>(window.__lootnight.deskHits||[]).map(h=>h.tip||h.act)")
         check('tired' in hits and 'zone' in hits and 'drink' not in hits, 'Tuesday: Tired and Zone on the YOU card, no Drink yet')

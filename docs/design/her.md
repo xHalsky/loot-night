@@ -119,11 +119,11 @@ tell and nothing fills. Full: "Enjoying the view?" Never a catch (she sees you, 
 (Goodwill +10); below, she teases (Mood +5); either way you let go. In the hallway or on her way, the glance's old
 rule stands (she sees you fast and comes over). Spying pays no Goodwill.
 
-**The hall mirror** (199 zł, the Shop's Home tab; furniture, no battery): past stop 3 it shows round the corner into the
+**The hall mirror** ($199, the Shop's Home tab; furniture, no battery): past stop 3 it shows round the corner into the
 bathroom (her at the basin in her sheet mask) and the bedroom; her shower or bath steam fogs it to her outline, clearing
 `MIRROR_DEFOG_SEC` (20) s after.
 
-**Taught on Tuesday** (week one 2b): Danny's note ("hold your door open longer: you lean in and see what she's
+**Taught on Tuesday** (week one 2b): Billy's note ("hold your door open longer: you lean in and see what she's
 doing"), the Lean in tile in How to hide (five tiles), her yoga first (no visit meanwhile), three coach marks: the door
 ("She is doing yoga..."; holding the door ends its crawl), the slit ("Move the mouse to look...", till you lean through a
 stop or let go), her first tell ("She is turning", the game crawls till you let go: it never spots you). The first lean
@@ -290,7 +290,7 @@ wears one, Goodwill +`GIFT_GOODWILL` (20) ("She's wearing the fluffy socks you g
 (not over the towel or your hoodie); a feet gift over her feet (not out of the water). Every gift has a trade-off
 (Paweł, 2026-11-26):
 
-| Gift | zł | Slot | Trade-off |
+| Gift | $ | Slot | Trade-off |
 |---|---|---|---|
 | Fluffy socks | 79 | Feet | She loves them: her steps are silent, the only warning is the handle |
 | Knee socks | 99 | Feet | White with two stripes: her steps are heard 2 s later, quieter (as socks) |

@@ -1,8 +1,16 @@
-// Danny's 20:00 voice note (the week, #56; grid doc 7m): a voice message in The Boys' chat that names tonight's new
-// thing, in his chat voice (lowercase, casual). Magoo is Danny's character. Week one has one a night; a replay has its
-// own. Tuesday's are lean in's (#77; the headset and her humming are How to hide's tiles and the coach marks).
+// The boys at 20:00 (the week, #56; grid doc 7m): Billy, Mike and Lance (#102; Magoo, Healero and Garrote are theirs),
+// in their chat voice (lowercase, casual). Monday is the first night of Age of Judgment, so the first one is the three
+// of them typing at once, stoked (FIRST_CHAT, live bubbles); from Tuesday Billy's voice note names tonight's new thing.
+// Week one has one a night; a replay has its own. Tuesday's are lean in's (#77).
+export const FIRST_CHAT: [string, string][] = [
+  ['Billy', 'AGE OF JUDGMENT TONIGHT. LETS GOOO'],
+  ['Mike', "finally!! healero's been ready since lunch"],
+  ['Lance', 'garrote sharpened both daggers for this'],
+  ['Billy', 'she still thinks youre doing spreadsheets lol'],
+  ['Mike', 'steps in the hall = tab to excel. BEFORE the door opens'],
+  ['Lance', "q4 pays real money btw. shop's on your phone"],
+];
 export const VOICE_NOTES: Record<string, string[]> = {
-  Monday: ['yo its raid night. she thinks youre doing spreadsheets lol', 'steps in the hall = tab to excel. BEFORE the door opens', "q4 pays real money btw. the shop's on your phone"],
   Tuesday: ["no curfew tonight. play till you drop lol", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
   Wednesday: ['your phones gonna ring tonight. your mom, a courier, your boss', 'pick up quick and they pay. on speaker she can hear it tho', "text her while she's busy and she leaves you alone a bit"],
   Thursday: ["the dog's up tonight. pet him or he goes for your cables", "goblin fuel's in your drawer (G). plates in the hall = hide the cans", 'your phone runs the house now. watch the battery tho'],

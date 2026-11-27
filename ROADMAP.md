@@ -30,14 +30,16 @@ The bot sims (good + idle) still run every round, but these four criteria come f
       the dog and the cable fix 0.69 (V6, #71), caught 0.70 (V7, #72), her windows 0.71 (V9, #74), the morning 0.72
       (V10, #75), the small pieces 0.73 and 0.74 (V11, #76): real life is in the new look.
    4. #55 Q4, the Excel clicker (0.75), and the Shop app (0.76): done. Next, step 5 (#56).
-   5. #56 The week (FNAF's nights): the schedule and the replay (0.77), Danny's voice note and the first chances
+   5. #56 The week (FNAF's nights): the schedule and the replay (0.77), Billy's voice note and the first chances
       (0.78): done. V13's remaining pieces go with #59.
    6. #57 The smart home and the phone battery: done (0.79).
    7. #58 Before the playtest: done (0.80): the redesign handoff is built.
    8. **#59 the fan-service pass, V12 (#77) lean in and V13's rest (#78)**, moved here before the playtests
       (Paweł, 2026-11-26: everything planned is in before he tests): done (0.81 to 0.86). Next, Paweł's RPG session (2).
 2. **Paweł's playtest** (2026-11-26, Monday night): first fixes in 0.87 (#95 the loot walk, #96 Garrote from night 1,
-   #97 melee swings, #98 the Tonight note, #99 curios in the corridor). Next, the rest of his notes; his 15-minute
+   #97 melee swings, #98 the Tonight note, #99 curios in the corridor); round 2 in 0.88 (#101 the stars card, #102
+   Billy, Mike and Lance and Age of Judgment, #103 the headset on Monday, #104 the phone's close, #105 dollars). Next,
+   the rest of his notes; his 15-minute
    RPG session (real life off, F1) and the real-life-on night.
 3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
    night, tools in `test/balance.py` and `test/campaign.py`). Next: playtests with `docs/playtest.md`, then tune

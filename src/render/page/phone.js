@@ -70,7 +70,7 @@ function avatar(kind, cx, cy, r) {
   AVM = [cx, cy, r]; avatarBody(kind, cx, cy, r); AVM = null;
 }
 function avatarBody(kind, cx, cy, r) {
-  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, magoo: P.arcane, danny: P.s4 }[kind] ?? P.s3;
+  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, magoo: P.arcane, billy: P.s4 }[kind] ?? P.s3;
   disc(cx, cy, r, bg);
   const s = r / 10, hd = (dx, dy, hr, hair, o = {}) => {
     disc(cx + dx * s, cy + (dy + 9) * s, 7.5 * s * (o.sh ?? 1), o.shirt ?? P.s2);   // shoulders
@@ -118,7 +118,7 @@ const PHONE_SCREENS = {};
 const CALLERS = {
   mom: { name: 'Mom', sub: 'mobile', av: 'mom', mat: M_UMBER, v: [0.1, 0.42] },
   courier: { name: 'Courier', sub: '+48 22 555 0199', av: 'courier', mat: M_STONE, v: [0.08, 0.36] },
-  boys: { name: 'The Boys (3)', sub: 'Danny, Mike, Kuba', av: 'boys', mat: M_MAGIC, v: [0.04, 0.24] },
+  boys: { name: 'The Boys (3)', sub: 'Billy, Mike, Lance', av: 'boys', mat: M_MAGIC, v: [0.04, 0.24] },
 };
 PHONE_SCREENS.call = (t, o) => {
   const C = CALLERS[o.who || 'mom'], left = 8 - (t % 8);
@@ -253,7 +253,7 @@ PHONE_SCREENS.courier = (t, o) => {
 PHONE_SCREENS.boys = (t, o) => {
   const total = 8, left = total - (t % total);
   callHead('boys', 'on speaker', t);
-  bubble('Danny: BRO. Raid. Now. Bring snacks.', 'l', 48, { maxW: 100 });
+  bubble('Billy: BRO. Raid. Now. Bring snacks.', 'l', 48, { maxW: 100 });
   timerBar(78, left, total);
   tx('Say no, nicely. Quickly.', 56, 88, P.u6, { align: 'c' });
   let py = 102; py += pill("Shh, she's next door. Text only, love you guys.", py); py += pill("WHAT? I CAN'T HEAR YOU", py); py += pill('Nah', py);
@@ -390,7 +390,7 @@ const glyphAt = (k, x, y, idx) => spr(x, y, PG[k], { x: idx });
 // ---------------------------------------------------------------- the home screen and the Shop (handoff 4.6, #55)
 // Tapping the idle phone opens the home screen: Messages (the contacts), Shop, Home (step 6); more apps later. The Shop sells
 // real-life things only, in zl: For you (with Goblin Fuel) and For her (her gifts, #59). Buying is instant.
-const zlP = (s, x, y, idx, al = 'l') => { const str = s + ' z', w = measure(str, 'tiny') + 5, x0 = al === 'c' ? Math.round(x - w / 2) : al === 'r' ? x - w : x; tx(str, x0, y, idx); spr(PHX(x0 + w - 4), PHY(y - 1), ['.x..', '.x.x', '.xx.', 'xx..', '.x..', '.x..'], { x: idx }); return w; };
+const zlP = (s, x, y, idx, al = 'l') => { const str = '$' + s, w = measure(str, 'tiny'), x0 = al === 'c' ? Math.round(x - w / 2) : al === 'r' ? x - w : x; tx(str, x0, y, idx); return w; };   // a price in dollars (#105)
 const APP_G = {   // 12 x 12 app glyphs
   messages: ['............', '.xxxxxxxxxx.', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', '.xxxxxxxxxx.', '..xx........', '.xx.........', 'x...........', '............'],
   shop: ['....xxxx....', '...x....x...', '...x....x...', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'xxx.xxxx.xxx', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', 'xxxxxxxxxxxx', '.xxxxxxxxxx.', '............'],
@@ -808,8 +808,15 @@ const HER_THREAD = [
   ['date', 'Today 23:12'], ['l', 'going to bed'], ['l', 'dont stay up too late'], ['r', 'one more floor ♥'],
   ['date', '00:41'], ['photo', 'jersey'], ['l', 'stole your jersey'],
 ];
-function itemH(m) { return m[0] === 'date' ? 13 : m[0] === 'sys' ? 11 : m[0] === 'photo' ? PB.h + 3 + (m[2] && m[2].left != null ? 9 : 0) : wrapT(m[1], 66).length * 8 + 8; }
+function itemH(m) { return m[0] === 'typing' ? 16 : m[0] === 'date' ? 13 : m[0] === 'sys' ? 11 : m[0] === 'photo' ? PB.h + 3 + (m[2] && m[2].left != null ? 9 : 0) : wrapT(m[1], 66).length * 8 + 8; }
 function drawItem(m, y, t) {
+  if (m[0] === 'typing') {   // someone is typing (#102): their name and three dots that hop, in a small grey bubble
+    const nw = mw(m[1]), w = nw + 22, x = 7, h = 12;
+    rrI(x, y + 3, w, h, 4, P.s2); px(x - 1, y + h + 2, P.s2); px(x, y + h + 2, P.s2);
+    tx(m[1], x + 5, y + 6, P.s5);
+    for (let k = 0; k < 3; k++) { const hop = Math.floor(t * 6 - k) % 3 === 0 ? 1 : 0; rrI(x + nw + 8 + k * 4, y + 9 - hop, 2, 2, 0, hop ? P.moon : P.s4); }
+    return;
+  }
   if (m[0] === 'date') { const w = measure(m[1], 'tiny'), a = Math.round(56 - w / 2 - 5), b = Math.round(56 + w / 2 + 4); tx(m[1], 56, y + 3, P.s4, { align: 'c' }); rrI(10, y + 5, a - 10, 1, 0, P.s2); rrI(b, y + 5, PH.sw - 10 - b, 1, 0, P.s2); return; }
   if (m[0] === 'sys') { tx(m[1], 56, y + 2, P.s4, { align: 'c' }); return; }
   if (m[0] === 'photo') {
@@ -881,18 +888,18 @@ function msgList(t, o = {}) {
 PHONE_SCREENS.msglist = (t, o) => msgList(t, { tap: 0, ...o });
 // The Boys' chat: the last minigame's exchange (their text and your answer), read-only, and Raid night? to start one
 const BOYS_THREAD = [
-  ['date', 'Today 22:58'], ['l', 'Danny: raid at 11?'], ['l', 'Danny: BRO. Raid. Now. Bring snacks.'], ['l', 'Kuba: danny is in'],
-  ['r', "Shh, she's next door. Text only, love you guys."], ['l', "Mike: fine, raid's on without you"], ['l', 'Danny: whipped'],
+  ['date', 'Today 22:58'], ['l', 'Billy: raid at 11?'], ['l', 'Billy: BRO. Raid. Now. Bring snacks.'], ['l', 'Lance: billy is in'],
+  ['r', "Shh, she's next door. Text only, love you guys."], ['l', "Mike: fine, raid's on without you"], ['l', 'Billy: whipped'],
 ];
 PHONE_SCREENS.boyschat = (t, o) => {
-  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', '00:44');
+  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '00:44');
   herThread(BOYS_THREAD, y0 + 2, 198, BOYS_THREAD.length - 1, t);
   pill('Raid night?', 203, { fill: P.s2, ink: P.s5, shadow: P.s1 }); gl(['.xxx.', 'x...x', 'xxxxx', 'xx.xx', 'xxxxx'], 20, 207, P.s5);
   tx('Needs Goodwill 40: 31 now', 56, 223, P.s4, { align: 'c' });
   homeBar();
 };
-// 20:00, every night (week one, section 2b): Danny's voice message in The Boys' chat, the handoff's "Magoo's voicemail"
-// (Magoo is Danny's character). The phone rises into your hand while the night waits: his voice note plays (the
+// 20:00, every night (week one, section 2b): Billy's voice message in The Boys' chat, the handoff's "Magoo's voicemail"
+// (Magoo is Billy's character). The phone rises into your hand while the night waits: his voice note plays (the
 // waveform fills gold, a timer), its transcript comes in under it line by line as he says it, and Got it puts the phone
 // down and starts the night. It stays in The Boys' chat until the next minigame, so you can read it again.
 const VOICE_NOTES = {
@@ -903,13 +910,13 @@ const VOICE_NOTES = {
 const VOICE_AT = [0, 4.5, 9.5], VOICE_LEN = 14;
 PHONE_SCREENS.voicenote = (t, o) => {
   const lines = o.lines || VOICE_NOTES[o.night || 'mon'], tt = o.tt ?? t % (VOICE_LEN + 4), p = Math.min(1, tt / VOICE_LEN);   // the game passes its lines and the time played
-  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', '20:00');
+  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
   let y = y0 + 3;
   drawItem(['date', o.date || (o.night === 'replay' ? 'Tuesday, again' : 'Today 20:00')], y, t); y += 14;
   // the voice note: who and how long, a play disc, a waveform that fills gold as it plays
   const x = 7, w = 98, h = 25;
   rrI(x, y, w, h, 4, P.s2); px(x - 1, y + h - 1, P.s2); px(x, y + h - 1, P.s2);
-  tx('Danny', x + 5, y + 3, P.s5); tx('0:' + String(Math.floor(p * VOICE_LEN)).padStart(2, '0') + ' / 0:' + VOICE_LEN, x + w - 5, y + 3, p < 1 ? P.gold : P.s5, { align: 'r' });
+  tx('Billy', x + 5, y + 3, P.s5); tx('0:' + String(Math.floor(p * VOICE_LEN)).padStart(2, '0') + ' / 0:' + VOICE_LEN, x + w - 5, y + 3, p < 1 ? P.gold : P.s5, { align: 'r' });
   disc(x + 9, y + 17, 5, P.moon);
   if (p < 1) { rrI(x + 7, y + 14, 1, 5, 0, P.s1); rrI(x + 10, y + 14, 1, 5, 0, P.s1); }   // pause while it plays
   else for (let i = 0; i < 4; i++) rrI(x + 7 + i, y + 14 + i, 1, 7 - 2 * i, 0, P.s1);   // played: the play triangle
@@ -1151,8 +1158,16 @@ const LIVE = {
     HL = HL_APPROVED;
     homeHit('preMenu');
   },
-  // Danny's 20:00 voice note (the week, #56): the night waits; Got it (or the home bar, Esc, Enter) starts it
+  // Billy's 20:00 voice note (the week, #56): the night waits; Got it (or the home bar, Esc, Enter) starts it
   voice(t, v) { PHONE_SCREENS.voicenote(t, { lines: v.lines, date: v.date, tt: v.tt, live: true }); },
+  // the first Monday (#102): the boys typing at once, a bubble at a time; Let's go works from the start
+  intro(t, v) {
+    const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
+    const items = [['date', v.date], ...v.items, ...(v.typing ? [['typing', v.typing]] : [])];
+    herThread(items, y0 + 2, 198, items.length - 1, t);
+    const gh = pill("Let's go", 203); tx('the night starts', 56, 223, P.s4, { align: 'c' });
+    hit(8, 203, PH.sw - 16, gh - 2, 'voiceOk', ''); homeBar(); homeHit('voiceOk');
+  },
   // her chat, kept for good: scroll a bubble at a time (wheel), back to the newest, Text her
   babe(t, v) {
     const y0 = chatHead('Babe', 'babe', null, null, 'Messages', v.time); backHit('phApp', 'messages');
@@ -1164,7 +1179,7 @@ const LIVE = {
   },
   // The Boys' chat: the last call's exchange; Raid night? at the bottom
   boys(t, v) {
-    const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', v.time); backHit('phApp', 'messages');
+    const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', v.time); backHit('phApp', 'messages');
     if (v.items.length) herThread(v.items, y0 + 2, 198, v.items.length - 1, t); else tx('No messages yet.', 56, 120, P.s4, { align: 'c' });
     action(v.action, 203, t);
     homeBar(); homeHit('preMenu');

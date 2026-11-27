@@ -91,7 +91,7 @@ function flatButton(x, y, w, label, ok, soul) {
   rectI(x, y, w, 15, P.void);
   rectI(x + 1, y + 1, w - 2, 13, ok ? P.gold : P.u2); rectI(x + 1, y + 1, w - 2, 1, ok ? P.pale : P.u3); rectI(x + 1, y + 13, w - 2, 1, ok ? P.copper : P.u1);
   const lw = measure(label, 'tiny') + (soul ? 7 : 0), lx = Math.round(x + w / 2 - lw / 2);
-  zl9(label, lx, y + 5, 'tiny', ok ? P.void : P.u4);   // 'zl' draws as zł (the auction)
+  zl9(label, lx, y + 5, 'tiny', ok ? P.void : P.u4);   // 'N zl' draws as $N (the auction, #105)
   if (soul) sprite(lx + lw - 5, y + 4, SOUL, ok ? { X: 'void', M: 'pale' } : { X: 'u3', M: 'u4' });
 }
 function sidePanelTabs(st, t) {

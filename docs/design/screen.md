@@ -7,6 +7,13 @@ of device pixels per grid pixel (×2 720p and the Steam Deck, ×3 1080p, ×4 144
 else (`src/render/grid.ts`). The DOM parts are still laid out at ×2 (1280 × 720, sizes in `src/ui/layout.ts`, all
 even) while they move onto the grid; the redesign's renderer (`src/render/`, tech.md) draws at grid size.
 
+**The main visual rule: one resolution** (Paweł, 2026-11-27). Everything on screen is drawn at the grid's own pixel:
+one grid pixel is one block of the same size everywhere. No pixel art scaled up to chunkier pixels (a 1x font drawn
+at 2x, a sprite blown up in blocks), and no high-resolution DOM widgets, outlines or glows over the grid (a CSS circle
+with a glow, an Inter label, a native browser tooltip). A picture that needs to be bigger is drawn bigger at 1x. What
+broke it and went: the Tonight note at 2x (#101), the headset's hover ring and label (#103), the phone's iOS close
+button (#104).
+
 | Zone | Where | Shows |
 |---|---|---|
 | Left: webcam and her | 0 to 296, full height | Her panel, one picture drawn by the renderer (148 × 360 on the grid, V4 below): the webcam view (his dark room, him in his gaming chair at the bottom, your door behind him (hold it to peek), the plan on the wall; his head is the headset button), and her PC-98 UI under it: the last-heard line, her note, the two pre-emptive buttons, her stats (Patience and Caught, Goodwill, Noise) |
@@ -51,8 +58,7 @@ apart and fanned sideways. Its bag slot shines with a NEW badge for `BAG_NEW_SEC
 picture, `drawDeskLive` in `src/render/page/desk.js` from the view in `src/render/deskView.ts`, under the monitor's
 live canvases. It takes its light from the screen: what the monitor shows (the battle, the town, Excel, off) lights
 the desk, the bezel and the keys in its colours, in the desk's Graphite palette. Clicks and tooltips come from the
-picture's hit regions: the taskbar buttons, Sleep, the clock, the Drink button, the phone, the Tonight note and the
-YOU card's bars. It draws at 15 fps, in two halves on the frames the battle area and the panel skip (building it and
+picture's hit regions: the taskbar buttons, Sleep, the clock, the Drink button, the phone and the YOU card's bars. It draws at 15 fps, in two halves on the frames the battle area and the panel skip (building it and
 lighting it cost a few ms each), so it never costs the battle a frame.
 
 **The YOU card** (bottom right of the desk): Tired (violet, a mark where yawning starts, `TIRED_YAWN`) and Zone
@@ -66,9 +72,9 @@ most each. Each line
 has its time and a tag for whose it is: YOU, LOOT (in the rarity colour), HER, PHONE, GAME, EXCEL, DOG, NIGHT,
 PARTY, GUILD, or a friend's name (MAGOO, HEALERO). A first-time tip is pinned on top while it lasts. No header, no tabs.
 
-**Monitor chrome.** The Win98 taskbar under the screen: Start, the app buttons for Loot Night and Excel ("Tab"
-on the one you would switch to), the power button "Sleep" (greyed with "23:00+" until bedtime), the zł wallet and
-the night clock (red with "witching hour" after 01:00). The Loot Night button flashes when the party is in trouble
+**Monitor chrome.** The Win98 taskbar under the screen: Start, the app buttons for Age of Judgment (the RPG he plays, #102; its button fits "Age of Judgment · Tab") and Excel ("Tab"
+on the one you would switch to), the power button "Sleep" (greyed with "23:00+" until bedtime), the wallet (in dollars, #105) and
+the night clock (red with "witching hour" after 01:00). The Age of Judgment button flashes when the party is in trouble
 while you are away. Buffs: top right of the battle area.
 
 **Three UI flavours.** Every element belongs to one world, so the player knows at a glance what it is for.
@@ -214,7 +220,9 @@ on the desk (Goblin Fuel's with its key, + and - lines and the count in the draw
 PC's taskbar (the tabs, Sleep, the Witching Hour), her PC-98 paper on her panel and her windows (a name in plum when
 the line has one, the line in brown), and the RPG's leather card in the game screen, drawn by the battle area or the
 panel themselves (skills, heroes, plain lines). Items keep their DOM card: it compares stats and goes with the side
-panel's item details.
+panel's item details. His head (the headset's button, from Tuesday) takes her panel's look like the rest of the
+webcam (#103): "Headset" and what it does; there is no ring or label of its own. No element carries a browser
+`title` (the OS tooltip is outside the look): buttons name themselves with `aria-label`.
 
 ## Decisions
 - **Fresh saves for the playtest** (0.80, step 7, #58): the save key goes to `v3`, so a tester who played a build from
@@ -233,8 +241,8 @@ panel's item details.
 - **No cans, fridge or headset on the desk** (0.45): the Goblin Fuel button (G since 0.66) and his head (H) do their jobs, and the
   desk got room for a bigger phone and keyboard. The snack run's rule stays: the button turns into "Hide the cans"
   during the footsteps. Rejected: keeping the cans for the snack-run tell (the button carries it).
-- **The desk is one picture, lit by the screen** (0.66, V3, #68): the desk, bezel, taskbar, keyboard, phone, the
-  Tonight note and both cards are drawn by the renderer as in the redesign's mockup, so the monitor's light falls on
+- **The desk is one picture, lit by the screen** (0.66, V3, #68): the desk, bezel, taskbar, keyboard, phone and
+  both cards are drawn by the renderer as in the redesign's mockup, so the monitor's light falls on
   all of it and it reads as one room. Clicks come from the picture's hit regions; a DOM stand-in over the phone only
   anchors the coach mark. It draws at 15 fps in two halves on the frames the battle skips: a whole desk costs about
   7 ms, which at 20 fps on any frame dropped every third battle frame. Rejected: DOM cards and taskbar over a drawn
