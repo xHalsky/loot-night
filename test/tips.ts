@@ -31,7 +31,7 @@ ok(S.g.tipsSeen.includes('dog'), 'tips seen survive a save');
 startNight();
 ok(S.g.howto, 'Monday again (same save): the card shows');
 S.g.day = 1; startNight(); ok(S.g.howto, 'Tuesday: the card again, the headset new (#56)');
-S.g.day = 2; startNight(); ok(!howtoOpens() && !!S.g.voice, 'Wednesday, nothing new to hide from: Billy\'s note, no card');
+S.g.day = 2; startNight(); ok(!howtoOpens() && !!S.g.voice, 'Wednesday, nothing new to hide from: the boys\' chat, no card');
 S.g = initialState();
 ok(S.g.tipsSeen.length === 0, 'a new game starts the tips over');
 console.log(fails ? `${fails} FAILED` : 'PASS');

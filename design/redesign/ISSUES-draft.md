@@ -187,7 +187,7 @@ Approved 2026-11-24. Mockup: the page's Lean in rows; canvas row O. Spec: §7l; 
       the red bar with its eye; "Enjoying the view?" (§7l).
 - [ ] The webcam: him turned in the chair, leaning to the crack, the same man from behind (hair, ear, glasses' arm, the
       sweat drop) (§7l).
-- [ ] Taught on Tuesday: the voice note's lines, the Lean in tile in How to hide, her yoga first, three coach marks, the
+- [ ] Taught on Tuesday: the boys' chat, the Lean in tile in How to hide, her yoga first, three coach marks, the
       first lean safe for 6 s, the first tell crawling until you let go (week one 2b, §7k).
 
 ## V13. Redesign: week one's pieces
@@ -196,8 +196,8 @@ Labels: `ui`, `art`, `p2`
 
 Approved 2026-11-24. Mockup: the page's Week one rows. Spec: §7m. Goes with #56 and #59.
 
-- [ ] Billy's 20:00 voice note in The Boys' chat (the phone in your hand while the night waits): the waveform filling
-      gold, the transcript a line at a time, Got it; one per night, and one for a replay (§7m).
+- [ ] The boys' 20:00 chat in The Boys' chat (the phone in your hand while the night waits): their bubbles a line at
+      a time after the typing dots, Let's go; one per night, and one for a replay; always text, never a voice note (§7m).
 - [ ] The replay morning: UNPLUGGED, what it cost, "Tuesday, again" (§7m, §7h).
 - [ ] Her window for her moments (the chat's window): the snack run's plate, the tease visit, the towel and the wine,
       asleep with the waking meter, "come to bed" with Coming, babe, the lap sit's questions (§7m).

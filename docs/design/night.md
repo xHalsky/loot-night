@@ -37,10 +37,10 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   from all three, one at a time, each after their name and three hopping dots (`CHAT_*`: about 0.6 s of typing a
   bubble, all in by about 6 s, a soft tick as each lands), stoked to finally play a session of **Age of Judgment**
   (the RPG's name in the fiction, #102), with the premise and two tips in their banter (Tab before the door opens; Q4
-  pays real money, the Shop). "Let's go" works from the first bubble. **From Tuesday** it is Billy's voice note (the
-  waveform fills gold over 14 s, the transcript comes in at 0, 4.5 and 9.5 s), naming tonight's new things in his
-  chat voice. After the plug it is the replay's ("F. she pulled the plug", "tuesday again then..."), under
-  "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
+  pays real money, the Shop). "Let's go" works from the first bubble. **The boys always text, never send voice notes**
+  (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`) naming tonight's new
+  things in their chat voice; after the plug the boys react the same way ("F. she pulled the plug", "tuesday again
+  then...", `replayChat`), under "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
   down; How to hide follows on a night with a new tile, then tonight's stars; then the night starts. The message stays
   in The Boys' chat until the next call. Week two has none (nothing new).
 - **The first chance** (`first` in the schedule, week one): her first visit tonight is the night's new type, within
@@ -217,9 +217,12 @@ happening.
   makes sense once you know her sounds; decided 2026-11-27). What was wrong was Monday showing it anyway: the icon by
   his head, the head as a button with its tip, H lit on the desk keyboard. Before Tuesday none of them shows. Rejected:
   the headset from Monday (Tuesday loses one of its new things, and night 1 teaches two opposite things).
-- **Taught the night it unlocks** (0.78, #56; the week doc 2b, grid doc 7m). Billy's voice note is on the phone, in
+- **Taught the night it unlocks** (0.78, #56; the week doc 2b, grid doc 7m). The boys' chat is on the phone, in
   The Boys' chat, because everything on the phone happens inside it (decided 2026-11-24); it comes before How to hide
-  so the night opens with a friend's voice and the card only shows when there is a new tile. Tuesday's note opens
+  so the night opens with the friends and the card only shows when there is a new tile. **Always text** (0.89.1, #108;
+  Paweł: the boys always use their chat): Billy's voice note (a waveform and a transcript) from Tuesday and after the
+  plug became their chat bubbles, like Monday's. Rejected: keeping the voice note for the nights that teach (the boys
+  read as a group chat, and one format is one thing to learn). Tuesday's note opens
   with the night that runs to dawn ("no curfew tonight", since Hixx is in from night 1, #96), then lean in. The first chance is a
   scripted first visit of the night's new type, and safe as a let-go catch, so the first chat visit teaches by
   happening and a slow Tab can't cost the night. Rejected: a transcript bubble by the desk phone (the handoff's:

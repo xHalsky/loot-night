@@ -1131,7 +1131,7 @@ Lean, Slit; the mouse leans over the right screen, the wheel opens the door, the
 the lean animated in row O of the canvas. Code: `lean.js` (the view, her stand-in), `her.js` (the webcam), `blueprint.js`
 and `phone.js` (the plan and the Home app on the approved layout). Goes with fan-service steps 7 and 12.
 
-**Taught on Tuesday,** the night it unlocks (Paweł, 2026-11-24): Hudzor's voicemail, the Lean in tile in How to hide, a
+**Taught on Tuesday,** the night it unlocks (Paweł, 2026-11-24): the boys' chat at 20:00, the Lean in tile in How to hide, a
 scripted first chance (her yoga first thing), and three coach marks: the door, the first lean (the controls), her first
 tell (let go). Spec: `claude/loot-night-week-one.md` section 2b; the page's Lean in row Tuesday. Monday has no lean.
 
@@ -1252,26 +1252,24 @@ once per lean position and redraw only her and what moves (the TV, the steam, th
 already designed. Spec of the nights: `claude/loot-night-week-one.md`. Her art in them (poses, him turning) is Paweł's;
 the webcam shows the nearest bake meanwhile.
 
-**Billy's voice note (20:00, every night)** is the handoff's "Hudzor's voicemail", made the way the phone is made
-(everything on the phone happens inside it, §7f): a voice message from Billy (Hudzor is his character) in **The Boys'
-chat**. The phone rises into your hand while the night waits.
+**The boys' chat (20:00, every night)** is the handoff's "voicemail", made the way the phone is made (everything on
+the phone happens inside it, §7f): **the boys always text, never voice notes** (Paweł, 2026-11-27; this replaces the
+voice note with its waveform and transcript). The phone rises into your hand while the night waits, at **The Boys'
+chat**.
 - The chat's header (The Boys (3), "Billy, Mike, Lance"), the status bar at 20:00, a day line ("Today 20:00"; a replay:
   "Tuesday, again").
-- The voice bubble (incoming grey, 98 × 25): "Billy" and the time played ("0:05 / 0:14", gold while it plays), a moon
-  play disc (pause bars while playing), a 22-bar waveform that fills gold as it plays (a timer, so gold).
-- The transcript under it in a darker block, a line appearing as he says it (at 0, 4.5 and 9.5 s), his chat voice
-  (lowercase, casual). Monday: "yo its raid night. she thinks youre doing spreadsheets lol" / "steps in the hall = tab
-  to excel. BEFORE the door opens" / "q4 pays real money btw. the shop's on your phone". Tuesday: "hixx is in the
-  party tonight" / "hold your door open longer: you lean in and see what she's doing" / "she can see you too tho. don't
-  get weird". A replay: "F. she pulled the plug" / "tuesday again then. the good loot's still in your bag" / "tab out
-  BEFORE she opens the door this time".
-- **Got it** (the gold pill) puts the phone down and starts the night (How to hide first on a night with new tiles);
-  "the night starts" under it. It stays in The Boys' chat until the next minigame.
+- Their bubbles (incoming grey, the name first) come in one at a time, each after the name and three hopping dots, in
+  their chat voice (lowercase, casual). Monday: six, all three of them stoked. Tuesday: Billy "no curfew tonight. play
+  till you drop lol", Mike "hold your door open longer: you lean in and see what she's doing", Lance "she can see you
+  too tho. don't get weird". A replay: Mike "F. she pulled the plug", Billy "tuesday again then. the good loot's still
+  in your bag", Lance "tab out BEFORE she opens the door this time".
+- **Let's go** (the gold pill, from the first bubble) puts the phone down and starts the night (How to hide first on a
+  night with new tiles); "the night starts" under it. It stays in The Boys' chat until the next minigame.
 
 **The replay (unplugged):** the unplugged morning (§7h) with its summary saying what it cost: UNPLUGGED in crimson, "She
 pulled the plug. No stars, and the cheaper half of your bag is gone.", the three stars missed, "Tonight is Tuesday
 again. Party, gear, gold, Souls and city carry over.", and her pink button **"Tuesday, again"**. That night opens with
-Billy's replay voice note.
+the boys reacting in their chat.
 
 **Her window** (her panel, PC-98): her moments use the chat's window (§7b: from y 270, growing to fit): a label at the
 left (rose; asleep purple), the seconds or her hearts at the right, her line in plum, a bar (her time, 130 × 5), and

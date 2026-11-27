@@ -86,10 +86,11 @@ async def main():
         spot = await morning_button(); check(spot is not None, 'the morning\'s pink button')
         await pg.mouse.click(*spot); await pg.wait_for_timeout(700)
 
-        # --- Tuesday: the voice note (Got it with the mouse), then How to hide with the headset new ---
-        check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.lines[0].startsWith(\"no curfew\")"), 'Tuesday: Billy\'s note: no curfew')
-        await pg.wait_for_timeout(400)
-        check(await tap('voiceOk'), 'Got it on the phone')
+        # --- Tuesday: the boys' chat (Let's go with the mouse), then How to hide with the headset new ---
+        check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.chat[0][1].startsWith(\"no curfew\")"), 'Tuesday: the boys\' chat: no curfew')
+        await pg.wait_for_timeout(2500)
+        await shot('6b_tuesday_chat')
+        check(await tap('voiceOk'), "Let's go on the phone")
         check(await ev("g.day") == 1 and await ev("g.howto && !g.voice"), 'Tuesday: How to hide, the headset new')
         check(await ev("n.apt.forceKind") == 'chat' and await ev("n.firstSafe") == 'chat', 'Tuesday: her first visit will be a chat, and safe')
         await shot('7_tuesday_howto')
@@ -108,8 +109,8 @@ async def main():
         await shot('10_replay_morning')
         spot = await morning_button(); await pg.mouse.click(*spot); await pg.wait_for_timeout(700)
         check(await ev("g.day") == 1 and await ev("g.nightsPlayed") == 2, 'the replay: Tuesday again, the third night played')
-        check(await ev("g.voice && g.voice.date") == 'Tuesday, again' and await ev("g.voice.lines[0]") == 'F. she pulled the plug', 'the replay\'s voice note')
-        await shot('11_replay_voice', 10800)
+        check(await ev("g.voice && g.voice.date") == 'Tuesday, again' and await ev("g.voice.chat[0][1]") == 'F. she pulled the plug', 'the replay: the boys react in their chat')
+        await shot('11_replay_chat', 3000)
         # the title
         await pg.reload(); await pg.wait_for_timeout(700)
         txt = await pg.evaluate("()=>{const b=document.querySelector('[data-act=continue]'); return b ? b.textContent : ''}")

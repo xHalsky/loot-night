@@ -511,8 +511,8 @@ Levels; each level costs `base × 1.15^level`. All of it keeps running while you
 | Saturday | Everything, and visits come `SATURDAY_VISIT_MULT` (*start* 1.3) times as often |
 | Sunday and after | Custom Night |
 
-- **Phone Guy:** at 20:00 each night a voicemail from Billy (Hudzor is his character) plays as a short transcript bubble by the phone
-  (2–3 lines in his chat voice: lowercase, casual) explaining tonight's new thing. Skippable with a click. It
+- **Phone Guy:** at 20:00 each night the boys text in The Boys' chat (3 bubbles in their chat voice: lowercase,
+  casual; never a voice note, #108) explaining tonight's new thing. Skippable with a click. It
   is not a phone event and is outside the collision rule.
 - **Failing a night:** if she pulls the plug, you replay the same night ("Tuesday, again."). Any other ending
   moves to the next night. RPG progress always carries over.

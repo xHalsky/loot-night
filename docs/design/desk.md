@@ -21,7 +21,7 @@ Goodwill ([screen.md](screen.md)).
 
 One iPhone on the desk (iPhone proportions, Dynamic Island, left of the keyboard), one thing at a time. The screen
 stays off until something arrives; it rings from Wednesday (the week; Monday and Tuesday you only pick it up for the
-Shop and her chat). At 20:00 in week one it comes into your hand for Billy's voice note in The Boys' chat
+Shop and her chat). At 20:00 in week one it comes into your hand for the boys' chat in The Boys' (always text, #108)
 ([night.md](night.md), the week). **Fewer events, each worth taking** (#54, 3.2; `systems/interrupts.ts`): a night
 has 4 to 6 of them before 01:00, each done in about 5 s with 1 or 2 taps.
 

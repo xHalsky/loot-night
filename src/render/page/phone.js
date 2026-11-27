@@ -898,46 +898,8 @@ PHONE_SCREENS.boyschat = (t, o) => {
   tx('Needs Goodwill 40: 31 now', 56, 223, P.s4, { align: 'c' });
   homeBar();
 };
-// 20:00, every night (week one, section 2b): Billy's voice message in The Boys' chat, the handoff's voicemail
-// (the mage, Hudzor since the cast of 2026-11-27, is Billy's character). The phone rises into your hand while the night waits: his voice note plays (the
-// waveform fills gold, a timer), its transcript comes in under it line by line as he says it, and Got it puts the phone
-// down and starts the night. It stays in The Boys' chat until the next minigame, so you can read it again.
-const VOICE_NOTES = {
-  mon: ['yo its raid night. she thinks youre doing spreadsheets lol', 'steps in the hall = tab to excel. BEFORE the door opens', "q4 pays real money btw. the shop's on your phone"],
-  tue: ["hixx is in the party tonight", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
-  replay: ['F. she pulled the plug', "tuesday again then. the good loot's still in your bag", 'tab out BEFORE she opens the door this time'],
-};
-const VOICE_AT = [0, 4.5, 9.5], VOICE_LEN = 14;
-PHONE_SCREENS.voicenote = (t, o) => {
-  const lines = o.lines || VOICE_NOTES[o.night || 'mon'], tt = o.tt ?? t % (VOICE_LEN + 4), p = Math.min(1, tt / VOICE_LEN);   // the game passes its lines and the time played
-  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
-  let y = y0 + 3;
-  drawItem(['date', o.date || (o.night === 'replay' ? 'Tuesday, again' : 'Today 20:00')], y, t); y += 14;
-  // the voice note: who and how long, a play disc, a waveform that fills gold as it plays
-  const x = 7, w = 98, h = 25;
-  rrI(x, y, w, h, 4, P.s2); px(x - 1, y + h - 1, P.s2); px(x, y + h - 1, P.s2);
-  tx('Billy', x + 5, y + 3, P.s5); tx('0:' + String(Math.floor(p * VOICE_LEN)).padStart(2, '0') + ' / 0:' + VOICE_LEN, x + w - 5, y + 3, p < 1 ? P.gold : P.s5, { align: 'r' });
-  disc(x + 9, y + 17, 5, P.moon);
-  if (p < 1) { rrI(x + 7, y + 14, 1, 5, 0, P.s1); rrI(x + 10, y + 14, 1, 5, 0, P.s1); }   // pause while it plays
-  else for (let i = 0; i < 4; i++) rrI(x + 7 + i, y + 14 + i, 1, 7 - 2 * i, 0, P.s1);   // played: the play triangle
-  const bars = 22, bx = x + 18;
-  for (let k = 0; k < bars; k++) {
-    const hh = 2 + Math.round(6 * Math.abs(Math.sin(k * 1.7 + 0.6) * Math.cos(k * 0.45))), on = k / bars < p;
-    rrI(bx + k * 3, y + 17 - (hh >> 1), 2, hh, 0, on ? P.gold : P.s4);
-  }
-  y += h + 2;
-  // the transcript, under it, a line at a time as he says it
-  const said = VOICE_AT.filter((a) => tt >= a).length, rows = [];
-  lines.slice(0, said).forEach((l, k) => { if (k) rows.push(null); wrapT(l, w - 10).forEach((r) => rows.push(r)); });
-  if (rows.length) {
-    const hh = rows.length * 8 - rows.filter((r) => r === null).length * 4 + 6;
-    rrI(x, y, w, hh, 4, P.s1);
-    let yy = y + 3; for (const r of rows) { if (r === null) { yy += 4; continue; } tx(r, x + 5, yy, P.u6); yy += 8; }
-  }
-  const gh = pill('Got it', 203); tx('the night starts', 56, 223, P.s4, { align: 'c' });
-  if (o.live) { hit(8, 203, PH.sw - 16, gh - 2, 'voiceOk', ''); homeBar(); homeHit('voiceOk'); return; }   // the game's: Got it, or the home bar
-  homeBar();
-};
+// 20:00 (week one, section 2b): the boys' chat, the live 'intro' screen below. They always text, never send voice notes
+// (#108), so the mockup's voice-note screen is gone from the game.
 // paint the photo crops the screen asked for onto the composed phone, in her colours
 function paintPhotos(g) {
   for (const s of PH_PHOTOS) {
@@ -1158,9 +1120,8 @@ const LIVE = {
     HL = HL_APPROVED;
     homeHit('preMenu');
   },
-  // Billy's 20:00 voice note (the week, #56): the night waits; Got it (or the home bar, Esc, Enter) starts it
-  voice(t, v) { PHONE_SCREENS.voicenote(t, { lines: v.lines, date: v.date, tt: v.tt, live: true }); },
-  // the first Monday (#102): the boys typing at once, a bubble at a time; Let's go works from the start
+  // the boys at 20:00 (#102; always text, never a voice note, #108): typing at once, a bubble at a time; Let's go (or the
+  // home bar, Esc, Enter) works from the start
   intro(t, v) {
     const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
     const items = [['date', v.date], ...v.items, ...(v.typing ? [['typing', v.typing]] : [])];

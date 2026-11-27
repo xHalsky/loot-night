@@ -283,7 +283,7 @@ export interface GameState {
   tipsSeen: string[];   // first-time tips already shown (#28)
   howto: boolean;       // the night waits before it starts: the boys' message, then How to hide, then tonight's stars (#28, #56, #101)
   howtoPage?: number;   // 0 How to hide, 1 tonight's stars (#101; not saved)
-  voice?: { lines: string[]; date: string; chat?: [string, string][] } | null;   // the boys at 20:00 while it is up: Billy's voice note, or Monday's chat (#102; not saved)
+  voice?: { date: string; chat: [string, string][] } | null;   // the boys' chat at 20:00 while it is up (#102, #108; not saved)
   seen: string[];                // enemy ids met before: the first meeting shows what they want
   curiosSeen: string[];          // the last few curios, so they don't repeat back to back
   goodwill: number;              // her Goodwill bank, 0-100 (systems/goodwill.ts); half carries over

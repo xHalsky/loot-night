@@ -3,6 +3,14 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.89.1 (2026-11-27)
+
+- **The boys always text** (#108; Paweł: never voice messages): Tuesday to Sunday's 20:00 message and their reaction
+  after the plug ("Tuesday, again") are their chat now, like Monday's: a bubble at a time after the name and the typing
+  dots, one from each of Billy, Mike and Lance, same words as before, and Let's go. Billy's voice note (the waveform
+  and its transcript) is gone from the game; the chat stays in The Boys' thread as before. Data: `NIGHT_CHAT` and
+  `replayChat` in `data/voice.ts`.
+
 ## 0.89.0 (2026-11-27)
 
 - **The cast of 2026-11-27** (#107; Paweł: the heroes are the friends' characters now, and Dutch is a nod to his film

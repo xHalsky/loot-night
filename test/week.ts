@@ -9,7 +9,7 @@ import { S, N, initialState } from '../src/core/state';
 import { startNight, checkNightEnd, endNight } from '../src/systems/night';
 import { rulesFor, rules, on, dayName, howtoTiles, howtoOpens, bedAt } from '../src/systems/week';
 import { pickKind, startVisit, updateVisits } from '../src/systems/visits';
-import { VOICE_NOTES, FIRST_CHAT } from '../src/data/voice';
+import { NIGHT_CHAT, FIRST_CHAT } from '../src/data/voice';
 import { chatAt } from '../src/render/phoneView';
 import { updateTired } from '../src/systems/tired';
 import { openMonster } from '../src/systems/monster';
@@ -97,17 +97,17 @@ ok(tiles(2) === 'listen,tab,answer,headset,lean||tue|false', `Wednesday: nothing
 ok(tiles(3) === 'listen,tab,answer,headset,lean|answer|thu|true', `Thursday: the cans and the cuddle in Answer her (${tiles(3)})`);
 ok(tiles(7) === 'listen,tab,answer,headset,lean||thu|false', `week two: no card (${tiles(7)})`);
 
-// --- the boys at 20:00: Monday's chat (#102), then Billy's voice notes ---
+// --- the boys at 20:00: always their chat, never a voice note (#102, #108) ---
 n = night(0); ok(S.g.voice?.chat?.length === FIRST_CHAT.length && new Set(S.g.voice.chat.map(c => c[0])).size === 3 && S.g.voice?.date === 'Today 20:00', 'Monday: the boys\' chat, all three of them');
 ok(S.g.voice!.chat!.some(c => c[1].includes('AGE OF JUDGMENT')), 'they are stoked: Age of Judgment tonight');
 { const end = chatAt(FIRST_CHAT, 99), mid = chatAt(FIRST_CHAT, 1.0); let t = 0; while (chatAt(FIRST_CHAT, t).shown < FIRST_CHAT.length) t += 0.05;
   ok(end.shown === FIRST_CHAT.length && !end.typing && mid.shown < FIRST_CHAT.length && t <= 7, `the bubbles come one at a time with typing dots, all in by ${t.toFixed(1)} s`); }
 S.g = initialState(); S.g.day = 0; startNight(); ok(S.g.howto && !!S.g.voice, 'the night waits for it (howto), the card after it');
-ok([1, 2, 3, 4, 5, 6].every(d => { S.g = initialState(); S.g.day = d; startNight(); return !!S.g.voice && S.g.voice.lines.length === 3; }), 'a note every night of week one');
-ok(Object.values(VOICE_NOTES).flat().every(l => !/[\u2013\u2014]/.test(l) && l.replace(/BEFORE|\(G\)|^F\./g, '') === l.replace(/BEFORE|\(G\)|^F\./g, '').toLowerCase()), 'his voice: lowercase (his BEFORE aside), no dashes');
+ok([1, 2, 3, 4, 5, 6].every(d => { S.g = initialState(); S.g.day = d; startNight(); return S.g.voice?.chat.length === 3 && new Set(S.g.voice.chat.map(c => c[0])).size === 3; }), 'their chat every night of week one, all three of them');
+ok(Object.values(NIGHT_CHAT).flat().map(c => c[1]).every(l => !/[\u2013\u2014]/.test(l) && l.replace(/BEFORE|\(G\)|^F\./g, '') === l.replace(/BEFORE|\(G\)|^F\./g, '').toLowerCase()), 'their chat voice: lowercase (the BEFORE aside), no dashes');
 S.g = initialState(); S.g.day = 7; startNight(); ok(!S.g.voice && !S.g.howto, 'week two: no note, no card');
 n = night(1); n.mood = T.MOOD_MAX; checkNightEnd(); startNight();
-ok(S.g.voice?.date === 'Tuesday, again' && S.g.voice.lines[0] === 'F. she pulled the plug' && S.g.voice.lines[1].startsWith('tuesday again'), 'after the plug: the replay\'s note');
+ok(S.g.voice?.date === 'Tuesday, again' && S.g.voice.chat[0][1] === 'F. she pulled the plug' && S.g.voice.chat[1][1].startsWith('tuesday again'), 'after the plug: the boys react in their chat');
 
 // --- the first chance: her first visit is tonight's new type, early and safe ---
 n = night(1); ok(n.apt.forceKind === 'chat' && n.firstSafe === 'chat', 'Tuesday: her first visit is a chat');

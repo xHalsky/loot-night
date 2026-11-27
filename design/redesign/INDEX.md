@@ -43,7 +43,7 @@ grid doc, cited as §) > `claude/loot-night-handoff-redesign.md` (the gameplay h
 | The small pieces: the Goblin Fuel inspect window, How to hide, coach marks, tooltips, pause, away (the gaming chair), the microsleep | §7k | Small pieces | V11, #56 |
 | Lean in and her timers: the view through your door, the stops, the slit, the closer framing, the red bar, the hall mirror, his back in the webcam; the plan change (the bathroom at the far end, the arch, `ROOM_DISTANCE` swapped); taught on Tuesday | §7l | Lean in | fan-service steps 7 and 12 (#59) |
 | Week one: the loop of a night and the seven nights (what each adds, the ramp, the checks) | `claude/loot-night-week-one.md` | | #56, #59 |
-| Week one's pieces: Billy's 20:00 voice note, the replay morning, her moment window (the plate, the tease visit, the towel and wine, asleep, come to bed with Coming, babe, the lap sit), Eyes busy, Hide cans, the away card's reason, the lap sit over the battle | §7m | Week one | V13, #56, #59 |
+| Week one's pieces: the boys' 20:00 chat (always text), the replay morning, her moment window (the plate, the tease visit, the towel and wine, asleep, come to bed with Coming, babe, the lap sit), Eyes busy, Hide cans, the away card's reason, the lap sit over the battle | §7m | Week one | V13, #56, #59 |
 
 ## Build order
 

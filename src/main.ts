@@ -144,7 +144,7 @@ const actions: Record<string, (arg: string) => void> = {
   howtoOpen: () => { S.g.paused = false; S.g.howto = true; S.g.howtoPage = 0; },
   howtoNext: () => { S.g.howtoPage = 1; sfx.click(); },   // How to hide's Got it: tonight's stars next (#101)
   howtoClose: () => { S.g.howto = false; S.g.voice = null; S.g.howtoPage = 0; },
-  voiceOk: () => voiceOk(),   // Billy's voice note: Got it (the week, #56)
+  voiceOk: () => voiceOk(),   // the boys' chat at 20:00: Let's go (the week, #56)
   altTab: () => { if (S.g.night) altTab(); },
   showRpg: () => { if (S.g.night && N().monitor !== 'rpg') altTab(); },
   showExcel: () => { if (S.g.night && N().monitor !== 'excel') altTab(); },
@@ -762,12 +762,12 @@ const microCanvas = el('microArea') as HTMLCanvasElement, microCtx = microCanvas
 const rsSmallCanvas = el('rsSmall') as HTMLCanvasElement, rsSmallCtx = rsSmallCanvas.getContext('2d')!;
 type SmHit = { x: number; y: number; w: number; h: number; act: string; arg: string };
 let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt = 0, rsSmallAt = 0, rsSmallBg = 0, microAt = 0, inspectOpen = false;
-/** Got it on Billy's voice note (the week, #56): the phone goes down, the note stays in The Boys' chat until the next
- *  call; How to hide next on a night with a new tile, else the night starts. */
+/** Let's go on the boys' chat at 20:00 (the week, #56; #108): the phone goes down, the chat stays in The Boys' until the
+ *  next call; How to hide next on a night with a new tile, else the night starts. */
 function voiceOk() {
   const v = S.g.voice;
   if (!v) return;
-  boysLog(v.chat ? [['sys', v.date], ...v.chat.map(([w, s]) => ['l', `${w}: ${s}`] as ['l', string])] : [['sys', `Billy · voice note · ${v.date}`], ...v.lines.map(l => ['l', l] as ['l', string])]);   // Monday's chat stays in The Boys (#102)
+  boysLog([['sys', v.date], ...v.chat.map(([w, s]) => ['l', `${w}: ${s}`] as ['l', string])]);   // their chat stays in The Boys (#102)
   S.g.voice = null; S.g.howto = howtoOpens(); sfx.click();
 }
 // How to hide (grid doc 7k): tonight's tiles (the week, #56: systems/week.ts howtoTiles), the new ones framed gold
@@ -816,7 +816,7 @@ function drawSmallPieces() {
   if (ready && !inspectOpen && on('fuel') && g.monsters > 0 && !g.tipsSeen.includes('inspect:fuel') && !g.paused && !g.howto && n.tired >= T.TIRED_YAWN && !demandActive() && !n.switching && n.monitor === 'rpg') { g.tipsSeen.push('inspect:fuel'); inspectOpen = true; }
   if (inspectOpen && (!ready || n.game || n.pre || n.switching)) inspectOpen = false;
   // pause, How to hide
-  const modal = !ready ? '' : g.paused ? 'pause' : g.howto && !g.voice ? 'howto' : n.photo ? 'photo' : '';   // the voice note comes first (#56); her photo beside the phone (#92)
+  const modal = !ready ? '' : g.paused ? 'pause' : g.howto && !g.voice ? 'howto' : n.photo ? 'photo' : '';   // the boys' chat comes first (#56); her photo beside the phone (#92)
   if (modal !== modalWas) { modalWas = modal; modalCanvas.style.display = modal ? 'block' : 'none'; modalAt = 0; if (!modal) modalHits = []; }
   if (modal && now - modalAt >= 66) {
     const first = modalAt === 0; modalAt = now;

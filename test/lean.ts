@@ -31,7 +31,7 @@ let n = night(0); n.peeking = true; run(2); ok(!n.lean, 'Monday: holding the doo
 n = night(1);
 ok(n.apt.activity === 'yoga' && n.apt.calm > 0 && n.apt.calmHard, 'Tuesday opens with her yoga, and no visit while it lasts');
 ok(howtoTiles().ids.join() === 'listen,tab,answer,headset,lean' && howtoTiles().isNew.includes('lean'), 'How to hide: five tiles, Lean in new tonight');
-ok(voiceNote()!.lines[1].includes('lean in'), "Billy's note names it");
+ok(voiceNote()!.chat[1][1].includes('lean in'), "the boys' chat names it");
 updateLean(0.01); ok(n.coach?.id === 'lean', 'coach mark 1: the door (she is doing yoga)'); closeCoach();
 n.peeking = true; run(T.LEAN_DELAY - 0.1); ok(!n.lean, 'holding the door: not yet...');
 run(0.2); ok(!!n.lean && n.coach?.id === 'leanview', `...past ${T.LEAN_DELAY} s you lean in (coach mark 2)`); closeCoach();

@@ -32,7 +32,7 @@ async def main():
             return None
         await pg.add_init_script('window.__lnDay = 1'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(600)
-        await go('voiceOk'); await pg.wait_for_timeout(200)   # Billy's voice note comes first (test/week.py has it)
+        await go('voiceOk'); await pg.wait_for_timeout(200)   # the boys' chat comes first (test/week.py has it)
 
         # How to hide at the start of the night: the night waits; Got it
         check(await ev("g.howto") and await disp(pg, 'modalArea') == 'block', 'How to hide opens on Tuesday (the headset is new)')

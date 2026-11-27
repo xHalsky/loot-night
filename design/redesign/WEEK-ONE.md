@@ -11,7 +11,7 @@ was open there) and slots in the fan-service steps (#59, its open 1). Where it c
 
 | Beat | What happens | What you decide |
 |---|---|---|
-| 20:00 | Hudzor's voicemail says tonight's new thing (2 or 3 lines, skippable); How to hide shows tonight's tiles, the new one framed gold; the Tonight note shows the three stars: "floor N", "don't get caught", "keep her happy" | |
+| 20:00 | The boys' chat says tonight's new thing (3 bubbles, skippable); How to hide shows tonight's tiles, the new one framed gold; the Tonight note shows the three stars: "floor N", "don't get caught", "keep her happy" | |
 | The pull | The RPG plays in real time. Deeper floors pay (the Deep star, rarer drops); a run is kept when you bank it and lost on a wipe | How deep, when to bank, which path |
 | The threat | Her routine in the flat: each activity has a sound and a length; at its end she may come to your door (far steps 5 s, the hallway 3 s, the handle 0.9 s). The phone, the dog and her requests also want you: one demand at a time, 15 s apart | |
 | Read her | Listen, the last-heard line, the plan on the wall, the door (a glance; lean in from Tuesday) | When to be greedy |
@@ -80,8 +80,8 @@ Friday dips on purpose: she's in bed from 00:00, and the pressure changes from v
 
 Paweł (2026-11-24): a mechanic is introduced when it unlocks. Each night's new things are taught that night, the same
 four ways:
-1. **The 20:00 voice note** names it: the handoff's "Hudzor's voicemail" is a voice message from Billy (Hudzor is his
-   character) in The Boys' chat, the phone in your hand while the night waits (grid doc 7m).
+1. **The boys' 20:00 chat** names it: the handoff's "voicemail" is the boys texting in The Boys' chat (always text,
+   never a voice note), the phone in your hand while the night waits (grid doc 7m).
 2. **How to hide** shows its tile, framed gold with "new tonight", when it's about hiding or reading her.
 3. **Its first chance is scripted early,** within about 2 real minutes of 20:00, and safe: it can't cost you the first
    time.
@@ -93,7 +93,7 @@ phone, loot, a wind-up and the headset; the rest get theirs when their step is b
 
 **Lean in, Tuesday** (mocked on the Game Frame page: Lean in, the Tuesday row; Small pieces, How to hide):
 - **Monday:** holding the door is the glance, nothing more.
-- **The voice note:** "hixx is in the party tonight" / "hold your door open longer: you lean in and see what she's
+- **The boys' chat:** "no curfew tonight. play till you drop lol" / "hold your door open longer: you lean in and see what she's
   doing" / "she can see you too tho. don't get weird".
 - **How to hide:** five tiles on Tuesday; the headset and Lean in are framed gold. Lean in: "Hold the door open: you
   lean in and see what she is doing. Move the mouse to look. While you look you cannot play, and she can see you."
@@ -116,7 +116,7 @@ phone, loot, a wind-up and the headset; the rest get theirs when their step is b
 - **Coach mark priority** (the build's bump order): her tell right after the footsteps (you can't see the game while
   you lean, so it never meets a wind-up); Lean in and You are leaning in last, after loot.
 
-**The pieces each night needs** are drawn and approved (grid doc 7m, the page's Week one rows): Billy's voice note, the replay
+**The pieces each night needs** are drawn and approved (grid doc 7m, the page's Week one rows): the boys' 20:00 chat, the replay
 morning ("Tuesday, again"), the snack run's Hide cans and plate, the tease visit with Eyes busy, her towel and wine
 requests and the away card for them, the waking meter, "come to bed" with "Coming, babe", the lap sit.
 
