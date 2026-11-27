@@ -1,4 +1,4 @@
-// The launch on the first Monday (#127, the v2 redesign): when it plays, its clock, the chat paced to it, what it holds
+// The launch (#127, the v2 redesign): the whole of it on the first Monday, from the login every night after; when it plays, its clock, the chat paced to it, what it holds
 // back, and its cue sheet played at speed (each cue once, in order; nothing for a jump past it). The sound itself and
 // the skip in the browser: test/launch.py.
 // Run: npx tsx test/launch.ts
@@ -11,7 +11,7 @@ import { T } from '../src/config/tuning';
 import { S, N, initialState } from '../src/core/state';
 import { startNight, endNight } from '../src/systems/night';
 import { FIRST_CHAT } from '../src/data/voice';
-import { updateLaunch, launchT, launchHolds, launchChatAt, skipLaunch, launchSkipped } from '../src/systems/launch';
+import { updateLaunch, launchT, launchHolds, launchChatAt, launchChatTime, skipLaunch, launchSkipped } from '../src/systems/launch';
 import { stepLaunchSheet, LAUNCH_JUMP_SEC } from '../src/systems/launchSheet';
 
 let fails = 0;
@@ -70,12 +70,28 @@ S.g = initialState(); S.g.day = 0; startNight(); run(5);
 skipLaunch();
 ok(launchT() >= T.LAUNCH_SEC && !launchHolds() && launchSkipped(), 'Skip the launch: straight to its end');
 
-// --- not on the replay, not on later nights, not in week two ---
-S.g = initialState(); S.g.day = 0; startNight(); S.g.howto = false; S.g.voice = null; N().mood = T.MOOD_MAX; endNight('unplugged'); startNight();
-ok(!!S.g.voice && !S.g.voice.launch && S.g.voice.date === 'Monday, again', 'Monday\'s replay: the replay\'s chat, no launch');
-ok([1, 2, 3, 4, 5, 6].every(d => { S.g = initialState(); S.g.day = d; startNight(); return !S.g.voice?.launch; }), 'Tuesday to Sunday: no launch');
-S.g = initialState(); S.g.day = 7; startNight();
-ok(!S.g.voice, 'week two\'s Monday: no chat, no launch');
+// --- every night after the first Monday: from the login (Paweł, 2026-11-27): the replays and week two too ---
+const fromLogin = (setup: () => void) => { setup(); startNight(); run(1 / 60); return S.g.voice; };
+let v = fromLogin(() => { S.g = initialState(); S.g.day = 0; startNight(); S.g.howto = false; S.g.voice = null; N().mood = T.MOOD_MAX; endNight('unplugged'); });
+ok(!!v && v.launch === 'login' && v.date === 'Monday, again' && launchT() >= T.LAUNCH_LOGIN_AT && launchT() < T.LAUNCH_LOGIN_AT + 0.1, 'Monday\'s replay: the replay\'s chat, the launch from the login (T 23)');
+ok([1, 2, 3, 4, 5, 6].every(d => { const w = fromLogin(() => { S.g = initialState(); S.g.day = d; }); return w?.launch === 'login' && w.chat.length === 3 && launchT() >= 23 && launchT() < 23.1; }), 'Tuesday to Sunday: their three bubbles with the launch from the login');
+v = fromLogin(() => { S.g = initialState(); S.g.day = 7; });
+ok(!!v && v.launch === 'login' && v.chat.length === 0, 'week two: the login plays (no news from the boys, only the loading pill and Let\'s go)');
+// the chat spread evenly from 25.4 to 35.4 s, each after 1.6 s of typing
+S.g = initialState(); S.g.day = 1; startNight(); run(1 / 60);
+const chat3 = S.g.voice!.chat, at3 = (s: number) => launchChatAt(chat3, s, T.LAUNCH_LOGIN_AT);
+ok(at3(23.5).shown === 0 && at3(23.9).typing === chat3[0][0] && at3(25.41).shown === 1, 'the first lands at 25.4 (typing from 23.8)');
+ok(at3(30.39).shown === 1 && at3(30.41).shown === 2 && at3(35.39).shown === 2 && at3(35.41).shown === 3, 'then 30.4 and 35.4');
+const rep = ['a', 'b', 'c', 'd'].map(x => [x, x] as [string, string]);
+ok(Math.abs(launchChatTime(1, 4, 23) - (25.4 + 10 / 3)) < 1e-9 && launchChatTime(3, 4, 23) === 35.4, 'the replay\'s four: 25.4, 28.7, 32.1 and 35.4');
+ok(launchChatAt(rep, 35.41, 23).shown === 4, 'all in by 35.4');
+const lc0 = N().clock; run(14.9);
+ok(launchHolds() && launchT() < T.LAUNCH_SEC && N().clock === lc0, 'it holds the night until 38 s, the clock waiting');
+run(0.2);
+ok(!launchHolds() && N().log.some(l => l.text.startsWith('Welcome to Age of Judgment')), 'at 38 s: Let\'s go and the welcome');
+// its sound: nothing before T 23 fires (the stepper starts at the login's T)
+fired = []; for (t = 23; t < 39; t += 1 / 60) stepLaunchSheet(sorted, t, t + 1 / 60, (at, cue) => fired.push([at, cue]));
+ok(fired.length > 0 && fired.every(([at2]) => at2 > 23) && fired.length === sheet.sound.filter(([at2]) => at2 > 23).length, `from the login: the ${fired.length} cues after 23 s fire, none before`);
 
 console.log(fails ? `${fails} FAILED` : 'all passed');
 process.exit(fails ? 1 : 0);

@@ -46,10 +46,14 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   **The boys always text, never send voice notes**
   (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`) naming tonight's new
   things in their chat voice; after the plug the boys react the same way (Billy "game over man. GAME OVER.", "tuesday again
-  then.", Lance "all that loot, gone like tears in rain", Mike's Tab tip; `replayChat`), under "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
-  down; How to hide follows on a night with a new tile, then tonight's stars; then the night starts. The message stays
-  in The Boys' chat until the next call. Week two has none (nothing new).
-- **The launch on the first Monday** (#127, the v2 redesign; [aoj-world.md](aoj-world.md) §6 to §7b; `systems/launch.ts`,
+  then.", Lance "all that loot, gone like tears in rain", Mike's Tab tip; `replayChat`), under "Tuesday, again". These
+  nights' chats are paced to the launch from the login (below): their bubbles spread evenly from 25.4 to 35.4 s
+  (`CHAT_LOGIN_FROM`, `CHAT_LOGIN_TO`; three bubbles at 25.4, 30.4 and 35.4, the replay's four at 25.4, 28.7, 32.1 and
+  35.4), each after its 1.6 s of dots, and the pill is "Age of Judgment is loading" until 38 s. The button (or the home
+  bar, the close box, a click outside the phone, Esc, Enter) puts the phone down; How to hide follows on a night with a
+  new tile, then tonight's stars; then the night starts. The message stays in The Boys' chat until the next call. Week
+  two has no chat (nothing new): the phone comes up with only the loading pill and Let's go while the login plays.
+- **The launch** (#127, the v2 redesign; [aoj-world.md](aoj-world.md) §6 to §7b; `systems/launch.ts`,
   the screens `render/page/aoj.js` and `logos.js`, the sound `ui/launchSound.ts`): before the first night the PC
   launches Age of Judgment on the monitor for 38 s (`LAUNCH_SEC`) while the boys' first chat comes in. Not interactive:
   it sets the mood. One clock for the monitor, the chat and the sound: T starts when the chat comes up and stops while
@@ -59,9 +63,12 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   **Procrastination Studios**, the developer, whose logo is late (to 15); the title, rain and lightning over the fallen
   angel, the halo forged, JUDGMENT struck (to 23); the login, "dutch" and nine stars typed, Log in (to 31); logging in
   and the world loading (to 38). Then the town fades in from black (dithered, 0.9 s, `LAUNCH_FADE_SEC`) and the feed
-  gets "Welcome to Age of Judgment. Have fun, don't get caught." (empty before). **Only the first Monday**: not on
-  Monday's replay, later nights or week two (`voiceNote`'s `launch` flag). F1's "Skip the launch" goes straight to its
-  end and stops its sound; the bot sims and `test/` skip it. Its sound and music: [screen.md](screen.md), Audio.
+  gets "Welcome to Age of Judgment. Have fun, don't get caught." (empty before). **The whole launch on the first Monday
+  only; every night after it starts from the login** (Paweł; replays, "Monday, again" included, and week two too;
+  `voiceNote`'s `launch`: `full` or `login`): T starts at 23 (`LAUNCH_LOGIN_AT`), the login fades in from black
+  (dithered, 0.6 s, `LAUNCH_LOGIN_FADE_SEC`), and the last 15 s play to 38 with their sound (only the cues from 23 on;
+  the theme from its offset there and the rain, both faded in over 1.5 s, `LAUNCH_LOGIN_SOUND_FADE_SEC`). F1's "Skip
+  the launch" goes straight to its end and stops its sound; the bot sims and `test/` skip it. Its sound and music: [screen.md](screen.md), Audio.
 - **The boys' chat between the calls** (#109; `data/boys.ts`, `systems/boys.ts`): moments of the night post a line (or
   a short exchange) in The Boys' chat, grey, quiet (no banner, no sound, no effect on play), kept until the next call
   or 20:00 chat: the raid invite on the night's first trip down (or one of its exchanges; "it's 20:15" only near
@@ -230,7 +237,13 @@ happening.
   and the close box is hidden: the 38 s are the waiting the night already did while the chat was up, and the launch is
   there to set the mood. Rejected: letting Let's go cut it short (the boys' last line and the theme's downbeat would be
   skipped by most players); drawing it as a video (it is the renderer's code, palette-exact, and stays editable). The
-  sims never run it; F1 skips it. **Open, Paweł's call:** the launch on later nights, whole or from the login.
+  sims never run it; F1 skips it.
+- **From the login every night after the first Monday** (0.99.1, #127; Paweł, 2026-11-27): the whole 38 s every night
+  would wear thin, and none at all would lose the ritual of logging in to the boys' chat. The login's 15 s carry it:
+  the same clock from T 23, the chat spread over it, the theme picked up at its offset (just before bar 2) and faded
+  in. Replays and week two too (the spec's call, for Paweł's review). Week two has no chat, so its phone shows only
+  the pill and Let's go: the night still waits for the login (rejected: letting the night run under the login, with
+  the monitor showing it and her visits already coming).
 - **The goal before the night, the core loop coached in place** (0.41, #42; the card since 0.88, #101): the 0.39
   onboarding taught how to hide but not what you play for, and its feed lines were easy to miss while the RPG scrolls.
   From 0.41 to 0.87 tonight's goals were a sticky note on the monitor. It was unreadable at 1x and, enlarged to 2x

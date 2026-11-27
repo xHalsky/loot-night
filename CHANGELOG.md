@@ -3,6 +3,20 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.99.1 (2026-11-27)
+
+- **Every night after the first Monday starts from the login** (#127, W1; Paweł, 2026-11-27, added to W1 while it was
+  being built; aoj-world §7 and §7b). The whole 38 s launch stays the first Monday's; from Tuesday, and on the replays
+  ("Monday, again" too) and in week two, Age of Judgment opens on the login (a 0.6 s dithered fade in from black) and
+  plays T 23 to 38: the logo shrinking to the top, "dutch" and the stars, Log in, logging in, the world loading, then
+  Ravenhold. Its sound is the cue sheet from 23 (nothing before fires), the theme from its offset there and the rain,
+  both faded in over 1.5 s. That night's chat is paced to it: its bubbles spread evenly from 25.4 to 35.4 s (three at
+  25.4, 30.4 and 35.4; the replay's four at 25.4, 28.7, 32.1 and 35.4), and the pill reads "Age of Judgment is loading"
+  until Let's go at 38. Week two has no chat (nothing new), so its phone shows only the pill and Let's go (my call: the
+  night still waits for the login). New tuning: `LAUNCH_LOGIN_AT`, `LAUNCH_LOGIN_FADE_SEC`,
+  `LAUNCH_LOGIN_SOUND_FADE_SEC`, `CHAT_LOGIN_FROM`, `CHAT_LOGIN_TO`. `test/launch.ts` and `test/week.py` check it;
+  `test/week.ts`'s week-two check follows the rule. Bot sims unchanged (they never run the launch).
+
 ## 0.99.0 (2026-11-27)
 
 - **The curios: every one drawn in code** (#131, W5 of the v2 redesign; aoj-world §4b; waiting on Paweł's review of the

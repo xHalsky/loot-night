@@ -64,12 +64,13 @@ export function howtoTiles(): { ids: string[]; isNew: string[]; answer: 'mon' | 
 export const howtoOpens = () => rules().day === 0 || howtoTiles().isNew.length > 0;
 
 /** The boys at 20:00 (grid doc 7m), always in their chat (#108): the first Monday they're stoked (#102); after that
- *  tonight's new thing, week one only; after the plug, the replay's. */
-export function voiceNote(): { date: string; chat: [string, string][]; launch?: boolean } | null {
+ *  tonight's new thing, week one only; after the plug, the replay's. Age of Judgment launches with it (#127): the whole
+ *  launch on the first Monday, from the login every night after (replays and week two included; week two has no news
+ *  from the boys, so its phone shows only the loading pill and Let's go). */
+export function voiceNote(): { date: string; chat: [string, string][]; launch?: 'full' | 'login' } | null {
   const r = rules(), res = S.g.results;
-  if (res?.ending === 'unplugged' && res.day === r.day) return { date: `${r.name}, again`, chat: replayChat(r.name) };
-  if (r.week > 1) return null;
-  if (r.day === 0) return { date: 'Today 20:00', chat: FIRST_CHAT, launch: true };   // the launch plays with it (#127): the first Monday only
-  if (!NIGHT_CHAT[r.name]) return null;
-  return { date: 'Today 20:00', chat: NIGHT_CHAT[r.name] };
+  if (res?.ending === 'unplugged' && res.day === r.day) return { date: `${r.name}, again`, chat: replayChat(r.name), launch: 'login' };
+  if (r.week > 1) return { date: 'Today 20:00', chat: [], launch: 'login' };
+  if (r.day === 0) return { date: 'Today 20:00', chat: FIRST_CHAT, launch: 'full' };
+  return { date: 'Today 20:00', chat: NIGHT_CHAT[r.name] ?? [], launch: 'login' };
 }

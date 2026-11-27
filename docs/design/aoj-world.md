@@ -240,9 +240,13 @@ the phone in hand, and each step on its own, with a timeline strip that also sho
 - **The studios are Halsky Labs (publisher) and Procrastination Studios (developer)** (Paweł). Both get a trademark
   check before the Steam page. The engine's start-up lines name Procrastination Studios. **Halsky Labs' mark is Paweł's
   logo** (2026-11-27; it replaced the H in a hexagon).
-- **When it plays (W1):** the first Monday only, with the boys' first chat; Monday's replay and later nights are as
-  before. **Open (Paweł's call):** the launch on later nights, whole or from the login (about 15 s, with that night's
-  chat paced to it).
+- **When it plays (W1):** **the whole launch on the first Monday only,** with the boys' first chat. **Every night after
+  it starts from the login screen** (Paweł, 2026-11-27: from Tuesday on; my call: replays too, "Monday, again"
+  included, and week two's nights): the last 15 s of the launch, T 23 to 38, opening with a 0.6 s dithered fade in
+  from black: the logo shrinking to the top, the panel sliding up, "dutch" and the stars typed, Log in, logging in, the
+  world loading, then Ravenhold. Its sound is the cue sheet from T 23 (§7b). That night's 20:00 chat is paced to it:
+  its bubbles spread evenly from 25.4 to 35.4 s (three bubbles: 25.4, 30.4 and 35.4 s), each after its 1.6 s of typing
+  dots; the pill reads "Age of Judgment is loading" until 38 s, then Let's go.
 
 ## 7b. The launch's sound and music (Paweł, 2026-11-27)
 
@@ -326,6 +330,9 @@ sound chip did:
   the cues it jumps over. The theme starts at T 6.2 at offset T - 6.2; each frame, if it is more than 0.1 s from where
   T says, it restarts at the right offset (after a pause, a hitch, a hidden tab). Pause stops all of it and unpause
   resumes it where T is; "Skip the launch" stops it all.
+- **From the login (every night after the first, §7):** T starts at 23, so only the cues from 23 on fire; the rain
+  fades in from 23; the theme plays from its offset at T 23 (16.8 s in, just before bar 2) with a 1.5 s fade in, and
+  ends on its last chord as on the first Monday.
 - **Replaceable like every cue:** a file in `src/assets/sfx/own/` named after a cue replaces it. For `aoj_theme` it
   starts at T 6.2 and keeps the times above (silence at 15, the downbeat at 19.15, the last chord at 37.15), so Paweł
   can score it himself.

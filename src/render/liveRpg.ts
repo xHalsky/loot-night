@@ -3,7 +3,7 @@
 import { PK } from 'virtual:pagekit';
 import { S } from '../core/state';
 import { buildBattleView, liveActive, panelActive, panelView, type PartyPointer } from './rpgView';
-import { launchT } from '../systems/launch';
+import { launchT, launchFrom } from '../systems/launch';
 import { T } from '../config/tuning';
 
 /** The launch (#127): its frame (474 x 232) while it runs, drawn once per frame for both canvases; then the town fades in. */
@@ -59,8 +59,9 @@ export function drawLiveRpg(cv: HTMLCanvasElement) {
   if (now - lastDraw < FRAME_MS - 1) return;
   lastDraw = now;
   if (launchOn()) {   // the launch (#127): the monitor runs it instead, the battle area and the panel from one frame
-    const lf = PK.launch(launchT()) as HTMLCanvasElement | null;
+    const lt = launchT(), lf = PK.launch(lt) as HTMLCanvasElement | null;
     if (lf) {
+      const f0 = launchFrom(); if (f0 > 0 && lt < f0 + T.LAUNCH_LOGIN_FADE_SEC) PK.ditherBlack(lf, 1 - (lt - f0) / T.LAUNCH_LOGIN_FADE_SEC);   // from the login: a dithered fade in from black (#127)
       cv.getContext('2d')!.drawImage(lf, 0, 0, 334, 232, 0, 0, 334, 232); hits = [];
       const sp = document.getElementById('spArea') as HTMLCanvasElement | null;
       if (sp && panelShown) { sp.getContext('2d')!.drawImage(lf, 334, 0, 140, 232, 0, 0, 140, 232); panelHits = []; }

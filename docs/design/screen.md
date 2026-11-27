@@ -133,13 +133,15 @@ listening, so her sounds are the most important ones in the game.
   | Party wipe | Wah wah wah waaah, then the desk slam |
 
   Other rarities are bell pings that grow with rarity. Hits, abilities, level-ups and the UI stay chiptune.
-- **The launch's sound and music** (#127; [aoj-world.md](aoj-world.md) §7b): the launch on the first Monday has its
-  own cue sheet, `LAUNCH_SOUND` (62 cues by the launch's second), `LAUNCH_LOOPS` (the rain) and `LAUNCH_MUSIC` (the
+- **The launch's sound and music** (#127; [aoj-world.md](aoj-world.md) §7b): the launch (the whole of it on the first Monday,
+  from the login every night after) has its own cue sheet, `LAUNCH_SOUND` (62 cues by the launch's second), `LAUNCH_LOOPS` (the rain) and `LAUNCH_MUSIC` (the
   theme, `aoj_theme`, from 6.2 s to 39.6 s) in `render/page/aoj.js`, played by `ui/launchSound.ts` on the launch's
   clock: each cue fires once as T passes it and never for a jump past it (`systems/launchSheet.ts`); the theme plays at
   offset T - 6.2 and restarts at the right offset when it drifts more than 0.1 s; pause stops all of it and unpause
   resumes each sound where T is; the skip stops it all. A cue with several files plays them in turn (L A B S rising,
-  the keys). All on the game bus; it makes no Noise (the night hasn't started).
+  the keys). All on the game bus; it makes no Noise (the night hasn't started). **From the login** (every night after
+  the first Monday): only the cues from T 23 on fire, and the theme (from its offset at 23, just before bar 2) and the
+  rain fade in over 1.5 s (`LAUNCH_LOGIN_SOUND_FADE_SEC`).
   - **The real PC is clean** (`mouse`, `hdd`, `crt`, `cdspin`; the keys are the desk's `key`); **the game's own sounds
     sound like the console** it is styled on: every other cue and the theme are baked through `tools/sfx/ps1.py`
     (22,050 Hz, a 4-bit ADPCM round trip in blocks of 28 with five prediction filters, the console's kind of reverb: a

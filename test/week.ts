@@ -105,7 +105,7 @@ ok(S.g.voice!.chat[0][0] === 'Billy' && S.g.voice!.chat[0][1] === "yo. realm's u
 S.g = initialState(); S.g.day = 0; startNight(); ok(S.g.howto && !!S.g.voice, 'the night waits for it (howto), the card after it');
 ok([1, 2, 3, 4, 5, 6].every(d => { S.g = initialState(); S.g.day = d; startNight(); return S.g.voice?.chat.length === 3 && new Set(S.g.voice.chat.map(c => c[0])).size === 3; }), 'their chat every night of week one, all three of them');
 ok([...Object.values(NIGHT_CHAT).flat(), ...FIRST_CHAT].map(c => c[1]).every(l => !/[\u2013\u2014]/.test(l) && l.replace(/\b[A-Z]{2,}\b|\(G\)/g, '') === l.replace(/\b[A-Z]{2,}\b|\(G\)/g, '').toLowerCase()), 'their chat voice: lowercase (shouted words aside), no dashes');
-S.g = initialState(); S.g.day = 7; startNight(); ok(!S.g.voice && !S.g.howto, 'week two: no note, no card');
+S.g = initialState(); S.g.day = 7; startNight(); ok(!!S.g.voice && S.g.voice.chat.length === 0 && S.g.voice.launch === 'login' && !howtoOpens(), 'week two: no note (only the login launching, #127) and no card');
 n = night(1); n.mood = T.MOOD_MAX; checkNightEnd(); startNight();
 ok(S.g.voice?.date === 'Tuesday, again' && S.g.voice.chat[0][1] === 'game over man. GAME OVER.' && S.g.voice.chat[1][1] === 'tuesday again then.' && S.g.voice.chat[2][0] === 'Lance', 'after the plug: Billy, then Lance, in their chat (#109)');
 

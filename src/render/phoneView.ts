@@ -1,6 +1,6 @@
 // The phone in your hand (V8, #73; grid doc 7f) as a view model for the renderer's live phone (phone.js, LIVE).
 import { photoLeft } from '../systems/selfies';
-import { launchT, launchChatAt, launchHolds } from '../systems/launch';
+import { launchT, launchChatAt, launchHolds, launchFrom } from '../systems/launch';
 import { on, dayName } from '../systems/week';
 import { battOn, battery, phoneDead, battCost, deviceState, deviceBlocked, teaDue } from '../systems/home';
 import { DEVICES, DEVICE_BY_ID, HOME_ROOMS, type DeviceId } from '../data/home';
@@ -98,10 +98,10 @@ export function phoneView() {
     if (voiceOf !== g.voice) { voiceOf = g.voice; voiceAt = performance.now(); n.phUp = voiceAt; chatSeen = 0; }   // it rises into your hand
     const lt = launchT(), launch = !!g.voice!.launch && lt >= 0;
     const tt = launch ? lt : (performance.now() - voiceAt) / 1000;
-    const { shown, typing } = launch ? launchChatAt(g.voice!.chat, lt) : chatAt(g.voice!.chat, tt);   // the boys typing, a bubble at a time (#102; always text, #108); the first Monday's paced to the launch (#127)
+    const { shown, typing } = launch ? launchChatAt(g.voice!.chat, lt) : chatAt(g.voice!.chat, tt);   // the boys typing, a bubble at a time (#102; always text, #108); paced to the launch (#127: the first Monday's whole, every night after from the login)
     if (shown > chatSeen) { chatSeen = shown; sfx.chatIn(); }
     return { ...base, screen: 'intro', date: g.voice!.date, items: g.voice!.chat.slice(0, shown).map(([w, s]) => ['l', `${w}: ${s}`]), typing,
-      loading: launch && launchHolds() ? Math.min(1, lt / T.LAUNCH_SEC) : null };   // until it has loaded: "Age of Judgment is loading", not a button
+      loading: launch && launchHolds() ? Math.min(1, Math.max(0, (lt - launchFrom()) / (T.LAUNCH_SEC - launchFrom()))) : null };   // until it has loaded: "Age of Judgment is loading", not a button
   }
   if (n.game?.kind === 'phone') return gameView(n.game, base);
   const p = n.pre;

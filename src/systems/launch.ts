@@ -9,10 +9,12 @@ import { toast } from '../core/fx';
 
 const WELCOME = "Welcome to Age of Judgment. Have fun, don't get caught.";
 
-let T = 0, running = false, of: unknown = null, skipped = false, frozen = false;
+let T = 0, running = false, of: unknown = null, skipped = false, frozen = false, from = 0;
+/** Where tonight's launch started: 0 (the whole launch, the first Monday) or the login's T (every night after). */
+export const launchFrom = () => from;
 /** The launch's seconds, or -1 when no launch is running tonight. */
 export const launchT = () => (running ? T : -1);
-/** The first Monday's chat is up with its launch (the voice flag), whether or not it has finished. */
+/** Tonight's chat is up with its launch (the voice flag), whether or not it has finished. */
 export const launchNight = () => !!S.g.voice?.launch;
 /** True while the launch still holds the night (Let's go, Esc, Enter and the home bar do nothing). */
 export const launchHolds = () => running && T < TU.LAUNCH_SEC;
@@ -23,8 +25,9 @@ export const launchSkipped = () => skipped;
  *  end until the town has faded in and the music's last chord is out. */
 export function updateLaunch(real: number) {
   const g = S.g, v = g.voice;
-  if (v?.launch && v !== of) { of = v; T = 0; running = true; skipped = false; }   // a new first Monday: from the start
+  if (v?.launch && v !== of) { of = v; from = v.launch === 'login' ? TU.LAUNCH_LOGIN_AT : 0; T = from; running = true; skipped = false; }   // a new night's launch: from the start, or from the login
   if (!running) return;
+  if (!v && T < TU.LAUNCH_SEC) { running = false; return; }   // the chat closed before it loaded (the tests' and F1's shortcuts): no launch tonight
   if (g.paused || g.screen !== 'night') return;
   if (v?.launch && !(g.howto)) return;   // up but not shown (debug)
   const was = T;
@@ -36,10 +39,16 @@ export function updateLaunch(real: number) {
 export function launchSeek(t: number, freeze = false) { if (running) { T = t; frozen = freeze; } }
 /** F1's "Skip the launch" (and the tests): straight to the end; the sound stops and fires nothing it jumped over. */
 export function skipLaunch() { if (!running) return; if (T < TU.LAUNCH_SEC) toast(WELCOME, '#f2e9d8', 'GAME'); T = Math.max(T, TU.LAUNCH_SEC); skipped = true; }
+/** When the k-th of n bubbles lands: the first Monday's at CHAT_LAUNCH_AT; from the login, spread evenly from
+ *  CHAT_LOGIN_FROM to CHAT_LOGIN_TO. */
+export function launchChatTime(k: number, n: number, start = from) {
+  if (start > 0) return n <= 1 ? TU.CHAT_LOGIN_FROM : TU.CHAT_LOGIN_FROM + (k * (TU.CHAT_LOGIN_TO - TU.CHAT_LOGIN_FROM)) / (n - 1);
+  return TU.CHAT_LAUNCH_AT[k] ?? TU.CHAT_LAUNCH_AT[TU.CHAT_LAUNCH_AT.length - 1];
+}
 /** The chat's bubbles paced to the launch: how many are in, and who is typing the next one. */
-export function launchChatAt(chat: [string, string][], t: number): { shown: number; typing: string | null } {
+export function launchChatAt(chat: [string, string][], t: number, start = from): { shown: number; typing: string | null } {
   for (let k = 0; k < chat.length; k++) {
-    const at = TU.CHAT_LAUNCH_AT[k] ?? TU.CHAT_LAUNCH_AT[TU.CHAT_LAUNCH_AT.length - 1];
+    const at = launchChatTime(k, chat.length, start);
     if (t < at - TU.CHAT_LAUNCH_TYPING) return { shown: k, typing: null };
     if (t < at) return { shown: k, typing: chat[k][0] };
   }
