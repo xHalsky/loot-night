@@ -3,6 +3,12 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.91.2 (2026-11-27)
+
+- **The first group chat is five bubbles** (#115; Paweł: too vague for a new player, one piece of information too much):
+  Lance's "q4 pays real money. shop's on your phone" is gone from `FIRST_CHAT`. Excel's pay gets explained another way
+  later. Mike's Tab tip is now the last bubble. Nothing else changed.
+
 ## 0.91.1 (2026-11-27)
 
 - **A gentler shake** (#114; Paweł: too much and too long): the wrong-class shake, in its square and in hand, is now

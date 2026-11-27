@@ -11,7 +11,6 @@ export const FIRST_CHAT: [string, string][] = [
   ['Lance', 'would you like to know more?'],
   ['Billy', '11 sharp. and careful with her tonight, they mostly come at night'],
   ['Mike', 'steps in the hall = tab to excel. BEFORE the door opens'],
-  ['Lance', "q4 pays real money. shop's on your phone"],
 ];
 /** Tonight's new thing in their chat, week one from Tuesday: one bubble each, the three of them in turn. */
 export const NIGHT_CHAT: Record<string, [string, string][]> = {

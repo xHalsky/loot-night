@@ -37,11 +37,10 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   calm organizer (he posts the raid time), **Lance** dry and deadpan, a few words a line. They call **Age of Judgment**
   (the RPG's name in the fiction, #102) "aoj". Their lines riff on 80s and 90s action films and old MMOs and arena
   shooters (an inside joke for Paweł's friends) and read as plain gamer talk without them: no film, character or game is
-  named, and a quote is kept exact only up to five words. **The first Monday** is their chat, live (`FIRST_CHAT`): six
+  named, and a quote is kept exact only up to five words. **The first Monday** is their chat, live (`FIRST_CHAT`): five
   bubbles, one at a time, each after the name and three hopping dots (`CHAT_*`: about 0.6 s of typing a bubble, all in
   by about 6 s, a soft tick as each lands): Billy's realm is up, patch notes he didn't read, 11 sharp, "careful with her
-  tonight"; Lance's "would you like to know more?"; Mike's tip (Tab before the door opens) and Lance's (Q4 pays real
-  money, the Shop). "Let's go" works from the first bubble. **The boys always text, never send voice notes**
+  tonight"; Lance's "would you like to know more?"; Mike's tip (Tab before the door opens). "Let's go" works from the first bubble. **The boys always text, never send voice notes**
   (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`) naming tonight's new
   things in their chat voice; after the plug the boys react the same way (Billy "game over man. GAME OVER.", "tuesday again
   then.", Lance "all that loot, gone like tears in rain", Mike's Tab tip; `replayChat`), under "Tuesday, again". The button (or the home bar, the close box, a click outside the phone, Esc, Enter) puts the phone
