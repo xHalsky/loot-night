@@ -168,8 +168,8 @@ function liveBattleArea(ctx, vm, t) {
   vm.buffs.forEach((b, k) => liveHit(W - 4 - 13 - k * 16, 3, 13, 13, '', '', b.tip));
   // the curio card in the band
   if (vm.curio && vm.curio.card) {
-    curioWindow(vm.curio.card, t);
-    vm.curio.card.choices.forEach((c, k) => { if (c.act) liveHit(84 + 7 + k * 89, 4 + 26, 85, 20, c.act, c.arg, c.tip); });
+    const cby = curioWindow(vm.curio.card, t);   // the choices' row moves down when the description takes two lines (#125)
+    vm.curio.card.choices.forEach((c, k) => { if (c.act) liveHit(84 + 7 + k * 89, cby, 85, 20, c.act, c.arg, c.tip); });
     liveHit(84 + 188 - 10, 0, 12, 10, 'curioLeave', '', 'Walk past');
   }
   // the party: press on a hero (or his portrait) and drag onto another to swap (grid doc §5d)

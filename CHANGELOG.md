@@ -3,6 +3,16 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.94.1 (2026-11-27)
+
+- **The curio card's description is easier to read** (#125; Paweł: make it a bit more readable). It was mid-brown
+  ink on the grained, burnt parchment, and the grain flickered under the letters; it is now the darkest umber on a
+  flat band of the paper's lightest tone. It also shows the whole line: it was cut at 40 characters, so the shrine,
+  the chest, the altar, the moonwell, the bank vault and the potion cart lost the end of their line ("A bell
+  hangs over it."). A line too long for one row wraps to two and the choices move down with it (none does today, so
+  the card's layout is unchanged). The troll's long name drops its letter spacing so it no longer runs under the
+  close box. Render only: no balance change.
+
 ## 0.94.0 (2026-11-27)
 
 - **The first night is explained one area at a time** (#124; Paweł: the two cards didn't cover the first night, and

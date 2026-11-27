@@ -83,17 +83,22 @@ function buffs(list, t) {
 }
 
 // ---------------------------------------------------------------- curio window (parchment card in the band)
+// the curio's card. Its description (#125, Paweł: more readable) wraps to two lines instead of being cut at one, in the
+// darkest umber ink on a smoothed band of the paper (the parchment's grain dithers between two tones and broke the
+// letters). Returns the choices' row y, for the hit regions.
 function curioWindow(st, t) {
-  const x = 84, y = 4, w = 188, h = 57;
+  const x = 84, y = 4, w = 188, lines = wrapTiny(st.line, w - 12).slice(0, 2), h = 49 + lines.length * 8, by0 = y + 18 + lines.length * 8;
   shadowU(x, y, w, h, { k: 0.72, r: 6, dx: 3, dy: 4 });
   parchU(x, y, w, h, { v: 0.84, burn: 0.34, torn: 1 });
   // curled bottom-right corner
   for (let k = 0; k < 6; k++) for (let j = 0; j <= k; j++) putU(x + w - 6 + k, y + h - 1 - j, k === j ? 0.1 : 0.62 + 0.05 * j, M_UMBER);
-  text(st.title.toUpperCase(), x + 7, y + 6, 'silkb', P.u1, { ls: 1 });
+  const T = st.title.toUpperCase();   // a long name (Sleeping troll on a loot pile) drops the letter spacing to clear the close box
+  text(T, x + 7, y + 6, 'silkb', P.u1, { ls: measure(T, 'silkb', 1) > w - 30 ? 0 : 1 });
   for (let i = x + 7; i < x + w - 23; i++) putU(i, y + 13, 0.36 + 0.08 * (GR(i, 3) - 0.5), M_UMBER);
-  text(st.line, x + 7, y + 17, 'tiny', P.u2);
+  rectI(x + 5, y + 15, w - 10, lines.length * 8 + 1, P.u6);   // the paper's lightest tone, flat (no grain under the letters)
+  lines.forEach((l, k) => text(l, x + 7, y + 17 + k * 8, 'tiny', P.u1));
   st.choices.forEach((c, k) => {
-    const bx = x + 7 + k * 89, by = y + 26, bw = 85, bh = 20, focus = c.focus, pressed = c.pressed;
+    const bx = x + 7 + k * 89, by = by0, bw = 85, bh = 20, focus = c.focus, pressed = c.pressed;
     shadowU(bx, by, bw, bh, { k: 0.45, r: 2, dx: 1, dy: 2 });
     if (pressed) plateU(bx, by, bw, bh, { mat: M_LOOT, top: 0.82, bot: 0.7, hi: 0.98, lo: 0.55 });
     else plateU(bx, by, bw, bh, { top: 0.36, bot: 0.17, hi: focus ? 0.6 : 0.62, lo: 0.08 });
@@ -105,8 +110,9 @@ function curioWindow(st, t) {
     let sx = bx + 5; for (const [s, idx] of c.cost) sx += text(s, sx, by + 12, 'tiny', pressed ? P.u2 : idx, pressed ? {} : { shadow: P.void });
     if (focus && !pressed && Math.floor(t * 3) % 2 === 0) spr(bx - 5, by + 7, ARROW, { a: P.gold });
   });
-  groove(x + 7, y + 48, w - 14, 5, st.timer, st.timer < 0.3 ? M_DANGER : M_UMBER, st.timer < 0.3 ? [1, 0.8] : [0.62, 0.44]);
+  groove(x + 7, y + h - 9, w - 14, 5, st.timer, st.timer < 0.3 ? M_DANGER : M_UMBER, st.timer < 0.3 ? [1, 0.8] : [0.62, 0.44]);
   closeX(x + w - 5, y - 4);
+  return by0;
 }
 
 // ---------------------------------------------------------------- unit tags over the battle

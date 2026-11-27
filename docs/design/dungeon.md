@@ -149,7 +149,11 @@ after that the order is the player's and carries over from night to night.
 (none on vault or shrine floors, no repeats among the last three). It stands in the corridor (#99): it comes into
 view off the right edge as the walk starts (`CURIO_ENTER_X`), the party walks up to it at `CURIO_PACE` and stops with
 it at `CURIO_STOP_X` once the loot ahead is picked up. A parchment card names it and offers two choices, each with
-its real-life cost on the button, so the question is "can I afford this right now, given where she is?". The party
+its real-life cost on the button, so the question is "can I afford this right now, given where she is?". The card's
+description is the whole line (wrapped to two lines if it ever needs them; the choices move down with it) in the
+darkest umber ink on a flat band of the paper's lightest tone (#125): on the grained, burnt paper the letters
+flickered, and cut at 40 characters most curios lost their second sentence. A long name (the troll's) drops the
+title's letter spacing so it clears the close box. The party
 waits `CURIO_WAIT_SEC` (7 real seconds), then walks past; the ✕ or "walk past" leaves at once. Curio time is your
 time: the night clock runs, the battle does not. After the choice the curio stays where it stands and the party
 walks on past it at the hurry pace (`WALK_HURRY_PACE`); it goes by behind them (drawn on its row behind the party,
