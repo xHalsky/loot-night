@@ -28,8 +28,22 @@ function pkPanel(vm, t) {
   const hits = livePanelAll(PANEL_CANVAS.getContext('2d'), vm, t);
   return { canvas: PANEL_CANVAS, hits };
 }
+/** The party's names and classes from the game (data/heroes.ts, the one table; cast of 2026-11-27), keyed by the page's
+ *  ids (knight, rogue, mage, priest): the page's own tables (HEROES, HNAME, the feed's hero tags) take them. */
+function pkHeroNames(t) {
+  const TAG = { mage: 'arcane', priest: 'g5' };   // the colours the mage's and the priest's chat tags already had
+  for (const h of HEROES) {
+    const n = t[h.id]; if (!n) continue;
+    if (TAG[h.id]) { delete FEED_TAG[h.name.toUpperCase()]; FEED_TAG[n.name.toUpperCase()] = TAG[h.id]; }
+    h.name = n.name; h.short = n.name; h.cls = n.cls; HNAME[h.id] = n.name;
+  }
+}
 export const PK = {
   ready: () => !!PK_READY && TC !== null,
+  /** The party's names and classes (see pkHeroNames), once at start. */
+  heroNames: pkHeroNames,
+  /** A class's colour on the RPG's palette (knight steel, rogue ember, mage violet, priest gold), as #rrggbb, for the DOM. */
+  classHex: (cls) => PAL_BASE.PAL[P[CLASS_COL[cls]]],
   battleArea: pkBattleArea,
   panel: pkPanel,
   /** The phone in your hand (V8, #73): a 126 x 252 canvas and its hit regions (its pixels). */

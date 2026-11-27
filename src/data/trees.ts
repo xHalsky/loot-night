@@ -1,5 +1,6 @@
 import { T } from '../config/tuning';
 import type { HeroId } from '../core/state';
+import { heroLabel } from './heroes';
 
 // Skill trees (#53; handoff 2.1 to 2.3 with the 2026-11-20 drop; grid doc §6c). Data only: adding a node needs no code
 // beyond its effect. Every hero starts with his auto attack (root) and skill 1; skill 2 is an unlock, each skill has a
@@ -51,7 +52,7 @@ export const TREES: Record<HeroId, TreeDef> = {
       r1a: { id: 'ambush', name: 'Ambush', fx: 'Backstab always crits on Staggered enemies.' },
       r1b: { id: 'shiv', name: 'Shiv', fx: `Backstab's cooldown -${pct(T.RULE_SHIV)}.` },
       r2a: { id: 'choking', name: 'Choking Smoke', fx: `Smoke Bomb also hurts every enemy for ${pct(T.RULE_CHOKE_DPS)} of his attack a second.` },
-      r2b: { id: 'vanish', name: 'Vanish', fx: "Garrote can't be targeted during Smoke Bomb." },
+      r2b: { id: 'vanish', name: 'Vanish', fx: `${heroLabel('rogue')} can't be targeted during Smoke Bomb.` },
     },
     stats: {
       g1: { name: 'Nimble', fx: '+8% attack speed.', give: { atkSpeed: 0.08 } }, g2: { name: 'Shadow', fx: '+10% dodge.', give: { dodge: 0.1 } },

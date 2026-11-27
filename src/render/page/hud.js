@@ -3,11 +3,12 @@
 // and side panel 140x232. Data in, palette indices out.
 // ===========================================================================
 const BAND = 64, PIC_Y = 64, BAR_Y = 206, BAR_H = 26;
+// names and classes: the game's table (data/heroes.ts) overwrites these at start (facade heroNames; cast of 2026-11-27)
 const HEROES = [
-  { id: 'knight', name: 'Knightenstein', short: 'Knighten', cls: 'Knight', lv: 5, pow: 44, keys: ['1', '2', '3', '4'], skills: ['taunt', 'cleave', 'shield'] },
-  { id: 'rogue', name: 'Garrote', short: 'Garrote', cls: 'Rogue', lv: 5, pow: 38, keys: ['Z', 'X', 'C', 'V'], skills: ['backstab', 'smoke', 'pickpocket'] },
-  { id: 'mage', name: 'Magoo', short: 'Magoo', cls: 'Mage', lv: 5, pow: 31, keys: ['Q', 'W', 'E', 'R'], skills: ['hellfire', 'frost', 'soul'] },
-  { id: 'priest', name: 'Healero', short: 'Healero', cls: 'Priest', lv: 5, pow: 12, keys: ['A', 'S', 'D', 'F'], skills: ['mend', 'ward', 'judge'] },
+  { id: 'knight', name: 'Dutch', short: 'Dutch', cls: 'Knight', lv: 5, pow: 44, keys: ['1', '2', '3', '4'], skills: ['taunt', 'cleave', 'shield'] },
+  { id: 'rogue', name: 'Hixx', short: 'Hixx', cls: 'Rogue', lv: 5, pow: 38, keys: ['Z', 'X', 'C', 'V'], skills: ['backstab', 'smoke', 'pickpocket'] },
+  { id: 'mage', name: 'Hudzor', short: 'Hudzor', cls: 'Mage', lv: 5, pow: 31, keys: ['Q', 'W', 'E', 'R'], skills: ['hellfire', 'frost', 'soul'] },
+  { id: 'priest', name: 'Arkbishop', short: 'Arkbishop', cls: 'Priest', lv: 5, pow: 12, keys: ['A', 'S', 'D', 'F'], skills: ['mend', 'ward', 'judge'] },
 ];
 // three slots per hero: two skills and the ultimate (the third key: 3, C, E, D). Icons are placeholders (Paweł's art)
 const SKILL_NAME = { taunt: 'Taunt', cleave: 'Bash', shield: 'Last Stand', backstab: 'Backstab', smoke: 'Smoke Bomb', pickpocket: 'Heist', hellfire: 'Fire', frost: 'Frost', soul: 'Cataclysm', mend: 'Mend', ward: 'Ward', judge: 'Miracle' };

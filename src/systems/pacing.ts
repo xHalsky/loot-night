@@ -41,6 +41,6 @@ export function pacingLine(): string {
   const p = PACE, min = p.combat / 60, n = S.g.night;
   const avg = (s: number, k: number) => (k ? (s / k).toFixed(1) : '-');
   const run = n?.run ? ` · run ${Math.floor(runT / 60)}:${String(Math.floor(runT % 60)).padStart(2, '0')}, ${n.run.souls} Souls` : '';
-  const nodes = S.g.heroes.map(h => `${h.name[0]} ${nodeCost(h.id, 'g1')}`).join(' ');
+  const nodes = S.g.heroes.map(h => `${h.name.slice(0, 3)} ${nodeCost(h.id, 'g1')}`).join(' ');
   return `pacing · encounter ${avg(p.encounterSum, p.encounters)} s (last ${p.lastEncounter.toFixed(1)}) · floor ${avg(p.floorSum, p.floors)} s${run} · items/min ${min > 0.05 ? (p.items / min).toFixed(1) : '-'} · rare+/min ${min > 0.05 ? (p.rarePlus / min).toFixed(1) : '-'} · combat ${Math.round(p.combat)} s · stat node ${nodes}`;
 }

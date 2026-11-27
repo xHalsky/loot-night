@@ -3,6 +3,29 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.89.0 (2026-11-27)
+
+- **The cast of 2026-11-27** (#107; Paweł: the heroes are the friends' characters now, and Dutch is a nod to his film
+  hero): Knightenstein is **Dutch** (the Knight, you), Garrote **Hixx** (the Rogue, Mike's), Magoo **Hudzor** (the Mage,
+  Billy's), Healero **Arkbishop** (the Priest, Lance's). Display names only: stats, skills, keys, colours, art and
+  balance are unchanged (the good and idle sims run clean).
+- **Every place a hero is named shows his class** (Knight, Rogue, Mage, Priest), from one table (`HERO_NAME`,
+  `HERO_CLASS` in `heroes.ts`) that the renderer reads too (`PK.heroNames`, so the page's own tables never drift).
+  Cards and tooltips: the name, then the class in the class colour (a new `c` line in the RPG's tooltip card; the
+  rank moved to the note). In a line of text: "Hudzor (Mage)" (feed lines, the aura and set lines, the skill tree's
+  hint, "+4 power for Dutch (Knight)"). Strips: "ARKBISHOP Priest" (the party tab, and now the Skill Tree tab). The
+  item window's Equip buttons put the class under the name; the Appraiser's reveal says whose a legendary or set piece
+  is on its own row, "For Hixx (Rogue)". The name stands alone where there is no room: the party cards, the feed's
+  speaker tags, Heist's and the EXECUTE warning's feed lines.
+- **Ids kept** (saves and art key on them): the hero ids `knight`, `rogue`, `mage`, `healer` (`priest` on the page),
+  and the still images' file names in `design/redesign/stills/`. An old save loads with the new names
+  (`test/cast.py` checks it). The phone's unused `magoo` avatar key is `hudzor` now.
+- **The boys' first chat** matches the cast: Mike's line is about Hixx's daggers, Lance's about Arkbishop being ready
+  since lunch.
+- **Docs:** the design bible, the handoff package (`design/redesign/`, where Danny and Kuba are now Billy and Lance, as
+  in the game since 0.88), the UI inventory and the Project docs; the decisions doc has the cast table.
+- `test/cast.py`: every screen that names a hero, and an old save.
+
 ## 0.88.2 (2026-11-27)
 
 - **Big headings in a font drawn at their size** (#106; Paweł: a bigger heading can afford more pixels): Jersey 10

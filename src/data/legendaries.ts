@@ -4,7 +4,7 @@ import type { HeroId, Slot } from '../core/state';
 // Loot rules (#52, 1.8; docs/design/loot.md). Every legendary is one of these: it changes a rule of one hero's kit,
 // works only on that hero, and drops only while he is in the party. Names are the item's whole name.
 // Stormcoil and Vigil Censer were written for Storm and Revive, which were dropped (decisions 2026-11-20); they now
-// work on what covers that ground (Magoo's Bolt, Healero's Miracle).
+// work on what covers that ground (the mage's Bolt, the priest's Miracle).
 export type LegendId = 'frostbinder' | 'tithe' | 'lantern' | 'ashchoir' | 'widow' | 'stormcoil' | 'gilded' | 'vigil';
 export interface LegendDef { id: LegendId; name: string; slot: Slot; hero: HeroId; rule: string }
 export const LEGENDS: LegendDef[] = [

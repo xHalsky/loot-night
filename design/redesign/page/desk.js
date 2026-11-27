@@ -16,7 +16,7 @@ const CORE8 = { void: '#0a0814', moon: '#f2efdc', gold: '#f1a934', crimson: '#d2
 // slot 32, 'steel', is the knight's class colour (Moonwell's s5): with violet and gold it makes the three class
 // colours the desk shares with the game, so a hero's keys light in the colour of his portrait's outline
 const STEEL = '#5398b5'; P.steel = 32;
-// slot 33, 'ember', is Garrote's class colour (Moonwell's copper): UI-only on the desk, so it never enters the dither
+// slot 33, 'ember', is Hixx's class colour (Moonwell's copper): UI-only on the desk, so it never enters the dither
 const EMBER = '#c16229'; P.ember = 33;
 // slots 34 to 36: the Windows 98 title-bar blues (navy, blue, sky), UI-only, only ever on the monitor's glass (win98.js)
 const WIN98 = ['#0b1d5a', '#1f4a9c', '#4a86cf']; P.wnavy = 34; P.wblue = 35; P.wsky = 36;
@@ -99,7 +99,7 @@ const KEYROWS = [
   [['Shift', 2.25], ['Z', 1], ['X', 1], ['C', 1], ['V', 1], ['B', 1], ['N', 1], ['M', 1], [',', 1], ['.', 1], ['/', 1], ['Shift', 2.75]],
   [['Ctrl', 1.25], ['Opt', 1.25], ['Cmd', 1.25], ['', 6.25], ['Cmd', 1.25], ['Opt', 1.25], ['Fn', 1.25], ['Ctrl', 1.25]],
 ];
-// hotkeys light up in the colour of what they drive: knight steel, Garrote ember, mage arcane, priest gold;
+// hotkeys light up in the colour of what they drive: knight steel, rogue ember, mage arcane, priest gold;
 // Tab (Excel) green; H (headset, Zone) cyan; G (Goblin Fuel) moss
 const KEYLIT = { '1': 'steel', '2': 'steel', '3': 'steel', Z: 'ember', X: 'ember', C: 'ember', Q: 'arcane', W: 'arcane', E: 'arcane', A: 'gold', S: 'gold', D: 'gold', Tab: 'g5', H: 's6', G: 'g5' };
 const KEYGLOW = { steel: [0.6, 0.95, 1.3], ember: [1.4, 0.72, 0.42], arcane: [0.95, 0.65, 1.5], gold: [1.3, 0.9, 0.5], g5: [0.7, 1.2, 0.8], s6: [0.6, 1.05, 1.3] };
@@ -192,22 +192,22 @@ function buildDeskLayer() {
 }
 
 // ---------------------------------------------------------------- desk states (moments)
-const FEED_TAG = { YOU: 'u6', HER: 'd6', PHONE: 'moon', GAME: 'gold', LOOT: 's6', EXCEL: 'g6', DOG: 'copper', NIGHT: 's5', PARTY: 'u5', GUILD: 'u5', MAGOO: 'arcane', HEALERO: 'g5' };
+const FEED_TAG = { YOU: 'u6', HER: 'd6', PHONE: 'moon', GAME: 'gold', LOOT: 's6', EXCEL: 'g6', DOG: 'copper', NIGHT: 's5', PARTY: 'u5', GUILD: 'u5', HUDZOR: 'arcane', ARKBISHOP: 'g5' };
 const DESK_MOMENTS = {
   calm: { clock: '20:40', zl: 50, tired: 10, zone: 0, cans: 3, note: ['y', 'y', 'y'], feed: [
-    ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'], ['20:39', 'LOOT', 'Grave Ring', 's6'], ['20:36', 'MAGOO', 'pick the next floor. hover a node to see what is there'],
-    ['20:31', 'HER', 'I\'m watching my show, babe. Don\'t play all night, okay?'], ['20:25', 'PHONE', 'Missed delivery. The parcel goes back to the depot.'], ['20:20', 'HEALERO', 'her thing just ended, she\'s getting up'] ] },
+    ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'], ['20:39', 'LOOT', 'Grave Ring', 's6'], ['20:36', 'HUDZOR', 'pick the next floor. hover a node to see what is there'],
+    ['20:31', 'HER', 'I\'m watching my show, babe. Don\'t play all night, okay?'], ['20:25', 'PHONE', 'Missed delivery. The parcel goes back to the depot.'], ['20:20', 'ARKBISHOP', 'her thing just ended, she\'s getting up'] ] },
   ring: { clock: '20:52', zl: 50, tired: 14, zone: 0, cans: 3, phone: 'call', note: ['y', 'y', 'y'], feed: [
     ['20:52', 'PHONE', 'Mom is calling.'], ['20:50', 'LOOT', 'Fine Signet', 'g6'], ['20:47', 'GAME', 'Floor 3. The crypt goes deeper.'],
-    ['20:44', 'HER', 'Warning: Flow reset.'], ['20:41', 'MAGOO', 'answer your mum man, she calls twice'], ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'] ] },
+    ['20:44', 'HER', 'Warning: Flow reset.'], ['20:41', 'HUDZOR', 'answer your mum man, she calls twice'], ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'] ] },
   tired: { clock: '22:18', zl: 74, tired: 36, zone: 0, cans: 2, note: ['y', 'y', '!'], feed: [
     ['22:18', 'YOU', 'Yawn. Your eyes sting.'], ['22:16', 'NIGHT', 'Tired 30. Yawning starts. A can would help.'], ['22:12', 'LOOT', 'Ember Blade', 'copper'],
-    ['22:10', 'HEALERO', 'u ok? u missed two heals'], ['22:02', 'HER', 'Coming to bed soon?'], ['21:58', 'GAME', 'Floor 4 cleared. +14 gold.'] ] },
+    ['22:10', 'ARKBISHOP', 'u ok? u missed two heals'], ['22:02', 'HER', 'Coming to bed soon?'], ['21:58', 'GAME', 'Floor 4 cleared. +14 gold.'] ] },
   headset: { clock: '21:26', zl: 50, tired: 18, zone: 19, cans: 3, headset: true, note: ['y', 'y', 'y'], feed: [
     ['21:26', 'YOU', 'Headset on. You hear nothing.'], ['21:25', 'GAME', 'Flow x2.2'], ['21:24', 'LOOT', 'Bone Charm', 's6'],
-    ['21:21', 'MAGOO', 'zone mode. dont talk to him'], ['21:18', 'HER', 'In the shower, back in 20.'], ['21:15', 'DOG', 'The dog sighs at the door.'] ] },
+    ['21:21', 'HUDZOR', 'zone mode. dont talk to him'], ['21:18', 'HER', 'In the shower, back in 20.'], ['21:15', 'DOG', 'The dog sighs at the door.'] ] },
   dog: { clock: '21:05', zl: 50, tired: 12, zone: 0, cans: 3, dog: true, note: ['y', 'y', 'y'], feed: [
-    ['21:05', 'DOG', 'The dog jumps up at the desk. Pet him!'], ['21:04', 'MAGOO', 'the dog wants pets. ignore him and he goes for the cable'], ['21:02', 'GAME', 'The party walks past.'],
+    ['21:05', 'DOG', 'The dog jumps up at the desk. Pet him!'], ['21:04', 'HUDZOR', 'the dog wants pets. ignore him and he goes for the cable'], ['21:02', 'GAME', 'The party walks past.'],
     ['20:58', 'LOOT', 'Bone Charm', 's6'], ['20:55', 'HER', 'I\'m watching my show, babe.'], ['20:50', 'GAME', 'Floor 2 cleared. +8 gold.'] ] },
   witching: { clock: '01:12', zl: 132, tired: 52, zone: 6, cans: 0, witching: true, note: ['y', 'x', 'y'], feed: [
     ['01:12', 'LOOT', 'Grave Crown', 'copper'], ['01:00', 'NIGHT', 'Witching hour. Drops can shift up a rarity.'], ['00:52', 'HER', 'zzz'],

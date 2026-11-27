@@ -32,7 +32,7 @@ ok(Math.abs(sets / epics - T.SET_CHANCE) < 0.05 && setOk === sets, `set pieces: 
 party(1); S.g.heroes = S.g.heroes.filter(h => h.id !== 'rogue');   // a party without him (he is in from night 1 now, #96)
 let rogueStuff = 0;
 for (let i = 0; i < 3000; i++) { const it = genItem(8, 3); if ((it.legend && LEGENDS.find(l => l.id === it.legend)!.hero === 'rogue') || (it.set && SETS.find(s => s.id === it.set)!.hero === 'rogue')) rogueStuff++; }
-ok(rogueStuff === 0, 'without Garrote, none of his legendaries or his set drop');
+ok(rogueStuff === 0, 'without Hixx, none of his legendaries or his set drop');
 
 // equip helpers
 const gear = (h: HeroId, slot: 'weapon' | 'armor' | 'trinket', mod: Partial<Item>) => { H(h).gear[slot] = { id: `${h}${slot}${Math.random()}`, name: 'x', slot, rarity: 'epic', ilvl: 1, affixes: [], value: 1, identified: true, ...mod }; };

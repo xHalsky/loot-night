@@ -41,7 +41,7 @@ for `FLOW_GLOW_SEC`. The town portal button sits under it. The city's corner rea
 **The side panel** (140 × 232 on the grid, drawn by the redesign's renderer since 0.61: `livePanelAll` in
 `src/render/page/live.js` from the view in `src/render/rpgView.ts`; grid doc §5, §6b). In the dungeon: four party cards
 (portrait in the class outline, short name, "Lv5", power, a thin XP line, a red "!" when a hero falls behind; no HP);
-click one to select it, drop an item on one to equip it. The selected hero: an engraved strip ("KNIGHTENSTEIN Knight
+click one to select it, drop an item on one to equip it. The selected hero: an engraved strip ("DUTCH Knight
 ◆44"), a 3 × 2 gear grid (weapon, helm, armor / boots, ring, trinket; power in the corner) and the six stats with the
 gear's share. The bag: "BAG 7/18" and the AUTO salvage switch in its header, 6 × 3 slots, then the Treasury row (the
 building opens 2 per level, the rest show a lock). A cell: the rarity light, the icon, its power, NEW, a lock, a
@@ -78,7 +78,7 @@ buffs.
 **The feed card**, under it: the last lines that fit (six at most), newest on top, older ones fading, two lines at
 most each. Each line
 has its time and a tag for whose it is: YOU, LOOT (in the rarity colour), HER, PHONE, GAME, EXCEL, DOG, NIGHT,
-PARTY, GUILD, or a friend's name (MAGOO, HEALERO). A first-time tip is pinned on top while it lasts. No header, no tabs.
+PARTY, GUILD, or a hero's name (HUDZOR, ARKBISHOP; a tag has no room for the class). A first-time tip is pinned on top while it lasts. No header, no tabs.
 
 **Monitor chrome.** The Win98 taskbar under the screen: Start, the app buttons for Age of Judgment (the RPG he plays, #102; its button fits "Age of Judgment · Tab") and Excel ("Tab"
 on the one you would switch to), the power button "Sleep" (greyed with "23:00+" until bedtime), the wallet (in dollars, #105) and

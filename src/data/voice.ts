@@ -1,11 +1,11 @@
-// The boys at 20:00 (the week, #56; grid doc 7m): Billy, Mike and Lance (#102; Magoo, Healero and Garrote are theirs),
+// The boys at 20:00 (the week, #56; grid doc 7m): Billy, Mike and Lance (#102; their characters are Hudzor, Hixx and Arkbishop),
 // in their chat voice (lowercase, casual). Monday is the first night of Age of Judgment, so the first one is the three
 // of them typing at once, stoked (FIRST_CHAT, live bubbles); from Tuesday Billy's voice note names tonight's new thing.
 // Week one has one a night; a replay has its own. Tuesday's are lean in's (#77).
 export const FIRST_CHAT: [string, string][] = [
   ['Billy', 'AGE OF JUDGMENT TONIGHT. LETS GOOO'],
-  ['Mike', "finally!! healero's been ready since lunch"],
-  ['Lance', 'garrote sharpened both daggers for this'],
+  ['Mike', 'finally!! hixx sharpened both daggers for this'],
+  ['Lance', "arkbishop's been ready since lunch"],
   ['Billy', 'she still thinks youre doing spreadsheets lol'],
   ['Mike', 'steps in the hall = tab to excel. BEFORE the door opens'],
   ['Lance', "q4 pays real money btw. shop's on your phone"],

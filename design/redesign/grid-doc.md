@@ -71,7 +71,7 @@ in depth, never in the order they were designed. Far limbs and what they hold co
 limbs; anything worn or held over a part is drawn after it. Fixed in that pass: the knight's sword grip is drawn before
 his fist closes over it; the mage's casting arm comes out from under his mantle; the priest's censer arm comes out from
 under his chasuble, and his icon's pole stands in front of his robe all the way down; the skeleton's far pauldron sits
-behind its ribcage; the necromancer's raised arm comes out from under his far pauldron; Garrote's near blade, carried
+behind its ribcage; the necromancer's raised arm comes out from under his far pauldron; Hixx's near blade, carried
 pointing back, runs behind his hip. (Earlier fix: the knight's near pauldron is drawn before the shield.)
 
 ## 4. Skill icons: grouped by class
@@ -84,7 +84,7 @@ The class reads from the tile colour first, then from the icon's palette and wei
 | Knight | riveted steel-blue iron, scratched | heavy, blunt silhouettes; steel with blood red | 1 Taunt (crested great helm roaring, red war-cry chevrons), 2 Bash (broad blade through a red arc), 3 Last Stand, the ultimate (heater shield, crimson field, gold cross, sparks off the rim) |
 | Mage | violet field with a faint arcane rune ring | glowing elements with hot cores | Q Fire (flame, white-gold core), W Frost (crystal frost star), E Cataclysm, the ultimate (screaming soul-skull trailing a violet wisp) |
 | Priest | warm gilded field with light rays | symmetric holy shapes in gold, ivory, green | A Mend (budded green cross, gold heart), S Ward (bubble of light with a gold cross), D Miracle, the ultimate (golden scales) |
-| Rogue (Garrote) | dark plum cloak weave with one faint diagonal cut | lean steel, blood, ember sparks, pale smoke, gold | Z Backstab (dagger driven point-down, blood off the tip), X Smoke Bomb (dark flask, burning fuse, pale smoke), C Heist, the ultimate (gloved fingers lifting a coin purse, coins slipping out); Stab is his auto attack |
+| Rogue (Hixx) | dark plum cloak weave with one faint diagonal cut | lean steel, blood, ember sparks, pale smoke, gold | Z Backstab (dagger driven point-down, blood off the tip), X Smoke Bomb (dark flask, burning fuse, pale smoke), C Heist, the ultimate (gloved fingers lifting a coin purse, coins slipping out); Stab is his auto attack |
 
 Buff icons stay 11 × 11; Taunt and Ward use the same drawings, simplified.
 
@@ -95,10 +95,10 @@ icons).
 Crimson inside knight icons is picture colour (blood); the "answer" state is carried only by the pulsing crimson
 frame and halo, so it stays unambiguous.
 
-### 4b. Garrote, the fourth hero (rogue)
+### 4b. Hixx, the fourth hero (rogue)
 
 Second in marching order, right behind the knight. The party is evenly spaced, about 35 px apart: priest x 21,
-mage 56, Garrote 87 (his bent back carries his mass ~3 px forward), knight 126 (party lane, feet at y 196).
+mage 56, Hixx 87 (his bent back carries his mass ~3 px forward), knight 126 (party lane, feet at y 196).
 
 Drawn after Paweł's references (a black hooded blade-dancer with glowing eyes and gold fittings; a masked rogue in a
 long cloak; a pixel-art rogue in a deep rounded hood and capelet, crouched in a wide sneaking stance), then reworked:
@@ -139,7 +139,7 @@ long cloak; a pixel-art rogue in a deep rounded hood and capelet, crouched in a 
 - **Class colour: ember** (Moonwell copper #c16229): 1 px portrait outline, and Z X C light ember on the desk
   keyboard. Crimson, green, cyan and pink were already meanings (danger, Excel/Monster, Zone, her). On the desk ember is
   slot 33, UI-only: `makePalSet(hexes, ramps, lutN)` keeps it out of the dither LUT, so the desk's renders don't change.
-- **Inventory** (floor map screen): Garrote selected; epic dagger, rare hood, leather armour, boots, ring, and the
+- **Inventory** (floor map screen): Hixx selected; epic dagger, rare hood, leather armour, boots, ring, and the
   garrote wire as a legendary trinket. New item icons: dagger, hood, wire.
 
 ### 4c. The mob: six, in two fodder lanes
@@ -170,10 +170,10 @@ tags sit 10 px above their bar. The Grave Ring's bone pile moved to x 160, in fr
 | Mark tag | text + 6, 9 tall, coloured underline | STAGGERED bone, TAUNTED dusk rose, CHILLED stone, JUDGED pale |
 | Enemy cast (wind-up) | the name centred over the caster, the bar 7 px under it | Just the cast's name in Tiny5 crimson with a 1 px void shadow ("Summon", "Hook · rank 4"), and a thin cast bar under it as wide as the name (at least 24): a void rim round a 2 px track, dark dusk, filling crimson. No plate (decided 2026-11-20: the enamel plate was too loud). The skill that answers it pulses crimson with a halo in the skill bar |
 | Loot on the floor | the item 7 × 5 at floor level | Lies in a flattened pool of its rarity light (≈26 × 7); the beam rises from it, flares at the foot and dithers away over ~60 px; motes drift up; the name flies up from the item |
-| Skill bar | 334 × 26 at y 206 | Carved 4 px rail with studs, tooled leather; four heroes, 76 px each at x 6 / 88 / 170 / 252 in marching order (knight 1 2 3, Garrote Z X C, mage Q W E, priest A S D): portrait 22 × 24, HP tube 4 × 23, two skill wells 15 × 18 (13 × 13 icon at +1,+1 on the class tile; hotkey on a 6 × 5 void tab at +1,+13, under the icon) and the ultimate's gilded well; carved pilasters between heroes. The groups follow the marching order; aura glyphs sit on the pilasters, and an out-of-position hero gets an x0.7 tab (section 5d) |
+| Skill bar | 334 × 26 at y 206 | Carved 4 px rail with studs, tooled leather; four heroes, 76 px each at x 6 / 88 / 170 / 252 in marching order (knight 1 2 3, Hixx Z X C, mage Q W E, priest A S D): portrait 22 × 24, HP tube 4 × 23, two skill wells 15 × 18 (13 × 13 icon at +1,+1 on the class tile; hotkey on a 6 × 5 void tab at +1,+13, under the icon) and the ultimate's gilded well; carved pilasters between heroes. The groups follow the marching order; aura glyphs sit on the pilasters, and an out-of-position hero gets an x0.7 tab (section 5d) |
 | Ultimate well | 15 × 18, the third in each group | A gold frame with pale gold corner studs and a void line outside it; a crest over its top edge, a gold peak 7 → 3 px wide reaching 4 px into the rail, a crimson gem and a moon glint in it; the key on a 7 × 6 gold tab (pale top row, void letter). Ready: a warm gold halo that breathes (2.6 rad/s). Cooldown: the same sweep and seconds as the other wells. Locked (it needs 6 nodes in the hero's tree): the frame and crest copper, the corners wine, the icon behind a void checker, a lock, and the number of nodes still missing. No autocast loop (ultimates never autocast) |
 | Skill states | | Cooldown: dithered sweep over the 13 × 13 icon + seconds. Combo: gold frame + halo + gold "x2" tab. Answer: crimson frame + halo, pulsing. Queued: pale corner tick. Blocked: whole bar dithered + label plate. Autocast (bought in the tree): a loop mark on a 7 × 5 void tab in the bottom-right corner, moss when on, dim bone when switched off (right-click). The ultimate well has its own states (above) |
-| Side panel | 140 × 232 | Leather with edge vignette and a bronze rail on the left; PARTY header 10; four cards 33 × 40, 34 apart, with the portrait and a 1 px XP line (pale gold) right under it (short names: Knighten, Garrote, Magoo, Healero); hero header 10; gear 3 × 2 of 21 px + stats well; BAG header with the count and the auto-salvage toggle; bag 6 × 3 of 21 px; Treasury row of 6 cells (locked, 2 open per Treasury level); footer plate 11 |
+| Side panel | 140 × 232 | Leather with edge vignette and a bronze rail on the left; PARTY header 10; four cards 33 × 40, 34 apart, with the portrait and a 1 px XP line (pale gold) right under it (names: Dutch, Hixx, Hudzor, Arkbishop); hero header 10; gear 3 × 2 of 21 px + stats well; BAG header with the count and the auto-salvage toggle; bag 6 × 3 of 21 px; Treasury row of 6 cells (locked, 2 open per Treasury level); footer plate 11 |
 | Item cell | 21 × 21 well | 1 px rarity frame, rarity light from the slot floor, 12 × 12 icon, power bottom-right, lock bottom-left. NEW: pale gold double frame and a solid NEW tab inside the top edge |
 | Floor map | fills the battle area, 334 × 232 | Lit vellum on a dark table: torn and scorched edges, a torn-off and a curled corner, fold panels and creases, wrinkles, ring stains, foxing, burn holes, cast shadow. Ink: double-ruled border with red inner rule and fleurons, ribbon cartouche with the blackletter title, gilded 17 px floor roundels with blackletter numerals, stair-roads (two rails + rungs, pen flourishes, gilded quatrefoil midpoint), red-ink ring + arrow for "you are here", gilded compass rose with fleur-de-lis, crimson wax seal. The route choice (path cards, forks, the margin note, the away hourglass): section 5b |
 
@@ -249,8 +249,8 @@ in every battle state. Code in `ranks.js`.
 - **Ranks:** rank 1 is the front: x 126 in the picture (the right), the left group in the skill bar; ranks 2, 3 and 4
   at x 87, 56 and 21. The skill bar's groups follow the ranks; the keys stay with their hero.
 - **Auras** sit between two groups, on the pilaster (from group x + 75, over its middle stud): a 5 × 5 glyph on a
-  7 × 7 void plate in the giver's class colour. Knighten's steel shield goes to the hero behind, Garrote's ember crit
-  star and Magoo's violet clock to the hero in front, Healero's gold cross both ways. The giver is the neighbour of
+  7 × 7 void plate in the giver's class colour. Dutch's steel shield goes to the hero behind, the rogue's ember crit
+  star and Hudzor's violet clock to the hero in front, Arkbishop's gold cross both ways. The giver is the neighbour of
   that class. Two glyphs stack (y + 8 and + 16 in the bar), one sits at + 12. A downed hero gives none.
 - **Out of position:** a 16 × 7 crimson tab over the bottom of the portrait (a wine underline) with "x0.7" in moon.
 - **Swap:** press on a portrait (or the sprite) and drag. The portrait lifts under the pointer (its class outline, the
@@ -259,7 +259,7 @@ in every battle state. Code in `ranks.js`.
   floats between them. Landing outside his ranks, "out of position" floats up in crimson and the tab appears.
 - **Enemies that break the line:** the cast names the target rank ("Hook · rank 4", section 5), 1 s, then a chain (steel links, a barb) flies to rank 4 and drags the hero to the front while the others step
   back. "out of position" floats up over him.
-- **Hovering a hero** (the sprite) opens his card above his head: "Healero · rank 1", a crimson bullet for what is
+- **Hovering a hero** (the sprite) opens his card above his head: his name ("Arkbishop") with his class under it in the class colour ("Priest"), a crimson bullet for what is
   wrong ("Out of position: heals at 70%. His ranks are 2 to 4."), a moss bullet for what his aura gives and to whom,
   and a note ("Drag him back. Away, the line stays broken.").
 
@@ -348,7 +348,7 @@ while its page is open, without the map tooltip.
   copper bottom row, the label in void. Flat and palette-exact, so the dark label never sits on a dither; dim (dark
   umber, bone label) when it can't be done. The Auction House works the same way, priced in złoty.
 - **The Appraiser's reveal** shows in the panel: a well with "Looking closely..." and sparks circling in, a flash,
-  then a card (arcane moulding): IDENTIFIED, the item's cell, its name in its rarity colour, "Epic hood · Garrote",
+  then a card (arcane moulding): IDENTIFIED, the item's cell, its name in its rarity colour, "Epic hood" (and for a legendary or a set piece whose it is, "For Hixx (Rogue)"),
   its affixes in moss (up to 3); a real-life affix ("of Stealth") shows its name in bone with a "real life" tag in
   dusk at the right, its effect on the next line. 40 g leaves the footer.
 
@@ -383,10 +383,10 @@ and the buildings.
 
 | Hero | To skill 2 (2) | To skill 1's rules / autocast | To skill 2's rules / autocast | To the ultimate (3) |
 |---|---|---|---|---|
-| Knightenstein | Veteran +8% damage, Brute +10% damage | Bulwark +10% armor / Iron Skin +10% HP | Crushing: Bash +20% damage / Hardened: healing on him +15% | Stalwart +15% HP, Tower Shield +15% armor, Shield Brother: his aura -35% damage (from 25%) |
-| Garrote | Nimble +8% attack speed, Shadow +10% dodge | Keen Eye +10% crit / Deadly: crits +25% damage | Quick Blades +8% attack speed / Lucky +5 luck (he loots) | Cutpurse +15% gold, Ruthless +8% damage, Sly: his aura +15% crit (from 10%) |
-| Magoo | Focus +8% damage, Arcane Mind cooldowns -8% | Pyromancy: Fire +15% damage / Spellpower: skills +12% damage | Elementalist: Burning and Chill last 25% longer / Glass +10% crit | Ley Lines: his ultimate charges 20% faster, Warded +10% HP, Mentor: his aura cooldowns -15% (from 10%) |
-| Healero | Devotion +10% HP, Faith cooldowns -8% | Grace healing +10% / Mercy healing +15% | Bastion: Ward soaks 20% more / Zeal +8% damage | Shepherd: the party's max HP +5%, Vigil +10% armor, Halo: his aura 1.5% HP per second (from 1%) |
+| Dutch | Veteran +8% damage, Brute +10% damage | Bulwark +10% armor / Iron Skin +10% HP | Crushing: Bash +20% damage / Hardened: healing on him +15% | Stalwart +15% HP, Tower Shield +15% armor, Shield Brother: his aura -35% damage (from 25%) |
+| Hixx | Nimble +8% attack speed, Shadow +10% dodge | Keen Eye +10% crit / Deadly: crits +25% damage | Quick Blades +8% attack speed / Lucky +5 luck (he loots) | Cutpurse +15% gold, Ruthless +8% damage, Sly: his aura +15% crit (from 10%) |
+| Hudzor | Focus +8% damage, Arcane Mind cooldowns -8% | Pyromancy: Fire +15% damage / Spellpower: skills +12% damage | Elementalist: Burning and Chill last 25% longer / Glass +10% crit | Ley Lines: his ultimate charges 20% faster, Warded +10% HP, Mentor: his aura cooldowns -15% (from 10%) |
+| Arkbishop | Devotion +10% HP, Faith cooldowns -8% | Grace healing +10% / Mercy healing +15% | Bastion: Ward soaks 20% more / Zeal +8% damage | Shepherd: the party's max HP +5%, Vigil +10% armor, Halo: his aura 1.5% HP per second (from 1%) |
 
 **Layout** (the same for every hero): the root at 167, 208 (its name to its left). Skill 1 at 72, 170 ("start" above
 it to the right); its autocast stat and autocast go left in a line (41 and 16, y 170, names above and "auto" under); its
@@ -396,8 +396,8 @@ through its two gate stats at 204, 202 and 236, 190 (names under). The three sta
 174, 142, 110 (names to the right), the ultimate at 167, 52. "gold ring: you can buy it" sits top right, the key
 (rule, stat, autocast) bottom left.
 
-**The sky:** near-black stone with a soft nebula in the hero's own material (knight stone, Garrote loot copper, Magoo
-arcane, Healero umber), about 170 fixed stars and a few that twinkle.
+**The sky:** near-black stone with a soft nebula in the hero's own material (knight stone, Hixx loot copper, Hudzor
+arcane, Arkbishop umber), about 170 fixed stars and a few that twinkle.
 
 **Shapes by kind:**
 - Root: a disc in the class colour inside its ring, the auto attack's name under it.
@@ -432,14 +432,14 @@ monitor.
 **Decided (2026-11-19): the desk is Graphite**, which fits the black and grey left panel. The desk has its own 32
 colours in the same slots as Moonwell (the drawing code names slots), plus slot 32, `steel` `#5398b5`, and slot 33, `ember` `#c16229` (UI-only, kept out of the dither). Every part keeps
 a shared core in the same slots: void, moon white, the six meaning colours (gold, crimson, arcane violet, her pink
-`#d9a69c`, Zone cyan `#81c1c8`, moss `#749970`) and the four class colours (knight steel `#5398b5`, Garrote ember
+`#d9a69c`, Zone cyan `#81c1c8`, moss `#749970`) and the four class colours (knight steel `#5398b5`, rogue ember
 `#c16229`, mage arcane `#8b5ad6`, priest gold `#f1a934`). Graphite's own 24: neutral greys with no hue shift (hardware, cards), grey-greens
 (Excel), mauve greys (room, call screen), greige wood and Platinum grey (desk, taskbar), plus wine, copper and pale
 gold for the note. Tungsten (warm) and Neon (2 a.m.) stay on the page as alternatives, Moonwell 32 as the backup.
 Her panel (PC-98): 16 colours, see section 7b.
 
 **Class colours** tie the game to the desk: each portrait (party cards and skill bar) has a 1 px outline in its hero's
-colour, and his keys glow in it on the keyboard: 1 2 3 knight steel, Z X C Garrote ember, Q W E mage violet, A S D
+colour, and his keys glow in it on the keyboard: 1 2 3 knight steel, Z X C rogue ember, Q W E mage violet, A S D
 priest gold (legend plus a line of light along the lowest visible row of the cap's top face). The locked fourth skills
 (4, V, R, F) stay dark.
 
@@ -467,13 +467,13 @@ glass cards on the desk. Text is Tiny5 only (no Silkscreen, no blackletter: thos
 | Tonight note | 208, 248, 74 × 45 (clear of the 1 2 3 keys) | Flat pale-gold paper stepped for a slight tilt, a lifted lower-right corner, a strip of tape over the bezel edge, a soft shadow on the bezel. Tiny5 sheared into a ballpoint slant (dark blue ink), each word on a wandering baseline: "Tonight ⏻ 23:00+" ("any time" after 23:00), then tonight's three stars as three lines, "floor 8" (Deep), "don't get caught" (Unseen), "keep her happy" (Sweet), each with ✓ (green) / ! (copper) / ✗ (crimson); no star ladder |
 | Desk | from y 263 | Dark wood in perspective (grain compressing toward the monitor). Lit by the monitor: its light is sampled from the screen (8 columns, every few frames) so the desk goes blue in the crypt, warm in town, cream under Excel; the pale taskbar adds a warm fill along the far edge. A flat monitor foot at the centre |
 | Phone | lies flat at the left, runs off the bottom | Through the camera (above). Graphite with a polished rim, Dynamic Island; off: black glass with a reflection band. Ringing, banners, her reply, face down: section 7f |
-| Keyboard and mat | keyboard from about y 282, runs off the bottom; mat under it | Through the camera (above). The game's keys are backlit in what they drive: 1 2 3 knight steel, Z X C Garrote ember, Q W E mage violet, A S D priest gold, Tab Excel green, H Zone cyan, G moss (Goblin Fuel; dark with no cans); 4 V R F dark. A dark cloth mat with a stitched edge |
+| Keyboard and mat | keyboard from about y 282, runs off the bottom; mat under it | Through the camera (above). The game's keys are backlit in what they drive: 1 2 3 knight steel, Z X C rogue ember, Q W E mage violet, A S D priest gold, Tab Excel green, H Zone cyan, G moss (Goblin Fuel; dark with no cans); 4 V R F dark. A dark cloth mat with a stitched edge |
 | YOU card | 355, 267, 133 × 26 | Flat glass card: indigo fill, lit top edge, rounded corners, soft shadow on the desk. TIRED (arcane bar, value, a mark at 30 that turns gold once passed) and ZONE (cyan bar out of 30). Drink button 40 × 20: the Goblin Fuel can (its 6 × 13 icon, in its own print colours over the UI), "×3", "Drink", and a small G keycap; from Tired 30 with a can left it turns gold with a pulsing copper rim (gold = the next action); no cans: the can greyed and struck out in crimson, the count dim |
 | Feed card | 355, 296, 133 × 61 | Same glass card. Newest line on top, each: time (dim), a coloured tag, the text in moon fading to dim with age; two lines at most, the second indented to the text column, "..." if it runs on |
 | Zone aura | around the bezel | Headset on: the bezel's outer rim lights cyan (pale cyan from half Zone), a cyan glow spills over the wall margin and onto the desk, growing with Zone |
 
 Feed tag colours: YOU bone, HER dusk pink `#d9a69c`, PHONE moon, GAME gold, LOOT its rarity, EXCEL sage, DOG copper,
-NIGHT stone blue, GUILD and PARTY umber, MAGOO arcane, HEALERO moss.
+NIGHT stone blue, GUILD and PARTY umber, HUDZOR arcane, ARKBISHOP moss.
 
 **Excel (Tab)** fills the game screen (474 × 232): Q4, the Excel clicker, in a maximised Windows 98 window (section 7i).
 The RPG, side panel included, is hidden; the party fights on behind it.
@@ -594,7 +594,7 @@ with the mouse); stills and three animations in row J of the canvas.
 - **Drawing:** code (shapes, hard pixel edges, a 1 px ink outline), each part shaded with the key light from the upper
   left (as the UI and the can), 4 × 4 Bayer in narrow bands, palette-exact.
 - **Palette:** his own slots from the can's print colours (EB_PAL), appended to the desk set as index pixels and kept
-  out of the desk's dither (like Garrote's ember). Fur `#241c2e #452c3d #6a4240 #852e30 #c16229 #fae299` (the shadows
+  out of the desk's dither (like the rogue's ember). Fur `#241c2e #452c3d #6a4240 #852e30 #c16229 #fae299` (the shadows
   shift to red and plum), cream `#8a614d #aa8667 #c7b18c #eee5c6 #f2efdc`, pinks `#925673 #b87a83 #d9a69c`, eyes
   `#241c2e #452c3d` with moon shines. The desk's gold stays out of his fur (it keeps its meaning). Hearts in his orange.
 - **Place:** the head's centre at x 224, y 288; paws on the near desk edge (the frame's bottom); ears over the
@@ -719,9 +719,9 @@ the frame. The desk spot stays empty meanwhile. No hand: just the phone, with si
 | Her text | Babe and the heart in pink, the 8 s bar, her mauve bubbles, the one reply: Five more minutes, love (a red heart) |
 | Mom talks | The call header (avatar, name, "on call · line 2 of 3", the call clock); her line; the timing bar (the marker sweeps it in 2.4 s, the moss zone is 30 %); "tap the reply in the zone"; mhm, really?!, wow with their marks; "Too slow. She keeps talking."; misses as 4 pips above the red End |
 | Courier talks | His line, the 8 s bar, the goal ("Get it left with a neighbour." / "One wrong word: he leaves."), three replies, End |
-| The Boys talk | "on speaker"; Danny's line, the 8 s bar, "Say no, nicely. Quickly.", three replies (polite, shouting, rude), the wine strip with a speaker glyph: She can hear it; misses as 2 pips; End |
+| The Boys talk | "on speaker"; Billy's line, the 8 s bar, "Say no, nicely. Quickly.", three replies (polite, shouting, rude), the wine strip with a speaker glyph: She can hear it; misses as 2 pips; End |
 | Messages | The app's contacts (decided 2026-11-20, Paweł): "Messages" in tinyL, then one row per contact 34 px apart: a 20 px avatar, the name (hers in her pink with the heart), the time, the last line (moon when unread, grey when read), her unread count on a 9 px disc in her pink; a 1 px line under each. Babe and The Boys (3). "Tap a chat to open it." A tap is a gold dashed ring. A minigame opens its chat straight away; a chat's back chevron comes here |
-| The Boys' chat | The last minigame's exchange, kept until the next one: their texts in grey with the name first ("Danny: raid at 11?"), your answer in cream; at the bottom Raid night? (a group call, the Raid buff), dim with a lock and "Needs Goodwill 40: 31 now" while it can't |
+| The Boys' chat | The last minigame's exchange, kept until the next one: their texts in grey with the name first ("Billy: raid at 11?"), your answer in cream; at the bottom Raid night? (a group call, the Raid buff), dim with a lock and "Needs Goodwill 40: 31 now" while it can't |
 | Her chat | Tap Babe in Messages (or her text arrives) (section 7f, her chat, below). The header (back chevron, her avatar, Babe and the heart in pink, "Messages"); the thread kept for good, newest at the bottom, a grey line with the day or the time between sittings ("Sunday", "Today 23:12", "00:41"); her photos as crops in the thread; Text her (gold, "3 s, hands busy" under it); the home bar |
 | Her chat, scrolled back | The wheel or a drag moves the thread a bubble at a time (no bubble is ever cut); a 2 px thumb on a 1 px track at the right edge shows where you are; a grey chip with a down chevron (15 × 10, bottom right) goes back to the newest. "Babe unsent a photo." in grey, centred, where she took one back |
 | A new photo | The photo's crop with a gold bar under it and "open" / "52 s" in gold beside it: the 60 s to open it (fan-service step 5); missed, it becomes "Babe unsent a photo." |
@@ -1131,7 +1131,7 @@ Lean, Slit; the mouse leans over the right screen, the wheel opens the door, the
 the lean animated in row O of the canvas. Code: `lean.js` (the view, her stand-in), `her.js` (the webcam), `blueprint.js`
 and `phone.js` (the plan and the Home app on the approved layout). Goes with fan-service steps 7 and 12.
 
-**Taught on Tuesday,** the night it unlocks (Paweł, 2026-11-24): Magoo's voicemail, the Lean in tile in How to hide, a
+**Taught on Tuesday,** the night it unlocks (Paweł, 2026-11-24): Hudzor's voicemail, the Lean in tile in How to hide, a
 scripted first chance (her yoga first thing), and three coach marks: the door, the first lean (the controls), her first
 tell (let go). Spec: `claude/loot-night-week-one.md` section 2b; the page's Lean in row Tuesday. Monday has no lean.
 
@@ -1252,16 +1252,16 @@ once per lean position and redraw only her and what moves (the TV, the steam, th
 already designed. Spec of the nights: `claude/loot-night-week-one.md`. Her art in them (poses, him turning) is Paweł's;
 the webcam shows the nearest bake meanwhile.
 
-**Danny's voice note (20:00, every night)** is the handoff's "Magoo's voicemail", made the way the phone is made
-(everything on the phone happens inside it, §7f): a voice message from Danny (Magoo is his character) in **The Boys'
+**Billy's voice note (20:00, every night)** is the handoff's "Hudzor's voicemail", made the way the phone is made
+(everything on the phone happens inside it, §7f): a voice message from Billy (Hudzor is his character) in **The Boys'
 chat**. The phone rises into your hand while the night waits.
-- The chat's header (The Boys (3), "Danny, Mike, Kuba"), the status bar at 20:00, a day line ("Today 20:00"; a replay:
+- The chat's header (The Boys (3), "Billy, Mike, Lance"), the status bar at 20:00, a day line ("Today 20:00"; a replay:
   "Tuesday, again").
-- The voice bubble (incoming grey, 98 × 25): "Danny" and the time played ("0:05 / 0:14", gold while it plays), a moon
+- The voice bubble (incoming grey, 98 × 25): "Billy" and the time played ("0:05 / 0:14", gold while it plays), a moon
   play disc (pause bars while playing), a 22-bar waveform that fills gold as it plays (a timer, so gold).
 - The transcript under it in a darker block, a line appearing as he says it (at 0, 4.5 and 9.5 s), his chat voice
   (lowercase, casual). Monday: "yo its raid night. she thinks youre doing spreadsheets lol" / "steps in the hall = tab
-  to excel. BEFORE the door opens" / "q4 pays real money btw. the shop's on your phone". Tuesday: "garrote's in the
+  to excel. BEFORE the door opens" / "q4 pays real money btw. the shop's on your phone". Tuesday: "hixx is in the
   party tonight" / "hold your door open longer: you lean in and see what she's doing" / "she can see you too tho. don't
   get weird". A replay: "F. she pulled the plug" / "tuesday again then. the good loot's still in your bag" / "tab out
   BEFORE she opens the door this time".
@@ -1271,7 +1271,7 @@ chat**. The phone rises into your hand while the night waits.
 **The replay (unplugged):** the unplugged morning (§7h) with its summary saying what it cost: UNPLUGGED in crimson, "She
 pulled the plug. No stars, and the cheaper half of your bag is gone.", the three stars missed, "Tonight is Tuesday
 again. Party, gear, gold, Souls and city carry over.", and her pink button **"Tuesday, again"**. That night opens with
-Danny's replay voice note.
+Billy's replay voice note.
 
 **Her window** (her panel, PC-98): her moments use the chat's window (§7b: from y 270, growing to fit): a label at the
 left (rose; asleep purple), the seconds or her hearts at the right, her line in plum, a bar (her time, 130 × 5), and
@@ -1328,7 +1328,7 @@ Four world families, 8 levels each, sharing the darkest and lightest colour; plu
 
 Zone keeps the headset's cyan; Flow is yellow, kept apart from gold (money, the next action) by hue: gold leans
 orange, Flow leans lemon. Other clashes as resolved here: gold is money only; legendary is copper, not the Flow orange; HP green and uncommon green stay in one family
-on purpose (bars vs frames, never side by side). Garrote's class ember is the legendary copper: a class outline sits
+on purpose (bars vs frames, never side by side). The rogue's class ember is the legendary copper: a class outline sits
 only on portraits and keys, a rarity frame only on item cells, the same split as priest gold vs money gold. On the map, red ink and gilding are decoration plus "you are here".
 Colours inside icons are picture colours; meanings live in frames, bars, tags.
 

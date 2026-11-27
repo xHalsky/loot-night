@@ -1,23 +1,24 @@
 // First-time tips (docs/design/night.md, Onboarding; #28). Each one shows once per save, the first time its thing
-// happens, as a line in the feed from her or from the guild chat (Magoo and Healero are your party: your friends Billy and Mike). Short, in their
+// happens, as a line in the feed from her or from the guild chat (the mage and the priest, Billy's and Lance's characters; the tag is the
+// hero's name from HERO_NAME, a tag has no room for the class). Short, in their
 // voice, no walls of text. Plain text only (no em dashes).
 export type TipId = 'her_show' | 'plan' | 'pass' | 'caught' | 'endcue' | 'dog' | 'yawn'
   | 'headset' | 'bed' | 'peek' | 'map' | 'shower' | 'q4' | 'mirror';   // the core loop's firsts are coach marks instead (COACH below)
-export const TIPS: Record<TipId, { who: 'her' | 'Magoo' | 'Healero'; text: string }> = {
+export const TIPS: Record<TipId, { who: 'her' | 'mage' | 'healer'; text: string }> = {
   her_show: { who: 'her', text: "I'm watching my show, babe. Don't play all night, okay?" },
-  plan: { who: 'Magoo', text: 'forgot the layout of your flat? the plan is taped to your wall, left of the door. click it' },
-  pass: { who: 'Magoo', text: 'lol she bought the spreadsheet. back to the loot' },
-  caught: { who: 'Magoo', text: 'F. excel has to be up BEFORE she opens the door. listen for the steps' },
-  endcue: { who: 'Healero', text: "her thing just ended, she's getting up. what she was doing = what she'll want" },
-  dog: { who: 'Magoo', text: 'the dog wants pets. ignore him and he goes for your cables' },
-  yawn: { who: 'Healero', text: "you're yawning. grab a Goblin Fuel (G)" },
-  headset: { who: 'Magoo', text: "headset on: after 30 s you're in the Zone. but you won't hear her coming" },
-  bed: { who: 'Healero', text: "she's asleep. crits, bosses and vaults are LOUD now. keep the Noise down" },
-  peek: { who: 'Magoo', text: 'the wider you open the door, the more you see. and the more she sees you' },
-  mirror: { who: 'Magoo', text: 'the mirror shows round the corner. works both ways tho' },
-  map: { who: 'Magoo', text: 'pick the next floor. hover a node to see what is there' },
-  shower: { who: 'Healero', text: 'shower = 90 s of freedom. go loud' },
-  q4: { who: 'Healero', text: 'q4 pays real money btw. space = autosum, drag the cell corner, sort for x2. quick visits pay best' },
+  plan: { who: 'mage', text: 'forgot the layout of your flat? the plan is taped to your wall, left of the door. click it' },
+  pass: { who: 'mage', text: 'lol she bought the spreadsheet. back to the loot' },
+  caught: { who: 'mage', text: 'F. excel has to be up BEFORE she opens the door. listen for the steps' },
+  endcue: { who: 'healer', text: "her thing just ended, she's getting up. what she was doing = what she'll want" },
+  dog: { who: 'mage', text: 'the dog wants pets. ignore him and he goes for your cables' },
+  yawn: { who: 'healer', text: "you're yawning. grab a Goblin Fuel (G)" },
+  headset: { who: 'mage', text: "headset on: after 30 s you're in the Zone. but you won't hear her coming" },
+  bed: { who: 'healer', text: "she's asleep. crits, bosses and vaults are LOUD now. keep the Noise down" },
+  peek: { who: 'mage', text: 'the wider you open the door, the more you see. and the more she sees you' },
+  mirror: { who: 'mage', text: 'the mirror shows round the corner. works both ways tho' },
+  map: { who: 'mage', text: 'pick the next floor. hover a node to see what is there' },
+  shower: { who: 'healer', text: 'shower = 90 s of freedom. go loud' },
+  q4: { who: 'healer', text: 'q4 pays real money btw. space = autosum, drag the cell corner, sort for x2. quick visits pay best' },
 };
 /** On the first night her note names the cue that ends each activity (the tell that she is about to move). */
 export const END_HINT: Record<string, string> = {

@@ -2,6 +2,7 @@ import { T } from '../config/tuning';
 import { S, N } from '../core/state';
 import { toast } from '../core/fx';
 import { TIPS, type TipId } from '../data/tips';
+import { HERO_NAME } from '../data/heroes';
 
 // First-time tips (#28): once per save, the first time each thing happens. The line goes to the feed and stays
 // pinned at its top for TIP_PIN_SEC so combat lines cannot bury it.
@@ -10,7 +11,7 @@ export function tip(id: TipId) {
   if (!g.night || g.tipsSeen.includes(id)) return;
   g.tipsSeen.push(id);
   const t = TIPS[id];
-  const text = t.who === 'her' ? `[Her] "${t.text}"` : `[${t.who}] ${t.text}`;
+  const text = t.who === 'her' ? `[Her] "${t.text}"` : `[${HERO_NAME[t.who]}] ${t.text}`;
   const color = t.who === 'her' ? '#ff9ab8' : '#7ee08a';
   toast(text, color);
   g.night.tip = { text, color, t: T.TIP_PIN_SEC };

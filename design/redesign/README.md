@@ -30,7 +30,7 @@ decisions log and the grid doc.
   Tuesday (three coach marks, How to hide's fifth tile). §7l, §7k; stills `lean-in__*`.
 - **Week one** (`WEEK-ONE.md`): the schedule, Monday without Tiredness, the Shop from Monday, the Home app on
   Thursday, the weekend's attention set, no Custom Night (the week loops after Sunday; the endgame is TBD).
-- **Week one's pieces, approved:** Danny's 20:00 voice note in The Boys' chat (the handoff's Magoo
+- **Week one's pieces, approved:** Billy's 20:00 voice note in The Boys' chat (the handoff's Hudzor
   voicemail), the replay morning ("Tuesday, again"), the snack run's Hide cans and plate, the tease visit and Eyes
   busy, the towel and wine requests, the waking meter, "come to bed" with Coming, babe, the lap sit. §7m; stills
   `week-one__*`.
@@ -52,7 +52,7 @@ small pieces and the interruptions; the note under the frame describes the state
 | `kit.js` | UI materials (plates, wells, mouldings, leather), item and skill icons | §2, §4 |
 | `hud.js` | The battle HUD: corner overlay, buffs, the skill bar, the ultimate's well, enemy casts, Souls | §4, §5 |
 | `dungeon.js`, `screens.js` | The crypt and the screens built on it (dungeon, battle, floor map, town) | §5, §6 |
-| `chars.js`, `enemies.js` | The four heroes (Garrote §4b), the mob of six | §3, §4b, §4c |
+| `chars.js`, `enemies.js` | The four heroes (Hixx §4b), the mob of six | §3, §4b, §4c |
 | `pathicons.js`, `paths.js` | The route choice: path cards, forks, the margin note, the away hourglass, the icons | §5b |
 | `ranks.js` | Run blessings, marching order, auras, swaps, the Hook, the tooltip card | §5c, §5d |
 | `townkit.js`, `town.js` | Ravenhold, 16-bit | §6 |
@@ -61,7 +61,7 @@ small pieces and the interruptions; the note under the frame describes the state
 | `win98.js`, `q4.js` | Windows 98 (taskbar, windows, buttons) and Q4, the Excel clicker | §7i |
 | `cans_img.js`, `ebreak.js` | The Goblin Fuel can sprites; the energy break's five scenes | §7c |
 | `dog.js`, `cables.js` | The shiba; the cable fix behind the monitor | §7d |
-| `phone.js` | The phone OS (in your hand and on the desk), the home screen, Messages (her chat, her photos, The Boys' chat), Danny's voice note, Shop, Home app, battery | §7f, §7i, §7j, §7m |
+| `phone.js` | The phone OS (in your hand and on the desk), the home screen, Messages (her chat, her photos, The Boys' chat), Billy's voice note, Shop, Home app, battery | §7f, §7i, §7j, §7m |
 | `her_img.js`, `her.js` | Her panel: the baked webcam views, her PC-98 UI (and her window for her moments), the gaming chair, him leaning to the crack, the lap sit over the battle | §7b, §7k, §7l, §7m |
 | `caught_img.js`, `caught.js` | The caught scare | §7e |
 | `cuddle.js`, `blueprint.js` | The cuddle break; the plan | §7g |

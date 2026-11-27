@@ -5,7 +5,7 @@ import { S, N, RARITIES, type Enemy, type Hero, type HeroId, type Item, type Bag
 import { ENEMY_BY_ID, bossFor } from '../data/enemies';
 import { MAP_INFO, RARITY_COLOR } from '../data/items';
 import { MAP_CARD, FEATURE_TEXT, CONDITION_TEXT } from '../data/routes';
-import { ULT_SLOT, ABILITIES, HOME_RANKS, AURAS, HERO_NAME } from '../data/heroes';
+import { ULT_SLOT, ABILITIES, HOME_RANKS, AURAS, HERO_NAME, HERO_CLASS, heroLabel } from '../data/heroes';
 import { outOfRank } from '../systems/ranks';
 import { boughtCount, autocastBought, autocastOn, nodeState, nodeCost } from '../systems/tree';
 import { NODES, TREES, BUYABLE, type NodeId } from '../data/trees';
@@ -38,7 +38,6 @@ export function panelActive(): boolean {
 }
 
 // ---- the skill tree (#53; grid doc §6c)
-const SHORT: Record<HeroId, string> = { knight: 'Knighten', rogue: 'Garrote', mage: 'Magoo', healer: 'Healero' };
 const treeHero = (): HeroId => { const n = N(); const id = n.treeHero && S.g.heroes.some(h => h.id === n.treeHero) ? n.treeHero : S.g.heroes[0].id; return id; };
 /** A skill's line in plain words, from its tooltip (placeholders filled, markup dropped). */
 function skillText(hero: HeroId, slot: number): string {
@@ -100,7 +99,7 @@ function bagView() {
 const foot = () => ({ gold: S.g.gold, souls: S.g.mats, record: Math.max(S.g.record, N().deepest) });
 function partyCards() {
   const powers = S.g.heroes.map(h => heroPower(h)), best = Math.max(...powers);
-  return S.g.heroes.map((h, i) => ({ hero: h.id, id: PAGE_ID[h.id], short: SHORT[h.id], lv: h.level, pow: powers[i], xp: h.xp / xpNeeded(h), down: h.downed, alert: best > 0 && powers[i] < best * T.POWER_BEHIND }));
+  return S.g.heroes.map((h, i) => ({ hero: h.id, id: PAGE_ID[h.id], short: HERO_NAME[h.id], lv: h.level, pow: powers[i], xp: h.xp / xpNeeded(h), down: h.downed, alert: best > 0 && powers[i] < best * T.POWER_BEHIND }));
 }
 function partyPanelView() {
   const n = N(), h = S.g.heroes[n.heroTab] ?? S.g.heroes[0], st = heroStats(h), base = heroBaseStats(h);
@@ -108,7 +107,7 @@ function partyPanelView() {
   const row = (k: Stat, label: string, f: (v: number) => string) => { const d = st[k] - base[k]; return [label, f(st[k]), Math.abs(d) >= 0.05 ? `${d > 0 ? '+' : ''}${f(d)}` : ''] as const; };
   const gear: Record<string, unknown> = {};
   for (const sl of ['weapon', 'helm', 'armor', 'boots', 'ring', 'trinket'] as const) gear[sl] = gearCell(h.gear[sl]);
-  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: cap(h.id === 'healer' ? 'priest' : h.id), pow: heroPower(h) }, gear,
+  return { party: partyCards(), sel: S.g.heroes.indexOf(h), hero: { name: h.name, cls: HERO_CLASS[h.id], pow: heroPower(h) }, gear,
     stats: [row('hp', 'HP', r0), row('atk', 'ATK', r1), row('armor', 'ARM', r1), row('speed', 'SPD', r1), row('crit', 'CRIT', r1), row('luck', 'LUCK', r1)], ...bagView(), ...foot() };
 }
 function townPanelView() {
@@ -154,7 +153,7 @@ function servicePanelView(svc: ServiceSpot) {
       const lines: [string, string, string][] = it.affixes.map(x => [`${x.amount >= 0 ? '+' : ''}${x.amount} ${STAT_LABEL[x.stat]}`, x.amount >= 0 ? 'g6' : 'crimson', '']);
       if (sp) lines.push([SPECIAL_BY_ID[it.special!].suffix, sp.life ? 'real life' : 'cross', sp.text]);
       if (it.legend) lines.push([LEGEND_BY_ID[it.legend].name, 'rule', LEGEND_BY_ID[it.legend].rule]);
-      S0.reveal = { t: a.t, cell: cellOf(e), name: it.name, sub: `${cap(it.rarity)} ${it.slot}${who ? ` · ${SHORT[who]}` : ''}`, lines };
+      S0.reveal = { t: a.t, cell: cellOf(e), name: it.name, sub: `${cap(it.rarity)} ${it.slot}`, who: who ? `For ${heroLabel(who)}` : '', lines };
     }
   }
   return { tab: 'town', svc: S0, ...foot() };
@@ -171,7 +170,7 @@ function treePanelView(hov: string | null) {
   if (N0.kind === 'auto') notes.push(['+', 'A loop mark on its well. Right-click the well to switch it off.']);
   const party = partyCards();
   const tv = treeView(hov);
-  return { tab: 'tree', hero, short: SHORT[hero], souls: g.mats, gold: g.gold, record: Math.max(g.record, n.deepest), party, bought, ultName: ABILITIES[hero][3].name,
+  return { tab: 'tree', hero, short: HERO_NAME[hero], cls: HERO_CLASS[hero], souls: g.mats, gold: g.gold, record: Math.max(g.record, n.deepest), party, bought, ultName: ABILITIES[hero][3].name,
     node: { id, ...info, state, cost: nodeCost(hero, id), isUlt: N0.kind === 'ult', notes }, texts: tv.texts };
 }
 
@@ -282,20 +281,19 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
 function heroCard(i: number) {
   const h = S.g.heroes[i];
   if (!h) return null;
-  const name = HERO_NAME[h.id].split(' ')[0].replace('Knightenstein', 'Knighten'), [a, b] = HOME_RANKS[h.id];
-  const lines: [string, string][] = [['h', `${name} · rank ${i + 1}`]];
+  const [a, b] = HOME_RANKS[h.id];
+  const lines: [string, string][] = [['h', HERO_NAME[h.id]], ['c', HERO_CLASS[h.id]]];   // name, then the class in its colour (cast of 2026-11-27)
   if (outOfRank(h)) lines.push(['-', `Out of position: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_RANK_MULT * 100)}%. His ranks are ${a} to ${b}.`]);
   const A = AURAS[h.id], to: string[] = [];
   const front = S.g.heroes[i - 1], back = S.g.heroes[i + 1];
-  if (A.front && front) to.push(`${short(front.id)}, in front of him,`);
-  if (A.back && back) to.push(`${short(back.id)}, behind him,`);
+  if (A.front && front) to.push(`${heroLabel(front.id)}, in front of him,`);
+  if (A.back && back) to.push(`${heroLabel(back.id)}, behind him,`);
   if (h.downed) lines.push(['-', 'Down: his aura is gone.']);
   else if (to.length) lines.push(['+', `${to.join(' and ')} ${to.length > 1 ? A.gives.replace(/^\w+/, w => PLURAL[w] ?? w) : A.gives}.`]);
   else lines.push(['n', `Nobody stands where his aura reaches.`]);
-  lines.push(['n', outOfRank(h) ? 'Drag him back. Away, the line stays broken.' : 'Drag him onto another hero to swap.']);
+  lines.push(['n', `Rank ${i + 1}. ${outOfRank(h) ? 'Drag him back. Away, the line stays broken.' : 'Drag him onto another hero to swap.'}`]);
   return { x: heroX(i), lines };
 }
-const short = (id: HeroId) => HERO_NAME[id].split(' ')[0].replace('Knightenstein', 'Knighten');
 const PLURAL: Record<string, string> = { takes: 'take', gets: 'get', regenerates: 'regenerate' };
 
 function windLabel(e: Enemy): string {
@@ -330,7 +328,7 @@ function buffList() {
     else add(b.dmg < 0 ? 'crash' : 'hellfire', b.t, b.max, `${b.name}: party ${b.dmg >= 0 ? '+' : ''}${Math.round(b.dmg * 100)}% damage${b.speed ? `, +${Math.round(b.speed * 100)}% speed` : ''}`, b.dmg < 0);
   }
   if (n.goodDog > 0) add('judge', n.goodDog, T.GOOD_BOY_SEC, `Good Boy: loot goblins x${T.GOOD_BOY_GOBLIN}`);
-  if (n.sulk > 0) add('crash', n.sulk, T.CURIO_SULK_SEC, 'Magoo sulks about the guild bank', true);
+  if (n.sulk > 0) add('crash', n.sulk, T.CURIO_SULK_SEC, `${heroLabel('mage')} sulks about the guild bank`, true);
   if (n.guilt > 0) add('crash', n.guilt, T.GUILT_SEC, 'Guilt: party -10% damage', true);
   return out.slice(0, 7);
 }

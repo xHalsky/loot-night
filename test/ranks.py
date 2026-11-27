@@ -1,4 +1,4 @@
-# Marching order (#52, 1.6) and Garrote (1.7): the four in a fight with auras, a hovered hero's card after a Hook,
+# Marching order (#52, 1.6) and Hixx (1.7): the four in a fight with auras, a hovered hero's card after a Hook,
 # a drag in progress, Shove's wind-up. Writes test/shots/ranks_*.png (the battle area at x2).
 import asyncio, os
 from playwright.async_api import async_playwright
@@ -23,13 +23,13 @@ async def main():
         await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; n.enemies.forEach(e=>{e.hp=e.maxHp=99999; e.atk=1})}")
         await pg.wait_for_timeout(600)
         await pg.screenshot(path='test/shots/ranks_four.png', clip=clip)
-        # a Hook: Healero to the front, then hover him
+        # a Hook: Arkbishop to the front, then hover him
         await pg.evaluate(GO, 'dbgHook'); await pg.wait_for_timeout(450)
         await pg.screenshot(path='test/shots/ranks_hooked.png', clip=clip)
         await pg.wait_for_timeout(900)
         await pg.mouse.move(*at(126, 175)); await pg.wait_for_timeout(400)
         await pg.screenshot(path='test/shots/ranks_card.png', clip=clip)
-        # drag Healero's portrait (rank 1, bar x 6) onto the last group's portrait (x 252)
+        # drag Arkbishop's portrait (rank 1, bar x 6) onto the last group's portrait (x 252)
         await pg.mouse.move(*at(17, 219)); await pg.mouse.down()
         await pg.mouse.move(*at(120, 219), steps=6); await pg.mouse.move(*at(262, 219), steps=8); await pg.wait_for_timeout(300)
         await pg.screenshot(path='test/shots/ranks_drag.png', clip=clip)

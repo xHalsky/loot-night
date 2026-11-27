@@ -2,6 +2,7 @@ import { T } from '../config/tuning';
 import { N } from '../core/state';
 import { pick } from '../core/rng';
 import { toastAs } from '../core/fx';
+import { heroLabel } from '../data/heroes';
 const toast = toastAs('PARTY');   // feed tag (#49)
 
 // Away from the game (docs/design/dungeon.md). When the player CHOSE to leave the game (Excel, switching, a minigame
@@ -15,7 +16,8 @@ export function isAway(): boolean {
   return n.monitor === 'excel' || !!n.switching || n.action !== 'none' || !!n.unplugged;
 }
 
-const PULL_LINES = ['Healero: pulling, keep up', 'Magoo: ok we go without him', 'Healero: no time, next pack', 'Magoo: afk again? pulling'];
+const PR = heroLabel('healer'), M = heroLabel('mage');
+const PULL_LINES = [`${PR}: pulling, keep up`, `${M}: ok we go without him`, `${PR}: no time, next pack`, `${M}: afk again? pulling`];
 let lastLine = -99;
 
 /** Party chat when they pull without you. Rate-limited so the feed stays readable. */

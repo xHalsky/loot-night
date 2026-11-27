@@ -277,7 +277,7 @@ function drawMist(F, cam, t) {
 // ---------------------------------------------------------------- frame
 const PROF = {};
 const tick = (k, t0) => { PROF[k] = (PROF[k] || 0) * 0.9 + (performance.now() - t0) * 0.1; return performance.now(); };
-// marching order, back to front: priest, mage, Garrote (2nd behind the knight), knight
+// marching order, back to front: priest, mage, rogue (2nd behind the knight), knight
 const PARTY = [{ id: 'priest', x: 21, ph: 0.0, hp: 0.55 }, { id: 'mage', x: 56, ph: 1.3, hp: 0.3 }, { id: 'rogue', x: 87, ph: 3.4, hp: 0.62 }, { id: 'knight', x: 126, ph: 2.6, hp: 0.68 }];
 const PARTY_DRAW = { priest: (...a) => priest(...a), mage: (...a) => mage(...a), rogue: (...a) => rogue(...a), knight: (...a) => knight(...a) };
 function drawDungeon(F, t, o = {}) {
@@ -326,7 +326,7 @@ function drawDungeon(F, t, o = {}) {
     const s = walking ? [0, 2, 0, -2][f] : 0, b = walking ? [0, -1, 0, -1][f] : (Math.sin(t * 2.1 + m.ph) > 0.55 ? -1 : 0);
     mulEllipse(m.x, CHAR_Y, 13, 3.5, 0.25);
     TAG = n + 1;
-    // out of battle Garrote carries his daggers reverse-gripped; walking, he runs his own gait (phase quantized to 8 frames)
+    // out of battle the rogue carries his daggers reverse-gripped; walking, he runs his own gait (phase quantized to 8 frames)
     const wp = walking ? Math.floor((((t / ROGUE_WALK.T) + m.ph * 0.2) % 1) * ROGUE_WALK.frames) / ROGUE_WALK.frames : null;
     PARTY_DRAW[m.id](m.x + (m.lunge || 0), CHAR_Y, s, b, t, !o.battle, wp, walking ? null : m.swing);
     TAG = 0; MAT = M_STONE;

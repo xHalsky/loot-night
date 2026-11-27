@@ -6,11 +6,19 @@
 feed's welcome and the boys' chat. The game itself keeps its own title on the title screen.
 
 **Party.** Four heroes from night 1 (#96), persistent across nights (data: `src/data/heroes.ts`,
-`HERO_NAME`): Knightenstein (Knight, tank, in front, carries the torch: you), **Garrote** (Rogue, #52 1.7), Magoo
-(Mage) and Healero (Healer), the characters of your friends Lance, Billy and Mike. A save from before Garrote was in from
-night 1 gets him at the next night, second in line, at the party's lowest level, with a feed line. Whoever walks in
+`HERO_NAME`, `HERO_CLASS`; the cast of 2026-11-27): **Dutch** (Knight, tank, in front, carries the torch: you),
+**Hixx** (Rogue, #52 1.7), **Hudzor** (Mage) and **Arkbishop** (Priest), the characters of your friends Mike, Billy and
+Lance. A save from before the rogue was in from night 1 gets him at the next night, second in line, at the party's
+lowest level, with a feed line. Whoever walks in
 front picks up the loot by walking over it (#95; see Loot drops in [loot.md](loot.md)), so no role line says it.
-Party and guild chat use the character names, as an MMO would; the friends' phone calls use their real names. Garrote's colour is ember (`#c16229`); Z, X and C light up ember on the desk keyboard.
+Party and guild chat use the character names, as an MMO would; the friends' phone calls use their real names. The rogue's colour is ember (`#c16229`); Z, X and C light up ember on the desk keyboard.
+**Every place that names a hero shows his class** (Knight, Rogue, Mage, Priest), from the one table in `heroes.ts`
+that the renderer reads too (`PK.heroNames`): on a card or tooltip the name is line 1 and the class line 2 in the class
+colour (knight steel, rogue ember, mage violet, priest gold); in a line of text "Hudzor (Mage)" (`heroLabel`); in a
+strip "HUDZOR Mage". Where there is no room the name stands alone, never the class: the party cards under the
+portraits, the feed's speaker tags (a tip from HUDZOR), Heist's and the EXECUTE warning's feed lines (two rows) and
+"the log says DUTCH" in guild chat. The ids stay `knight`, `rogue`, `mage`, `healer` (saves and art key on them); a
+save from before the cast loads with the new names.
 Stats: HP, attack, armor, speed, crit, luck; level and XP; six gear slots (weapon, helm, armor, boots,
 ring, trinket). Old saves are renamed on load.
 
@@ -71,7 +79,7 @@ nobody answers.
 **Battle, in real time** (#52, 1.2). Side view, heroes left, up to 3 enemies right. Every unit attacks on its own
 timer: attack interval = `BASE_ATTACK_SEC` (1.2) × 10 / speed, so speed 10 attacks every 1.2 s. Stuns are seconds
 (Bash: `BASH_STUN_SEC`, 1.5 s). Auto attacks are not skills: Knight slashes the front enemy, Mage bolts the weakest,
-Healer heals an ally under `HEALER_AUTO_HEAL_BELOW` (60%) HP or smites, Garrote stabs the front enemy. At max Flow the party attacks `FLOW_SPEED`
+Healer heals an ally under `HEALER_AUTO_HEAL_BELOW` (60%) HP or smites, Hixx stabs the front enemy. At max Flow the party attacks `FLOW_SPEED`
 (25%) faster, linear from Flow x1. Numbers compound (#52): enemy HP x`ENEMY_HP_GROWTH` (1.15) and attack
 x`ENEMY_ATK_GROWTH` (1.15) per floor, item attack, HP and armor x`ITEM_POWER_GROWTH` (1.12) per item level (speed,
 crit and luck stay linear); big numbers show as 1.2K, 34.5K, 1.2M. Floating
@@ -90,14 +98,14 @@ automatically. 4, R and F stay dark.
 | Mage (Q, W, E) | Fire: 1x to every enemy | Frost: 2.6x to the front enemy, Chill | Cataclysm: `CATACLYSM_POWER` (8x) to every enemy, double on Staggered or Chilled |
 | Healer (A, S, D) | Mend: heals the party | Ward: 40% less damage for 6 s | Miracle: revives every downed hero and fully heals the party |
 
-Garrote's auto attack (Stab) hits the front enemy. His stats (*start*): HP 85, attack 12, armor 3, speed 13,
+Hixx's auto attack (Stab) hits the front enemy. His stats (*start*): HP 85, attack 12, armor 3, speed 13,
 crit 12, luck 5. Pickpocket is not in the kit: Heist covers its ground (decisions 2026-11-20).
 
 **Marching order** (#52, 1.6; grid doc §5d; rules `src/systems/ranks.ts`). The party walks and fights in one line,
 rank 1 at the front (right in the picture, left in the skill bar); a hero's rank is his place in the party. Defaults:
-Knight, Garrote, Mage, Healer. An old save gets the default once (`orderSet`; and again when Garrote joins it);
+Knight, Rogue, Mage, Priest. An old save gets the default once (`orderSet`; and again when the rogue joins it);
 after that the order is the player's and carries over from night to night.
-- **Home ranks** (`HOME_RANKS`, data per hero so tree nodes can change them): Knight 1 to 2, Garrote 1 to 3, Mage 3 to
+- **Home ranks** (`HOME_RANKS`, data per hero so tree nodes can change them): Knight 1 to 2, Hixx 1 to 3, Mage 3 to
   4, Healer 2 to 4. Outside them a hero deals and heals `OUT_OF_RANK_MULT` (x0.7); a crimson "x0.7" tab sits on his
   portrait, and "out of position" floats over him when he lands there.
 - **Auras** (a neighbour's buff; a downed hero gives none). Shown as glyphs on the skill bar's pilasters in the
@@ -106,9 +114,9 @@ after that the order is the player's and carries over from night to night.
 | Giver | Goes to | Gives |
 |---|---|---|
 | Knight (shield wall) | the hero behind him | takes `AURA_KNIGHT_TAKEN` (25%) less damage |
-| Garrote (keen eye) | the hero in front of him | +`AURA_ROGUE_CRIT` (10) crit |
-| Magoo (haste) | the hero in front of him | `AURA_MAGE_CD` (10%) shorter cooldowns |
-| Healero (blessing) | the heroes in front and behind | regenerate `AURA_PRIEST_REGEN` (1%) max HP a second in the dungeon |
+| Hixx, Rogue (keen eye) | the hero in front of him | +`AURA_ROGUE_CRIT` (10) crit |
+| Hudzor, Mage (haste) | the hero in front of him | `AURA_MAGE_CD` (10%) shorter cooldowns |
+| Arkbishop, Priest (blessing) | the heroes in front and behind | regenerate `AURA_PRIEST_REGEN` (1%) max HP a second in the dungeon |
 
 - **Swap:** press on a hero's portrait or his sprite and drag onto another. The portrait lifts under the pointer,
   the target's portrait gets a marching gold frame, both heroes a gold ring on the floor. On the drop they walk past
@@ -120,10 +128,12 @@ after that the order is the player's and carries over from night to night.
   `LINE_BREAK_WINDUP_SEC` (1 s) cast that names the rank: **Hook · rank 4** (a chain drags the last hero to the
   front, the others step back one) and **Shove · rank 1** (the front hero is knocked back, swapping with rank 2).
   Everyone who moved walks for `SWAP_SEC`. Away, the line stays broken: fixing it is a reason to look.
-- **Hovering a hero** opens his card over his head: "Healero · rank 1", a crimson line for what is wrong ("Out of
-  position: heals at 70%. His ranks are 2 to 4."), a moss line for what his aura gives and to whom, and a note
-  ("Drag him back. Away, the line stays broken."). The side panel's hero tooltip says the same.
-- `npx tsx test/ranks.ts` checks the default order, an old save getting Garrote, home ranks, the auras, swaps, Hook and Shove,
+- **Hovering a hero** opens his card over his head: his name ("Arkbishop"), his class under it in the class colour
+  ("Priest"), a crimson line for what is wrong ("Out of position: heals at 70%. His ranks are 2 to 4."), a moss line
+  for what his aura gives and to whom ("Dutch (Knight), behind him, regenerates 1% HP per second."), and a note with
+  his rank ("Rank 1. Drag him back. Away, the line stays broken."). The side panel's hero tooltip (a portrait) says the
+  same: name, class, role, rank and home ranks.
+- `npx tsx test/ranks.ts` checks the default order, an old save getting the rogue, home ranks, the auras, swaps, Hook and Shove,
   EXECUTE by rank, Smoke Bomb, Heist, Backstab and when the breakers come; `python3 test/ranks.py` shoots it.
 
 **Curios in the corridor** (#30, the RPG's third verb; content `src/data/curios.ts`, rules
@@ -143,7 +153,7 @@ fight instead. `python3 test/walk.py` checks and shoots it.
 | Locked chest | Pick the lock: 8 s standing still, quiet | Smash it: instant, Noise +25 |
 | Sealed coffin | Open: Noise +5; 50% gold (20 x floor), 30% a rare, 20% a curse (party -15% damage until the next floor) | Leave it |
 | Snoring troll on a loot pile | Sneak: 6 s on the RPG screen; alt-tab (or the monitor going off) wakes him | Fight: a mini-boss (330 HP at floor 1 scale), Noise +15 |
-| Guild bank vault | Take one item: a free rare; 40 to 90 s later Magoo reads the log in guild chat and sulks (mage -20% damage for 45 s) | Close it |
+| Guild bank vault | Take one item: a free rare; 40 to 90 s later Hudzor (Mage) reads the log in guild chat and sulks (-20% damage for 45 s) | Close it |
 
 
 **Run blessings** (#52, 1.5b; `src/data/blessings.ts`, numbers `BLESS_*`). Curios are their only source. A
@@ -284,10 +294,10 @@ light with the beam, the names flying up; the corner (where, Flow in yellow), th
 skill bar (portrait, HP tube, two skill wells and the ultimate's gilded well; cooldown sweeps, the answer pulse, the
 combo glow, "L3" on a skill still locked). Every action shows: slashes, claws, bolts, fire, frost, heal sparkles,
 Ward's and Taunt's rings. **Melee hits swing the weapon** (#97, `SWING_SEC`): the Knight's Slash and Bash take
-the sword off his shoulder, up behind the helm, over the top and down at the enemy, drawn over his shield; Garrote's
+the sword off his shoulder, up behind the helm, over the top and down at the enemy, drawn over his shield; Hixx's
 Stab and Backstab use both daggers (0.87.1, Paweł): the near hand cocks low and cuts up and forward, and a beat later
 the far hand comes over the top from behind his hood and cuts down and forward, so the two cuts cross in an X. Each
-cut leaves a bright crescent smear along the edge, Garrote's bigger than his daggers so they read from rank 2 over the
+cut leaves a bright crescent smear along the edge, Hixx's bigger than his daggers so they read from rank 2 over the
 Knight's back. Casts and the ranged heroes
 keep the lunge (`python3 test/swing.py`). It redraws at 30 fps (about 22 ms a frame in headless Chrome, F1 shows it). The floor map is
 drawn by the same renderer; the town is still the old drawing (V2 continues).
@@ -295,7 +305,7 @@ drawn by the same renderer; the town is still the old drawing (V2 continues).
 **Away from the game** (`src/systems/autopilot.ts`, #52 1.2). When you *chose* to leave the game (Excel up,
 mid-switch, a minigame window open, or cables out because you ignored the dog), nobody casts the skills or the
 ultimates: the party fights on with its auto attacks (bought autocasts will fire in #53). Her desk visit and the
-monitor she switched off are forced on you, so they don't count. Party chat complains in the Feed ("Magoo: afk
+monitor she switched off are forced on you, so they don't count. Party chat complains in the Feed ("Hudzor (Mage): afk
 again? pulling"), and the Loot Night taskbar button flashes orange like a Windows app wanting attention when party
 HP is under `AUTOPILOT_FLASH_HP` or a hero is down. Measured by `test/autopilot.ts` with packs (0.53; 40 s on Excel,
 30 runs): the boss on floor 10 wipes 30/30, floor 15 18/19 (watching, it is still 12/19: the Black Knight is the
@@ -309,6 +319,12 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 ([city.md](city.md)).
 
 ## Decisions
+- **The cast of 2026-11-27** (0.89, #107; decisions doc): the heroes are the friends' characters now, so they carry
+  the friends' names for them: Dutch (the Knight, you; a nod to Paweł's film hero), Hixx (the Rogue, Mike's), Hudzor
+  (the Mage, Billy's), Arkbishop (the Priest, Lance's). Every place a hero is named shows his class, so nobody has to
+  learn four new names cold. Display names only: the ids, stats, skills, keys, colours and art are unchanged, and the
+  old names are gone from the game. Rejected: renaming the ids (it would break saves and the art's keys), and a
+  name-only party (the class is what tells you who tanks and who heals).
 
 - **Pacing tuned to the 1.9 targets** (0.59, #52 1.9). Fights were a little long and the floors too safe: night-1 runs
   went to floor 6 to 9 and never wiped. Pack HP down (x1.25 from x1.4), pack attack up (x0.7 from x0.5), enemy
@@ -333,9 +349,9 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   without acting** for both heroes (and everyone a Hook or Shove moves), so fixing the line is a choice in a fight,
   not a free click. The breakers act on a schedule (2nd action, then every 4th) after a 1 s cast that names the rank,
   so you can see it coming; rejected: a random chance per action (unreadable). Night 1 now starts Knight, Healer,
-  Mage: the Mage's home ranks are 3 to 4. Healero's blessing works in the whole dungeon, walks included (between
+  Mage: the Mage's home ranks are 3 to 4. Arkbishop's blessing works in the whole dungeon, walks included (between
   fights is where regeneration matters, and it eases the Blood pact for his neighbours).
-- **Garrote from night 1** (0.87, #96; Paweł after the first playtest: three heroes on Monday read as one missing).
+- **The rogue from night 1** (0.87, #96; Paweł after the first playtest: three heroes on Monday read as one missing).
   He joined on Tuesday (0.56 to 0.86, #56) so each night added one thing; Tuesday still has chat visits, the headset,
   Tiredness, the night past 01:00 and lean in, so it lost little. Monday with four (12 nights each, good bot): depth
   5.7 to 6.0, wipes 0.25 to 0; the idle bot is still caught (2.4 a night). Rejected: keeping him for Tuesday with a
@@ -384,7 +400,7 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   point of use (hover, and the pulsing answers during a wind-up) rather than in a help screen.
 - **No auto-attack button.** It was always on, so the button was noise. Keys start at 1 / Q / A.
 - **Knight in front with the torch**, so the light leads the party, and the front hero picks up the loot.
-- **The front hero walks over the loot** (0.87, #95; Paweł after the first playtest). From 0.53 a looter (Garrote, or
+- **The front hero walks over the loot** (0.87, #95; Paweł after the first playtest). From 0.53 a looter (the rogue, or
   the Knight on night 1) ran ahead of his rank to each drop and back; it read as the Knight breaking ranks after every
   fight. Now the drops scroll in with the floor and the first standing hero picks up what reaches his feet; after the
   floor's last fight the party still walks forward, out of the floor, over the drops. Rejected: a pickup pause, and

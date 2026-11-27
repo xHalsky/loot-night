@@ -291,7 +291,8 @@ function liveTreePanel(st, t) {
   for (let j = 0; j < H; j++) { putU(0, j, 0.02); putU(1, j, 0.78 + 0.06 * (GR(1, j) - 0.5)); putU(2, j, 0.3); putU(3, j, 0.05); }
   st.party.forEach((c, n) => { livePartyCard(X0 + n * 34, 15, c, c.hero === st.hero); panelHit(X0 + n * 34, 15, 33, 40, 'treeHero', c.hero, ''); });
   for (let j = 0; j < 10; j++) for (let i = X0; i < X0 + PW; i++) putU(i, 57 + j, j === 0 ? 0.56 : j === 9 ? 0 : lerp(0.3, 0.14, j / 8) + 0.05 * (GR(i, 57 + j) - 0.5));
-  text(st.short.toUpperCase(), X0 + 4, 60, 'silkb', P.u6, { shadow: P.void });
+  const tw = text(st.short.toUpperCase(), X0 + 4, 60, 'silkb', P.u6, { shadow: P.void });
+  if (st.cls) text(st.cls, X0 + 8 + tw, 60, 'tiny', P.u4, { shadow: P.void });   // the class after the name (cast of 2026-11-27)
   const sw = text(String(st.souls), X0 + PW - 4, 60, 'tiny', P.moon, { align: 'r', shadow: P.void }); soulGlyph(X0 + PW - 12 - sw, 59);
   const N0 = st.node;
   let y = 71;
@@ -497,7 +498,8 @@ function liveServicePanel(st, t) {
         rows.push([a, P.u6, kind, 7]);
         for (const ln of wrapTiny(fx, PW - 20)) rows.push([ln, P.u5, null, 7]);
       }
-      const H = Math.min(222 - y, Math.max(80, 46 + rows.reduce((s, r) => s + r[3], 0)));
+      const wy = R.who ? 8 : 0;   // whose legendary or set piece it is: its own row, "For Hixx (Rogue)" (cast of 2026-11-27)
+      const H = Math.min(222 - y, Math.max(80, 46 + wy + rows.reduce((s, r) => s + r[3], 0)));
       shadowU(X0 + 2, y, PW - 4, H, { k: 0.6, r: 4, dx: 2, dy: 3 });
       leatherU(X0 + 3, y + 1, PW - 6, H - 2, { v: 0.13, vig: 0.25 });
       mouldU(X0 + 2, y, PW - 4, H, { mat: M_MAGIC, k: 1, bosses: false });
@@ -505,7 +507,8 @@ function liveServicePanel(st, t) {
       liveCell(X0 + 8, y + 15, R.cell);
       for (const [k, ln] of wrapTiny(R.name, PW - 40).slice(0, 2).entries()) text(ln, X0 + 33, y + 17 + k * 7, 'tiny', rc, { shadow: P.void });
       text(R.sub, X0 + 33, y + 31, 'tiny', P.u5, { shadow: P.void });
-      let ly = y + 42;
+      if (R.who) text(R.who, X0 + 33, y + 38, 'tiny', P.u5, { shadow: P.void });
+      let ly = y + 42 + wy;
       for (const [a, col, tag, h] of rows) {
         if (ly > y + H - 10) break;
         text(a, X0 + 8, ly, 'tiny', col, { shadow: P.void });
@@ -526,10 +529,10 @@ function liveServicePanel(st, t) {
 }
 
 // the RPG's tooltip card next to the pointer (V11, #76; grid doc 5c, 7k): tip { x, y, w, lines [kind, text] }, kinds
-// h (the head), + and - (bullets), b (a plain line), n (a note); below the pointer, or above it near the bottom
+// h (the head), c (a hero's class, under his name), + and - (bullets), b (a plain line), n (a note); below the pointer, or above it near the bottom
 function liveTip(tip) {
   const w = Math.min(tip.w || 132, W - 4);
-  let h = 8; for (const [k, s] of tip.lines) h += k === 'h' ? 10 : wrapTiny(s, w - (k === 'n' || k === 'b' ? 12 : 17)).length * 7 + 1;
+  let h = 8; for (const [k, s] of tip.lines) h += k === 'h' ? 10 : k === 'c' ? 9 : wrapTiny(s, w - (k === 'n' || k === 'b' ? 12 : 17)).length * 7 + 1;
   const x = clamp(Math.round(tip.x + 8), 2, W - w - 2), y = tip.y + 14 + h > H - 2 ? Math.max(2, Math.round(tip.y - h - 6)) : Math.round(tip.y + 14);
   tipCard(x, y, w, tip.lines.map(([k, s]) => [k, s, null]));
 }

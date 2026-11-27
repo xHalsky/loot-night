@@ -3,7 +3,7 @@
 // Home ranks, auras, swaps, and the enemies that break the line (Hook, Shove). Rules only; no drawing.
 import { T } from '../config/tuning';
 import { S, N, newHero, type Hero, type HeroId } from '../core/state';
-import { HOME_RANKS, AURAS, DEFAULT_ORDER, HERO_NAME, HERO_BASE } from '../data/heroes';
+import { HOME_RANKS, AURAS, DEFAULT_ORDER, HERO_NAME, HERO_CLASS, HERO_BASE, heroLabel } from '../data/heroes';
 import { toastAs, floatText } from '../core/fx';
 import { RANK_X } from '../core/arena';
 import { sfx } from '../ui/audio';
@@ -29,11 +29,11 @@ const has = (h: Hero, giver: HeroId) => aurasOn(h).includes(giver);
 const auraVal = (giver: HeroId, base: number) => fx(giver, 'aura') || base;
 /** Damage a hero takes, x this (the Knight's shield wall on the hero behind him). */
 export const auraTaken = (h: Hero) => (has(h, 'knight') ? 1 - auraVal('knight', T.AURA_KNIGHT_TAKEN) : 1);
-/** Extra crit (Garrote's keen eye on the hero in front of him). */
+/** Extra crit (the rogue's keen eye on the hero in front of him). */
 export const auraCrit = (h: Hero) => (has(h, 'rogue') ? auraVal('rogue', T.AURA_ROGUE_CRIT) : 0);
-/** Cooldowns x this (Magoo's haste on the hero in front of him). */
+/** Cooldowns x this (the mage's haste on the hero in front of him). */
 export const auraCd = (h: Hero) => (has(h, 'mage') ? 1 - auraVal('mage', T.AURA_MAGE_CD) : 1);
-/** Healero's blessing: his neighbours regenerate in the dungeon. */
+/** The priest's blessing: his neighbours regenerate in the dungeon. */
 export function auraRegen(dt: number, maxHp: (h: Hero) => number) {
   for (const h of S.g.heroes) if (!h.downed && has(h, 'healer')) h.hp = Math.min(maxHp(h), h.hp + maxHp(h) * auraVal('healer', T.AURA_PRIEST_REGEN) * dt);
 }
@@ -81,17 +81,17 @@ function floatOut(h: Hero) { floatText(RANK_X[S.g.heroes.indexOf(h)] ?? RANK_X[0
 /** Ticks the walk between ranks. */
 export function updateRanks(dt: number) { for (const h of S.g.heroes) if (h.moving) { h.moving = Math.max(0, h.moving - dt); if (!h.moving) { h.moving = undefined; h.from = undefined; } } }
 
-/** At the start of a night: a save from before Garrote was in the party from night 1 (#96) gets him, second in line; a
+/** At the start of a night: a save from before the rogue was in the party from night 1 (#96) gets him, second in line; a
  *  save that never had a marching order gets the default one. */
 export function ensureParty() {
   const g = S.g;
   if (!heroById('rogue')) {
     const lv = Math.max(1, Math.min(...g.heroes.map(h => h.level)));
-    const r = newHero('rogue', HERO_NAME.rogue, 'Rogue', HERO_BASE.rogue.hp);
+    const r = newHero('rogue', HERO_NAME.rogue, HERO_CLASS.rogue, HERO_BASE.rogue.hp);
     r.level = lv;
     g.heroes.push(r);
     g.orderSet = false;
-    toast('Garrote joined the party. He walks second.', '#e8b07a');
+    toast(`${heroLabel('rogue')} joined the party. He walks second.`, '#e8b07a');
   }
   if (!g.orderSet) {
     const want = DEFAULT_ORDER[g.heroes.length >= 4 ? 1 : 0];

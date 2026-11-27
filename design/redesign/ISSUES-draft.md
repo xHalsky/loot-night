@@ -38,11 +38,11 @@ Mockup: Screen (Dungeon, Battle, Town), Battle; stills `00-default` to `007`.
 - [ ] The skill bar: four heroes in marching order, each a portrait with its class outline, an HP tube, **two skill
       wells and the ultimate's gilded well** (gold frame, crest and gem, the key on a gold tab; ready, cooldown and
       locked states) (§5).
-- [ ] Skill icons on class tiles (knight steel, Garrote cloak, mage violet, priest gilded) (§4); states: cooldown, combo,
+- [ ] Skill icons on class tiles (knight steel, rogue cloak, mage violet, priest gilded) (§4); states: cooldown, combo,
       answer, queued, blocked, autocast loop (§5).
 - [ ] The corner overlay, buffs, the curio card, HP bars, mark tags, **enemy casts as the name with a cast bar under
       it**, loot lying in its rarity light with the beam (§5).
-- [ ] The heroes, Garrote (§4b) and the mob of six in two fodder lanes (§4c), drawn back to front (§3); the crypt.
+- [ ] The heroes, Hixx (§4b) and the mob of six in two fodder lanes (§4c), drawn back to front (§3); the crypt.
 - [ ] Ravenhold, 16-bit: masonry, roofs per trade, cobbles, moon shadows, the diegetic signs and hover halos (§6).
 - [ ] The floor map's vellum, ink and roundels (§5; the route choice itself is #52).
 
@@ -196,7 +196,7 @@ Labels: `ui`, `art`, `p2`
 
 Approved 2026-11-24. Mockup: the page's Week one rows. Spec: §7m. Goes with #56 and #59.
 
-- [ ] Danny's 20:00 voice note in The Boys' chat (the phone in your hand while the night waits): the waveform filling
+- [ ] Billy's 20:00 voice note in The Boys' chat (the phone in your hand while the night waits): the waveform filling
       gold, the transcript a line at a time, Got it; one per night, and one for a replay (§7m).
 - [ ] The replay morning: UNPLUGGED, what it cost, "Tuesday, again" (§7m, §7h).
 - [ ] Her window for her moments (the chat's window): the snack run's plate, the tease visit, the towel and the wine,

@@ -15,16 +15,16 @@ to buy, 15 at most.
 
 | Hero | Rule pair on skill 1 | Rule pair on skill 2 |
 |---|---|---|
-| Knightenstein | Hold the Line: Taunt also gives him +30% armor / Thorns: Taunted enemies take 30% of their hits back | Cleaving Bash: Bash hits the two front enemies / Concussion: Bash stuns twice as long |
-| Garrote | Ambush: Backstab always crits on Staggered / Shiv: Backstab's cooldown -30% | Choking Smoke: Smoke Bomb hurts every enemy for 25% of his attack a second / Vanish: he can't be targeted during Smoke Bomb |
-| Magoo | Wildfire: Fire's targets burn for 30% of its damage over 3 s / Inferno: Fire +40% damage, cooldown +3 s | Lingering Chill: Chill lasts twice as long / Shatterpoint: Bash shatters Chilled for x4 instead of x2.5 |
-| Healero | Sanctuary: Mend gives the party +20% armor for 5 s / Greater Mend: Mend heals 30% more | Aegis: Ward lasts 3 s longer / Retribution: any enemy hitting a warded hero takes 25% back |
+| Dutch (Knight) | Hold the Line: Taunt also gives him +30% armor / Thorns: Taunted enemies take 30% of their hits back | Cleaving Bash: Bash hits the two front enemies / Concussion: Bash stuns twice as long |
+| Hixx (Rogue) | Ambush: Backstab always crits on Staggered / Shiv: Backstab's cooldown -30% | Choking Smoke: Smoke Bomb hurts every enemy for 25% of his attack a second / Vanish: he can't be targeted during Smoke Bomb |
+| Hudzor (Mage) | Wildfire: Fire's targets burn for 30% of its damage over 3 s / Inferno: Fire +40% damage, cooldown +3 s | Lingering Chill: Chill lasts twice as long / Shatterpoint: Bash shatters Chilled for x4 instead of x2.5 |
+| Arkbishop (Priest) | Sanctuary: Mend gives the party +20% armor for 5 s / Greater Mend: Mend heals 30% more | Aegis: Ward lasts 3 s longer / Retribution: any enemy hitting a warded hero takes 25% back |
 
 Stats (the class's own; grid doc §6c has the table): Knight Veteran, Brute, Bulwark, Iron Skin, Crushing (Bash +20%),
-Hardened (healing on him +15%), Stalwart, Tower Shield, Shield Brother (his aura 35%); Garrote Nimble, Shadow (dodge
+Hardened (healing on him +15%), Stalwart, Tower Shield, Shield Brother (his aura 35%); Hixx Nimble, Shadow (dodge
 10%), Keen Eye, Deadly (crits +25% damage), Quick Blades, Lucky, Cutpurse (+15% gold), Ruthless, Sly (aura +15
-crit); Magoo Focus, Arcane Mind, Pyromancy, Spellpower, Elementalist (Burning and Chill +25% longer), Glass, Ley Lines
-(ultimate +20% faster), Warded, Mentor (aura 15%); Healero Devotion, Faith, Grace, Mercy, Bastion (Ward soaks 20%
+crit); Hudzor Focus, Arcane Mind, Pyromancy, Spellpower, Elementalist (Burning and Chill +25% longer), Glass, Ley Lines
+(ultimate +20% faster), Warded, Mentor (aura 15%); Arkbishop Devotion, Faith, Grace, Mercy, Bastion (Ward soaks 20%
 more), Zeal, Shepherd (the party's max HP +5%), Vigil, Halo (aura 1.5% a second).
 
 **Costs** `TREE_COST`: stat 20, unlock 40, rule 40, autocast 60, ultimate 120 Souls, each × (1 + `TREE_COST_STEP`
@@ -36,7 +36,7 @@ it. It casts the moment the skill is ready, on the default target, ignores marks
 ultimate, and keeps firing while you're away (Excel, mid alt-tab, monitor off, hands busy). Changing places stops it.
 
 **Where** (grid doc §6b, §6c): the town side panel has three tabs, Town, Inventory and Skill Tree. The Skill Tree tab
-picks the hero (his party card), shows the hovered or clicked node (name, kind, what it does, moss and crimson notes:
+picks the hero (his party card), names him with his class ("ARKBISHOP Priest"; the tree's own header reads "ARKBISHOP Priest tree"), shows the hovered or clicked node (name, kind, what it does, moss and crimson notes:
 bought, what it shuts or needs), "n bought in this tree" with the ultimate's six pips, the flat gold **Buy · cost**
 and **Respec**. The tree itself opens over the town as a constellation in the hero's colours: owned nodes lit in the
 class colour, a blinking gold ring on what you can buy, bone when too dear, dark when locked, crossed when shut by
@@ -60,5 +60,5 @@ mostly banked with a full bag, 3.5 to 4.5 minutes; a rare or better every 16 to 
   (4 to 5 nodes a run on night 1; the last node would cost x4.5).
 - **Autocast is dumb on purpose**: it trades the player's timing for not having to be there. Bash on autocast
   interrupts nothing on purpose, so a boss still asks you to look.
-- **The tree's rules work on the hero who owns them**, and Shatterpoint (Magoo's) changes Bash's shatter for the
+- **The tree's rules work on the hero who owns them**, and Shatterpoint (Hudzor's) changes Bash's shatter for the
   party: the pair is about the combo, not about whose button it is.

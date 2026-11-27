@@ -160,7 +160,7 @@
  ],
  "_notes": {
   "moonwell32": "Slots 0-31 are Moonwell 32; flow and flowHi (32, 33) are UI-only (kept out of the dither).",
-  "graphite": "The desk keeps the same slot names as Moonwell; steel (32, the knight) and ember (33, Garrote) are UI-only, and wnavy/wblue/wsky (34-36) are the Windows 98 title bar, UI-only. The dog appends his own slots after these at runtime (dog.js).",
+  "graphite": "The desk keeps the same slot names as Moonwell; steel (32, the knight) and ember (33, Hixx) are UI-only, and wnavy/wblue/wsky (34-36) are the Windows 98 title bar, UI-only. The dog appends his own slots after these at runtime (dog.js).",
   "pc98": "Her 16. The blueprint adds its 4 blues on top for the plan only.",
   "eb": "Index palette of the can sprites (art/cans): the desk 34, the acid ramp (6), the can print colours."
  }

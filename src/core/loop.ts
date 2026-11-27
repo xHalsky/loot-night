@@ -30,7 +30,7 @@ export function step(dt: number) {
   const life = !g.realLifeOff;   // debug (#52, 1.1): real life off, nobody is home
   updateMeters(dt);      // clocks, flow, mood, noise, busy, buffs
   updatePre(dt);
-  updateCurioTimers(dt);   // party buffs, Magoo's sulk
+  updateCurioTimers(dt);   // party buffs, the mage's sulk
   if (life) { updateVisits(dt); updatePeek(dt); updateLean(dt); }   // lean in (#77)
   updateHim(dt);
   updateTips(dt);

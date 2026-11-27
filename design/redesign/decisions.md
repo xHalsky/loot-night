@@ -12,7 +12,7 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
 
 ## 2026-11-24 (redesign chat, week one's pieces approved)
 
-- **Week one's pieces are approved** (Paweł), as drawn below: Danny's voice note, the replay morning, her moment window,
+- **Week one's pieces are approved** (Paweł), as drawn below: Billy's voice note, the replay morning, her moment window,
   Eyes busy and She has the mouse, Hide cans, the away card's reason, the lap sit. Grid doc 7m; Issue draft V13.
 
 ## 2026-11-24 (redesign chat, lean in approved; week one's pieces drawn)
@@ -27,7 +27,7 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
   inset panel across the leaf, the leaf narrowing toward the hinge as the slit opens. Grid doc 7l.
 - **Week one's pieces are drawn, for Paweł's review** ("designed the way the similar actions already are"): grid doc 7m,
   the page's Week one rows.
-  - **The 20:00 voicemail is Danny's voice note in The Boys' chat** (Magoo is Danny's character), on the phone in your
+  - **The 20:00 voicemail is Billy's voice note in The Boys' chat** (Hudzor is Billy's character), on the phone in your
     hand, because everything on the phone happens inside it: a voice bubble with a waveform that fills gold, the
     transcript under it a line at a time, Got it to start the night. The handoff's "transcript bubble by the phone" goes.
   - **The replay** is the unplugged morning with what it cost and "Tuesday, again" on her pink button.
@@ -42,7 +42,7 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
 ## 2026-11-24 (redesign chat, lean in on Tuesday, taught when it unlocks)
 
 - **Lean in unlocks on Tuesday** (Paweł agreed): Monday is for learning her by sound, and holding the door is only the
-  glance. **It is taught the night it unlocks** (Paweł), and so is every new thing: Magoo's 20:00 voicemail names it, How
+  glance. **It is taught the night it unlocks** (Paweł), and so is every new thing: Hudzor's 20:00 voicemail names it, How
   to hide shows its gold "new tonight" tile, its first chance comes early and safe, and a coach mark meets it there.
   Spec: `claude/loot-night-week-one.md` section 2b; grid doc 7k and 7l.
 - **Lean in's teaching:** Tuesday opens with her yoga in the living room (no visit meanwhile); three coach marks (the
@@ -98,7 +98,7 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
   - **Open:** Sunday's own night (it was the first Custom Night), and whether the second Monday brings back only
     Monday's things (her and Q4) or keeps everything on. Replaying Monday's rules with a week of RPG growth makes week
     two easy; keeping everything on makes every night after Saturday a Saturday. How to hide's "new tonight" and
-    Magoo's 20:00 voicemail have nothing new to show in week two unless something changes.
+    Hudzor's 20:00 voicemail have nothing new to show in week two unless something changes.
 
 ## 2026-11-20 (redesign chat, lean in drawn; Messages; no Custom Night)
 
@@ -303,7 +303,7 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
   and 5; live on the page (Battle).
   - Handoff step 2 (#53) changes: each hero has the auto attack, skill 1 (start), skill 2 (unlock) and the ultimate;
     skill 3 goes. **Decided (Paweł confirmed):** drop the second unlock in each tree with its rule pair and its
-    autocast node (Rally, Storm, Revive, Pickpocket). That leaves Knight Taunt, Bash, Last Stand; Garrote Backstab, Smoke
+    autocast node (Rally, Storm, Revive, Pickpocket). That leaves Knight Taunt, Bash, Last Stand; Hixx Backstab, Smoke
     Bomb, Heist; Mage Fire, Frost, Cataclysm; Priest Mend, Ward, Miracle. Each ultimate covers the dropped skill's
     ground (Last Stand Rally's, Cataclysm Storm's, Miracle Revive's, Heist Pickpocket's). Each tree goes from 15 nodes
     to 11 unless stat nodes fill the gap.
@@ -450,7 +450,7 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
   muzzle, chest and the two eyebrow dots, a small black nose, an omega mouth, blush when happy, pink beans on the paw
   he lifts, a curled tail at his hip. Lit like the UI and the can (key light from the upper left).
 - **His colours are his own slots** from the can's warm print colours (shiba orange, deep red and plum shadows,
-  cream to moon white, three pinks), kept out of the desk's dither like Garrote's ember. The desk's gold stays out of
+  cream to moon white, three pinks), kept out of the desk's dither like the rogue's ember. The desk's gold stays out of
   his fur so it keeps its meaning; his hearts are his orange.
 - **No pet bar: his tail is the meter.** It wags slowly while he waits and faster and wider as he fills up. The only
   card is the first hint ("stroke his head, gently") and "gently!" when you go too fast. Every moment from the spec
@@ -625,20 +625,20 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
 
 ## 2026-11-19 (redesign chat, battle)
 
-- **The Rogue is Garrote**, second in marching order right behind the knight; skill keys Z X C. His look follows
+- **The Rogue is Hixx**, second in marching order right behind the knight; skill keys Z X C. His look follows
   Paweł's references (a pixel-art rogue, then Paweł's own stick-figure sketch for the pose): athletic and
   long-limbed (not skinny), shown chest to the camera like the other heroes (a three-quarter view turned toward the
   enemy). Sneaking, never stiff: knees bent, the back bent forward and rounded, the head hanging forward and low in
   front of the shoulders while the eyes look ahead.
-- **Garrote's head and hood follow the references, at normal head size** (about the knight's helm; a big cowl read
+- **Hixx's head and hood follow the references, at normal head size** (about the knight's helm; a big cowl read
   as a head wrapped in a blanket): a close-fitting hood with a small peak at the back, its sides falling to the
   shoulders; a small face opening in shadow under the lit rim, only two glowing eyes inside; a thin wine scarf at the
   neck, never over the face; a short ragged capelet; near-black plum cloak.
-- **Garrote's arms hang low and nearly straight** (as in the sketch): long, only a slight bend at the elbow, the
+- **Hixx's arms hang low and nearly straight** (as in the sketch): long, only a slight bend at the elbow, the
   front fist low and a little forward, the back fist at his side. In battle: the front dagger forward-gripped at the
   enemy, the back one reverse-gripped pointing straight back. Out of battle: both reverse-gripped (for stabbing),
   blades pointing back.
-- **Garrote walks like a stalking cat, not a wind-up toy:** slow (a 1 s cycle), long low steps, knees bending
+- **Hixx walks like a stalking cat, not a wind-up toy:** slow (a 1 s cycle), long low steps, knees bending
   through every step, the arms held steady (no swinging).
 - **Layering inside every character is back to front** (far limbs and what they hold, then the body, then the near
   limbs; worn or held things over what they sit on). Checked and fixed for all heroes and enemies.
@@ -648,8 +648,8 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
 
 ## 2026-11-19 (afternoon)
 
-- **No real people in the game.** The friends on the phone are Danny and Mike (built in v0.48.1). Their
-  characters keep their names (Knightenstein, Magoo, Healero). No jokes about one real friend: the humour is
+- **No real people in the game.** The friends on the phone are Billy and Mike (built in v0.48.1). Their
+  characters keep their names (Dutch, Hudzor, Arkbishop). No jokes about one real friend: the humour is
   relatable jokes about a gamer's night.
 - **Eye candy is generic.** No one person's taste. Bare feet stay; what else is decided in the fan-service pass.
 - **Fan-service pass (#59):** the appeal of Steam's adult-tagged games, with no 18+ requirement. Fictional
@@ -680,7 +680,7 @@ lives in the repo at `docs/design/handoff-redesign.md`; its steps are Issues #52
   - Rogue: Stab (auto), Backstab, Smoke Bomb, Pickpocket, ultimate Heist.
 
   The grid doc's Cleave, Shield Wall, Hellfire, Frost Lance, Soul Bolt and Judgement are out: redraw or rename
-  those icons. Tree node names are still placeholders. The Rogue's own name is Garrote (see the battle entry above).
+  those icons. Tree node names are still placeholders. The Rogue's own name is Hixx (see the battle entry above).
 - **Stars and their morning rewards** (handoff step 3). Stars: Deep (tonight's floor target), Unseen (never
   caught), Sweet (her Mood not red). The Morning screen shows one reward per star earned:
   - Deep: a chest with one item at tonight's deepest floor (the only loot reward, because Deep is the RPG

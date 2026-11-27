@@ -126,10 +126,10 @@ canvas { display: block; width: 100%; image-rendering: pixelated; image-renderin
       <button id="tt-tree" aria-pressed="false">Skill Tree</button>
     </div></div>
     <div class="row"><span class="lab">Tree</span><div class="seg">
-      <button id="th-knight" aria-pressed="true">Knightenstein</button>
-      <button id="th-rogue" aria-pressed="false">Garrote</button>
-      <button id="th-mage" aria-pressed="false">Magoo</button>
-      <button id="th-priest" aria-pressed="false">Healero</button>
+      <button id="th-knight" aria-pressed="true">Dutch</button>
+      <button id="th-rogue" aria-pressed="false">Hixx</button>
+      <button id="th-mage" aria-pressed="false">Hudzor</button>
+      <button id="th-priest" aria-pressed="false">Arkbishop</button>
     </div></div>
     <div class="row"><span class="lab">Colours (battle)</span><div class="seg">
       <button id="r-full" aria-pressed="true">Moonwell 32</button>
@@ -235,7 +235,7 @@ canvas { display: block; width: 100%; image-rendering: pixelated; image-renderin
   <section class="grp" aria-label="Week one">
     <h2>Week one</h2>
     <div class="row"><span class="lab">20:00</span><div class="seg">
-      <button id="ph-h-vn-mon" aria-pressed="false">Monday: Danny's voice note</button>
+      <button id="ph-h-vn-mon" aria-pressed="false">Monday: Billy's voice note</button>
       <button id="ph-h-vn-tue" aria-pressed="false">Tuesday's</button>
       <button id="mo-replay" aria-pressed="false">Unplugged: Tuesday, again</button>
       <button id="ph-h-vn-replay" aria-pressed="false">Its voice note</button>
@@ -421,7 +421,7 @@ canvas { display: block; width: 100%; image-rendering: pixelated; image-renderin
       <li>A dark room lit almost only by the monitor. Its light is sampled from the screen every few frames, so the desk goes blue in the crypt, warm in town, cream under Excel.</li>
       <li>Real life stays out of the RPG's frames: the PC is Windows 98 (the taskbar: Start, the two task buttons with the Tab hint on the one behind, Sleep, the tray with the wallet and the clock), iOS on the phone, flat glass cards for YOU and the feed. Text is Tiny5 only; the note is Tiny5 sheared into a ballpoint slant.</li>
       <li>One camera for the desk: eye level at the monitor's top edge, depth lines meeting at x 246, y 3. The keyboard is built from 3D caps (sculpted tops, front skirts, the sides that face the centre) on a case with a typing angle; the phone lies flat and turned, its call screen placed on the glass with unscaled glyphs.</li>
-      <li>Class colours tie the screen to the keyboard: each portrait has a 1 px outline in its hero's colour, and his keys glow in it (1 2 3 knight steel, Z X C Garrote ember, Q W E mage violet, A S D priest gold). Ember is Moonwell's copper; on the desk it is a UI-only slot, so it never enters the dither. Tab Excel green, H Zone cyan, M moss.</li>
+      <li>Class colours tie the screen to the keyboard: each portrait has a 1 px outline in its hero's colour, and his keys glow in it (1 2 3 knight steel, Z X C rogue ember, Q W E mage violet, A S D priest gold). Ember is Moonwell's copper; on the desk it is a UI-only slot, so it never enters the dither. Tab Excel green, H Zone cyan, M moss.</li>
       <li>The Goblin Fuel button glows gold (the next action) from the yawn mark. The Zone aura lights the bezel rim cyan and spills on the desk.</li>
     </ul></div>
     <div class="card"><h2>Grid</h2><ul>
@@ -444,7 +444,7 @@ canvas { display: block; width: 100%; image-rendering: pixelated; image-renderin
       <li>Bronze plates are lit from the top left. Slots are recessed wells with an inner shadow and a lit lower lip, and rare items glow up from the slot floor.</li>
       <li>Text, icons, rarity lines and state frames stay palette-exact. Dark text only sits on solid fills.</li>
       <li>Portraits are lit like the scene: warm key from the upper right, cold rim from the left, candle glow behind.</li>
-      <li>Skill slots are 15×18 with a 13×13 icon on a class tile (knight iron, Garrote plum cloak, mage violet runes, priest gilded rays). Three per hero: two skills and the ultimate, whose slot is gilded (gold frame, corner studs, a crest with a gem over the rail, its key on a gold tab; it glows when ready, turns copper with a lock while locked). Party cards are 33 px wide, four across.</li>
+      <li>Skill slots are 15×18 with a 13×13 icon on a class tile (knight iron, Hixx plum cloak, mage violet runes, priest gilded rays). Three per hero: two skills and the ultimate, whose slot is gilded (gold frame, corner studs, a crest with a gem over the rail, its key on a gold tab; it glows when ready, turns copper with a lock while locked). Party cards are 33 px wide, four across.</li>
     </ul></div>
   </section>
 </main>
@@ -1144,7 +1144,7 @@ function bakePortrait(kind) {
   return (PORTRAIT_LIT[kind] = out);
 }
 // class colours: each hero's portrait carries a 1 px outline in it, and his keys on the desk keyboard light in it
-// (knight steel, Garrote ember, mage violet, priest gold)
+// (knight steel, rogue ember, mage violet, priest gold)
 const CLASS_COL = { knight: 's5', rogue: 'copper', mage: 'arcane', priest: 'gold' };
 function portrait(kind, x, y, o = {}) {
   const w = 22, h = 24, mat = o.selected ? M_LOOT : M_UMBER, cc = CLASS_COL[kind];
@@ -1171,10 +1171,10 @@ function face(kind, x, y) {
 // ===========================================================================
 const BAND = 64, PIC_Y = 64, BAR_Y = 206, BAR_H = 26;
 const HEROES = [
-  { id: 'knight', name: 'Knightenstein', short: 'Knighten', cls: 'Knight', lv: 5, pow: 44, keys: ['1', '2', '3', '4'], skills: ['taunt', 'cleave', 'shield'] },
-  { id: 'rogue', name: 'Garrote', short: 'Garrote', cls: 'Rogue', lv: 5, pow: 38, keys: ['Z', 'X', 'C', 'V'], skills: ['backstab', 'smoke', 'pickpocket'] },
-  { id: 'mage', name: 'Magoo', short: 'Magoo', cls: 'Mage', lv: 5, pow: 31, keys: ['Q', 'W', 'E', 'R'], skills: ['hellfire', 'frost', 'soul'] },
-  { id: 'priest', name: 'Healero', short: 'Healero', cls: 'Priest', lv: 5, pow: 12, keys: ['A', 'S', 'D', 'F'], skills: ['mend', 'ward', 'judge'] },
+  { id: 'knight', name: 'Dutch', short: 'Dutch', cls: 'Knight', lv: 5, pow: 44, keys: ['1', '2', '3', '4'], skills: ['taunt', 'cleave', 'shield'] },
+  { id: 'rogue', name: 'Hixx', short: 'Hixx', cls: 'Rogue', lv: 5, pow: 38, keys: ['Z', 'X', 'C', 'V'], skills: ['backstab', 'smoke', 'pickpocket'] },
+  { id: 'mage', name: 'Hudzor', short: 'Hudzor', cls: 'Mage', lv: 5, pow: 31, keys: ['Q', 'W', 'E', 'R'], skills: ['hellfire', 'frost', 'soul'] },
+  { id: 'priest', name: 'Arkbishop', short: 'Arkbishop', cls: 'Priest', lv: 5, pow: 12, keys: ['A', 'S', 'D', 'F'], skills: ['mend', 'ward', 'judge'] },
 ];
 // three slots per hero: two skills and the ultimate (the third key: 3, C, E, D). Icons are placeholders (Paweł's art)
 const SKILL_NAME = { taunt: 'Taunt', cleave: 'Bash', shield: 'Last Stand', backstab: 'Backstab', smoke: 'Smoke Bomb', pickpocket: 'Heist', hellfire: 'Fire', frost: 'Frost', soul: 'Cataclysm', mend: 'Mend', ward: 'Ward', judge: 'Miracle' };
@@ -1763,7 +1763,7 @@ function drawMist(F, cam, t) {
 // ---------------------------------------------------------------- frame
 const PROF = {};
 const tick = (k, t0) => { PROF[k] = (PROF[k] || 0) * 0.9 + (performance.now() - t0) * 0.1; return performance.now(); };
-// marching order, back to front: priest, mage, Garrote (2nd behind the knight), knight
+// marching order, back to front: priest, mage, Hixx (2nd behind the knight), knight
 const PARTY = [{ id: 'priest', x: 21, ph: 0.0, hp: 0.55 }, { id: 'mage', x: 56, ph: 1.3, hp: 0.3 }, { id: 'rogue', x: 87, ph: 3.4, hp: 0.62 }, { id: 'knight', x: 126, ph: 2.6, hp: 0.68 }];
 const PARTY_DRAW = { priest: (...a) => priest(...a), mage: (...a) => mage(...a), rogue: (...a) => rogue(...a), knight: (...a) => knight(...a) };
 function drawDungeon(F, t, o = {}) {
@@ -1810,7 +1810,7 @@ function drawDungeon(F, t, o = {}) {
     const s = walking ? [0, 2, 0, -2][f] : 0, b = walking ? [0, -1, 0, -1][f] : (Math.sin(t * 2.1 + m.ph) > 0.55 ? -1 : 0);
     mulEllipse(m.x, CHAR_Y, 13, 3.5, 0.25);
     TAG = n + 1;
-    // out of battle Garrote carries his daggers reverse-gripped; walking, he runs his own gait (phase quantized to 8 frames)
+    // out of battle Hixx carries his daggers reverse-gripped; walking, he runs his own gait (phase quantized to 8 frames)
     const wp = walking ? Math.floor((((t / ROGUE_WALK.T) + m.ph * 0.2) % 1) * ROGUE_WALK.frames) / ROGUE_WALK.frames : null;
     PARTY_DRAW[m.id](m.x, CHAR_Y, s, b, t, !o.battle, wp);
     TAG = 0; MAT = M_STONE;
@@ -2067,7 +2067,7 @@ function priest(cx, fy, s, b, t) {
   line(cx + 1, Y - 54, cx + 1, Y - 63, 0.42, M_MOSS); rect(cx - 3, Y - 54, 8, 1, 0.45, M_MOSS);
 }
 
-// Garrote, the rogue (after Paweł's references): athletic, long-limbed, shown chest to the camera like the others (a
+// Hixx, the rogue (after Paweł's references): athletic, long-limbed, shown chest to the camera like the others (a
 // three-quarter view turned toward the enemy). Sneaking: knees bent, shoulders rounded, the head low between them and
 // pushed a little forward, the eyes looking ahead from under the rim of a deep rounded hood that falls into a jagged
 // capelet; a wine scarf over the lower face. Arms in a ready guard: elbows bent out to the sides, fists low at the hips.
@@ -3348,7 +3348,7 @@ function screenPaths(ctx, t) {
 let BATTLE_STATE = 'fight';
 const RANK_X = [126, 87, 56, 21];
 const HOME = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], priest: [2, 4] };
-const HNAME = { knight: 'Knighten', rogue: 'Garrote', mage: 'Magoo', priest: 'Healero' };
+const HNAME = { knight: 'Dutch', rogue: 'Hixx', mage: 'Hudzor', priest: 'Arkbishop' };
 const HIDX = { knight: 0, rogue: 1, mage: 2, priest: 3 };
 const outOfRank = (id, r) => r < HOME[id][0] || r > HOME[id][1];
 // auras: a 5x5 glyph in the giver's class colour, sitting between giver and receiver in the skill bar
@@ -3438,12 +3438,12 @@ function rankStage(t) {
   } else if (BATTLE_STATE === 'swap') {
     const q = t % 7, gx = [6, 88, 170, 252];
     if (q < 1.6) {
-      // pick Garrote's portrait up, drag it onto Magoo's
+      // pick Hixx's portrait up, drag it onto Hudzor's
       const k = clamp((q - 0.4) / 1.2), cx = q < 0.4 ? lerp(140, gx[1] + 12, q / 0.4) : lerp(gx[1] + 12, gx[2] + 12, k * k * (3 - 2 * k)), cy = BAR_Y + 12 - (q < 0.4 ? (0.4 - q) * 60 : 0);
       if (q >= 0.4) S.dropOn = 2;
       S.draw = () => { if (q >= 0.4) ghostPortrait('rogue', Math.round(cx - 11), BAR_Y + 1 - 6); cursorAt(cx, cy); floorRing(S.x.rogue, t); if (q >= 0.4) floorRing(S.x.mage, t); };
     } else {
-      // the drop: they pass each other, both stop acting for 1 s; Magoo lands in rank 2, out of his home ranks
+      // the drop: they pass each other, both stop acting for 1 s; Hudzor lands in rank 2, out of his home ranks
       const k = clamp((q - 1.6) / 1.0), e = k * k * (3 - 2 * k);
       setRanks(['knight', 'mage', 'rogue', 'priest']);
       S.x.rogue = Math.round(lerp(87, 56, e)); S.x.mage = Math.round(lerp(56, 87, e));
@@ -3472,7 +3472,7 @@ function rankStage(t) {
         if (q > 2.3 && q < 3.6) floater('out of position', S.x.priest, Math.round(108 - (q - 2.3) * 6), P.crimson);
         if (tip) {
           // hovering the hero himself: the card opens above his head
-          tipCard(S.x.priest - 70, 34, 150, [['h', 'Healero · rank 1', null], ['-', 'Out of position: heals at 70%. His ranks are 2 to 4.'], ['+', 'Knighten, behind him, regenerates 1% HP per second.'], ['n', 'Drag him back. Away, the line stays broken.']]);
+          tipCard(S.x.priest - 70, 34, 150, [['h', 'Arkbishop · rank 1', null], ['-', 'Out of position: heals at 70%. His ranks are 2 to 4.'], ['+', 'Dutch, behind him, regenerates 1% HP per second.'], ['n', 'Drag him back. Away, the line stays broken.']]);
           cursorAt(S.x.priest + 2, 150);
         }
       };
@@ -5023,7 +5023,7 @@ function sidePanelTabs(st, t) {
       text('IDENTIFIED', X0 + 8, y + 6, 'silkb', P.arcane, { shadow: P.void });
       itemCell(X0 + 8, y + 15, { icon: R.icon, r: 'epic', pow: R.pow }, {});
       text(R.name, X0 + 33, y + 17, 'tiny', P.arcane, { shadow: P.void });
-      text('Epic hood · Garrote', X0 + 33, y + 25, 'tiny', P.u5, { shadow: P.void });
+      text('Epic hood · Hixx', X0 + 33, y + 25, 'tiny', P.u5, { shadow: P.void });
       R.affix.forEach((a, k) => { const real = a.startsWith('of '); if (!real) { text(a, X0 + 8, y + 41 + k * 8, 'tiny', P.g6, { shadow: P.void }); return; } const [nm, fx] = a.split(': '); text(nm, X0 + 8, y + 41 + k * 8, 'tiny', P.u6, { shadow: P.void }); text('real life', X0 + PW - 9, y + 41 + k * 8, 'tiny', P.d5, { align: 'r', shadow: P.void }); text(fx, X0 + 12, y + 49 + k * 8, 'tiny', P.g6, { shadow: P.void }); });
       if (flash) for (let j = y; j < y + 80; j++) for (let i = X0 + 2; i < X0 + PW - 2; i++) if (((i + j) & 1) === 0) putI(i, j, P.moon);
     }
@@ -5048,7 +5048,7 @@ const TREES = {
     bought: ['g1', 'g2', 's2', 'p2', 'r2a'] },
   rogue: { auto: 'Stab', s1: 'backstab', s2: 'smoke', ult: 'pickpocket', neb: M_LOOT,
     r1: [['Ambush', 'Backstab always crits on Staggered enemies.'], ['Shiv', 'Backstab\'s cooldown -30%.']],
-    r2: [['Choking Smoke', 'Smoke Bomb also deals damage over time.'], ['Vanish', 'Garrote can\'t be targeted during Smoke Bomb.']],
+    r2: [['Choking Smoke', 'Smoke Bomb also deals damage over time.'], ['Vanish', 'Hixx can\'t be targeted during Smoke Bomb.']],
     st: { g1: ['Nimble', '+8% attack speed.'], g2: ['Shadow', '+10% dodge.'], p1: ['Keen Eye', '+10% crit.'], q1: ['Deadly', 'Crits deal +25% damage.'], p2: ['Quick Blades', '+8% attack speed.'], q2: ['Lucky', '+5 luck: better drops (he does the looting).'], m1: ['Cutpurse', '+15% gold.'], m2: ['Ruthless', '+8% damage.'], m3: ['Sly', 'His aura: the hero in front gets +15% crit (from 10%).'] },
     ultFx: 'For 8 s, every kill drops an item.', s2Fx: 'Enemies miss 50% of their attacks for 4 s.',
     bought: ['p1', 'r1a', 'm1'] },
@@ -5267,7 +5267,7 @@ const CORE8 = { void: '#0a0814', moon: '#f2efdc', gold: '#f1a934', crimson: '#d2
 // slot 32, 'steel', is the knight's class colour (Moonwell's s5): with violet and gold it makes the three class
 // colours the desk shares with the game, so a hero's keys light in the colour of his portrait's outline
 const STEEL = '#5398b5'; P.steel = 32;
-// slot 33, 'ember', is Garrote's class colour (Moonwell's copper): UI-only on the desk, so it never enters the dither
+// slot 33, 'ember', is Hixx's class colour (Moonwell's copper): UI-only on the desk, so it never enters the dither
 const EMBER = '#c16229'; P.ember = 33;
 // slots 34 to 36: the Windows 98 title-bar blues (navy, blue, sky), UI-only, only ever on the monitor's glass (win98.js)
 const WIN98 = ['#0b1d5a', '#1f4a9c', '#4a86cf']; P.wnavy = 34; P.wblue = 35; P.wsky = 36;
@@ -5350,7 +5350,7 @@ const KEYROWS = [
   [['Shift', 2.25], ['Z', 1], ['X', 1], ['C', 1], ['V', 1], ['B', 1], ['N', 1], ['M', 1], [',', 1], ['.', 1], ['/', 1], ['Shift', 2.75]],
   [['Ctrl', 1.25], ['Opt', 1.25], ['Cmd', 1.25], ['', 6.25], ['Cmd', 1.25], ['Opt', 1.25], ['Fn', 1.25], ['Ctrl', 1.25]],
 ];
-// hotkeys light up in the colour of what they drive: knight steel, Garrote ember, mage arcane, priest gold;
+// hotkeys light up in the colour of what they drive: knight steel, rogue ember, mage arcane, priest gold;
 // Tab (Excel) green; H (headset, Zone) cyan; G (Goblin Fuel) moss
 const KEYLIT = { '1': 'steel', '2': 'steel', '3': 'steel', Z: 'ember', X: 'ember', C: 'ember', Q: 'arcane', W: 'arcane', E: 'arcane', A: 'gold', S: 'gold', D: 'gold', Tab: 'g5', H: 's6', G: 'g5' };
 const KEYGLOW = { steel: [0.6, 0.95, 1.3], ember: [1.4, 0.72, 0.42], arcane: [0.95, 0.65, 1.5], gold: [1.3, 0.9, 0.5], g5: [0.7, 1.2, 0.8], s6: [0.6, 1.05, 1.3] };
@@ -5443,22 +5443,22 @@ function buildDeskLayer() {
 }
 
 // ---------------------------------------------------------------- desk states (moments)
-const FEED_TAG = { YOU: 'u6', HER: 'd6', PHONE: 'moon', GAME: 'gold', LOOT: 's6', EXCEL: 'g6', DOG: 'copper', NIGHT: 's5', PARTY: 'u5', GUILD: 'u5', MAGOO: 'arcane', HEALERO: 'g5' };
+const FEED_TAG = { YOU: 'u6', HER: 'd6', PHONE: 'moon', GAME: 'gold', LOOT: 's6', EXCEL: 'g6', DOG: 'copper', NIGHT: 's5', PARTY: 'u5', GUILD: 'u5', HUDZOR: 'arcane', ARKBISHOP: 'g5' };
 const DESK_MOMENTS = {
   calm: { clock: '20:40', zl: 50, tired: 10, zone: 0, cans: 3, note: ['y', 'y', 'y'], feed: [
-    ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'], ['20:39', 'LOOT', 'Grave Ring', 's6'], ['20:36', 'MAGOO', 'pick the next floor. hover a node to see what is there'],
-    ['20:31', 'HER', 'I\'m watching my show, babe. Don\'t play all night, okay?'], ['20:25', 'PHONE', 'Missed delivery. The parcel goes back to the depot.'], ['20:20', 'HEALERO', 'her thing just ended, she\'s getting up'] ] },
+    ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'], ['20:39', 'LOOT', 'Grave Ring', 's6'], ['20:36', 'HUDZOR', 'pick the next floor. hover a node to see what is there'],
+    ['20:31', 'HER', 'I\'m watching my show, babe. Don\'t play all night, okay?'], ['20:25', 'PHONE', 'Missed delivery. The parcel goes back to the depot.'], ['20:20', 'ARKBISHOP', 'her thing just ended, she\'s getting up'] ] },
   ring: { clock: '20:52', zl: 50, tired: 14, zone: 0, cans: 3, phone: 'call', note: ['y', 'y', 'y'], feed: [
     ['20:52', 'PHONE', 'Mom is calling.'], ['20:50', 'LOOT', 'Fine Signet', 'g6'], ['20:47', 'GAME', 'Floor 3. The crypt goes deeper.'],
-    ['20:44', 'HER', 'Warning: Flow reset.'], ['20:41', 'MAGOO', 'answer your mum man, she calls twice'], ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'] ] },
+    ['20:44', 'HER', 'Warning: Flow reset.'], ['20:41', 'HUDZOR', 'answer your mum man, she calls twice'], ['20:40', 'GAME', 'Floor 2 cleared. +8 gold.'] ] },
   tired: { clock: '22:18', zl: 74, tired: 36, zone: 0, cans: 2, note: ['y', 'y', '!'], feed: [
     ['22:18', 'YOU', 'Yawn. Your eyes sting.'], ['22:16', 'NIGHT', 'Tired 30. Yawning starts. A can would help.'], ['22:12', 'LOOT', 'Ember Blade', 'copper'],
-    ['22:10', 'HEALERO', 'u ok? u missed two heals'], ['22:02', 'HER', 'Coming to bed soon?'], ['21:58', 'GAME', 'Floor 4 cleared. +14 gold.'] ] },
+    ['22:10', 'ARKBISHOP', 'u ok? u missed two heals'], ['22:02', 'HER', 'Coming to bed soon?'], ['21:58', 'GAME', 'Floor 4 cleared. +14 gold.'] ] },
   headset: { clock: '21:26', zl: 50, tired: 18, zone: 19, cans: 3, headset: true, note: ['y', 'y', 'y'], feed: [
     ['21:26', 'YOU', 'Headset on. You hear nothing.'], ['21:25', 'GAME', 'Flow x2.2'], ['21:24', 'LOOT', 'Bone Charm', 's6'],
-    ['21:21', 'MAGOO', 'zone mode. dont talk to him'], ['21:18', 'HER', 'In the shower, back in 20.'], ['21:15', 'DOG', 'The dog sighs at the door.'] ] },
+    ['21:21', 'HUDZOR', 'zone mode. dont talk to him'], ['21:18', 'HER', 'In the shower, back in 20.'], ['21:15', 'DOG', 'The dog sighs at the door.'] ] },
   dog: { clock: '21:05', zl: 50, tired: 12, zone: 0, cans: 3, dog: true, note: ['y', 'y', 'y'], feed: [
-    ['21:05', 'DOG', 'The dog jumps up at the desk. Pet him!'], ['21:04', 'MAGOO', 'the dog wants pets. ignore him and he goes for the cable'], ['21:02', 'GAME', 'The party walks past.'],
+    ['21:05', 'DOG', 'The dog jumps up at the desk. Pet him!'], ['21:04', 'HUDZOR', 'the dog wants pets. ignore him and he goes for the cable'], ['21:02', 'GAME', 'The party walks past.'],
     ['20:58', 'LOOT', 'Bone Charm', 's6'], ['20:55', 'HER', 'I\'m watching my show, babe.'], ['20:50', 'GAME', 'Floor 2 cleared. +8 gold.'] ] },
   witching: { clock: '01:12', zl: 132, tired: 52, zone: 6, cans: 0, witching: true, note: ['y', 'x', 'y'], feed: [
     ['01:12', 'LOOT', 'Grave Crown', 'copper'], ['01:00', 'NIGHT', 'Witching hour. Drops can shift up a rarity.'], ['00:52', 'HER', 'zzz'],
@@ -7265,7 +7265,7 @@ function ebGuides(step) {
 // The dog: a shiba who jumps up at the desk. Head, chest and front paws rise over the desk's near edge in front of
 // the keyboard. Drawn in code (shapes -> hard pixel edges -> 1 px outline), lit like the UI and the can (key light
 // from the upper left), ordered dither, every pixel one of his own palette slots: the can's warm print colours
-// (EB_PAL), kept out of the desk's dither like Garrote's ember. Cute first: a big round head with fluffy cheeks,
+// (EB_PAL), kept out of the desk's dither like the rogue's ember. Cute first: a big round head with fluffy cheeks,
 // big glossy eyes set low and wide, cream urajiro with the two eyebrow dots, a small black nose, an omega mouth.
 // ===========================================================================
 // his palette (EB_PAL indices)
@@ -8072,7 +8072,7 @@ function avatar(kind, cx, cy, r) {
   AVM = [cx, cy, r]; avatarBody(kind, cx, cy, r); AVM = null;
 }
 function avatarBody(kind, cx, cy, r) {
-  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, magoo: P.arcane, danny: P.s4 }[kind] ?? P.s3;
+  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, hudzor: P.arcane, billy: P.s4 }[kind] ?? P.s3;
   disc(cx, cy, r, bg);
   const s = r / 10, hd = (dx, dy, hr, hair, o = {}) => {
     disc(cx + dx * s, cy + (dy + 9) * s, 7.5 * s * (o.sh ?? 1), o.shirt ?? P.s2);   // shoulders
@@ -8120,7 +8120,7 @@ const PHONE_SCREENS = {};
 const CALLERS = {
   mom: { name: 'Mom', sub: 'mobile', av: 'mom', mat: M_UMBER, v: [0.1, 0.42] },
   courier: { name: 'Courier', sub: '+48 22 555 0199', av: 'courier', mat: M_STONE, v: [0.08, 0.36] },
-  boys: { name: 'The Boys (3)', sub: 'Danny, Mike, Kuba', av: 'boys', mat: M_MAGIC, v: [0.04, 0.24] },
+  boys: { name: 'The Boys (3)', sub: 'Billy, Mike, Lance', av: 'boys', mat: M_MAGIC, v: [0.04, 0.24] },
 };
 PHONE_SCREENS.call = (t, o) => {
   const C = CALLERS[o.who || 'mom'], left = 8 - (t % 8);
@@ -8255,7 +8255,7 @@ PHONE_SCREENS.courier = (t, o) => {
 PHONE_SCREENS.boys = (t, o) => {
   const total = 8, left = total - (t % total);
   callHead('boys', 'on speaker', t);
-  bubble('Danny: BRO. Raid. Now. Bring snacks.', 'l', 48, { maxW: 100 });
+  bubble('Billy: BRO. Raid. Now. Bring snacks.', 'l', 48, { maxW: 100 });
   timerBar(78, left, total);
   tx('Say no, nicely. Quickly.', 56, 88, P.u6, { align: 'c' });
   let py = 102; py += pill("Shh, she's next door. Text only, love you guys.", py); py += pill("WHAT? I CAN'T HEAR YOU", py); py += pill('Nah', py);
@@ -8852,35 +8852,35 @@ function msgList(t, o = {}) {
 PHONE_SCREENS.msglist = (t, o) => msgList(t, { tap: 0, ...o });
 // The Boys' chat: the last minigame's exchange (their text and your answer), read-only, and Raid night? to start one
 const BOYS_THREAD = [
-  ['date', 'Today 22:58'], ['l', 'Danny: raid at 11?'], ['l', 'Danny: BRO. Raid. Now. Bring snacks.'], ['l', 'Kuba: danny is in'],
-  ['r', "Shh, she's next door. Text only, love you guys."], ['l', "Mike: fine, raid's on without you"], ['l', 'Danny: whipped'],
+  ['date', 'Today 22:58'], ['l', 'Billy: raid at 11?'], ['l', 'Billy: BRO. Raid. Now. Bring snacks.'], ['l', 'Lance: billy is in'],
+  ['r', "Shh, she's next door. Text only, love you guys."], ['l', "Mike: fine, raid's on without you"], ['l', 'Billy: whipped'],
 ];
 PHONE_SCREENS.boyschat = (t, o) => {
-  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', '00:44');
+  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '00:44');
   herThread(BOYS_THREAD, y0 + 2, 198, BOYS_THREAD.length - 1, t);
   pill('Raid night?', 203, { fill: P.s2, ink: P.s5, shadow: P.s1 }); gl(['.xxx.', 'x...x', 'xxxxx', 'xx.xx', 'xxxxx'], 20, 207, P.s5);
   tx('Needs Goodwill 40: 31 now', 56, 223, P.s4, { align: 'c' });
   homeBar();
 };
-// 20:00, every night (week one, section 2b): Danny's voice message in The Boys' chat, the handoff's "Magoo's voicemail"
-// (Magoo is Danny's character). The phone rises into your hand while the night waits: his voice note plays (the
+// 20:00, every night (week one, section 2b): Billy's voice message in The Boys' chat, the handoff's "Hudzor's voicemail"
+// (Hudzor is Billy's character). The phone rises into your hand while the night waits: his voice note plays (the
 // waveform fills gold, a timer), its transcript comes in under it line by line as he says it, and Got it puts the phone
 // down and starts the night. It stays in The Boys' chat until the next minigame, so you can read it again.
 const VOICE_NOTES = {
   mon: ['yo its raid night. she thinks youre doing spreadsheets lol', 'steps in the hall = tab to excel. BEFORE the door opens', "q4 pays real money btw. the shop's on your phone"],
-  tue: ["garrote's in the party tonight", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
+  tue: ["hixx is in the party tonight", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
   replay: ['F. she pulled the plug', "tuesday again then. the good loot's still in your bag", 'tab out BEFORE she opens the door this time'],
 };
 const VOICE_AT = [0, 4.5, 9.5], VOICE_LEN = 14;
 PHONE_SCREENS.voicenote = (t, o) => {
   const lines = VOICE_NOTES[o.night || 'mon'], tt = t % (VOICE_LEN + 4), p = Math.min(1, tt / VOICE_LEN);
-  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', '20:00');
+  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
   let y = y0 + 3;
   drawItem(['date', o.night === 'replay' ? 'Tuesday, again' : 'Today 20:00'], y, t); y += 14;
   // the voice note: who and how long, a play disc, a waveform that fills gold as it plays
   const x = 7, w = 98, h = 25;
   rrI(x, y, w, h, 4, P.s2); px(x - 1, y + h - 1, P.s2); px(x, y + h - 1, P.s2);
-  tx('Danny', x + 5, y + 3, P.s5); tx('0:' + String(Math.floor(p * VOICE_LEN)).padStart(2, '0') + ' / 0:' + VOICE_LEN, x + w - 5, y + 3, p < 1 ? P.gold : P.s5, { align: 'r' });
+  tx('Billy', x + 5, y + 3, P.s5); tx('0:' + String(Math.floor(p * VOICE_LEN)).padStart(2, '0') + ' / 0:' + VOICE_LEN, x + w - 5, y + 3, p < 1 ? P.gold : P.s5, { align: 'r' });
   disc(x + 9, y + 17, 5, P.moon);
   if (p < 1) { rrI(x + 7, y + 14, 1, 5, 0, P.s1); rrI(x + 10, y + 14, 1, 5, 0, P.s1); }   // pause while it plays
   else for (let i = 0; i < 4; i++) rrI(x + 7 + i, y + 14 + i, 1, 7 - 2 * i, 0, P.s1);   // played: the play triangle
@@ -11078,9 +11078,9 @@ const Q4NOTES = {
 };
 const NOTES = {
   dungeon: 'Dungeon, between fights. The party walks the ossuary, stops at the potion cart, and the curio card opens in the band above the battle: its bargain (Shake it, Noise +15, 50/50) and Leave it. After the shake its run blessing (+30% healing) flashes into the buffs row with a dashed frame. Corner overlay and Town portal on the left, buffs on the right, skill bar along the bottom, side panel with party, gear, stats and bag.',
-  battle: 'Battle, floor 4. Four heroes in marching order, evenly spaced: Healero, Magoo, Garrote and the knight in front. Garrote, athletic, shown chest to the camera like the others, sneaks: knees bent, back bent forward and rounded, the head hanging forward and low in front of his shoulders, a close-fitting hood at normal head size with a small peak at the back, only two glowing eyes in its shadowed opening, a thin wine scarf at the neck, long arms hanging low and nearly straight, the front fist low and a little forward, the back fist at his side (in battle the front dagger forward-gripped at the enemy, the back one reverse-gripped pointing straight back; walking both reverse-gripped, blades back). He walks like a stalking cat: a slow, low prowl, knees bending through each step, the guard held steady. The mob is bunched in two close lanes, three skeletons and two zombies, the back lane darker; the necromancer stands behind them on the party\'s lane and winds up SUMMON, and Judgement (D) pulses red because it answers it. The taunted zombie in the back lane spits over the front rank at the knight\'s shield. Cleave glows gold with x2 for the STAGGERED mark. A loot beam drops a Grave Ring: the name flies up, its bag slot glows NEW.',
+  battle: 'Battle, floor 4. Four heroes in marching order, evenly spaced: Arkbishop, Hudzor, Hixx and the knight in front. Hixx, athletic, shown chest to the camera like the others, sneaks: knees bent, back bent forward and rounded, the head hanging forward and low in front of his shoulders, a close-fitting hood at normal head size with a small peak at the back, only two glowing eyes in its shadowed opening, a thin wine scarf at the neck, long arms hanging low and nearly straight, the front fist low and a little forward, the back fist at his side (in battle the front dagger forward-gripped at the enemy, the back one reverse-gripped pointing straight back; walking both reverse-gripped, blades back). He walks like a stalking cat: a slow, low prowl, knees bending through each step, the guard held steady. The mob is bunched in two close lanes, three skeletons and two zombies, the back lane darker; the necromancer stands behind them on the party\'s lane and winds up SUMMON, and Judgement (D) pulses red because it answers it. The taunted zombie in the back lane spits over the front rank at the knight\'s shield. Cleave glows gold with x2 for the STAGGERED mark. A loot beam drops a Grave Ring: the name flies up, its bag slot glows NEW.',
   excel: Q4NOTE_BASE,
-  map: 'Between floors. A torn, folded vellum map lies on the table under candlelight: gilded floor roundels joined by inked stair-roads, a red-ink ring and arrow on the current floor, compass rose and wax seal. Hovering a path card draws the red route and the next roundel. The side panel shows Garrote\'s inventory: dagger, hood, and the garrote wire as his trinket.',
+  map: 'Between floors. A torn, folded vellum map lies on the table under candlelight: gilded floor roundels joined by inked stair-roads, a red-ink ring and arrow on the current floor, compass rose and wax seal. Hovering a path card draws the red route and the next roundel. The side panel shows Hixx\'s inventory: dagger, hood, and the garrote wire as his trinket.',
   town: 'Ravenhold at night, from above, drawn the 16-bit way: uneven masonry, hip roofs with shingle courses, cross-gable wings, moon shadows and dark ground rims, and almost no ordered dither. Each building shows its trade: the round eye tower of the Appraiser, the gothic Library, the columned Auction House under red tiles, the Merchant\'s clapboard shop with its striped awning and stalls, the open hearth of the rubble-stone Salvage Forge, the palisaded sand yard of the Training Grounds, the thatched, half-timbered Inn, and the Treasury still an empty plot with its vault door and strongboxes waiting. Adventurers crowd the portal court; the plaza gathers around the fountain. Hover cycles through the buildings: gold halo, brighter sign, tooltip, and the matching build row lights up in the panel.',
 };
 const TTNOTES = {
@@ -11094,8 +11094,8 @@ const TTNOTES = {
 const BTNOTES = {
   fight: null,
   bless: 'Run blessings (handoff 1.5b). Curios are the only source; each blessing lasts until the run ends (banked or wiped), stacks, and has a cost. In the buffs row a blessing is the curio\'s own icon in a moss well with a dashed frame (dashed = this run, the same mark as unbanked loot in the bag) and "run" where timed buffs show their seconds. Hovering one opens a card: name with a run tag, a moss bullet for what you got, a crimson bullet for what it cost, and a note that it lasts the run. The Dungeon screen shows one being made: the Potion cart now offers its bargain and "Leave it", and after the shake the chip flashes into the row.',
-  swap: 'Marching order (handoff 1.6). Rank 1 is the front: the right of the picture, the left of the skill bar. Drag a hero (the sprite or the skill-bar portrait) onto another to swap them: the portrait lifts and follows the pointer, the target gets a dashed gold frame, both heroes get a dashed gold ring on the floor. On the drop they pass each other and both stop acting for 1 s (their wells dither, "swap"). The skill bar\'s groups follow the ranks; the keys stay with the hero. Magoo lands in rank 2, outside his ranks (3 to 4): his portrait gets the crimson x0.7 tab. Between the groups, tiny glyphs in the giver\'s class colour show the auras: the knight\'s shield and the priest\'s cross pass back, Garrote\'s crit star, Magoo\'s clock and the cross pass forward.',
-  hook: 'Enemies that break the line (from floor 6). A Hook winds up for 1 s, naming its target rank, then throws its chain at rank 4 and pulls Healero to the front; the others shift back one. Healero is out of position in rank 1 (x0.7 on his portrait); the auras move with the order. Hovering a hero opens his card above him: his rank, what is wrong, what his aura gives and to whom. Away, the line stays broken.',
+  swap: 'Marching order (handoff 1.6). Rank 1 is the front: the right of the picture, the left of the skill bar. Drag a hero (the sprite or the skill-bar portrait) onto another to swap them: the portrait lifts and follows the pointer, the target gets a dashed gold frame, both heroes get a dashed gold ring on the floor. On the drop they pass each other and both stop acting for 1 s (their wells dither, "swap"). The skill bar\'s groups follow the ranks; the keys stay with the hero. Hudzor lands in rank 2, outside his ranks (3 to 4): his portrait gets the crimson x0.7 tab. Between the groups, tiny glyphs in the giver\'s class colour show the auras: the knight\'s shield and the priest\'s cross pass back, Hixx\'s crit star, Hudzor\'s clock and the cross pass forward.',
+  hook: 'Enemies that break the line (from floor 6). A Hook winds up for 1 s, naming its target rank, then throws its chain at rank 4 and pulls Arkbishop to the front; the others shift back one. Arkbishop is out of position in rank 1 (x0.7 on his portrait); the auras move with the order. Hovering a hero opens his card above him: his rank, what is wrong, what his aura gives and to whom. Away, the line stays broken.',
 };
 const MPNOTES = {
   three: 'The floor map is the route choice (handoff 1.5, #52). After floor 7 it offers three paths to floor 8 (two on floors 1 to 5). Each card shows at most one feature, what stands on that floor (bronze well), and one condition, what changes on the whole floor (crimson well, its danger as 1 to 3 skulls). About half the cards are plain. Hovering a card inks its road in red, gilds its room and writes the full text in the margin: a moss bullet for what you get, a crimson one for what it costs. The other rooms stay pencilled with their icons sketched beside them. The hourglass marks the safest card.',
@@ -11231,7 +11231,7 @@ function setWeek(k) {
   BAR_BLOCK = W && W.block || null; syncNote();
 }
 const LCNOTES = {
-  lean: 'Lean in, taught when it unlocks (Tuesday; week one, section 2). Its first chance is scripted: Tuesday opens with her yoga in the living room (stop 3), so within about 2 real minutes she is busy where the lean reaches. The coach mark rings the door in the webcam view (him turned toward it) and the game crawls until you hold the door open, or she finishes, or you close it. Before this, Magoo\'s 20:00 voicemail said it and How to hide showed the Lean in tile, framed gold (Small pieces: How to hide). Monday has no lean: holding the door is the glance.',
+  lean: 'Lean in, taught when it unlocks (Tuesday; week one, section 2). Its first chance is scripted: Tuesday opens with her yoga in the living room (stop 3), so within about 2 real minutes she is busy where the lean reaches. The coach mark rings the door in the webcam view (him turned toward it) and the game crawls until you hold the door open, or she finishes, or you close it. Before this, Hudzor\'s 20:00 voicemail said it and How to hide showed the Lean in tile, framed gold (Small pieces: How to hide). Monday has no lean: holding the door is the glance.',
   leanview: 'The first lean: a second coach mark, round the slit, says the controls (the mouse leans through 1 2 3, the wheel opens the door, the right button looks closer, letting go brings you back). The game crawls until you have moved through a stop or let go. This first lean is safe: her tell can\'t start in its first 6 s (LEAN_FIRST_SAFE_SEC, start).',
   tell: 'The first tell: the first time her head turns toward your door while you lean, the third coach mark rings the eye and the red bar over the slit: let go now. The game crawls (her tell with it) until you let go, so the lesson is the timing, not a catch. After this, no more coach marks for the lean; the mirror gets a first-time tip in the feed when it is bought.',
 };
@@ -11276,14 +11276,14 @@ const PHS = {
   'h-boss': { scr: 'boss' }, 'h-her': { scr: 'her' }, 'h-mom': { scr: 'mom' }, 'h-courier': { scr: 'courier' }, 'h-boys': { scr: 'boys' }, 'h-msglist': { scr: 'msglist' }, 'h-boyschat': { scr: 'boyschat' }, 'h-chat': { scr: 'chat' }, 'h-chatold': { scr: 'chatold' }, 'h-photonew': { scr: 'photonew' }, 'h-photo': { scr: 'photo', photo: 'jersey' }, 'h-texting': { scr: 'texting' }, 'h-home': { scr: 'homemsg' }, 'h-shop': { scr: 'shop' }, 'h-shopher': { scr: 'shopher' }, 'h-shophome': { scr: 'shophome' }, 'h-homeapp': { scr: 'homeapp' }, 'h-homesheet': { scr: 'homesheet' }, 'h-hometv': { scr: 'hometv' }, 'h-homeseal': { scr: 'homeseal' }, 'h-hometea': { scr: 'hometea' }, 'h-homelow': { scr: 'homelow' }, 'h-dead': { scr: 'dead' },
   'd-lowbat': { desk: { phone: 'lowbat', batt: 20 } }, 'd-dead': { desk: { phone: 'dead', batt: 0 } },
   'd-ring': { desk: { phone: 'call', caller: 'mom' } }, 'd-ring-courier': { desk: { phone: 'call', caller: 'courier' } }, 'd-ring-boys': { desk: { phone: 'call', caller: 'boys' } },
-  'd-boss': { desk: { phone: 'lock', banners: [{ app: 'work', who: 'Boss', what: 'need the Q4 totals for the deck' }] } }, 'd-babe': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'Babe', what: 'are you coming to bed?' }] } }, 'd-boys': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'The Boys', what: 'raid at 11? Danny is in' }] } }, 'd-lock': { desk: { phone: 'lock', banners: BANNERS3 } }, 'd-reply': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'Babe', what: 'ok but 10 min' }] } },
+  'd-boss': { desk: { phone: 'lock', banners: [{ app: 'work', who: 'Boss', what: 'need the Q4 totals for the deck' }] } }, 'd-babe': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'Babe', what: 'are you coming to bed?' }] } }, 'd-boys': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'The Boys', what: 'raid at 11? Billy is in' }] } }, 'd-lock': { desk: { phone: 'lock', banners: BANNERS3 } }, 'd-reply': { desk: { phone: 'lock', banners: [{ app: 'msg', who: 'Babe', what: 'ok but 10 min' }] } },
   'd-idle': { desk: { phone: 'lock', banners: [], hover: true } }, 'd-glow': { desk: { phone: 'downGlow', glowKind: 'msg' } }, 'd-glowcall': { desk: { phone: 'downGlow', glowKind: 'call' } }, 'd-down': { desk: { phone: 'down' } },
 };
 const PHNOTES = {
   'd-idle': 'The phone on the desk, idle: point at it and it wakes to the lock screen (the time, no banners) with a gold "pick up" chip above it, like the ringing phone\'s without the seconds. Click it and it comes into your hand at the home screen: Messages, Shop, Home. Hands busy while it\'s up; nothing rings while it\'s in your hand.',
   'h-call-mom': 'The phone, in your hand: Mom calling. One OS for the whole phone, a night mode drawn at the game\'s pixel size in the desk\'s Graphite and Tiny5. Meaning colours keep their jobs: gold is what you can do now (every reply, every timer), moss is accept, crimson is decline or wrong, her pink is her. Incoming call: the caller\'s colour as the wallpaper, a pulse round the avatar, the name, Speaker (hands free, but she hears it) and Message, slide to answer, Decline; the gold chip is the 8 s ring. It rises from the bottom over the heroes\' side of the battle area, its bottom running off the frame.',
   'h-call-courier': 'The phone, in your hand: the courier calling. Same call screen, his own colour; until 22:00, 2 a night.',
-  'h-call-boys': 'The phone, in your hand: The Boys calling, a group call (Danny, Mike, Kuba). Picking up puts it on speaker: Noise every second while it is open.',
+  'h-call-boys': 'The phone, in your hand: The Boys calling, a group call (Billy, Mike, Lance). Picking up puts it on speaker: Noise every second while it is open.',
   'h-lock1': 'The phone, in your hand: the lock screen with 1 banner. Date, a big clock in its own 2 px digits, the banner (app icon, sender, app, the message), Face ID (hold) and Put down. Work is grey, Messages is moss, her name is pink with a heart.',
   'h-lock3': 'The phone, in your hand: the lock screen with 3 banners. Only the two newest show, then "+1 more from Babe", so the Face ID ring is always whole (#45).',
   'h-faceid': 'The phone, in your hand: Face ID. Hold to unlock (1.2 s): the ring fills moss, keep holding, the face glyph turns moss when it opens.',
@@ -11291,11 +11291,11 @@ const PHNOTES = {
   'h-her': 'The phone, in your hand: her bedtime text. Her bubbles are a warmer mauve than everyone else\'s, yours are cream; the one reply, "Five more minutes, love" with a red heart, is a full-width gold button. The bar is the 8 s to answer.',
   'h-mom': 'The phone, in your hand: talking to Mom. The call header (avatar, name, "on call · line 2 of 3", the clock). Her line ends in … ? or ! and that tells the reply: mhm, really?! or wow, each a full-width gold button with its mark. Tap it while the marker (2.4 s sweep) is in the moss zone (30%). Misses as pips above the red End: 4 and she gives up.',
   'h-courier': 'The phone, in your hand: talking to the courier. His line, the gold 8 s bar, the goal in the feedback line (get it left with a neighbour; one wrong word and he leaves), three full-width replies that grow with their text.',
-  'h-boys': 'The phone, in your hand: The Boys on speaker. Danny\'s line, the 8 s bar, "say no, nicely", three replies (the polite one, the shouting one, the rude one), and a wine strip with the speaker glyph: she can hear it. Misses: 2 and Discord rings at full volume.',
+  'h-boys': 'The phone, in your hand: The Boys on speaker. Billy\'s line, the 8 s bar, "say no, nicely", three replies (the polite one, the shouting one, the rude one), and a wine strip with the speaker glyph: she can hear it. Misses: 2 and Discord rings at full volume.',
   'h-msglist': 'Messages, the app: your contacts, tap one to open the chat (the gold dashed ring is the tap). Each row: the avatar, the name (hers in her pink with the heart), the time, the last line, her unread count in her pink. A minigame opens its chat straight away (her text, The Boys\' text); the back chevron in a chat comes here.',
-  'h-vn-mon': '20:00, every night (week one 2b): the handoff\'s Magoo voicemail, as the phone redesign wants it: inside the phone. A voice message from Danny (Magoo is his character) in The Boys\' chat; the phone rises into your hand while the night waits. Its waveform fills gold as it plays (a timer, so gold), the seconds beside his name; the transcript comes in under it, a line as he says it, in his chat voice. Got it (gold, the next action) puts the phone down and starts the night (How to hide first on a night with new tiles). It stays in The Boys\' chat until the next minigame. Monday: the hide.',
-  'h-vn-tue': 'Tuesday\'s voice note: Garrote joins, and lean in (hold the door open longer), with the warning that she can see you too.',
-  'h-vn-replay': 'The replay\'s voice note (after unplugged): the day line reads "Tuesday, again"; Danny on what went wrong.',
+  'h-vn-mon': '20:00, every night (week one 2b): the handoff\'s Hudzor voicemail, as the phone redesign wants it: inside the phone. A voice message from Billy (Hudzor is his character) in The Boys\' chat; the phone rises into your hand while the night waits. Its waveform fills gold as it plays (a timer, so gold), the seconds beside his name; the transcript comes in under it, a line as he says it, in his chat voice. Got it (gold, the next action) puts the phone down and starts the night (How to hide first on a night with new tiles). It stays in The Boys\' chat until the next minigame. Monday: the hide.',
+  'h-vn-tue': 'Tuesday\'s voice note: Hixx joins, and lean in (hold the door open longer), with the warning that she can see you too.',
+  'h-vn-replay': 'The replay\'s voice note (after unplugged): the day line reads "Tuesday, again"; Billy on what went wrong.',
   'h-boyschat': 'The Boys\' chat: the last minigame\'s exchange, kept until the next one (their texts in grey with the name first, your answer in cream). At the bottom Raid night? starts a group call (the Raid buff); dim with a lock and why while it can\'t (Goodwill under 40).',
   'h-chat': 'Her chat. Messages opens on the contacts; tap Babe (or her text arrives) and you are here. Her thread is kept for good across the nights (newest at the bottom, a grey line for each new day or gap), so you can scroll back through everything she sent. Her bubbles are mauve, yours cream. Her photos sit in the thread as a crop of the photo at its own pixel size, nothing scaled: tap one to open the whole photo beside the phone. At the bottom the one thing to do, Text her (gold), 3 s with your hands busy. Her photos are stand-ins in her panel\'s 16 colours until Paweł draws them.',
   'h-chatold': 'Her chat, scrolled back (the wheel, or drag the thread). It moves a bubble at a time, so no bubble is ever cut (#45). Sunday: her under-the-duvet photo, and "Babe unsent a photo." where she took one back after 60 s unopened. A thin bar on the right edge shows where you are; the grey chip takes you back down to the newest. Text her stays at the bottom.',
@@ -11340,7 +11340,7 @@ const MDEMO = {
   unplugged: { ...MORNING_DEMO, sold: 3, paid: 95, zl: 30, gold: 210, debt: 3, q4: 0, stars: [{ name: 'Deep', got: true, reward: 'a chest: 1 item, floor 6' }, { name: 'Unseen', got: false, reward: '' }, { name: 'Sweet', got: false, reward: '' }] },
 };
 const MONOTES = {
-  replay: 'Unplugged on Tuesday (week one): the unplugged morning, its summary saying what it cost (UNPLUGGED in crimson: no stars, the cheaper half of your bag gone; the three stars missed) and that tonight is Tuesday again with everything kept; her pink button reads "Tuesday, again". That night opens with Danny\'s voice note for a replay (Week one: Its voice note).',
+  replay: 'Unplugged on Tuesday (week one): the unplugged morning, its summary saying what it cost (UNPLUGGED in crimson: no stars, the cheaper half of your bag gone; the three stars missed) and that tonight is Tuesday again with everything kept; her pink button reads "Tuesday, again". That night opens with Billy\'s voice note for a replay (Week one: Its voice note).',
   green: 'The morning after a good night (green): face down in your shirt, hugging your pillow, deep under a thick warm duvet pulled up to her shoulders; both lower legs and feet out at the foot end, soles up. A PC-98 CG in her 16 colours: a 3D pass quantised to flat tones with 50% checkers, ink where a nearer shape meets a farther one, drawn soles laid over the 3D feet. The summary in her beige paper window, one reward per earned star. Start the next night (the pink button) or Esc closes it.',
   yellow: 'Yellow: face down and turned away, deep under the duvet; she kicked one corner off, so one foot is out. Her phone lies lit on your pillow by her head (what its glow reaches takes the cool ramp). Start the next night (the pink button) or Esc closes it.',
   red: 'Red: asleep on the couch facing its back, wrapped from shoulder to toes in the duvet she dragged out of bed; only her head shows on the cushion. The TV behind you is the only light, so the room takes cool ramps. Start the next night (the pink button) or Esc closes it.',
@@ -11468,7 +11468,7 @@ function frame(now) {
   for (const k of Object.keys(TTNOTES)) $('tt-' + k).onclick = () => setTownTab(k);
   for (const k of ['knight', 'rogue', 'mage', 'priest']) $('th-' + k).onclick = () => setTreeHero(k);
   NOTES.town = TTNOTES.town;
-  BTNOTES.base = NOTES.battle + ' Between the skill bar\'s groups, tiny glyphs show the auras (marching order, handoff 1.6): the knight\'s shield and the priest\'s cross pass back, Garrote\'s crit star, Magoo\'s clock and the cross pass forward. A bought autocast shows as a loop mark in its well\'s corner: moss when on (Taunt), dim when switched off (Fire).';
+  BTNOTES.base = NOTES.battle + ' Between the skill bar\'s groups, tiny glyphs show the auras (marching order, handoff 1.6): the knight\'s shield and the priest\'s cross pass back, Hixx\'s crit star, Hudzor\'s clock and the cross pass forward. A bought autocast shows as a loop mark in its well\'s corner: moss when on (Taunt), dim when switched off (Fire).';
   NOTES.battle = BTNOTES.base;
   for (const k of ['fight', 'bless', 'swap', 'hook']) $('bt-' + k).onclick = () => setBattleState(k);
   NOTES.map = MPNOTES.three;

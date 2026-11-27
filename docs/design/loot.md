@@ -38,9 +38,9 @@ from night 1, #96). Its stats work on anyone.
 | The Tithe | armor | Knight | Taunted enemies drop `LEGEND_TITHE_GOLD` (2) gold × floor each time they hit the Knight |
 | Last Lantern | trinket | Knight | Bash on a Staggered enemy resets Taunt's cooldown |
 | Ash Choir | weapon | Healer | Mend also clears the party's debuffs (curio curses, the sugar crash) |
-| Widow's Kiss | weapon | Garrote | Backstab always crits on Chilled enemies |
+| Widow's Kiss | weapon | Hixx (Rogue) | Backstab always crits on Chilled enemies |
 | Stormcoil | trinket | Mage | A Bolt that kills jumps to another enemy |
-| Gilded Hand | trinket | Garrote | Heist drops roll one rarity higher |
+| Gilded Hand | trinket | Hixx (Rogue) | Heist drops roll one rarity higher |
 | Vigil Censer | trinket | Healer | Miracle also raises Ward for `LEGEND_VIGIL_WARD_SEC` (4 s) |
 
 **Sets**, one per hero, three pieces (weapon, armor, trinket): `SET_CHANCE` (30%) of epics are a piece of a set whose
@@ -52,7 +52,7 @@ says how many he wears.
 | Ironwake | Knight | +15% armor | Taunt also heals the Knight 10% of max HP |
 | Embervow | Mage | +10% skill damage | Fire's cooldown resets when it kills 3 or more |
 | Dawnward | Healer | +15% healing | Ward also heals 3% of max HP a second |
-| Nightglass | Garrote | +10% crit | Smoke Bomb makes every hero's next hit a crit |
+| Nightglass | Hixx (Rogue) | +10% crit | Smoke Bomb makes every hero's next hit a crit |
 
 `npx tsx test/loot.ts` checks the affix lines, the pools, every rule and every set bonus.
 
@@ -112,7 +112,7 @@ multiplier, the same scale that sets its stats (unidentified items count as 0 un
 Power is the average of their 6 slots, an empty slot counting as 0, so filling an empty slot matters as much
 as upgrading. Shown as ◆ on the party cards (next to the level), in the selected hero's header, on every slot, on
 bag items, and in item tooltips as one line on the Power change for the selected hero ("▲ +4 power for
-Knightenstein"). Sell prices show in the Merchant's window, not in tooltips. A hero under `POWER_BEHIND` (85%) of the party's best gets a pulsing red "!" on
+Dutch (Knight)"). Sell prices show in the Merchant's window, not in tooltips. A hero under `POWER_BEHIND` (85%) of the party's best gets a pulsing red "!" on
 their party card: they deserve the next good item.
 
 **Gear** (the side panel, #49). Three party cards (level, power, a thin XP line; no HP); click one to show its gear:
@@ -140,7 +140,7 @@ Souls.
   count as lines, so a special is a trade (a stat line for a rule about her) rather than a free extra. A legendary is
   always one of eight named rules for one hero, which makes the first one a moment and a build decision, not a bigger
   number; it drops only for heroes in the party. Stormcoil and Vigil Censer were written for Storm and Revive, which
-  were cut (decisions 2026-11-20): they now work on Magoo's Bolt and Healero's Miracle. Rejected: random legendaries
+  were cut (decisions 2026-11-20): they now work on Hudzor's Bolt and Arkbishop's Miracle. Rejected: random legendaries
   with four stats (0.11 to 0.57: the best item in the game read like an epic); class-locked gear (any hero can wear
   any item; only the rule and the set bonus are his).
 

@@ -15,7 +15,7 @@ const TREES = {
     bought: ['g1', 'g2', 's2', 'p2', 'r2a'] },
   rogue: { auto: 'Stab', s1: 'backstab', s2: 'smoke', ult: 'pickpocket', neb: M_LOOT,
     r1: [['Ambush', 'Backstab always crits on Staggered enemies.'], ['Shiv', 'Backstab\'s cooldown -30%.']],
-    r2: [['Choking Smoke', 'Smoke Bomb also deals damage over time.'], ['Vanish', 'Garrote can\'t be targeted during Smoke Bomb.']],
+    r2: [['Choking Smoke', 'Smoke Bomb also deals damage over time.'], ['Vanish', 'Hixx (Rogue) can\'t be targeted during Smoke Bomb.']],
     st: { g1: ['Nimble', '+8% attack speed.'], g2: ['Shadow', '+10% dodge.'], p1: ['Keen Eye', '+10% crit.'], q1: ['Deadly', 'Crits deal +25% damage.'], p2: ['Quick Blades', '+8% attack speed.'], q2: ['Lucky', '+5 luck: better drops (he does the looting).'], m1: ['Cutpurse', '+15% gold.'], m2: ['Ruthless', '+8% damage.'], m3: ['Sly', 'His aura: the hero in front gets +15% crit (from 10%).'] },
     ultFx: 'For 8 s, every kill drops an item.', s2Fx: 'Enemies miss 50% of their attacks for 4 s.',
     bought: ['p1', 'r1a', 'm1'] },

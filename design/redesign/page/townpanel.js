@@ -167,7 +167,7 @@ function sidePanelTabs(st, t) {
       text('IDENTIFIED', X0 + 8, y + 6, 'silkb', P.arcane, { shadow: P.void });
       itemCell(X0 + 8, y + 15, { icon: R.icon, r: 'epic', pow: R.pow }, {});
       text(R.name, X0 + 33, y + 17, 'tiny', P.arcane, { shadow: P.void });
-      text('Epic hood · Garrote', X0 + 33, y + 25, 'tiny', P.u5, { shadow: P.void });
+      text('Epic hood · Hixx', X0 + 33, y + 25, 'tiny', P.u5, { shadow: P.void });
       R.affix.forEach((a, k) => { const real = a.startsWith('of '); if (!real) { text(a, X0 + 8, y + 41 + k * 8, 'tiny', P.g6, { shadow: P.void }); return; } const [nm, fx] = a.split(': '); text(nm, X0 + 8, y + 41 + k * 8, 'tiny', P.u6, { shadow: P.void }); text('real life', X0 + PW - 9, y + 41 + k * 8, 'tiny', P.d5, { align: 'r', shadow: P.void }); text(fx, X0 + 12, y + 49 + k * 8, 'tiny', P.g6, { shadow: P.void }); });
       if (flash) for (let j = y; j < y + 80; j++) for (let i = X0 + 2; i < X0 + PW - 2; i++) if (((i + j) & 1) === 0) putI(i, j, P.moon);
     }

@@ -28,7 +28,7 @@ async def main():
         await pg.add_init_script('window.__lnDay = 0'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await go('newGame'); await pg.wait_for_timeout(200); await ev("g.voice=null; g.howto=false; 0"); await go('howtoClose')
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(500); await ev(QUIET)
-        check(await ev("g.heroes.map(h=>h.id).join()") == 'knight,rogue,mage,healer', 'Monday: Garrote in the party, second (#96)')
+        check(await ev("g.heroes.map(h=>h.id).join()") == 'knight,rogue,mage,healer', 'Monday: Hixx in the party, second (#96)')
         await go('toDungeon'); await pg.wait_for_timeout(300)
         # 1. after the floor's last fight: three drops ahead; the party walks out over them
         await ev("""(()=>{n.enemies=[]; n.reserve=[]; n.curioPlan=[]; n.curio=null; n.curioAt=null; n.battleIdx=3; n.phase='walk'; n.phaseT=0;

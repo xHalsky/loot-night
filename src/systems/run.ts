@@ -12,7 +12,7 @@ const toast = toastAs('GAME');
 export function gainGold(amount: number) {
   const n = S.g.night;
   if (n?.cond === 'dark' && n.location === 'dungeon') amount = Math.round(amount * (1 + T.COND_DARK_GOLD));   // Pitch Dark
-  if (n?.location === 'dungeon') amount = Math.round(amount * (1 + partyFx('gold')));   // Cutpurse (Garrote's tree)
+  if (n?.location === 'dungeon') amount = Math.round(amount * (1 + partyFx('gold')));   // Cutpurse (the rogue's tree)
   if (n?.run && n.location === 'dungeon') n.run.gold += amount; else S.g.gold += amount;
 }
 /** Souls the run earns go straight to the pool (one pool for the trees and the buildings); the run counts them. */

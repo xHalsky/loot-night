@@ -70,7 +70,7 @@ function avatar(kind, cx, cy, r) {
   AVM = [cx, cy, r]; avatarBody(kind, cx, cy, r); AVM = null;
 }
 function avatarBody(kind, cx, cy, r) {
-  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, magoo: P.arcane, billy: P.s4 }[kind] ?? P.s3;
+  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, hudzor: P.arcane, billy: P.s4 }[kind] ?? P.s3;
   disc(cx, cy, r, bg);
   const s = r / 10, hd = (dx, dy, hr, hair, o = {}) => {
     disc(cx + dx * s, cy + (dy + 9) * s, 7.5 * s * (o.sh ?? 1), o.shirt ?? P.s2);   // shoulders
@@ -898,13 +898,13 @@ PHONE_SCREENS.boyschat = (t, o) => {
   tx('Needs Goodwill 40: 31 now', 56, 223, P.s4, { align: 'c' });
   homeBar();
 };
-// 20:00, every night (week one, section 2b): Billy's voice message in The Boys' chat, the handoff's "Magoo's voicemail"
-// (Magoo is Billy's character). The phone rises into your hand while the night waits: his voice note plays (the
+// 20:00, every night (week one, section 2b): Billy's voice message in The Boys' chat, the handoff's voicemail
+// (the mage, Hudzor since the cast of 2026-11-27, is Billy's character). The phone rises into your hand while the night waits: his voice note plays (the
 // waveform fills gold, a timer), its transcript comes in under it line by line as he says it, and Got it puts the phone
 // down and starts the night. It stays in The Boys' chat until the next minigame, so you can read it again.
 const VOICE_NOTES = {
   mon: ['yo its raid night. she thinks youre doing spreadsheets lol', 'steps in the hall = tab to excel. BEFORE the door opens', "q4 pays real money btw. the shop's on your phone"],
-  tue: ["garrote's in the party tonight", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
+  tue: ["hixx is in the party tonight", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
   replay: ['F. she pulled the plug', "tuesday again then. the good loot's still in your bag", 'tab out BEFORE she opens the door this time'],
 };
 const VOICE_AT = [0, 4.5, 9.5], VOICE_LEN = 14;

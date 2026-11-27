@@ -6,7 +6,7 @@
 let BATTLE_STATE = 'fight';
 const RANK_X = [126, 87, 56, 21];
 const HOME = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], priest: [2, 4] };
-const HNAME = { knight: 'Knighten', rogue: 'Garrote', mage: 'Magoo', priest: 'Healero' };
+const HNAME = { knight: 'Dutch', rogue: 'Hixx', mage: 'Hudzor', priest: 'Arkbishop' };
 const HIDX = { knight: 0, rogue: 1, mage: 2, priest: 3 };
 const outOfRank = (id, r) => r < HOME[id][0] || r > HOME[id][1];
 // auras: a 5x5 glyph in the giver's class colour, sitting between giver and receiver in the skill bar
@@ -96,12 +96,12 @@ function rankStage(t) {
   } else if (BATTLE_STATE === 'swap') {
     const q = t % 7, gx = [6, 88, 170, 252];
     if (q < 1.6) {
-      // pick Garrote's portrait up, drag it onto Magoo's
+      // pick Hixx's portrait up, drag it onto Hudzor's
       const k = clamp((q - 0.4) / 1.2), cx = q < 0.4 ? lerp(140, gx[1] + 12, q / 0.4) : lerp(gx[1] + 12, gx[2] + 12, k * k * (3 - 2 * k)), cy = BAR_Y + 12 - (q < 0.4 ? (0.4 - q) * 60 : 0);
       if (q >= 0.4) S.dropOn = 2;
       S.draw = () => { if (q >= 0.4) ghostPortrait('rogue', Math.round(cx - 11), BAR_Y + 1 - 6); cursorAt(cx, cy); floorRing(S.x.rogue, t); if (q >= 0.4) floorRing(S.x.mage, t); };
     } else {
-      // the drop: they pass each other, both stop acting for 1 s; Magoo lands in rank 2, out of his home ranks
+      // the drop: they pass each other, both stop acting for 1 s; Hudzor lands in rank 2, out of his home ranks
       const k = clamp((q - 1.6) / 1.0), e = k * k * (3 - 2 * k);
       setRanks(['knight', 'mage', 'rogue', 'priest']);
       S.x.rogue = Math.round(lerp(87, 56, e)); S.x.mage = Math.round(lerp(56, 87, e));
@@ -130,7 +130,7 @@ function rankStage(t) {
         if (q > 2.3 && q < 3.6) floater('out of position', S.x.priest, Math.round(108 - (q - 2.3) * 6), P.crimson);
         if (tip) {
           // hovering the hero himself: the card opens above his head
-          tipCard(S.x.priest - 70, 34, 150, [['h', 'Healero · rank 1', null], ['-', 'Out of position: heals at 70%. His ranks are 2 to 4.'], ['+', 'Knighten, behind him, regenerates 1% HP per second.'], ['n', 'Drag him back. Away, the line stays broken.']]);
+          tipCard(S.x.priest - 70, 34, 150, [['h', 'Arkbishop · rank 1', null], ['-', 'Out of position: heals at 70%. His ranks are 2 to 4.'], ['+', 'Dutch, behind him, regenerates 1% HP per second.'], ['n', 'Drag him back. Away, the line stays broken.']]);
           cursorAt(S.x.priest + 2, 150);
         }
       };

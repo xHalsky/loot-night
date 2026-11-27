@@ -2,7 +2,7 @@
 // The dog: a shiba who jumps up at the desk. Head, chest and front paws rise over the desk's near edge in front of
 // the keyboard. Drawn in code (shapes -> hard pixel edges -> 1 px outline), lit like the UI and the can (key light
 // from the upper left), ordered dither, every pixel one of his own palette slots: the can's warm print colours
-// (EB_PAL), kept out of the desk's dither like Garrote's ember. Cute first: a big round head with fluffy cheeks,
+// (EB_PAL), kept out of the desk's dither like the rogue's ember. Cute first: a big round head with fluffy cheeks,
 // big glossy eyes set low and wide, cream urajiro with the two eyebrow dots, a small black nose, an omega mouth.
 // ===========================================================================
 // his palette (EB_PAL indices)

@@ -1,7 +1,7 @@
 # The week (#56) in the browser, with the real mouse and keys: a new game is Monday (How to hide with three tiles, no
 # YOU card, no buttons on her panel, H and G do nothing, the phone has the Shop with Q4's keys and Flowers, her chat
 # without Text her); 01:00 ends Monday as a Sleep ("01:00: bedtime"); the morning says "Tue 07:40" and "Start Tuesday
-# night"; Tuesday opens How to hide with the headset new, the Tired and Zone bars on the YOU card, Garrote still in the
+# night"; Tuesday opens How to hide with the headset new, the Tired and Zone bars on the YOU card, Hixx still in the
 # party; the plug on Tuesday: the replay morning ("UNPLUGGED", "Tuesday, again") and Tuesday once more; the title
 # says "Continue · Tuesday". Screenshots test/shots/week_*.png and test/shots/week_sheet.png.
 import asyncio, os
@@ -97,7 +97,7 @@ async def main():
         await ev(QUIET); await go('portal'); await pg.wait_for_timeout(900)
         hits = await pg.evaluate("()=>(window.__lootnight.deskHits||[]).map(h=>h.tip||h.act)")
         check('tired' in hits and 'zone' in hits and 'drink' not in hits, 'Tuesday: Tired and Zone on the YOU card, no Drink yet')
-        check(await ev("g.heroes.some(h=>h.id==='rogue')"), 'Tuesday: Garrote in the party')
+        check(await ev("g.heroes.some(h=>h.id==='rogue')"), 'Tuesday: Hixx in the party')
         await pg.keyboard.press('h'); await pg.wait_for_timeout(300); check(await ev("n.headset"), 'Tuesday: H puts the headset on')
         await shot('8_tuesday_desk')
         # she pulls the plug: Tuesday, again

@@ -70,7 +70,7 @@ function avatar(kind, cx, cy, r) {
   AVM = [cx, cy, r]; avatarBody(kind, cx, cy, r); AVM = null;
 }
 function avatarBody(kind, cx, cy, r) {
-  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, magoo: P.arcane, danny: P.s4 }[kind] ?? P.s3;
+  const bg = { mom: P.copper, babe: P.d4, boss: P.s4, courier: P.u3, boys: P.arcane, hudzor: P.arcane, billy: P.s4 }[kind] ?? P.s3;
   disc(cx, cy, r, bg);
   const s = r / 10, hd = (dx, dy, hr, hair, o = {}) => {
     disc(cx + dx * s, cy + (dy + 9) * s, 7.5 * s * (o.sh ?? 1), o.shirt ?? P.s2);   // shoulders
@@ -118,7 +118,7 @@ const PHONE_SCREENS = {};
 const CALLERS = {
   mom: { name: 'Mom', sub: 'mobile', av: 'mom', mat: M_UMBER, v: [0.1, 0.42] },
   courier: { name: 'Courier', sub: '+48 22 555 0199', av: 'courier', mat: M_STONE, v: [0.08, 0.36] },
-  boys: { name: 'The Boys (3)', sub: 'Danny, Mike, Kuba', av: 'boys', mat: M_MAGIC, v: [0.04, 0.24] },
+  boys: { name: 'The Boys (3)', sub: 'Billy, Mike, Lance', av: 'boys', mat: M_MAGIC, v: [0.04, 0.24] },
 };
 PHONE_SCREENS.call = (t, o) => {
   const C = CALLERS[o.who || 'mom'], left = 8 - (t % 8);
@@ -253,7 +253,7 @@ PHONE_SCREENS.courier = (t, o) => {
 PHONE_SCREENS.boys = (t, o) => {
   const total = 8, left = total - (t % total);
   callHead('boys', 'on speaker', t);
-  bubble('Danny: BRO. Raid. Now. Bring snacks.', 'l', 48, { maxW: 100 });
+  bubble('Billy: BRO. Raid. Now. Bring snacks.', 'l', 48, { maxW: 100 });
   timerBar(78, left, total);
   tx('Say no, nicely. Quickly.', 56, 88, P.u6, { align: 'c' });
   let py = 102; py += pill("Shh, she's next door. Text only, love you guys.", py); py += pill("WHAT? I CAN'T HEAR YOU", py); py += pill('Nah', py);
@@ -850,35 +850,35 @@ function msgList(t, o = {}) {
 PHONE_SCREENS.msglist = (t, o) => msgList(t, { tap: 0, ...o });
 // The Boys' chat: the last minigame's exchange (their text and your answer), read-only, and Raid night? to start one
 const BOYS_THREAD = [
-  ['date', 'Today 22:58'], ['l', 'Danny: raid at 11?'], ['l', 'Danny: BRO. Raid. Now. Bring snacks.'], ['l', 'Kuba: danny is in'],
-  ['r', "Shh, she's next door. Text only, love you guys."], ['l', "Mike: fine, raid's on without you"], ['l', 'Danny: whipped'],
+  ['date', 'Today 22:58'], ['l', 'Billy: raid at 11?'], ['l', 'Billy: BRO. Raid. Now. Bring snacks.'], ['l', 'Lance: billy is in'],
+  ['r', "Shh, she's next door. Text only, love you guys."], ['l', "Mike: fine, raid's on without you"], ['l', 'Billy: whipped'],
 ];
 PHONE_SCREENS.boyschat = (t, o) => {
-  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', '00:44');
+  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '00:44');
   herThread(BOYS_THREAD, y0 + 2, 198, BOYS_THREAD.length - 1, t);
   pill('Raid night?', 203, { fill: P.s2, ink: P.s5, shadow: P.s1 }); gl(['.xxx.', 'x...x', 'xxxxx', 'xx.xx', 'xxxxx'], 20, 207, P.s5);
   tx('Needs Goodwill 40: 31 now', 56, 223, P.s4, { align: 'c' });
   homeBar();
 };
-// 20:00, every night (week one, section 2b): Danny's voice message in The Boys' chat, the handoff's "Magoo's voicemail"
-// (Magoo is Danny's character). The phone rises into your hand while the night waits: his voice note plays (the
+// 20:00, every night (week one, section 2b): Billy's voice message in The Boys' chat, the handoff's "Hudzor's voicemail"
+// (Hudzor is Billy's character). The phone rises into your hand while the night waits: his voice note plays (the
 // waveform fills gold, a timer), its transcript comes in under it line by line as he says it, and Got it puts the phone
 // down and starts the night. It stays in The Boys' chat until the next minigame, so you can read it again.
 const VOICE_NOTES = {
   mon: ['yo its raid night. she thinks youre doing spreadsheets lol', 'steps in the hall = tab to excel. BEFORE the door opens', "q4 pays real money btw. the shop's on your phone"],
-  tue: ["garrote's in the party tonight", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
+  tue: ["hixx is in the party tonight", "hold your door open longer: you lean in and see what she's doing", "she can see you too tho. don't get weird"],
   replay: ['F. she pulled the plug', "tuesday again then. the good loot's still in your bag", 'tab out BEFORE she opens the door this time'],
 };
 const VOICE_AT = [0, 4.5, 9.5], VOICE_LEN = 14;
 PHONE_SCREENS.voicenote = (t, o) => {
   const lines = VOICE_NOTES[o.night || 'mon'], tt = t % (VOICE_LEN + 4), p = Math.min(1, tt / VOICE_LEN);
-  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Danny, Mike, Kuba', '20:00');
+  const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
   let y = y0 + 3;
   drawItem(['date', o.night === 'replay' ? 'Tuesday, again' : 'Today 20:00'], y, t); y += 14;
   // the voice note: who and how long, a play disc, a waveform that fills gold as it plays
   const x = 7, w = 98, h = 25;
   rrI(x, y, w, h, 4, P.s2); px(x - 1, y + h - 1, P.s2); px(x, y + h - 1, P.s2);
-  tx('Danny', x + 5, y + 3, P.s5); tx('0:' + String(Math.floor(p * VOICE_LEN)).padStart(2, '0') + ' / 0:' + VOICE_LEN, x + w - 5, y + 3, p < 1 ? P.gold : P.s5, { align: 'r' });
+  tx('Billy', x + 5, y + 3, P.s5); tx('0:' + String(Math.floor(p * VOICE_LEN)).padStart(2, '0') + ' / 0:' + VOICE_LEN, x + w - 5, y + 3, p < 1 ? P.gold : P.s5, { align: 'r' });
   disc(x + 9, y + 17, 5, P.moon);
   if (p < 1) { rrI(x + 7, y + 14, 1, 5, 0, P.s1); rrI(x + 10, y + 14, 1, 5, 0, P.s1); }   // pause while it plays
   else for (let i = 0; i < 4; i++) rrI(x + 7 + i, y + 14 + i, 1, 7 - 2 * i, 0, P.s1);   // played: the play triangle

@@ -36,7 +36,7 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    7. #58 Before the playtest: done (0.80): the redesign handoff is built.
    8. **#59 the fan-service pass, V12 (#77) lean in and V13's rest (#78)**, moved here before the playtests
       (Paweł, 2026-11-26: everything planned is in before he tests): done (0.81 to 0.86). Next, Paweł's RPG session (2).
-2. **Paweł's playtest** (2026-11-26, Monday night): first fixes in 0.87 (#95 the loot walk, #96 Garrote from night 1,
+2. **Paweł's playtest** (2026-11-26, Monday night): first fixes in 0.87 (#95 the loot walk, #96 the rogue from night 1,
    #97 melee swings, #98 the Tonight note, #99 curios in the corridor); round 2 in 0.88 (#101 the stars card, #102
    Billy, Mike and Lance and Age of Judgment, #103 the headset on Monday, #104 the phone's close, #105 dollars). Next,
    the rest of his notes; his 15-minute

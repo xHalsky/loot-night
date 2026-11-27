@@ -53,7 +53,7 @@ ok(n.enemies.filter(e => e.marks?.stagger! > 0).length === 2, 'Cleaving Bash: th
 party(); buy('mage', 'p1', 'r1a'); n = fight(); queueAbility(S.g.heroes.indexOf(H('mage')), 1);
 ok(n.enemies.every(e => (e.burn ?? 0) > 0), 'Wildfire: every enemy Fire hits burns');
 party(); buy('rogue', 'g1', 'g2', 's2', 'p2', 'r2b'); n = fight(); n.enemies.forEach(e => { e.atk = 5; }); queueAbility(S.g.heroes.indexOf(H('rogue')), 2);
-const rhp = H('rogue').hp; for (let i = 0; i < 120; i++) updateBattle(1 / 30); ok(H('rogue').hp === rhp, 'Vanish: nobody hits Garrote during Smoke Bomb');
+const rhp = H('rogue').hp; for (let i = 0; i < 120; i++) updateBattle(1 / 30); ok(H('rogue').hp === rhp, 'Vanish: nobody hits Hixx during Smoke Bomb');
 party(); buy('healer', 'p1', 'r1a'); n = fight(); queueAbility(S.g.heroes.indexOf(H('healer')), 1); ok((n.sanctuary ?? 0) > 0, 'Sanctuary: Mend raises the party\'s armor');
 
 console.log(fail ? `${fail} failed` : 'all passed');

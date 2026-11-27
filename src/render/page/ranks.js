@@ -6,7 +6,7 @@
 let BATTLE_STATE = 'fight';
 const RANK_X = [126, 87, 56, 21];
 const HOME = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], priest: [2, 4] };
-const HNAME = { knight: 'Knighten', rogue: 'Garrote', mage: 'Magoo', priest: 'Healero' };
+const HNAME = { knight: 'Dutch', rogue: 'Hixx', mage: 'Hudzor', priest: 'Arkbishop' };
 const HIDX = { knight: 0, rogue: 1, mage: 2, priest: 3 };
 const outOfRank = (id, r) => r < HOME[id][0] || r > HOME[id][1];
 // auras: a 5x5 glyph in the giver's class colour, sitting between giver and receiver in the skill bar
@@ -55,13 +55,15 @@ function ghostPortrait(id, x, y) {
 function wrapTiny_shadowed(str, maxW) { const out = []; let cur = ''; for (const w of str.split(' ')) { const n = cur ? cur + ' ' + w : w; if (measure(n, 'tiny') > maxW && cur) { out.push(cur); cur = w; } else cur = n; } if (cur) out.push(cur); return out; }
 // a tooltip card: the path cards' bronze and leather; lines [kind, text]: 'h' head, '+' you get, '-' it costs, 'n' note
 function tipCard(x, y, w, lines) {
-  let h = 8; for (const [k, s] of lines) h += k === 'h' ? 10 : wrapTiny(s, w - (k === 'n' || k === 'b' ? 12 : 17)).length * 7 + 1;
+  let h = 8; for (const [k, s] of lines) h += k === 'h' ? 10 : k === 'c' ? 9 : wrapTiny(s, w - (k === 'n' || k === 'b' ? 12 : 17)).length * 7 + 1;
   shadowU(x, y, w, h, { k: 0.7, r: 4, dx: 2, dy: 3 });
   leatherU(x + 3, y + 3, w - 6, h - 6, { v: 0.13, vig: 0.25 });
   mouldU(x, y, w, h, { k: 0.9, bosses: false });
   let yy = y + 5;
   for (const [k, s, extra] of lines) {
     if (k === 'h') { const nw = text(s, x + 6, yy, 'tiny', P.moon, { shadow: P.void }); if (extra) extra(x + 6 + nw + 4, yy); yy += 10; continue; }
+    // c: a hero's class under his name, in the class colour (knight steel, rogue ember, mage violet, priest gold)
+    if (k === 'c') { text(s, x + 6, yy - 2, 'tiny', P[CLASS_COL[s.toLowerCase()] || 'u6'], { shadow: P.void }); yy += 9; continue; }
     const tx = k === 'n' || k === 'b' ? x + 6 : x + 11, col = k === '+' ? P.g5 : P.crimson;   // b: a plain line in bone (V11)
     if (k === '+') { putI(x + 7, yy + 1, col); putI(x + 6, yy + 2, col); putI(x + 7, yy + 2, col); putI(x + 8, yy + 2, col); putI(x + 7, yy + 3, col); }
     if (k === '-') { putI(x + 6, yy + 2, col); putI(x + 7, yy + 2, col); putI(x + 8, yy + 2, col); }
@@ -96,12 +98,12 @@ function rankStage(t) {
   } else if (BATTLE_STATE === 'swap') {
     const q = t % 7, gx = [6, 88, 170, 252];
     if (q < 1.6) {
-      // pick Garrote's portrait up, drag it onto Magoo's
+      // pick Hixx's portrait up, drag it onto Hudzor's
       const k = clamp((q - 0.4) / 1.2), cx = q < 0.4 ? lerp(140, gx[1] + 12, q / 0.4) : lerp(gx[1] + 12, gx[2] + 12, k * k * (3 - 2 * k)), cy = BAR_Y + 12 - (q < 0.4 ? (0.4 - q) * 60 : 0);
       if (q >= 0.4) S.dropOn = 2;
       S.draw = () => { if (q >= 0.4) ghostPortrait('rogue', Math.round(cx - 11), BAR_Y + 1 - 6); cursorAt(cx, cy); floorRing(S.x.rogue, t); if (q >= 0.4) floorRing(S.x.mage, t); };
     } else {
-      // the drop: they pass each other, both stop acting for 1 s; Magoo lands in rank 2, out of his home ranks
+      // the drop: they pass each other, both stop acting for 1 s; Hudzor lands in rank 2, out of his home ranks
       const k = clamp((q - 1.6) / 1.0), e = k * k * (3 - 2 * k);
       setRanks(['knight', 'mage', 'rogue', 'priest']);
       S.x.rogue = Math.round(lerp(87, 56, e)); S.x.mage = Math.round(lerp(56, 87, e));
@@ -130,7 +132,7 @@ function rankStage(t) {
         if (q > 2.3 && q < 3.6) floater('out of position', S.x.priest, Math.round(108 - (q - 2.3) * 6), P.crimson);
         if (tip) {
           // hovering the hero himself: the card opens above his head
-          tipCard(S.x.priest - 70, 34, 150, [['h', 'Healero · rank 1', null], ['-', 'Out of position: heals at 70%. His ranks are 2 to 4.'], ['+', 'Knighten, behind him, regenerates 1% HP per second.'], ['n', 'Drag him back. Away, the line stays broken.']]);
+          tipCard(S.x.priest - 70, 34, 150, [['h', 'Arkbishop', null], ['c', 'Priest', null], ['-', 'Out of position: heals at 70%. His ranks are 2 to 4.'], ['+', 'Dutch (Knight), behind him, regenerates 1% HP per second.'], ['n', 'Rank 1. Drag him back. Away, the line stays broken.']]);
           cursorAt(S.x.priest + 2, 150);
         }
       };

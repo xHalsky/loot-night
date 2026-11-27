@@ -23,7 +23,7 @@ grid doc, cited as §) > `claude/loot-night-handoff-redesign.md` (the gameplay h
 | The grid (640 × 360, whole-number scales), the renderer (palette index, Bayer 8 × 8), text (Tiny5) | §1, §8 | View | V1 |
 | UI materials, actor separation | §2, §3 | | V1, V2 |
 | Skill icons, the skill bar (two skills and the ultimate), the ultimate's gilded well, enemy casts | §4, §5 | Battle | V2, #52 |
-| The heroes (Garrote §4b), the mob of six (§4c), the crypt | §4b, §4c, §5 | Dungeon, Battle | V2 |
+| The heroes (Hixx §4b), the mob of six (§4c), the crypt | §4b, §4c, §5 | Dungeon, Battle | V2 |
 | The route choice: the floor map, path cards, features and conditions, the away hourglass | §5b | Floor map | #52 |
 | Run blessings | §5c | Battle: Run blessings; Dungeon | #52 |
 | Marching order, auras, swaps, the Hook | §5d | Battle: Swap, Hook | #52 |
@@ -43,7 +43,7 @@ grid doc, cited as §) > `claude/loot-night-handoff-redesign.md` (the gameplay h
 | The small pieces: the Goblin Fuel inspect window, How to hide, coach marks, tooltips, pause, away (the gaming chair), the microsleep | §7k | Small pieces | V11, #56 |
 | Lean in and her timers: the view through your door, the stops, the slit, the closer framing, the red bar, the hall mirror, his back in the webcam; the plan change (the bathroom at the far end, the arch, `ROOM_DISTANCE` swapped); taught on Tuesday | §7l | Lean in | fan-service steps 7 and 12 (#59) |
 | Week one: the loop of a night and the seven nights (what each adds, the ramp, the checks) | `claude/loot-night-week-one.md` | | #56, #59 |
-| Week one's pieces: Danny's 20:00 voice note, the replay morning, her moment window (the plate, the tease visit, the towel and wine, asleep, come to bed with Coming, babe, the lap sit), Eyes busy, Hide cans, the away card's reason, the lap sit over the battle | §7m | Week one | V13, #56, #59 |
+| Week one's pieces: Billy's 20:00 voice note, the replay morning, her moment window (the plate, the tease visit, the towel and wine, asleep, come to bed with Coming, babe, the lap sit), Eyes busy, Hide cans, the away card's reason, the lap sit over the battle | §7m | Week one | V13, #56, #59 |
 
 ## Build order
 
@@ -60,7 +60,7 @@ grid doc, cited as §) > `claude/loot-night-handoff-redesign.md` (the gameplay h
 - **Three slots per hero: two skills and the ultimate.** Skill 3 goes, and with it each tree's second unlock, its rule
   pair and its autocast (Rally, Storm, Revive, Pickpocket). The ultimate takes the third key (3, C, E, D); 4, V, R, F
   stay dark.
-- The Rogue is **Garrote**, second in marching order. The battle shows 4 heroes and a mob of six (fodder in two lanes,
+- The Rogue is **Hixx**, second in marching order. The battle shows 4 heroes and a mob of six (fodder in two lanes,
   the lieutenant or boss behind); the rest wait off screen.
 - An enemy's cast is **its name with a cast bar under it** (no plate). **Flow is yellow** (`#eadf3a`, UI-only).
 - A curio offers its bargain and "Leave it" (the Potion cart's "Pay 12 g" is gone).

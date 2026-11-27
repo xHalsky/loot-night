@@ -4,9 +4,13 @@ import type { HeroId, Stat } from '../core/state';
 /** power: damage or heal multiplier of attack (a share where shown as {pct}); flat: added heal;
  *  dur: seconds of an effect; hits: number of hits. use: when to fire it. Marks: docs/design/dungeon.md. */
 export interface AbilityDef { name: string; short: string; cd: number; desc: string; tip?: string; power?: number; flat?: number; dur?: number; hits?: number; use?: string; ult?: boolean }   // ult: the ultimate (charged, never on cooldown)   // tip: the tooltip, one line (#43); desc: the full rule
-/** The party's in-game names (#44). Knightenstein is you; Magoo and Healero are your friends' characters
- *  (Billy and Mike on the phone; Garrote is Lance's, #102). Party and guild chat use these names, as an MMO would. */
-export const HERO_NAME: Record<HeroId, string> = { knight: 'Knightenstein', rogue: 'Garrote', mage: 'Magoo', healer: 'Healero' };
+/** The party's in-game names and classes (#44; cast of 2026-11-27, decisions doc): the one table every screen reads.
+ *  Dutch is you; Hudzor, Hixx and Arkbishop are your friends' characters (Billy, Mike and Lance on the phone).
+ *  Party and guild chat use these names, as an MMO would. The ids (knight, rogue, mage, healer) stay: saves keep them. */
+export const HERO_NAME: Record<HeroId, string> = { knight: 'Dutch', rogue: 'Hixx', mage: 'Hudzor', healer: 'Arkbishop' };
+export const HERO_CLASS: Record<HeroId, string> = { knight: 'Knight', rogue: 'Rogue', mage: 'Mage', healer: 'Priest' };
+/** A hero named inside a line of text: "Hudzor (Mage)". On a card the name is the head and the class the line under it. */
+export const heroLabel = (id: HeroId) => `${HERO_NAME[id]} (${HERO_CLASS[id]})`;
 export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
   knight: { role: 'Tank. Stands in front and carries the torch.', auto: 'Slashes the front enemy.' },
   rogue: { role: 'Damage. Crits and smokes.', auto: 'Stabs the front enemy.' },
@@ -17,7 +21,7 @@ export const HERO_ROLE: Record<HeroId, { role: string; auto: string }> = {
 /** Home ranks (#52, 1.6): outside them a hero deals and heals OUT_OF_RANK_MULT. Rank 1 is the front. Data per hero, so
  *  tree nodes can change them later ("Fire at full power from rank 2"). */
 export const HOME_RANKS: Record<HeroId, [number, number]> = { knight: [1, 2], rogue: [1, 3], mage: [3, 4], healer: [2, 4] };
-/** The marching order a party starts in (Garrote is in it from night 1, #96; the three-hero one is for a save from before). */
+/** The marching order a party starts in (the rogue is in it from night 1, #96; the three-hero one is for a save from before). */
 export const DEFAULT_ORDER: HeroId[][] = [['knight', 'healer', 'mage'], ['knight', 'rogue', 'mage', 'healer']];
 /** Auras (#52, 1.6): what each hero gives his neighbour (back: the one behind him; front: the one in front). */
 export const AURAS: Record<HeroId, { back?: boolean; front?: boolean; name: string; gives: string }> = {
@@ -37,7 +41,7 @@ export const HERO_BASE: Record<HeroId, Record<Stat, number>> = {
   healer: { hp: 90, atk: 7, armor: 3, speed: 10, crit: 5, luck: 0 },
 };
 
-export const HERO_COLORS: Record<HeroId, string> = { knight: '#3d6fb4', rogue: '#c16229', mage: '#5b3aa8', healer: '#3a8f6a' };   // Garrote: ember (grid doc §4b)
+export const HERO_COLORS: Record<HeroId, string> = { knight: '#3d6fb4', rogue: '#c16229', mage: '#5b3aa8', healer: '#3a8f6a' };   // the rogue (Hixx): ember (grid doc §4b)
 
 // Hotkeys per hero, one per ability slot (slot 0 = auto attack). Three slots (#52, decisions 2026-11-20): two skills
 // and the ultimate on the third key; 4, R and F stay dark.

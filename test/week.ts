@@ -65,7 +65,7 @@ ok(S.g.day === 1 && dayName() === 'Tuesday', 'the next night is Tuesday');
 n = night(0); n.clock = 25 * 60 - T.BEDTIME_WARN_MIN; checkNightEnd(); ok(n.log.some(l => l.text.includes('Bedtime at 01:00')) || n.toasts.some(t => t.text.includes('Bedtime at 01:00')), 'a warning 15 minutes before');
 // Tuesday runs on past 01:00
 n = night(1); n.clock = 25 * 60 + 5; checkNightEnd(); ok(S.g.screen === 'night', 'Tuesday: the night goes on past 01:00');
-ok(S.g.heroes.some(h => h.id === 'rogue'), 'Tuesday: Garrote is in the party (from night 1, #96)');
+ok(S.g.heroes.some(h => h.id === 'rogue'), 'Tuesday: Hixx is in the party (from night 1, #96)');
 n.clock = 23 * 60; updateTired(1, 30); ok(n.tired > 0, 'Tuesday: Tiredness');
 
 // --- the replay ---

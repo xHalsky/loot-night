@@ -6,6 +6,7 @@ import { ENEMY_SLOTS, MID_SLOT } from '../core/arena';
 import { gainGold, gainSouls, startRun, bankRun, loseRun, blessCount } from './run';
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
+import { heroLabel } from '../data/heroes';
 const toast = toastAs('GAME');   // feed tag (#49)
 import { chance, pick } from '../core/rng';
 import { sfx } from '../ui/audio';
@@ -122,7 +123,7 @@ export function updateDungeon(realDt: number) {
   // the Blood pact (#52, 1.5b): heroes bleed outside fights, never below 1 HP
   const pact = blessCount('altar');
   if (pact && n.phase !== 'battle') S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, h.hp - maxHp(h) * T.BLESS_ALTAR_DRAIN * pact * realDt); });
-  auraRegen(realDt, maxHp);   // Healero's blessing on his neighbours (#52, 1.6)
+  auraRegen(realDt, maxHp);   // the priest's blessing on his neighbours (#52, 1.6)
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt;
   if (n.phase === 'walk') {   // the walk picks up the loot (#52, 1.3: no loot pause); it lasts at least WALK_SEC
@@ -192,7 +193,7 @@ export function useFeather(id: string) {
   if (!downed) { toast('Nobody is down.', '#a999bd'); return; }
   removeEntry(id);
   reviveHero(downed, T.FEATHER_REVIVE_PCT);
-  toast(`${downed.name} revived!`, '#ff7ab8'); sfx.heal();
+  toast(`${heroLabel(downed.id)} revived!`, '#ff7ab8'); sfx.heal();
 }
 
 export function canLeaveDungeon() { const n = N(); return n.location === 'dungeon' && n.phase !== 'battle' && !n.run?.oath; }

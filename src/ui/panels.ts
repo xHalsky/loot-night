@@ -4,8 +4,9 @@ import { dayName } from '../systems/week';
 // data-act (+ data-arg); main.ts dispatches them on pointerdown.
 import { T } from '../config/tuning';
 import { soundCues, soundStatus } from './audio';
-import {  S, N, type BagEntry, type Item, type Hero } from '../core/state';
-import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, ULT_SLOT } from '../data/heroes';
+import {  S, N, type BagEntry, type Item, type Hero, type HeroId } from '../core/state';
+import { PK } from 'virtual:pagekit';
+import { ABILITIES, HOTKEYS, HERO_COLORS, heroRole, HOME_RANKS, AURAS, HERO_NAME, HERO_CLASS, heroLabel, ULT_SLOT } from '../data/heroes';
 import { autocastBought, autocastOn } from '../systems/tree';
 import { rankOf, outOfRank, aurasOn } from '../systems/ranks';
 import { LEGEND_BY_ID, SET_BY_ID } from '../data/legendaries';
@@ -41,6 +42,9 @@ function preTip(id: PreId): string {
   return `<div class="tt-name" style="color:#ff9ab8">${d.name}</div><div class="tt-sub">Costs ${preText(d.cost)}</div><div>${preText(d.tip)}</div>`;
 }
 
+/** A class's colour on the RPG's palette (knight steel, rogue ember, mage violet, priest gold) for the class lines. */
+const clsHex = (id: HeroId) => PK.ready() ? PK.classHex(id === 'healer' ? 'priest' : id) : HERO_COLORS[id];
+
 const PHONE_NOTE: Record<string, [string, string]> = {
   mom: ['MOM', 'calling...'], boss: ['BOSS', '"you there?"'], text: ['BABE', 'coming to bed?'], courier: ['COURIER', 'calling...'], friends: ['THE BOYS', 'group call'],
 };
@@ -66,12 +70,12 @@ function ruleLines(it: Item): string {
   if (!it.identified) return '';
   if (it.legend) {
     const L = LEGEND_BY_ID[it.legend], on = legendOn(it.legend);
-    return `<div class="tt-special" style="color:${RARITY_COLOR.legendary};${on ? '' : 'opacity:.75'}"><b>${HERO_NAME[L.hero].split(' ')[0]}'s:</b> ${L.rule}${on ? '' : ` <span class="dim">(only on ${HERO_NAME[L.hero].split(' ')[0]})</span>`}</div>`;
+    return `<div class="tt-special" style="color:${RARITY_COLOR.legendary};${on ? '' : 'opacity:.75'}"><b>${heroLabel(L.hero)}:</b> ${L.rule}${on ? '' : ` <span class="dim">Only on ${HERO_NAME[L.hero]}.</span>`}</div>`;
   }
   if (it.set) {
     const St = SET_BY_ID[it.set], h = S.g.heroes.find(x => x.id === St.hero), k = h ? setPieces(h, it.set) : 0;
     const row = (need: number, txt: string) => `<div style="color:${k >= need ? '#6fcf7f' : '#8e8a99'}">${need} pieces: ${txt}.</div>`;
-    return `<div class="tt-special" style="color:${RARITY_COLOR.epic}"><b>${St.name} set</b> · ${HERO_NAME[St.hero].split(' ')[0]} wears ${k}/3</div>${row(2, St.two)}${row(3, St.three)}`;
+    return `<div class="tt-special" style="color:${RARITY_COLOR.epic}"><b>${St.name} set</b> · ${heroLabel(St.hero)} wears ${k}/3</div>${row(2, St.two)}${row(3, St.three)}`;
   }
   return '';
 }
@@ -100,9 +104,10 @@ export function tooltipHtml(): string {
     const st = heroStats(h);
     if (parts[0] === 'hero') {
       const r = heroRole(h.id, S.g.heroes.some(x => x.id === 'rogue')), [a0, b0] = HOME_RANKS[h.id], out = outOfRank(h);
-      const gives = aurasOn(h).map(g => `${HERO_NAME[g].split(' ')[0]}'s ${AURAS[g].name.toLowerCase()}: ${AURAS[g].gives}.`).join(' ');
-      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name} · rank ${rankOf(h)}</div><div>${r.role}</div>
-        <div class="tt-sub" ${out ? 'style="color:#ff8a80"' : ''}>${out ? `Out of position: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_RANK_MULT * 100)}%. ` : ''}Home ranks ${a0} to ${b0}. Drag to swap.</div>${gives ? `<div class="tt-sub" style="color:#9fe08a">${gives}</div>` : ''}`;
+      const gives = aurasOn(h).map(g => `${AURAS[g].name} from ${heroLabel(g)}: ${AURAS[g].gives}.`).join(' ');
+      // name on line 1, the class on line 2 in the class colour (cast of 2026-11-27); the rank moved to the note
+      body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${h.name}</div><div class="tt-class" style="color:${clsHex(h.id)}">${HERO_CLASS[h.id]}</div><div>${r.role}</div>
+        <div class="tt-sub" ${out ? 'style="color:#ff8a80"' : ''}>${out ? `Out of position at rank ${rankOf(h)}: ${h.id === 'healer' ? 'heals' : 'hits'} at ${Math.round(T.OUT_OF_RANK_MULT * 100)}%. ` : `Rank ${rankOf(h)}. `}Home ranks ${a0} to ${b0}. Drag to swap.</div>${gives ? `<div class="tt-sub" style="color:#9fe08a">${gives}</div>` : ''}`;
     } else {
       const si = Number(parts[2]); const a = ABILITIES[h.id][si];
       const unlocked = abilityUnlocked(h, si);
@@ -111,7 +116,7 @@ export function tooltipHtml(): string {
         .replace('{stagger}', String(T.MARK_STAGGER_FIRE)).replace('{backstab}', String(T.MARK_STAGGER_BACKSTAB)).replace('{shatter}', String(T.MARK_CHILL_BASH)).replace('{reflect}', String(Math.round(T.MARK_TAUNT_REFLECT * 100))));
       body = `<div class="tt-name" style="color:${HERO_COLORS[h.id]}">${a.name} <span class="dim">· ${HOTKEYS[h.id][si].toUpperCase()}</span></div>
         <div>${desc}</div>
-        ${!unlocked ? `<div class="tt-hint" style="color:#f2c46b">${si === ULT_SLOT ? `Buy it in ${h.name.split(' ')[0]}'s skill tree in town (needs ${T.TREE_ULT_NEEDS} nodes).` : `Unlock it in ${h.name.split(' ')[0]}'s skill tree in town.`}</div>` : autocastBought(h.id, si) ? `<div class="tt-hint" style="color:#9fe08a">Autocast ${autocastOn(h.id, si) ? 'on' : 'off'}: right-click to switch.</div>` : a.ult ? `<div class="tt-hint" style="color:#f2c46b">Charge ${Math.floor(h.ult * 100)}%: fills during fights in ${T.ULT_CHARGE_SEC} s.</div>` : ''}`;
+        ${!unlocked ? `<div class="tt-hint" style="color:#f2c46b">${si === ULT_SLOT ? `Buy it in town, in the skill tree of ${heroLabel(h.id)}. Needs ${T.TREE_ULT_NEEDS} nodes.` : `Unlock it in town, in the skill tree of ${heroLabel(h.id)}.`}</div>` : autocastBought(h.id, si) ? `<div class="tt-hint" style="color:#9fe08a">Autocast ${autocastOn(h.id, si) ? 'on' : 'off'}: right-click to switch.</div>` : a.ult ? `<div class="tt-hint" style="color:#f2c46b">Charge ${Math.floor(h.ult * 100)}%: fills during fights in ${T.ULT_CHARGE_SEC} s.</div>` : ''}`;
     }
     const left = Math.min(hover.x + 16, 1280 - 270), top = Math.max(8, Math.min(hover.y - 150, 720 - 200));
     return `<div class="tooltip" style="left:${left}px;top:${top}px">${body}</div>`;
@@ -149,7 +154,7 @@ function affixLines(item: Item): string {
 
 function powerCompare(h: Hero, item: Item): string {
   const d = heroPower(h, { [item.slot]: item }) - heroPower(h);
-  return d > 0 ? `<span style="color:#6fcf7f">\u25b2 +${d} power for ${h.name}</span>` : d < 0 ? `<span style="color:#ff8a80">\u25bc ${d} power for ${h.name}</span>` : `<span class="dim">Same power for ${h.name}</span>`;
+  return d > 0 ? `<span style="color:#6fcf7f">\u25b2 +${d} power for ${heroLabel(h.id)}</span>` : d < 0 ? `<span style="color:#ff8a80">\u25bc ${d} power for ${heroLabel(h.id)}</span>` : `<span class="dim">Same power for ${heroLabel(h.id)}</span>`;
 }
 
 
@@ -163,10 +168,10 @@ function detailHtml(e: BagEntry): string {
     const it = e.item;
     const eq = it.identified ? `<div class="pop-eq">${S.g.heroes.map((h, i) => {
       const d = heroPower(h, { [it.slot]: it }) - heroPower(h);
-      return `<button class="pop-eq-btn" data-act="equip" data-arg="${i}"><b>${h.name}</b><em class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? `\u25b2 +${d}` : d < 0 ? `\u25bc ${d}` : '='}</em></button>`;
+      return `<button class="pop-eq-btn" data-act="equip" data-arg="${i}"><b>${h.name}</b><i style="color:${clsHex(h.id)}">${HERO_CLASS[h.id]}</i><em class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? `\u25b2 +${d}` : d < 0 ? `\u25bc ${d}` : '='}</em></button>`;
     }).join('')}</div>` : '<div class="dim">Unidentified: the Appraiser in town reveals it.</div>';
     body = `<div class="d-name" style="color:${RARITY_COLOR[it.rarity]}">${esc(entryName(e))}</div>
-      <div class="pop-sub">${cap(it.rarity)} ${it.slot}${it.identified && (it.legend || it.set) ? ` · ${HERO_NAME[(it.legend ? LEGEND_BY_ID[it.legend] : SET_BY_ID[it.set!]).hero].split(' ')[0]}` : ''} · item level ${it.ilvl}${it.identified ? ` · \u25c6 ${itemPower(it)}` : ''}</div>
+      <div class="pop-sub">${cap(it.rarity)} ${it.slot}${it.identified && (it.legend || it.set) ? ` · ${heroLabel((it.legend ? LEGEND_BY_ID[it.legend] : SET_BY_ID[it.set!]).hero)}` : ''} · item level ${it.ilvl}${it.identified ? ` · \u25c6 ${itemPower(it)}` : ''}</div>
       ${it.identified ? `<div class="pop-aff">${affixLines(it)}</div>${specialLine(it)}${ruleLines(it)}` : ''}${eq}
       ${town ? '<div class="dim">Sell, identify, salvage or list it at the services above.</div>' : ''}`;
   } else if (e.kind === 'map') {
@@ -256,7 +261,7 @@ export function debugHtml(): string {
     <div class="row">${[1, 4, 10].map(s => btn('dbgSpeed', `x${s}`, String(s), 'sm')).join('')} · night: ${['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d, i) => btn('dbgDay', d, String(i), (g.day ?? 0) % 7 === i ? 'sm gold' : 'sm')).join('')}</div>
     <div class="row">${btn('dbgVisit', 'Visit', '', 'sm')}${btn('dbgVisit', 'Snack', 'snack', 'sm')}${btn('dbgVisit', 'Chat', 'chat', 'sm')}${btn('dbgVisit', 'Cuddle', 'cuddle', 'sm')}${btn('dbgVisit', 'Tease', 'tease', 'sm')}${btn('dbgBedTease', 'Come to bed', '', 'sm')}${btn('dbgLapSit', 'Lap sit', '', 'sm')}${btn('dbgSelfie', 'Selfie', '', 'sm')}${btn('dbgBath', 'Bath', '', 'sm')}${btn('dbgAsk', 'Towel!', 'towel', 'sm')}${btn('dbgAsk', 'Wine?', 'wine', 'sm')}${btn('dbgMom', 'Mom', '', 'sm')}${btn('dbgBoss', 'Boss', '', 'sm')}${btn('dbgCall', 'Courier', 'courier', 'sm')}${btn('dbgCall', 'Boys', 'friends', 'sm')}${btn('dbgGoblin', 'Goblin', '', 'sm')}${btn('dbgCalm', 'Calm +30s', '', 'sm')}</div>
     <div class="row">${btn('dbgEpic', 'Epic', '', 'sm')}${btn('dbgLeg', 'Legend', '', 'sm')}${btn('dbgMap', 'Map', '', 'sm')}${btn('dbgGold', '+1k g', '', 'sm')}</div>
-    <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgRogue', 'Garrote', '', 'sm')}${btn('dbgHook', 'Hook', '', 'sm')}${btn('dbgShove', 'Shove', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
+    <div class="row">${btn('dbgMood', 'Mood+20', '', 'sm')}${btn('dbgClock', '+1h', '', 'sm')}${btn('dbgDebt', 'Tired+20', '', 'sm')}${btn('dbgFloor', 'End floor', '', 'sm')}</div><div class="row">${btn('dbgRogue', HERO_NAME.rogue, '', 'sm')}${btn('dbgHook', 'Hook', '', 'sm')}${btn('dbgShove', 'Shove', '', 'sm')}</div><div class="row">${btn('dbgDog', 'Dog', '', 'sm')}${btn('dbgUnplug', 'Unplug', '', 'sm')}${btn('dbgLap', 'Lap', '', 'sm')}</div>
     <div class="dim">Redesign frame (V1): the mockup's renderer in the build</div>
     <div class="row">${(['dungeon', 'battle', 'map', 'town', 'excel'] as const).map(k => btn('dbgFrame', k === 'excel' ? 'Q4' : k[0].toUpperCase() + k.slice(1), k, 'sm')).join('')}${btn('dbgFrame', 'Off', '', 'sm')}</div>
     <div class="dim">Sounds (${soundStatus().loaded}/${soundStatus().files} loaded${soundStatus().failed ? `, ${soundStatus().failed} failed` : ''}; loops toggle)</div>

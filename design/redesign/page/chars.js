@@ -209,7 +209,7 @@ function priest(cx, fy, s, b, t) {
   line(cx + 1, Y - 54, cx + 1, Y - 63, 0.42, M_MOSS); rect(cx - 3, Y - 54, 8, 1, 0.45, M_MOSS);
 }
 
-// Garrote, the rogue (after Paweł's references): athletic, long-limbed, shown chest to the camera like the others (a
+// Hixx, the rogue (after Paweł's references): athletic, long-limbed, shown chest to the camera like the others (a
 // three-quarter view turned toward the enemy). Sneaking: knees bent, shoulders rounded, the head low between them and
 // pushed a little forward, the eyes looking ahead from under the rim of a deep rounded hood that falls into a jagged
 // capelet; a wine scarf over the lower face. Arms in a ready guard: elbows bent out to the sides, fists low at the hips.

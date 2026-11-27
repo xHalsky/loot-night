@@ -29,7 +29,7 @@ async def main():
         await pg.mouse.move(*at(167, 52)); await pg.wait_for_timeout(500)
         await pg.screenshot(path='test/shots/tree_bought.png', clip=clip)
         trees = await pg.evaluate("()=>JSON.stringify(window.__lootnight.S.g.trees)+' souls '+window.__lootnight.S.g.mats")
-        # Healero's tree
+        # Arkbishop's tree
         await pg.mouse.move(r[0] + 334 * r[2] + (4 + 2 * 34 + 16) * 2, r[1] + 35 * 2); await pg.mouse.down(); await pg.mouse.up(); await pg.wait_for_timeout(400)
         await pg.mouse.move(*at(72, 140)); await pg.wait_for_timeout(400)
         await pg.screenshot(path='test/shots/tree_other.png', clip=clip)

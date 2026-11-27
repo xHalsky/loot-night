@@ -3,6 +3,7 @@ import { removeEntry, entryName, swapDrop , isLocked } from './loot';
 import { useFeather } from './dungeon';
 import { maxHp } from './stats';
 import { toastAs } from '../core/fx';
+import { heroLabel } from '../data/heroes';
 const toast = toastAs('LOOT');   // feed tag (#49)
 import { sfx } from '../ui/audio';
 
@@ -36,7 +37,7 @@ export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string) 
   if (!h.downed) h.hp = Math.max(1, Math.round(maxHp(h) * ratio));
   n.selected = null;
   n.heroTab = heroIdx;
-  toast(`${h.name} equipped ${e.item.name}`, '#f2e9d8'); sfx.good();
+  toast(`${heroLabel(h.id)} equipped ${e.item.name}`, '#f2e9d8'); sfx.good();
 }
 
 export function dropSelected() {

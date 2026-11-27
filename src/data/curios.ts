@@ -1,4 +1,6 @@
-import type { Px } from './heroes';
+import { heroLabel, HERO_NAME, type Px } from './heroes';
+
+const K = heroLabel('knight'), M = heroLabel('mage'), PR = heroLabel('healer');
 
 // Curios in the corridor (docs/design/dungeon.md, #30): Monday's set for the Shadow Crypt. Plain fantasy, played
 // straight (#44); ids are older than the names (mailbox = the coffin, vending = the potion cart).
@@ -26,38 +28,38 @@ const vending: Px[] = [[3,0,4,2,'#efe6cf'],[4,2,1,2,'#8a5a1c'],[1,5,2,3,'#c0392b
 export const CURIOS: CurioDef[] = [
   { id: 'strongbox', name: 'Locked chest', line: 'Iron bands, a heavy lock. Something rattles inside.', sprite: strongbox, w: 14,
     choices: [{ id: 'pick', label: 'Pick the lock', cost: '{pick} s standing here, quiet' }, { id: 'smash', label: 'Smash it', cost: 'Instant. Noise +{smash}' }],
-    reckless: 'smash', awayLine: 'Healero: "Box. Hammer. Done."' },
+    reckless: 'smash', awayLine: `${PR}: "Box. Hammer. Done."` },
   { id: 'mailbox', name: 'Sealed coffin', line: 'Runes on the lid. Something inside is warm.', sprite: mailbox, w: 12,
     choices: [{ id: 'open', label: 'Open it', cost: 'Gold, a rare or a curse. Noise +{groan} (the lid grinds)' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'open', awayLine: 'Magoo: "Ooh, a coffin. Mine."' },
+    reckless: 'open', awayLine: `${M}: "Ooh, a coffin. Mine."` },
   // Run blessings (#52, 1.5b; data/blessings.ts): a bargain and "Leave it". Ids are the blessing ids.
   { id: 'shrine', name: 'Wayside Shrine', line: 'A green flame on a stone altar. A bell hangs over it.', sprite: shrine, w: 14,
     choices: [{ id: 'shrine', label: 'Pray', cost: 'Noise +{bell} · +20% damage' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'shrine', awayLine: 'Healero: "Free blessings, lads." The bell rings.' },
+    reckless: 'shrine', awayLine: `${PR}: "Free blessings, lads." The bell rings.` },
   { id: 'pilgrim', name: 'Pilgrim', line: 'An old man with a staff. He wants a vow.', sprite: pilgrim, w: 10,
     choices: [{ id: 'pilgrim', label: 'Swear his oath', cost: 'No portal till boss' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'pilgrim', awayLine: 'Knightenstein: "Sure, I swear. What did I swear?"' },
+    reckless: 'pilgrim', awayLine: `${K}: "Sure, I swear. What did I swear?"` },
   { id: 'supply', name: 'Supply Cart', line: 'Bread, cheese, a barrel. Nobody guards it.', sprite: supply, w: 16,
     choices: [{ id: 'supply', label: 'Eat the rations', cost: 'Max HP -10% · drops +25%' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'supply', awayLine: 'Magoo: "Free food. Eat first, ask later."' },
+    reckless: 'supply', awayLine: `${M}: "Free food. Eat first, ask later."` },
   { id: 'altar', name: 'Blood Altar', line: 'Dark stone, warm to the touch. It wants a drop.', sprite: altar, w: 14,
     choices: [{ id: 'altar', label: 'Bleed on it', cost: 'HP drains between fights' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'altar', awayLine: 'Healero: "I\'ll heal it. Probably."' },
+    reckless: 'altar', awayLine: `${PR}: "I'll heal it. Probably."` },
   { id: 'moonwell', name: 'Moonwell', line: 'Still silver water under a crack of moonlight.', sprite: moonwell, w: 16,
     choices: [{ id: 'moonwell', label: 'Drink', cost: 'Flow drops to x1' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'moonwell', awayLine: 'Magoo: "Looks clean. Glug."' },
+    reckless: 'moonwell', awayLine: `${M}: "Looks clean. Glug."` },
   { id: 'ritual', name: 'Ritual Circle', line: 'Candles in a ring. Chanting from nowhere.', sprite: ritual, w: 18,
     choices: [{ id: 'ritual', label: 'Join the chant', cost: 'Enemies +20% HP' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'ritual', awayLine: 'Knightenstein starts chanting. Loudly.' },
+    reckless: 'ritual', awayLine: `${K} starts chanting. Loudly.` },
   { id: 'troll', name: 'Sleeping troll on a loot pile', line: 'Every snore rattles the coins.', sprite: troll, w: 18,
     choices: [{ id: 'sneak', label: 'Sneak and grab', cost: '{sneak} s on this screen. Alt-tab and he wakes up' }, { id: 'fight', label: 'Fight him', cost: 'A mini-boss. Noise +{roar} (he roars)' }],
-    reckless: 'fight', awayLine: 'Knightenstein: "LEEROY..."' },
+    reckless: 'fight', awayLine: `${K}: "LEEROY..."` },
   { id: 'bank', name: 'Guild bank vault', line: 'Left open. The log says "officers only".', sprite: bank, w: 16,
-    choices: [{ id: 'withdraw', label: 'Take one item', cost: 'A free rare. Magoo checks the bank log later' }, { id: 'leave', label: 'Close it', cost: 'No loot.' }],
-    reckless: 'withdraw', awayLine: 'Healero: "Nobody reads the bank log."' },
+    choices: [{ id: 'withdraw', label: 'Take one item', cost: `A free rare. ${M} checks the bank log later` }, { id: 'leave', label: 'Close it', cost: 'No loot.' }],
+    reckless: 'withdraw', awayLine: `${PR}: "Nobody reads the bank log."` },
   { id: 'vending', name: 'Potion cart', line: 'Nobody minds it. A sign says "PAY HERE".', sprite: vending, w: 10,
     choices: [{ id: 'potion', label: 'Shake it', cost: 'Noise +{kick} · 50/50' }, { id: 'leave', label: 'Leave it', cost: 'Nothing happens.' }],
-    reckless: 'potion', awayLine: 'Knightenstein shakes the cart. Hard.' },
+    reckless: 'potion', awayLine: `${K} shakes the cart. Hard.` },
 ];
 export const CURIO_BY_ID: Record<string, CurioDef> = Object.fromEntries(CURIOS.map(c => [c.id, c]));
 
@@ -66,6 +68,6 @@ const trollFight: Px[] = [[3,0,6,3,'#5f8a3a'],[4,1,1,1,'#ff5a3a'],[7,1,1,1,'#ff5
 export const TROLL = { id: 'troll', name: 'Troll', hp: 330, atk: 14, armor: 4, speed: 6, sprite: trollFight };
 
 export const CURIO_LINES = {
-  bankNotice: ['Magoo (guild chat): "who took the {item} from the bank??"', 'Magoo (guild chat): "the log says KNIGHTENSTEIN. explain."', 'Magoo (guild chat): "officers ONLY. i am an officer. you are not."'],
+  bankNotice: [`[Guild] ${M}: "who took the {item} from the bank??"`, `[Guild] ${M}: "the log says ${HERO_NAME.knight.toUpperCase()}. explain."`, `[Guild] ${M}: "officers ONLY. i am an officer. you are not."`],
   curse: 'A CURSE. Party -{fee}% damage until the next floor.',
 };

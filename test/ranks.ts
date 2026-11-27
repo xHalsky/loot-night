@@ -1,4 +1,4 @@
-// Marching order (#52, 1.6) and Garrote (1.7) acceptance test: default orders and Garrote joining on night 2, home
+// Marching order (#52, 1.6) and Hixx (1.7) acceptance test: default orders and Hixx joining on night 2, home
 // ranks, the four auras, swaps (1 s without acting), Hook and Shove, EXECUTE by rank, Smoke Bomb, Heist, Backstab, and
 // when the line breakers come. npx tsx test/ranks.ts
 (globalThis as any).localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
@@ -19,12 +19,12 @@ function night(n: number) { S.g = initialState(); S.g.day = n - 1; S.g.realLifeO
 function fight(floor = 3) { travelToDungeon(); const n = N(); n.floor = floor; spawnBattle(floor, false, false); n.phase = 'battle'; }
 function tick(sec: number, dt = 1 / 30) { for (let t = 0; t < sec; t += dt) { updateMeters(dt); updateBattle(dt); } }
 
-// default order: Garrote from night 1 (#96); an old save without him gets him
+// default order: Hixx from night 1 (#96); an old save without him gets him
 night(1); ok(order() === 'knight,rogue,mage,healer', `night 1: ${order()}`);
-ok(!N().log.some(l => l.text.startsWith('Garrote joined')), 'a new game: no "joined" line, he was always there');
+ok(!N().log.some(l => l.text.startsWith('Hixx (Rogue) joined')), 'a new game: no "joined" line, he was always there');
 S.g = initialState(); S.g.heroes = [S.g.heroes[0], S.g.heroes[3], S.g.heroes[2]]; S.g.heroes[0].level = 3; S.g.heroes[1].level = 2; S.g.heroes[2].level = 2; delete S.g.orderSet; startNight();   // an old save: knight, healer, mage
-ok(order() === 'knight,rogue,mage,healer' && H('rogue').level === 2, `an old save gets Garrote at the lowest level and the default order: ${order()}, level ${H('rogue').level}`);
-ok(N().log.some(l => l.text.startsWith('Garrote joined')), 'an old save: a feed line says Garrote joined');
+ok(order() === 'knight,rogue,mage,healer' && H('rogue').level === 2, `an old save gets Hixx at the lowest level and the default order: ${order()}, level ${H('rogue').level}`);
+ok(N().log.some(l => l.text.startsWith('Hixx (Rogue) joined')), 'an old save: a feed line says Hixx joined');
 swapHeroes(2, 3); ensureParty(); ok(order() === 'knight,rogue,healer,mage', `after that the order is the player's: ${order()}`);
 
 // home ranks and the 0.7
@@ -37,10 +37,10 @@ swapHeroes(0, 2);
 
 // auras
 ok(auraTaken(H('rogue')) === 1 - T.AURA_KNIGHT_TAKEN && auraTaken(H('mage')) === 1, "the Knight's wall covers only the hero behind him");
-ok(auraCrit(H('knight')) === T.AURA_ROGUE_CRIT && auraCrit(H('mage')) === 0, "Garrote's crit goes to the hero in front of him");
-ok(auraCd(H('rogue')) === 1 - T.AURA_MAGE_CD && auraCd(H('knight')) === 1, "Magoo's haste goes to the hero in front of him");
+ok(auraCrit(H('knight')) === T.AURA_ROGUE_CRIT && auraCrit(H('mage')) === 0, "Hixx's crit goes to the hero in front of him");
+ok(auraCd(H('rogue')) === 1 - T.AURA_MAGE_CD && auraCd(H('knight')) === 1, "Hudzor's haste goes to the hero in front of him");
 H('mage').hp = 10; H('knight').hp = 10; auraRegen(10, maxHp);
-ok(H('mage').hp > 10 && H('knight').hp === 10, "Healero's blessing: the mage in front regenerates, the knight two ranks up does not");
+ok(H('mage').hp > 10 && H('knight').hp === 10, "Arkbishop's blessing: the mage in front regenerates, the knight two ranks up does not");
 H('rogue').downed = true; ok(auraCrit(H('knight')) === 0, 'a downed hero gives no aura'); H('rogue').downed = false;
 
 // a swap in the dungeon: both walk for SWAP_SEC and don't act
@@ -63,10 +63,10 @@ night(2); for (const h of S.g.heroes) h.level = 8; travelToDungeon(); N().floor 
 const bk = N().enemies.find(e => e.boss)!;
 H('healer').hp = 20;   // the most hurt
 bk.acts = T.EVICT_EVERY - 1; bk.atb = 99.9; tick(0.1);
-ok(bk.evict === 3 && (bk.wind ?? 0) > 0, `EXECUTE targets rank ${(bk.evict ?? -1) + 1} (Healero's)`);
-swapHeroes(3, 2);   // Healero out, Magoo in
+ok(bk.evict === 3 && (bk.wind ?? 0) > 0, `EXECUTE targets rank ${(bk.evict ?? -1) + 1} (Arkbishop's)`);
+swapHeroes(3, 2);   // Arkbishop out, Hudzor in
 const mageHp = H('mage').hp; tick(T.EVICT_WINDUP_SEC + 0.1);
-ok(H('mage').hp < mageHp - maxHp(H('mage')) * 0.2, 'swapped in, Magoo takes the EXECUTE');
+ok(H('mage').hp < mageHp - maxHp(H('mage')) * 0.2, 'swapped in, Hudzor takes the EXECUTE');
 
 // Smoke Bomb: about half the hits miss
 night(2); for (const h of S.g.heroes) h.level = 5; fight(8);

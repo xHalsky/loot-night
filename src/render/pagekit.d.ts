@@ -2,6 +2,8 @@
 declare module 'virtual:pagekit' {
   export const PK: {
     init(): Promise<void>;
+    heroNames(t: Record<string, { name: string; cls: string }>): void;
+    classHex(cls: string): string;
     ready(): boolean;
     battleArea(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };
     panel(vm: unknown, t: number): { canvas: HTMLCanvasElement; hits: { x: number; y: number; w: number; h: number; act: string; arg: string; tip: string }[] };

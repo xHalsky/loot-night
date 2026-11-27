@@ -1,6 +1,7 @@
 import { T } from '../config/tuning';
 import { S, N, type CurioState, type PartyBuff } from '../core/state';
 import { CURIOS, CURIO_BY_ID, CURIO_LINES, TROLL, type CurioDef } from '../data/curios';
+import { heroLabel } from '../data/heroes';
 import { chance, pick, randi, rand } from '../core/rng';
 import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
@@ -166,7 +167,7 @@ export function updateCurioTimers(dt: number) {
     if (n.bankNotice <= 0) {
       n.bankNotice = 0; n.sulk = T.CURIO_SULK_SEC;
       toast(pick(CURIO_LINES.bankNotice).replace('{item}', n.bankItem), '#8fd0ff');
-      toast(`Magoo sulks: mage -${Math.round(T.CURIO_SULK_DMG * 100)}% damage for ${T.CURIO_SULK_SEC} s.`, '#ff8a80');
+      toast(`${heroLabel('mage')} sulks: -${Math.round(T.CURIO_SULK_DMG * 100)}% damage for ${T.CURIO_SULK_SEC} s.`, '#ff8a80');
     }
   }
 }

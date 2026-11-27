@@ -32,7 +32,7 @@ export function fmtClock(min: number): string {
   return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
-/** "[Magoo] text" -> tag Magoo, text. */
+/** "[Hudzor] text" -> tag Hudzor, text. */
 export function parseTag(text: string): { tag: string; text: string } {
   const m = /^\[([^\]]+)\] ([\s\S]*)$/.exec(text);
   return m ? { tag: m[1], text: m[2] } : { tag: '', text };

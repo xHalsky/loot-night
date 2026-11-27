@@ -362,7 +362,7 @@ function bakePortrait(kind) {
   return (PORTRAIT_LIT[kind] = out);
 }
 // class colours: each hero's portrait carries a 1 px outline in it, and his keys on the desk keyboard light in it
-// (knight steel, Garrote ember, mage violet, priest gold)
+// (knight steel, rogue ember, mage violet, priest gold)
 const CLASS_COL = { knight: 's5', rogue: 'copper', mage: 'arcane', priest: 'gold' };
 function portrait(kind, x, y, o = {}) {
   const w = 22, h = 24, mat = o.selected ? M_LOOT : M_UMBER, cc = CLASS_COL[kind];

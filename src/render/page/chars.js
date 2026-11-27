@@ -41,7 +41,7 @@ function pauldron(px, py, w, dir, d, guard = true, n = 3, trim = true, ch = 4.3)
   put(Math.round(px + dir * w * 0.25), Math.round(py), Math.min(1, 0.85 * d), M_UMBER);
 }
 
-// ---- melee swings (#97): a weapon cut for the Knight's Slash and Bash and Garrote's Stab and Backstab. q runs 0..1
+// ---- melee swings (#97): a weapon cut for the Knight's Slash and Bash and the Rogue's Stab and Backstab. q runs 0..1
 // over T.SWING_SEC: wind-up, the cut (with a bright smear along the edge), a short hold, back to the guard.
 const ease3 = (u) => u * u * (3 - 2 * u);
 // pose(q) -> [hand x, hand y, blade angle]; keys: [rest, wind-up, strike], each [hx, hy, angle]; lift: the hand's arc up
@@ -263,7 +263,7 @@ function priest(cx, fy, s, b, t) {
   line(cx + 1, Y - 54, cx + 1, Y - 63, 0.42, M_MOSS); rect(cx - 3, Y - 54, 8, 1, 0.45, M_MOSS);
 }
 
-// Garrote, the rogue (after Paweł's references): athletic, long-limbed, shown chest to the camera like the others (a
+// Hixx, the rogue (after Paweł's references): athletic, long-limbed, shown chest to the camera like the others (a
 // three-quarter view turned toward the enemy). Sneaking: knees bent, shoulders rounded, the head low between them and
 // pushed a little forward, the eyes looking ahead from under the rim of a deep rounded hood that falls into a jagged
 // capelet; a wine scarf over the lower face. Arms in a ready guard: elbows bent out to the sides, fists low at the hips.

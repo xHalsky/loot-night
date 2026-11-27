@@ -1,6 +1,6 @@
 import type { LegendId, SetId } from '../data/legendaries';
 import { T } from '../config/tuning';
-import { HERO_NAME } from '../data/heroes';
+import { HERO_NAME, HERO_CLASS } from '../data/heroes';
 import type { PathCard, FeatureId, ConditionId } from '../data/routes';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
@@ -228,7 +228,7 @@ export interface Night {
   curioAt?: CurioAt | null;      // the curio in the corridor, before and after the stop (#99)
   sulk: number; bankNotice: number; bankItem: string;
   goodBoy: number; excused: boolean; goodDog: number; forgiven: boolean; witchingSaid: boolean; walkby: boolean;   // forgiven: tonight's Forgiveness is used   // goodDog: Good Boy (petted on his favourite spot), goblins x2   // goodBoy: seconds the petted dog still counts; excused: tonight's excuse is used
-  smoke: number; heist: number;   // seconds left of Garrote's Smoke Bomb and Heist (#52, 1.7)
+  smoke: number; heist: number;   // seconds left of the rogue's Smoke Bomb and Heist (#52, 1.7)
   sanctuary?: number;             // seconds left of Sanctuary's armor (a tree rule, #53)
   taunt: number; ward: number; lastStand: number; guilt: number; monitorOff: number; yawn: number; nextYawn: number;
   grin: number;   // seconds left of his grin after a big drop (the webcam view, #37)
@@ -311,7 +311,7 @@ export function newHero(id: HeroId, name: string, role: string, hp: number): Her
 
 export function initialState(): GameState {
   return {
-    heroes: [newHero('knight', HERO_NAME.knight, 'Knight', 130), newHero('rogue', HERO_NAME.rogue, 'Rogue', 85), newHero('mage', HERO_NAME.mage, 'Mage', 75), newHero('healer', HERO_NAME.healer, 'Healer', 90)],   // the marching order (#52, 1.6); Garrote from night 1 (#96)
+    heroes: [newHero('knight', HERO_NAME.knight, HERO_CLASS.knight, 130), newHero('rogue', HERO_NAME.rogue, HERO_CLASS.rogue, 85), newHero('mage', HERO_NAME.mage, HERO_CLASS.mage, 75), newHero('healer', HERO_NAME.healer, HERO_CLASS.healer, 90)],   // the marching order (#52, 1.6); the rogue from night 1 (#96)
     orderSet: true,
     bag: [], bagSize: T.BAG_SIZE, autoSalvage: false,
     gold: T.START_GOLD, mats: 0, zl: T.START_ZL,

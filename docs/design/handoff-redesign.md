@@ -198,7 +198,7 @@ No blessing cards. The choice at the end of a floor is the route, on the parchme
 
 ### 1.7 The Rogue (4th hero)
 - **Joins on night 2** (`nightsPlayed >= 1` until the week exists in step 5), with a feed line when the night
-  starts. Name: **Garrote** (the others are Knightenstein, Magoo, Healero).
+  starts. Name: **Hixx** (the others are Dutch, Hudzor, Arkbishop; the cast of 2026-11-27).
 - **Base stats (*start*):** HP 85, ATK 12, armor 3, speed 13, crit 12, luck 5.
 - **The looter:** from night 2 the Rogue does the pickup runs in 1.3 (the Knight's role text changes to
   match).
@@ -511,7 +511,7 @@ Levels; each level costs `base × 1.15^level`. All of it keeps running while you
 | Saturday | Everything, and visits come `SATURDAY_VISIT_MULT` (*start* 1.3) times as often |
 | Sunday and after | Custom Night |
 
-- **Phone Guy:** at 20:00 each night a voicemail from Magoo plays as a short transcript bubble by the phone
+- **Phone Guy:** at 20:00 each night a voicemail from Billy (Hudzor is his character) plays as a short transcript bubble by the phone
   (2–3 lines in his chat voice: lowercase, casual) explaining tonight's new thing. Skippable with a click. It
   is not a phone event and is outside the collision rule.
 - **Failing a night:** if she pulls the plug, you replay the same night ("Tuesday, again."). Any other ending
@@ -567,7 +567,7 @@ Last before the playtest. These replace the placeholder pre-emptive moves.
 
 ## Open (ask Paweł, don't guess)
 
-1. Decided: the Rogue is Garrote.
+1. Decided: the Rogue is Hixx (the cast of 2026-11-27).
 2. Node names are placeholders; the effects are the spec. Skill names are decided: the ones in this doc,
    simple and tied to the class theme.
 3. The week schedule in step 5.

@@ -10,7 +10,7 @@ import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
 import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
-import { HOTKEYS, HERO_NAME, HERO_COLORS } from './data/heroes';
+import { HOTKEYS, HERO_NAME, HERO_CLASS, HERO_COLORS } from './data/heroes';
 import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip } from './systems/bag';
 import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } from './systems/loot';
@@ -68,6 +68,8 @@ import { closeCoach } from './systems/coach';
 import { shopBuy, owns } from './systems/shop';
 import type { ShopId } from './data/shop';
 import { COACH } from './data/tips';
+// the renderer's hero tables read the game's names and classes (data/heroes.ts, the one table; cast of 2026-11-27)
+PK.heroNames(Object.fromEntries((['knight', 'rogue', 'mage', 'healer'] as const).map(id => [id === 'healer' ? 'priest' : id, { name: HERO_NAME[id], cls: HERO_CLASS[id] }])));
 
 (window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints }, herView: () => herView() };   // test hook for the Playwright scripts
 
@@ -277,7 +279,7 @@ document.addEventListener('pointermove', ev => {
       const [kind, a, b] = inv.key.split(':');
       const entry = kind === 'bag' ? S.g.bag.find(e => e.id === a) : kind === 'gear' ? (() => { const it = S.g.heroes[Number(a)]?.gear[b as 'weapon']; return it ? { kind: 'item' as const, id: it.id, item: it } : undefined; })() : undefined;
       const h = kind === 'hero' ? S.g.heroes[Number(a)] : null;
-      ghost().innerHTML = entry ? entryIcon(entry, 34) : h ? `<span class="ghost-hero" style="border-color:${HERO_COLORS[h.id]}">${HERO_NAME[h.id]}</span>` : '';
+      ghost().innerHTML = entry ? entryIcon(entry, 34) : h ? `<span class="ghost-hero" style="border-color:${HERO_COLORS[h.id]}">${HERO_NAME[h.id]} <small>${HERO_CLASS[h.id]}</small></span>` : '';
       ghost().classList.toggle('hero', !!h); ghost().style.display = 'block';
     }
     if (inv.moved) { ghost().style.left = `${p.x - 20}px`; ghost().style.top = `${p.y - 20}px`; hover.key = ''; }
@@ -890,6 +892,7 @@ function htmlLines(html: string): [string, string][] {
     const t = (e.textContent ?? '').replace(/\s+/g, ' ').trim(); if (!t) continue;
     const col = e.style.color;
     if (e.classList.contains('tt-name')) out.push(['h', t]);
+    else if (e.classList.contains('tt-class')) out.push(['c', t]);   // the hero's class, drawn in its class colour
     else if (col === 'rgb(255, 138, 128)') out.push(['-', t]);
     else if (col === 'rgb(159, 224, 138)') out.push(['+', t]);
     else if (e.classList.contains('tt-sub') || e.classList.contains('tt-hint')) out.push(['n', t]);

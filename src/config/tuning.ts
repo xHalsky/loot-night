@@ -145,7 +145,7 @@ export const T = {
   BATTLES_PER_FLOOR: 3,
   CHECKPOINT_EVERY: 5,
   WALK_SEC: 4,
-  SWING_SEC: 0.42,                // a melee hit's weapon swing (the Knight, Garrote; #97): wind-up, the cut, back to the guard
+  SWING_SEC: 0.42,                // a melee hit's weapon swing (the Knight, the Rogue; #97): wind-up, the cut, back to the guard
   CHAT_FIRST_SEC: 0.4, CHAT_TYPE_SEC: 0.25, CHAT_TYPE_PER_CHAR: 0.012, CHAT_TYPE_MAX: 0.8, CHAT_GAP_SEC: 0.2,   // Monday's first chat (#102): typing dots, then the bubble; about 6 s for six
   WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
@@ -200,16 +200,16 @@ export const T = {
   MARK_SEC: 6,                    // how long a mark stays on an enemy (Taunted lasts as long as the taunt)
   MARK_STAGGER_FIRE: 2,           // Fire on a Staggered enemy (Bash marks it)
   MARK_STAGGER_BACKSTAB: 2,       // Backstab on a Staggered enemy
-  // Garrote, the fourth hero (#52, 1.7): joins on Tuesday (NIGHT_SCHEDULE 'rogue')
+  // the rogue (Hixx), the fourth hero (#52, 1.7): in the party from night 1 (#96)
   SMOKE_SEC: 4, SMOKE_MISS: 0.5,  // Smoke Bomb: enemies miss this share of their attacks
   HEIST_SEC: 8,                   // Heist (ultimate): every kill drops an item for this long
   // Marching order (#52, 1.6; docs/design/dungeon.md): rank 1 is the front
   OUT_OF_RANK_MULT: 0.7,          // damage and healing of a hero outside his home ranks
   SWAP_SEC: 1,                    // a swap: both heroes stop acting while they pass each other (Hook and Shove too)
   AURA_KNIGHT_TAKEN: 0.25,        // Knight: the hero directly behind takes this much less damage
-  AURA_ROGUE_CRIT: 10,            // Garrote: the hero directly in front gets this much crit
-  AURA_MAGE_CD: 0.1,              // Magoo: the hero directly in front gets this much shorter cooldowns
-  AURA_PRIEST_REGEN: 0.01,        // Healero: the heroes in front and behind regenerate this share of max HP a second (in the dungeon)
+  AURA_ROGUE_CRIT: 10,            // the rogue: the hero directly in front gets this much crit
+  AURA_MAGE_CD: 0.1,              // the mage: the hero directly in front gets this much shorter cooldowns
+  AURA_PRIEST_REGEN: 0.01,        // the priest: the heroes in front and behind regenerate this share of max HP a second (in the dungeon)
   LINE_BREAK_FROM: 6,             // from this floor an encounter may bring a Ghoul (Hook) or a Brute (Shove)
   LINE_BREAK_CHANCE: 0.35,        // per encounter, not on boss fights
   LINE_BREAK_FIRST: 2, LINE_BREAK_EVERY: 4,   // its first move on its 2nd action, then every 4th
@@ -278,7 +278,7 @@ export const T = {
   CURIO_GROAN_NOISE: 5, CURIO_MAIL_GOLD: 20, CURIO_MAIL_ODDS: [0.5, 0.3] as [number, number],   // coffin: gold, rare; the rest a curse
   CURIO_FEE_DMG: 0.15,            // coffin curse: party damage down until the next floor
   CURIO_SNEAK_SEC: 6, CURIO_ROAR_NOISE: 15, CURIO_TROLL_DROPS: 2,
-  CURIO_BANK_NOTICE_SEC: [40, 90] as [number, number], CURIO_SULK_DMG: 0.2, CURIO_SULK_SEC: 45,   // Magoo sulks: mage damage down
+  CURIO_BANK_NOTICE_SEC: [40, 90] as [number, number], CURIO_SULK_DMG: 0.2, CURIO_SULK_SEC: 45,   // the mage sulks: his damage down
   CURIO_KICK_NOISE: 15,           // shaking the potion cart
   // Run blessings (#52, 1.5b): each lasts the run and stacks (multiplies) with itself
   BLESS_SHRINE_DMG: 0.2, BLESS_SHRINE_NOISE: 15,

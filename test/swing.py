@@ -1,7 +1,7 @@
 # Melee swings (#97): the Knight's Slash and Bash swing the sword off his shoulder, over the top and down at the enemy;
-# Garrote's Stab and Backstab cut with both daggers; both leave a smear. The game is paused and the swing
+# Hixx's Stab and Backstab cut with both daggers; both leave a smear. The game is paused and the swing
 # held at eight points of its 0.42 s. Writes test/shots/swing.png (left to right, top to bottom: q 0.12 .. 0.8) and
-# test/shots/swing_garrote.png (Garrote alone, closer: his two daggers cross in an X).
+# test/shots/swing_rogue.png (Hixx alone, closer: his two daggers cross in an X).
 import asyncio, os
 from playwright.async_api import async_playwright
 from PIL import Image
@@ -32,7 +32,7 @@ async def main():
         # the rules: auto attacks and the melee skills set the swing; the others don't
         await ev("g.heroes.forEach(h=>{h.swing=0; h.atb=99.99}); 0"); await pg.wait_for_timeout(80)
         sw = await ev("Object.fromEntries(g.heroes.map(h=>[h.id, (h.swing||0)>0]))")
-        check(sw['knight'] and sw['rogue'] and not sw['mage'] and not sw['healer'], f'auto attacks: the Knight and Garrote swing, the casters do not ({sw})')
+        check(sw['knight'] and sw['rogue'] and not sw['mage'] and not sw['healer'], f'auto attacks: the Knight and Hixx swing, the casters do not ({sw})')
         await ev("g.timeScale=0; 0")
         frames = []
         for k, q in enumerate([0.12, 0.25, 0.32, 0.38, 0.44, 0.5, 0.58, 0.8]):
@@ -42,7 +42,7 @@ async def main():
         o = Image.new('RGB', (w * 4 + 18, h * 2 + 6), (20, 14, 24))
         for i, im in enumerate(ims): o.paste(im, ((i % 4) * (w + 6), (i // 4) * (h + 6)))
         o.save('test/shots/swing.png')
-        # Garrote alone, closer: both daggers, the near one cuts up, the far one a beat later down over the top (an X)
+        # Hixx alone, closer: both daggers, the near one cuts up, the far one a beat later down over the top (an X)
         frames = []
         for k, q in enumerate([0.15, 0.3, 0.38, 0.45, 0.52, 0.6, 0.68, 0.85]):
             await ev(f"g.heroes.forEach(h=>{{ h.swing = h.id==='rogue' ? {SWING_SEC * (1 - q)} : 0; h.lunge=0 }}); 0"); await pg.wait_for_timeout(120)
@@ -50,7 +50,7 @@ async def main():
         ims = [Image.open(f).resize((260, 280), Image.NEAREST) for f in frames]; w, h = ims[0].size
         o = Image.new('RGB', (w * 4 + 18, h * 2 + 6), (20, 14, 24))
         for i, im in enumerate(ims): o.paste(im, ((i % 4) * (w + 6), (i // 4) * (h + 6)))
-        o.save('test/shots/swing_garrote.png')
+        o.save('test/shots/swing_rogue.png')
         print('errors:', errs or 'none')
         if errs: fails.append('page errors')
         await b.close()

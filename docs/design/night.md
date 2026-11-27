@@ -13,7 +13,7 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
 
 | Night | Comes in | Visits | She goes to bed | The night ends |
 |---|---|---|---|---|
-| Monday | Her routine; the party of four (Garrote from night 1, [dungeon.md](dungeon.md)); peeks and snack runs (a plate: no cans to find yet); Q4; picking up the phone: the Shop (Silent keys, Flowers), her chat | x1 | stays up | 01:00, as a Sleep (no Tiredness yet) |
+| Monday | Her routine; the party of four (Hixx from night 1, [dungeon.md](dungeon.md)); peeks and snack runs (a plate: no cans to find yet); Q4; picking up the phone: the Shop (Silent keys, Flowers), her chat | x1 | stays up | 01:00, as a Sleep (no Tiredness yet) |
 | Tuesday | Chat visits; the headset (Zone); her leaning into your face after a pass; Tiredness, and the night runs past 01:00; the Ergo chair; **lean in**, her yoga (the night opens with it) and the hall mirror in the Shop ([her.md](her.md)) | x1.2 | stays up | dawn |
 | Wednesday | The phone rings: the courier, Mom, the boss; Messages: Text her and Raid night? | x1.2 | stays up | dawn |
 | Thursday | The dog (first at 90 s, then every 120 to 180 s); cuddle visits; the boys' call (once); the Goblin Fuel (the Drink button, 3 cans topped up each night, snack runs look for them; the Fuel, the fridge and the chew in the Shop); the smart home: the battery, Charge, the Home app and its devices ([desk.md](desk.md)) | x1.2 | stays up | dawn |
@@ -33,7 +33,7 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   it cost and "Tuesday, again"), the title ("Continue · Tuesday", read from the save).
 - **The boys at 20:00** (grid doc 7m; `data/voice.ts`): every night of week one the phone rises into your hand while
   the night waits, at The Boys' chat. The boys are **Billy, Mike and Lance** (#102, an Aliens in-joke for Paweł's
-  friends; Magoo, Healero and Garrote are theirs). **The first Monday** is their chat, live (`FIRST_CHAT`): six bubbles
+  friends; their characters are Hudzor, Hixx and Arkbishop, the cast of 2026-11-27). **The first Monday** is their chat, live (`FIRST_CHAT`): six bubbles
   from all three, one at a time, each after their name and three hopping dots (`CHAT_*`: about 0.6 s of typing a
   bubble, all in by about 6 s, a soft tick as each lands), stoked to finally play a session of **Age of Judgment**
   (the RPG's name in the fiction, #102), with the premise and two tips in their banter (Tab before the door opens; Q4
@@ -166,7 +166,7 @@ happening.
   less important one (footsteps > doorway > phone > wind-up > loot), and the bumped one comes back next time.
   Hidden while her caught screen is up.
 - **First-time tips** (`TIPS` in `src/data/tips.ts`, `src/systems/tips.ts`): everything else gets one line from
-  her or the guild chat (Magoo and Healero, your party) in the feed, pinned at its top for `TIP_PIN_SEC`. Once per
+  her or the guild chat (Hudzor and Arkbishop, your party; the feed's tag is the name alone) in the feed, pinned at its top for `TIP_PIN_SEC`. Once per
   save; a new game starts them over. Timed: her "I'm watching my show" (`TIP_HER_AT`) and the plan on the wall
   (`TIP_PLAN_AT`). On events: a pass, a catch, an end cue, the dog, a yawn, the headset, her bedtime, a peek,
   the first floor choice, the shower.
@@ -220,7 +220,7 @@ happening.
 - **Taught the night it unlocks** (0.78, #56; the week doc 2b, grid doc 7m). Billy's voice note is on the phone, in
   The Boys' chat, because everything on the phone happens inside it (decided 2026-11-24); it comes before How to hide
   so the night opens with a friend's voice and the card only shows when there is a new tile. Tuesday's note opens
-  with the night that runs to dawn ("no curfew tonight", since Garrote is in from night 1, #96), then lean in. The first chance is a
+  with the night that runs to dawn ("no curfew tonight", since Hixx is in from night 1, #96), then lean in. The first chance is a
   scripted first visit of the night's new type, and safe as a let-go catch, so the first chat visit teaches by
   happening and a slow Tab can't cost the night. Rejected: a transcript bubble by the desk phone (the handoff's:
   outside the phone); a note in week two (nothing new to say); making the whole first visit a crawl (the coach

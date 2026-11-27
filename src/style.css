@@ -163,6 +163,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 .tooltip{ position: absolute; width: 234px; background: rgba(13,10,18,.96); border: 2px solid #4a3a5c; padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
 .tt-name{ font-size: 14px; font-weight: 600; }
 .tt-sub{ color: #a999bd; font-size: 11px; margin-bottom: 2px; }
+.tt-class{ font-size: 11px; margin: -2px 0 3px; }   /* the hero's class under his name */
 .tt-special{ margin-top: 3px; padding-top: 3px; border-top: 1px dashed rgba(255,255,255,.15); font-size: 11px; line-height: 1.25; }
 .tt-cmp{ border-top: 1px solid #3a2f47; margin-top: 4px; padding-top: 4px; display: flex; flex-wrap: wrap; gap: 0 6px; }
 .tt-cmp .dim{ width: 100%; }
@@ -292,7 +293,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 .rp.feed .fl{ font-size: 11px; }
 
 /* ===== Dungeon action bar (Infinity Engine flavour) ===== */
-   /* Knightenstein (#44) */
+   /* Dutch, the knight (#44) */
 
 @keyframes skCombo { 50% { border-color: #f2b84b; box-shadow: 0 0 4px 1px rgba(242,210,75,.4), inset 0 0 4px rgba(242,210,75,.3); } }
 @keyframes skAnswer { 50% { box-shadow: 0 0 0 3px rgba(255,90,90,.7), 0 0 14px rgba(255,90,90,.6); } }
@@ -313,7 +314,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 
 /* ---- Power + stats in the party panel (0.21) ---- */
 
-@keyframes needPulse { 50% { box-shadow: 0 0 0 1px #1a0e08, 0 0 6px #ff6a4a; } }   /* Knighten-stein wraps onto two lines (#44) */
+@keyframes needPulse { 50% { box-shadow: 0 0 0 1px #1a0e08, 0 0 6px #ff6a4a; } }
 
 .rp.feed{ height: 116px !important; }
 
@@ -413,6 +414,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 #ui .sp-pop .pop-eq-btn{ display: flex; flex-direction: column; align-items: flex-start; padding: 3px 4px; font-family: inherit; text-align: left; background: linear-gradient(#5a4128, #3a2a19); border: 1.5px solid #8a6a3a; border-radius: 2px; color: #f2e9d8; }
 #ui .sp-pop .pop-eq-btn:hover{ border-color: #ffd98a; }
 #ui .sp-pop .pop-eq-btn b{ font-weight: 400; font-size: 10px; white-space: nowrap; letter-spacing: -.2px; }
+#ui .sp-pop .pop-eq-btn i{ font-style: normal; font-size: 9px; }   /* the class under the name (cast of 2026-11-27) */
 #ui .sp-pop .pop-eq-btn em{ font-style: normal; font-size: 10px; color: #a8916e; } #ui .sp-pop .pop-eq-btn em.up{ color: #6fcf7f; } #ui .sp-pop .pop-eq-btn em.down{ color: #ff8a80; }
 #ui .sp-pop .d-foot{ margin-top: auto; } #ui .sp-pop .d-foot .btn{ min-height: 22px; font-size: 11px; padding: 1px 6px; }
 #ui .sp-pop .timebar{ height: 6px; border-width: 1px; }
@@ -429,7 +431,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 #monUi .run-card b{ font-size: 16px; color: #f1a934; }
 #monUi .run-card.lost b{ color: #d23c5a; }   /* unbanked this run (#52, 1.4) */
 
-/* Garrote's Z X C on the desk keyboard, ember, once he is in the party (#52, 1.7) */
+/* the rogue's (Hixx's) Z X C on the desk keyboard, ember, once he is in the party (#52, 1.7) */
 
 #spArea{ position: absolute; left: 668px; top: 0; width: 280px; height: 464px; z-index: 6; image-rendering: pixelated; display: none; }   /* #53: the Skill Tree tab, drawn by the renderer over the DOM panel */
 
@@ -440,6 +442,7 @@ kbd{ border: 1px solid #4a3a5c; padding: 0 4px; background: #241b2e; font-family
 #ui.cv .sp-pop{ pointer-events: auto; }
 #spBag{ position: absolute; left: 676px; top: 248px; width: 268px; height: 136px; pointer-events: none; }   /* where the bag is on the panel's canvas: coach marks point at it */
 /* a party card picked up in the side panel (drag onto another card to swap ranks) */
+#ghost .ghost-hero small{ font-size: 11px; opacity: .85; }
 #ghost .ghost-hero{ display: inline-block; padding: 3px 7px; font: 14px 'Pixelify Sans', sans-serif; color: #f4e4c1; background: #1d1424; border: 2px solid; white-space: nowrap; }
 #ghost.hero{ width: auto; height: auto; border: 0; background: none; }
 /* the three named stars (#54, 3.1): lit when met, each with what it asked */

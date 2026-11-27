@@ -49,7 +49,8 @@ items to pick them (a gold frame and a tick), then one button does them all: "Sa
 "List 2 · ~$14", "Identify · 40 g". The Merchant warns when a picked item is rare or better (the Auction House
 may pay more); the Forge reminds you that AUTO melts commons and uncommons as they drop. The Appraiser takes one
 item at a time: "Looking closely..." with a ring of sparks, then a flash and the IDENTIFIED card (the item, its
-lines, its special or legendary rule) that stays for a few seconds. Locked items refuse every action. The Town
+rarity and slot, whose legendary or set piece it is on its own row, "For Hixx (Rogue)", its lines, its special or
+legendary rule) that stays for a few seconds. Locked items refuse every action. The Town
 tab keeps an "Enter the dungeon · floor N" button, and the Dungeon Portal on the map goes down too.
 
 **Build plots.** Four plots, each fixed to one building (`src/data/city.ts`): Library (left of the portal),
