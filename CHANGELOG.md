@@ -3,6 +3,23 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.93.0 (2026-11-27)
+
+- **Party skills work between fights** (#122; Paweł: buffs and heals, any skill that helps the party). Arkbishop's
+  Mend, Ward and Miracle, Dutch's Last Stand and Hixx's Heist now go off on the walk (the next pack coming up included)
+  and at a curio: heal up after a fight, raise the fallen, put Ward or Last Stand up as the pack comes in (their time
+  runs in real time, so the last seconds of the approach carry into the fight). The skills that need an enemy (Taunt,
+  Bash, Backstab, Smoke Bomb, Fire, Frost, Cataclysm) say "No enemies in reach" as before and dim on the bar between
+  fights behind a sparse veil, lighter than a cooldown. Town and the floor map: nothing, as before.
+- **Cooldowns run between fights too** (on the walk and at a curio). They only ran in fights, which would have left
+  Mend on cooldown at most fight ends. The ultimates still charge only in fights.
+- Balance (32 good-bot nights; the good bot now heals between fights: Mend when someone is under 70%, Miracle when
+  someone is down): depth 6.0 / 6.0, wipes 0.22 / 0.16, Noise 67 / 74 (more casts). Four nights (8 campaigns): depth
+  7.4 / 8.4 / 9.1 / 11.0 (0.91.0: 6.2 / 8.8 / 11.0 / 11.0; 8 runs a night, within their noise).
+- New tests: `npx tsx test/between.ts` (every party skill between fights, the rest refused, cooldowns on the walk, a
+  Ward carried into the fight, curio, town, map) and `python3 test/between.py` (the dimmed bar on the walk, A heals, Q
+  refused; shots `test/shots/between_*.png`).
+
 ## 0.92.3 (2026-11-27)
 
 - **Whose it is: the right hero's portrait glows** (#121; Paweł). With a hero selected who can't wear a class item,

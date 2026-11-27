@@ -202,7 +202,14 @@ and the payoff floats up when it is cashed in. A skill that would cash in a mark
 skill bar with a badge (x2, x2.5, ↩).
 
 Skills **cast instantly** on click or key, with no global cooldown; only their own cooldown applies
-(shortened by the Library). Outside a fight the key says "No enemies in reach". Each cast adds
+(shortened by the Library). **Between fights the party's own skills still work** (#122, `PARTY_SKILLS` in
+`systems/battle.ts`): Arkbishop's Mend, Ward and Miracle, Dutch's Last Stand and Hixx's Heist go off on the walk (the
+next pack coming up included) and at a curio, so you heal up after a fight, raise the fallen, or put Ward or Last
+Stand up as the pack comes in (their time runs in real time, so a Ward cast in the last seconds of the approach is
+still on when the fight starts). The skills that need an enemy (Taunt, Bash, Backstab, Smoke Bomb, Fire, Frost,
+Cataclysm) dim on the bar between fights behind a sparse veil (lighter than a cooldown's sweep) and their key says
+"No enemies in reach"; in town and on the floor map nothing goes off. **Cooldowns run between fights too** (on the
+walk and at a curio, not in town or on the map); the ultimates still charge only in fights. Each cast adds
 `NOISE_ABILITY` (3.5). A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once. Skills are blocked while switching screens, while a minigame has your hands, and
 during microsleeps.
 
@@ -380,6 +387,14 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   Rejected: keeping the jokes in flavour text only (the names are what you read); renaming the ids too
   (breaks saves and tests for no player gain). The party chat keeps its gamer banter: that is the friends
   talking, not the game.
+- **Party skills between fights** (0.93, #122; Paweł: buffs and heals should work between battles). Only the skills
+  that help the party: an attack between fights has nothing to hit, and Taunt or Smoke Bomb nothing to hold. Their
+  cooldowns had only run in fights; that would have left Mend on cooldown at most fight ends (10 s against 9 s fights),
+  so the feature would rarely work, and they now run on the walk too. Measured (32 good-bot nights; the bot now heals
+  between fights, Mend under 70% HP and Miracle when someone is down): depth 6.0 / 6.0, wipes 0.22 / 0.16, Noise 67 /
+  74 (more casts, more Noise: the price). Rejected: every skill between fights (nothing to hit), cooldowns frozen on
+  the walk (the heal is rarely ready), the ultimates charging on the walk (they are the fight's reward), and casting on
+  the floor map (the party isn't on screen).
 - **Instant skills stay instant** (decided in the balance pass, 0.40, #2): with no global cooldown the bot
   reaches floor 9 to 10 by 01:00, which is the depth a normal night is tuned for; the noise from skill spam is
   already priced (`NOISE_ABILITY` 3.5, loud multi-hit skills once per cast) and wakes her 1 to 2 times a

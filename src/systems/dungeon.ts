@@ -1,6 +1,6 @@
 import { T } from '../config/tuning';
 import { S, N, type MapKind } from '../core/state';
-import { spawnBattle, updateBattle, reviveHero } from './battle';
+import { spawnBattle, updateBattle, reviveHero, tickCooldowns } from './battle';
 import { rollBattleDrops, rollBattleExtras, removeEntry, entryName, moveFloorLoot, sweepFloorLoot, looterIndex } from './loot';
 import { ENEMY_SLOTS, MID_SLOT, POS_X, LOOTER_REACH } from '../core/arena';
 import { gainGold, gainSouls, startRun, bankRun, loseRun, blessCount } from './run';
@@ -125,6 +125,7 @@ export function updateDungeon(realDt: number) {
   const pact = blessCount('altar');
   if (pact && n.phase !== 'battle') S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, h.hp - maxHp(h) * T.BLESS_ALTAR_DRAIN * pact * realDt); });
   auraRegen(realDt, maxHp);   // the priest's blessing on his neighbours (#52, 1.6)
+  if (n.phase === 'walk' || n.phase === 'curio') tickCooldowns(realDt);   // between fights the cooldowns run too: party skills work there (#122)
   if (n.phase === 'curio') { updateCurio(realDt); return; }   // the party stands at a curio: your time, not the battle's
   n.phaseT += dt;
   if (n.phase === 'walk') {   // the walk picks up the loot (#52, 1.3: no loot pause); it lasts at least WALK_SEC

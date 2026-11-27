@@ -134,6 +134,18 @@ export function abilitiesLocked(): string | null {
   return null;
 }
 
+/** Skills that help the party (#122) also work between fights: Arkbishop's Mend, Ward and Miracle, Dutch's Last Stand,
+ *  Hixx's Heist. The rest (Taunt, Bash, Backstab, Smoke Bomb, Fire, Frost, Cataclysm) need an enemy. */
+const PARTY_SKILLS: Record<HeroId, number[]> = { knight: [ULT_SLOT], rogue: [ULT_SLOT], mage: [], healer: [1, 2, ULT_SLOT] };
+export const partySkill = (id: HeroId, slot: number) => PARTY_SKILLS[id].includes(slot);
+/** Between fights in the dungeon (#122): the walk (the next pack coming up included) and a curio stop. */
+export function betweenFights(): boolean { const n = N(); return n.location === 'dungeon' && (n.phase === 'walk' || n.phase === 'curio'); }
+/** A skill can go off now: in a fight with an enemy standing, or a party skill between fights. */
+export function castableNow(id: HeroId, slot: number): boolean {
+  const n = N();
+  return (n.phase === 'battle' && n.enemies.some(e => e.hp > 0)) || (betweenFights() && partySkill(id, slot));
+}
+
 export function queueAbility(heroIdx: number, slot: number) {
   const h = S.g.heroes[heroIdx];
   if (!h || slot === 0 || h.downed) return;
@@ -141,7 +153,7 @@ export function queueAbility(heroIdx: number, slot: number) {
   if (!abilityUnlocked(h, slot) || h.cd[slot] > 0 || (slot === ULT_SLOT && !ultReady(h))) { sfx.bad(); return; }
   if (h.moving) { toast(`${heroLabel(h.id)} is changing places.`, '#a999bd'); sfx.bad(); return; }   // a swap: 1 s without acting (#52, 1.6)
   const n = N();
-  if (n.phase !== 'battle' || !n.enemies.some(e => e.hp > 0)) { toast('No enemies in reach.', '#a999bd'); sfx.bad(); return; }
+  if (!castableNow(h.id, slot)) { toast('No enemies in reach.', '#a999bd'); sfx.bad(); return; }   // party skills work between fights too (#122)
   // Cast right now: no waiting for the hero's turn, no global cooldown.
   h.lunge = 0.3;
   castAbility(h, slot);
@@ -586,9 +598,11 @@ function dots(dt: number) {
   }
 }
 /** Advances the battle. Returns 'victory', 'wipe' or null while it is ongoing. */
+/** Skill cooldowns run down: in fights, and between them since party skills can be cast there (#122). */
+export function tickCooldowns(dt: number) { for (const h of S.g.heroes) h.cd = h.cd.map(c => Math.max(0, c - dt)); }
 export function updateBattle(dt: number): 'victory' | 'wipe' | null {
   const n = N();
-  for (const h of S.g.heroes) h.cd = h.cd.map(c => Math.max(0, c - dt));
+  tickCooldowns(dt);
   dots(dt);
   if (n.ward > 0 && setOn('healer', 'dawnward', 3)) for (const h of aliveHeroes()) h.hp = Math.min(maxHp(h), h.hp + maxHp(h) * T.SET_DAWNWARD_REGEN * dt);   // Dawnward, three pieces
   for (const e of n.enemies) {

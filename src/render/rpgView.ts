@@ -18,7 +18,7 @@ import { SPECIAL_BY_ID } from '../data/affixes';
 import { LEGEND_BY_ID, SET_BY_ID } from '../data/legendaries';
 import { STAT_LABEL } from '../data/items';
 import { maxHp } from '../systems/stats';
-import { abilitiesLocked, abilityUnlocked, bodies, moveOf } from '../systems/battle';
+import { abilitiesLocked, abilityUnlocked, bodies, moveOf, betweenFights, partySkill } from '../systems/battle';
 import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { CURIO_BY_ID } from '../data/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
@@ -400,6 +400,7 @@ function goblinView() {
 function barView(heroes: Hero[]) {
   const n = N();
   const hp = [1, 1, 1, 1], cooldown: Record<string, { f: number; s: number | string }> = {}, ult: Record<string, string | { need: number | string }> = {}, autocast: Record<string, boolean> = {};
+  const idle: Record<string, boolean> = {}, between = betweenFights();   // between fights only the party skills work (#122): the rest dim
   let answer: string | null = null, combo: { key: string; label: string } | null = null;
   const wind = n.enemies.find(e => e.hp > 0 && (e.wind ?? 0) > 0);
   heroes.forEach(h => {
@@ -407,6 +408,7 @@ function barView(heroes: Hero[]) {
     hp[PAGE_SLOT[pid]] = h.downed ? 0 : h.hp / maxHp(h);
     KEYS[h.id].forEach((key, k) => {
       const si = k + 1, A = ABILITIES[h.id][si];
+      if (between && !partySkill(h.id, si)) idle[key] = true;
       if (si === ULT_SLOT && !abilityUnlocked(h, si)) { const need = T.TREE_ULT_NEEDS - boughtCount(h.id); ult[key] = { need: need > 0 ? need : '+' }; return; }   // the tree: nodes still missing
       if (!abilityUnlocked(h, si)) { cooldown[key] = { f: 1, s: '' }; return; }   // skill 2: unlocked in the skill tree (#53)
       if (autocastBought(h.id, si)) autocast[key] = autocastOn(h.id, si);
@@ -420,7 +422,7 @@ function barView(heroes: Hero[]) {
       else if (!combo && !h.downed) { const c = comboLabel(h.id, si); if (c) combo = { key, label: c }; }
     });
   });
-  return { order: heroes.map(h => PAGE_ID[h.id]), heroIdx: heroes.map((_, i) => i), selected: n.heroTab, hp, cooldown, ult, answer, combo, queued: null, autocast, blocked: abilitiesLocked() && n.location === 'dungeon' ? abilitiesLocked() : null,
+  return { order: heroes.map(h => PAGE_ID[h.id]), heroIdx: heroes.map((_, i) => i), selected: n.heroTab, hp, cooldown, ult, answer, combo, queued: null, autocast, idle, blocked: abilitiesLocked() && n.location === 'dungeon' ? abilitiesLocked() : null,
     outpos: heroes.filter(outOfPosition).map(h => PAGE_ID[h.id]), stopped: heroes.filter(h => h.moving).map(h => PAGE_ID[h.id]), outLabel: `x${T.OUT_OF_POSITION_MULT}`, dropOn: -1 };
 }
 /** A mark on the field that this skill cashes in (docs/design/dungeon.md, ability marks): the well glows gold. */

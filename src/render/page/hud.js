@@ -151,13 +151,14 @@ function skillSlot(x, y, sk, key, st, t, ult = false) {
   if (st.answer === key && pulse > 0.5) frameI(x, y, w, h, P.crimson); else if (st.answer === key) frameI(x, y, w, h, P.wine);
   if (combo) frameI(x, y, w, h, P.gold);
   sprite(x + 1, y + 1, SKILL_ICON[sk]);
-  const cd = st.cooldown && st.cooldown[key];
+  const cd = st.cooldown && st.cooldown[key], idle = !cd && st.idle && st.idle[key];
   if (cd) {
     const n = Math.round(13 * cd.f);
     for (let j = 0; j < n; j++) for (let i = 0; i < 13; i++) if (((i + j) & 1) || j < n - 6) putI(x + 1 + i, y + 1 + j, P.void);
     text(String(cd.s), x + 8, y + 5, 'tiny', P.moon, { align: 'c', outline: P.void });
   }
-  rectI(x + 1, y + 13, 6, 5, P.void); text(key, x + 2, y + 13, 'tiny', cd ? P.u4 : P.u6);
+  if (idle) idleDim(x, y);   // between fights it needs an enemy (#122)
+  rectI(x + 1, y + 13, 6, 5, P.void); text(key, x + 2, y + 13, 'tiny', cd || idle ? P.u4 : P.u6);
   // autocast bought (tree.js): a loop mark on a void tab in the other corner; moss when on, dim when switched off (right-click)
   const ac = st.autocast && st.autocast[key];
   if (ac != null) { rectI(x + 7, y + 13, 7, 5, P.void); sprite(x + 8, y + 13, ['.mmm.', 'm...m', 'm..mm', '.mm..'], { m: ac ? 'g6' : 'u3' }); }
@@ -169,12 +170,13 @@ function skillSlot(x, y, sk, key, st, t, ult = false) {
 // copper, a lock and how many nodes are still missing. On cooldown: the sweep, as for the others
 function ultSlot(x, y, sk, key, st, t) {
   const w = 15, h = 18, u = (st.ult && st.ult[key]) || 'ready', cd = st.cooldown && st.cooldown[key];
-  const ready = u === 'ready' && !cd, locked = typeof u === 'object' && u.need;
+  const locked = typeof u === 'object' && u.need, idle = !cd && !locked && st.idle && st.idle[key], ready = u === 'ready' && !cd && !idle;
   if (ready) haloU(x, y, w, h, M_LOOT, 0.42 + 0.22 * Math.sin(t * 2.6));
   wellU(x, y, w, h, { v: 0.14 });
   skillTile(x + 1, y + 1, 13, 16, SKILL_CLASS[sk]);
   sprite(x + 1, y + 1, SKILL_ICON[sk]);
   if (locked) for (let j = 1; j < 17; j++) for (let i = 1; i < 14; i++) if ((i + j) & 1) putI(x + i, y + j, P.void);
+  if (idle) idleDim(x, y);   // Cataclysm between fights: it needs an enemy (#122)
   if (cd) {
     const n = Math.round(13 * cd.f);
     for (let j = 0; j < n; j++) for (let i = 0; i < 13; i++) if (((i + j) & 1) || j < n - 6) putI(x + 1 + i, y + 1 + j, P.void);
@@ -191,6 +193,9 @@ function ultSlot(x, y, sk, key, st, t) {
   rectI(x + 1, y + 12, 7, 6, fc); rectI(x + 1, y + 12, 7, 1, sc); text(key, x + 2, y + 13, 'tiny', P.void);
   if (locked) { sprite(x + 5, y + 3, ['.333.', '3...3', '22222', '23v32', '22222']); text(String(u.need), x + w - 2, y + 12, 'tiny', P.u6, { align: 'r', outline: P.void }); }
 }
+// a skill that can't go off between fights (it needs an enemy, #122): its picture behind a sparse veil, a quarter of
+// its pixels dark, lighter than the cooldown's sweep so it reads as "not now", not "not ready"
+function idleDim(x, y) { for (let j = 1; j < 17; j++) for (let i = 1; i < 14; i++) if (!(i & 1) && !(j & 1)) putI(x + i, y + j, P.void); }
 function lockedSlot(x, y, key) {
   wellU(x, y, 11, 14, { v: 0.08 });
   sprite(x + 2, y + 2, ['..333..', '.3...3.', '.3...3.', '2222222', '2333332', '233v332', '2222222']);

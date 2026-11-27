@@ -40,7 +40,7 @@ The bot sims (good + idle) still run every round, but these four criteria come f
    #97 melee swings, #98 the Tonight note, #99 curios in the corridor); round 2 in 0.88 (#101 the stars card, #102
    Billy, Mike and Lance and Age of Judgment, #103 the headset on Monday, #104 the phone's close, #105 dollars); class
    gear in 0.91 (#113: weapons, helms and armor per class, the wrong class shown on the item); packs the party walks up
-   to, with a "!" when they see it, in 0.92 (#118). Next,
+   to, with a "!" when they see it, in 0.92 (#118); party skills between fights in 0.93 (#122). Next,
    the rest of his notes; his 15-minute
    RPG session (real life off, F1) and the real-life-on night.
 3. **#2 balance pass** + outside playtests against the criteria above. Round 1 done (0.40: the city pays out every
