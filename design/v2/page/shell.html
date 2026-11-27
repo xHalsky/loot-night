@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Age of Judgment · world samples</title>
+<style>
+@font-face { font-family: silkb; src: url(data:font/woff2;base64,__SILKB__) format("woff2"); }
+@font-face { font-family: tiny5; src: url(data:font/woff2;base64,__TINY5__) format("woff2"); }
+@font-face { font-family: m5; src: url(data:font/woff2;base64,__M5__) format("woff2"); }
+@font-face { font-family: jb9; src: url(data:font/woff2;base64,__JB9__) format("woff2"); }
+@font-face { font-family: czd; src: url(data:font/woff2;base64,__CZD__) format("woff2"); }
+@font-face { font-family: cz; src: url(data:font/woff2;base64,__CZ__) format("woff2"); }
+@font-face { font-family: sora; src: url(data:font/woff2;base64,__SORA__) format("woff2"); }
+@font-face { font-family: fred; src: url(data:font/woff2;base64,__FRED__) format("woff2"); }
+:root {
+  --void: #0a0814; --deep: #1a1522; --line: #3a2c36; --bronze: #6a4240; --bone: #c7b18c; --moon: #f2efdc; --teal: #6aa9c4; --gold: #f1a934; --crimson: #d23c5a;
+  --ui: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--void); color: var(--moon); font-family: var(--ui); }
+.app { display: grid; grid-template-columns: 290px minmax(0, 1fr); min-height: 100vh; }
+.panel { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 10px 10px 24px; border-right: 1px solid var(--line); background: #0e0b16; display: flex; flex-direction: column; gap: 8px; }
+.panel h1 { margin: 0 0 2px; font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+.panel h1 span { color: var(--bone); font-weight: 400; }
+.panel p.lede { margin: 0; font-size: 11.5px; line-height: 1.45; color: var(--bone); }
+.grp { border: 1px solid var(--line); border-radius: 6px; padding: 6px 7px 7px; display: flex; flex-direction: column; gap: 5px; background: var(--deep); }
+.grp > h2 { margin: 0; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); }
+.row { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 6px; align-items: start; }
+.row > .lab { font-size: 11px; color: var(--bone); padding-top: 3px; line-height: 1.2; }
+.seg { display: flex; gap: 3px; flex-wrap: wrap; }
+button { font: 500 11px/1.2 var(--ui); color: var(--bone); background: #241d2c; border: 1px solid #4a3a44; border-radius: 4px; padding: 3px 6px; cursor: pointer; }
+button[aria-pressed="true"] { color: var(--void); background: var(--gold); border-color: var(--gold); }
+button:hover { color: var(--moon); border-color: var(--bone); }
+button[aria-pressed="true"]:hover { color: var(--void); }
+button:disabled { opacity: .35; cursor: default; }
+button:focus-visible { outline: 2px solid var(--moon); outline-offset: 1px; }
+.ms { font: 11px var(--ui); color: var(--bone); font-variant-numeric: tabular-nums; padding-top: 3px; }
+.stage { padding: 12px 16px 40px; display: flex; flex-direction: column; gap: 12px; align-items: center; min-width: 0; }
+figure, .note, .spec { width: var(--sw); max-width: 100%; }
+figure { margin: 0; position: relative; }
+.stage.scroll { align-items: flex-start; overflow-x: auto; }
+.stage.scroll figure { max-width: none; }
+canvas { display: block; width: 100%; image-rendering: pixelated; image-rendering: crisp-edges; background: var(--void); }
+.tag { position: absolute; left: 8px; top: -9px; font: 600 10px/1 var(--ui); letter-spacing: .06em; text-transform: uppercase; padding: 3px 6px; border-radius: 3px; background: var(--gold); color: var(--void); }
+.tag.old { background: #4a3a44; color: var(--bone); }
+.tl { width: var(--sw); max-width: 100%; display: none; flex-direction: column; gap: 4px; }
+.tl.on { display: flex; }
+.tl .bar { position: relative; height: 22px; display: flex; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.tl .ph { flex: 0 0 auto; font: 600 10px/22px var(--ui); color: var(--bone); text-align: center; border-right: 1px solid var(--line); cursor: pointer; background: #1d1726; white-space: nowrap; overflow: hidden; }
+.tl .ph:hover { color: var(--moon); background: #2a2236; }
+.tl .ph.cur { background: #3a2c1c; color: var(--gold); }
+.tl .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--gold); pointer-events: none; }
+.tl .chat { position: relative; height: 16px; }
+.tl .msg { position: absolute; top: 2px; width: 9px; height: 9px; margin-left: -4px; border-radius: 2px; background: #6b5a7a; }
+.tl .msg.in { background: var(--teal); }
+.tl .legend { font: 11px var(--ui); color: var(--bone); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.tl .snd { position: relative; height: 14px; }
+.tl .mus .part { top: 0; }
+.tl .cue { position: absolute; top: 3px; width: 2px; height: 8px; margin-left: -1px; background: #7a6a58; }
+.tl .cue.pc { background: #4a5a6a; height: 5px; top: 6px; }
+.tl .cue.big { background: #d23c5a; width: 3px; height: 12px; top: 1px; }
+.tl .cue.in { background: var(--gold); }
+.tl .mus { position: relative; height: 14px; }
+.tl .part { position: absolute; top: 2px; height: 10px; border-radius: 2px; background: #2c2440; font: 600 8px/10px var(--ui); color: var(--bone); white-space: nowrap; overflow: hidden; padding-left: 3px; box-sizing: border-box; }
+.tl .part.theme { background: #3a2c1c; color: var(--gold); }
+.note { margin: 0; font-size: 13px; color: var(--bone); line-height: 1.55; }
+.note b { color: var(--moon); font-weight: 600; }
+.note .films { display: block; margin-top: 6px; color: #b8a3c9; }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; }
+.card { background: var(--deep); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.card h2 { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--bone); }
+.card p, .card li { margin: 0; font-size: 13px; line-height: 1.5; color: var(--moon); }
+.card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.card table { border-collapse: collapse; font-size: 12.5px; }
+.card td, .card th { text-align: left; padding: 3px 8px 3px 0; vertical-align: top; border-bottom: 1px solid var(--line); color: var(--moon); }
+.card th { color: var(--bone); font-weight: 600; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+@media (max-width: 900px) { .app { grid-template-columns: 1fr; } .panel { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="panel" aria-label="Controls">
+  <h1>Age of Judgment <span>· world samples</span></h1>
+  <p class="lede">The RPG on the monitor, given a world of its own, and the game launching on night one. Same renderer, palette, heroes, desk, phone and HUD as the Game Frame; what changes is the world around them.</p>
+  <section class="grp" aria-label="The launch">
+    <h2>The launch · night one, 20:00</h2>
+    <div class="row"><span class="lab">Whole</span><div class="seg">
+      <button id="s-launch" aria-pressed="true">Desk, phone and monitor</button>
+    </div></div>
+    <div class="row"><span class="lab">Each step</span><div class="seg">
+      <button id="s-desktop" aria-pressed="false">Windows</button>
+      <button id="s-engine" aria-pressed="false">Engine</button>
+      <button id="s-publisher" aria-pressed="false">Publisher</button>
+      <button id="s-developer" aria-pressed="false">Developer</button>
+      <button id="s-title" aria-pressed="false">Title</button>
+      <button id="s-login" aria-pressed="false">Log in</button>
+      <button id="s-enter" aria-pressed="false">Logging in</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Screen">
+    <h2>The world</h2>
+    <div class="row"><span class="lab">Town</span><div class="seg">
+      <button id="s-town" aria-pressed="false">Ravenhold</button>
+    </div></div>
+    <div class="row"><span class="lab">Floors 1–5</span><div class="seg">
+      <button id="s-cwalk" aria-pressed="false">Crypt, walk</button>
+      <button id="s-cbattle" aria-pressed="false">Crypt, battle</button>
+    </div></div>
+    <div class="row"><span class="lab">Deeper</span><div class="seg">
+      <button id="s-ossuary" aria-pressed="false">Ossuary 6–10</button>
+      <button id="s-iron" aria-pressed="false">Iron Saint 11–15</button>
+      <button id="s-brood" aria-pressed="false">Brood 16+</button>
+    </div></div>
+    <div class="row"><span class="lab">Enemies</span><div class="seg">
+      <button id="s-roster" aria-pressed="false">The roster</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="The roster, round four">
+    <h2>The roster, round four · for approval</h2>
+    <div class="row"><span class="lab">Sheets</span><div class="seg">
+      <button id="s-foes" aria-pressed="false">The rest</button>
+      <button id="s-bosses" aria-pressed="false">The bosses</button>
+    </div></div>
+    <div class="row"><span class="lab">In battle</span><div class="seg">
+      <button id="s-bf1" aria-pressed="false">Floor 1 · A</button>
+      <button id="s-bf1b" aria-pressed="false">Floor 1 · B</button>
+      <button id="s-bf6" aria-pressed="false">Floor 6</button>
+      <button id="s-bgaoler" aria-pressed="false">Gaoler</button>
+      <button id="s-bbell" aria-pressed="false">Bellringer</button>
+      <button id="s-binq" aria-pressed="false">Inquisitor</button>
+    </div></div>
+    <div class="row"><span class="lab">The Abbot</span><div class="seg">
+      <button id="s-abbotw" aria-pressed="false">Asleep, the curio</button>
+      <button id="s-babbot" aria-pressed="false">Woken</button>
+    </div></div>
+    <div class="row"><span class="lab">The crypt</span><div class="seg">
+      <button id="s-statue" aria-pressed="false">The iron angel, close</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="Compare">
+    <h2>Compare</h2>
+    <div class="row"><span class="lab">Version</span><div class="seg">
+      <button id="c-new" aria-pressed="true">Age of Judgment</button>
+      <button id="c-old" aria-pressed="false">As approved</button>
+    </div></div>
+  </section>
+  <section class="grp" aria-label="View">
+    <h2>View</h2>
+    <div class="row"><span class="lab">Zoom</span><div class="seg">
+      <button id="z-fit" aria-pressed="true">Fit (crisp)</button>
+      <button id="z-2" aria-pressed="false">×2</button>
+      <button id="z-3" aria-pressed="false">×3</button>
+    </div></div>
+    <div class="row"><span class="lab">Tools</span><div class="seg">
+      <button id="play" aria-pressed="false">Pause</button>
+      <span class="ms" id="ms">– ms</span>
+    </div></div>
+  </section>
+</aside>
+<main class="stage" id="stage">
+  <figure><span class="tag" id="tag">Age of Judgment</span><canvas id="game" width="474" height="232" aria-label="Game screen, animated"></canvas></figure>
+  <div class="tl" id="tl" aria-label="The launch, second by second"></div>
+  <p class="note" id="note"></p>
+  <section class="spec" aria-label="The direction">
+    <div class="card">
+      <h2>The premise</h2>
+      <p>When the sky passed judgment, iron angels came down burning and died where they fell. The world was rebuilt on their bodies. Ravenhold stands in the ribcage of one; under its crypts, something grows in the angel's body. You go down.</p>
+      <p>Every word stays medieval: saints, relics, iron. The RPG plays it straight. "Judgment" is also the weekly raid, so the boys' "judgment day at 11?" means something in the world.</p>
+    </div>
+    <div class="card">
+      <h2>The rules that hold</h2>
+      <ul>
+        <li><span class="sw" style="background:#2d4e80"></span>Iron is the stone family, darker and riveted.</li>
+        <li><span class="sw" style="background:#d23c5a"></span>The angels' eye-lights are crimson: enemies and danger, as before.</li>
+        <li><span class="sw" style="background:#c7b18c"></span>Gilding on buildings is umber, so gold still means loot.</li>
+        <li>Each depth owns one family of Moonwell 32: no new colours.</li>
+        <li>Ideas from the films, never their designs. At most one nod per screen.</li>
+        <li>The roster is a reskin: stats, roles, moves and the HUD don't change.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Depth and family</h2>
+      <table>
+        <tr><th>Floors</th><th>Where</th><th>Family</th></tr>
+        <tr><td>1–5</td><td>Shadow Crypt</td><td><span class="sw" style="background:#39719d"></span>Stone</td></tr>
+        <tr><td>6–10</td><td>The Ossuary</td><td><span class="sw" style="background:#aa8667"></span>Umber</td></tr>
+        <tr><td>11–15</td><td>The Iron Saint</td><td><span class="sw" style="background:#1e1a3e"></span>Stone darks, <span class="sw" style="background:#d23c5a"></span>crimson</td></tr>
+        <tr><td>16+</td><td>The Brood</td><td><span class="sw" style="background:#3f7960"></span>Moss, <span class="sw" style="background:#6b3b62"></span>dusk</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Where the films hide</h2>
+      <table>
+        <tr><td>Rain over a night city of lit windows</td><td>Blade Runner</td></tr>
+        <tr><td>Machines that judged from the sky; an iron frame under the flesh, red eyes</td><td>Terminator 1 and 2</td></tr>
+        <tr><td>A hive, resin, cocoons</td><td>Aliens</td></tr>
+        <tr><td>Swarms of bugs on the deep floors</td><td>Starship Troopers</td></tr>
+        <tr><td>The shimmer, the trophies</td><td>Predator</td></tr>
+        <tr><td>The serpent cult</td><td>Conan</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>What these are</h2>
+      <p>Code-drawn stand-ins like the rest of the Game Frame: the look, the shapes, the light. The final sprites stay yours.</p>
+      <p>Approved, this becomes an art-direction brief in the project and Issues for the build after the outside playtests, ahead of the Steam page.</p>
+    </div>
+  </section>
+</main>
+</div>
+<script>
+__ENGINE__
+</script>
+<script>
+const $ = (id) => document.getElementById(id);
+const cv = $('game'), cx = cv.getContext('2d');
+let scene = 'launch', version = 'new', playing = !matchMedia('(prefers-reduced-motion: reduce)').matches, last = performance.now(), msAvg = 0, msT = 0, ready = false;
+const clock = { launch: 0, desktop: 0, engine: 0, publisher: 0, developer: 0, title: 0, login: 0, enter: 0, town: 1, cwalk: 3, cbattle: 2.6, ossuary: 8.6, iron: 1, brood: 8.6, roster: 1, foes: 1, bosses: 1, bf1: 2.5, bf1b: 2.5, bf6: 0, bgaoler: 0, bbell: 0, binq: 0, abbotw: 6, babbot: 0, statue: 0 };
+const DRAW = {
+  launch: { n: 'launch', w: 492, h: 360 }, desktop: { n: 'launch_desktop' }, engine: { n: 'launch_engine' }, publisher: { n: 'launch_publisher' }, developer: { n: 'launch_developer' }, title: { n: 'launch_title' }, login: { n: 'launch_login' }, enter: { n: 'launch_enter' },
+  town: { n: 'town', o: 'orig_town' }, cwalk: { n: 'crypt_walk', o: 'orig_dungeon' }, cbattle: { n: 'crypt_battle', o: 'orig_battle' },
+  ossuary: { n: 'ossuary_walk' }, iron: { n: 'iron_battle' }, brood: { n: 'brood_walk' }, roster: { n: 'roster' },
+  foes: { n: 'foes' }, bosses: { n: 'bosses' }, bf1: { n: 'b_f1' }, bf1b: { n: 'b_f1b' }, bf6: { n: 'b_f6' }, bgaoler: { n: 'b_gaoler' }, bbell: { n: 'b_bellringer' }, binq: { n: 'b_inquisitor' }, abbotw: { n: 'abbot_walk' }, babbot: { n: 'b_abbot' }, statue: { n: 'statue', o: 'statue_orig' },
+};
+const NOTES = {
+  launch: '<b>The launch</b>, night one at 20:00, as it plays: 38 seconds, not interactive, there to set the mood. On the monitor, Windows 98: the Age of Judgment icon is double-clicked, the hourglass, the display mode switches to black and the engine boots line by line; the publisher\'s logo (Halsky Labs); the developer\'s (Procrastination Studios); the Age of Judgment logo over the fallen angel; the login screen, the account and password typed in and Log in pressed; logging in; the world loading with a tip; then Ravenhold fades in. Meanwhile the phone rises into your hand with The Boys\' first chat (FIRST_CHAT, the six lines as built), paced to the launch: typing dots, then a bubble, about every eight seconds (five bubbles since 0.91.2), the last one landing as the world finishes loading. Until then the pill reads Age of Judgment is loading with the percentage; at load it turns gold, Let\'s go, and the feed gets its welcome line. The strip under the frame shows each step (click one to jump) and when each message arrives. It loops. <br><br><b>Sound and music</b> (aoj-world §7b; the strip shows every cue, hover one for what it is): the real PC clean (the double-click, the drive, the display switching, the CD spinning up), then the game in PlayStation 1 fidelity: a sting for each studio, and the title\'s heavy ones: thunder on the first bolt, the halo dragged round in iron and ringing out, the spark, JUDGMENT roaring out of the centre and the strike as it lands, the loudest moment, with the theme\'s first chord on it. Music from the first logo to the town, slow and ominous in the vein of the PS1 King\'s Field games: a low drone under the logos, silence and rain, a rise with the halo, the theme from the strike through the login and the loading, its last chord as the screen goes black; it is gone as Ravenhold fades in. Rain under the title, the login and the loading. Lance\'s bubble moved from 18 s to 21.4 s so the title\'s sounds stand alone.',
+  desktop: '<b>Windows 98</b> (0 to 3.2 s). The teal desktop, the Age of Judgment icon at the top of the column (above where the phone sits), the pointer comes in, double-clicks it (the icon and its label select), the hourglass while it starts, then the display mode switches: a line collapses and the screen goes black.',
+  engine: '<b>The engine boots</b> (3.2 to 6.2 s). Black, and the client\'s start-up lines a little at a time, each with its OK in moss: the version, Iron Engine 3, video, sound, input, the realm\'s pack, the patch server. A block caret blinks.',
+  publisher: '<b>The publisher</b> (6.2 to 10.6 s): Halsky Labs. Its mark is Paweł\'s logo, a stippled face on a white sticker, as a two-tone pixel mark (void and moon, 75 x 88, made from his PNG). A point of light at the top; the sticker\'s rim traces itself both ways round from it and closes at the bottom; the face develops inside, brightest first, a violet front running through the grain, and lands with a shockwave. The mark slides left and HALSKY comes out from behind it, LABS pops up under it a letter at a time, presents. While it holds, the face\'s grain lives (a few dots blink). Then it reverses: the word slides back in, the face fades darkest first, the rim retracts to the point, which blinks out. <br><br><b>Sound</b> (the strip under the frame): a glass ting for the point, a bowed shimmer as the rim draws, crackling grain into a deep boom as the face lands, pips for LABS, a reversed swell on the way out; the music\'s low drone starts under it.',
+  developer: '<b>The developer</b> (10.6 to 15 s): Procrastination Studios, and the logo is late. Nearly a second of black with a spinner where it should be; then the badge (an hourglass on a sunset tile, app-icon style) pops in in a hurry, overshooting and tilted, and rights itself. Procrastination drops in a letter at a time, except the last n, which arrives late and hurries in from the right. STUDIOS under it, then est. eventually types itself. The sand runs; the hourglass is turned over for more time; a dithered fade to black.',
+  title: '<b>The title</b> (15 to 23 s). Black and rain; lightning shows the fallen angel for a moment; the scene comes up out of the dark. Then the logo, full screen: the broken halo is forged round from its gap (iron, gilt lips, rivets, engraved ticks), its crimson spark ignites with a burst; JUDGMENT is struck out from the centre in carved gilt capitals on a gentle arch (Cinzel Decorative, its swash G and M as the centrepiece; a chiselled bevel lit from the upper left, a metal gradient, a fine inline, a dark iron rim, a drop shadow), white-hot at first and cooling; a second bolt and a shake as it lands; AGE OF between two gilt rules inside the ring; a glint runs across the gilt; The realm of Ravenhold under it. Rain falls in front of it.',
+  login: '<b>The login screen</b> (23 to 31 s). The logo shrinks and rises to the top of the screen as the scene dims, and the iron panel slides up into place: Account and Password wells, Remember ticked, Log in in gold (the next action). The pointer clicks into Account and dutch is typed in, then into Password and nine stars, then it presses Log in (copper, down a pixel) and turns to the hourglass. Options, Credits and Quit under the panel; the version and the realm in the corners.',
+  enter: '<b>Logging in</b> (31 to 38 s). The logo stays at the top; the panel turns into a status line with the halo turning beside it: Connecting to Ravenhold, Authenticating, Account verified (moss). Then the world loads: Ravenhold in blackletter, Entering the world, a tip, the bar and what it is loading (the town, your party, the night). A dithered fade to black, then Ravenhold fades in the same way.',
+  town: '<b>Ravenhold</b>, as approved, in the new world. It rains: slanted streaks, splashes on the stones. The streets hold puddles with a pale rim, every lantern and fire bowl throws a shimmering reflection down the wet ground, and the night is colder. The Dungeon Portal is framed by two pairs of colossal iron ribs rising out of the court and meeting over the arch, a crimson heart-light where they meet: the town sits in the angel\'s chest. The fountain\'s statue is now a broken iron halo standing in the basin. Compare shows the approved town.<span class="films">The nod: the rain and the reflections of a night city.</span>',
+  cwalk: '<b>Floors 1 to 5, the Shadow Crypt</b>, as approved, with iron under the stone. The moonlit saint in the alcove is now an iron angel (redrawn with more detail in round two: see The iron angel, close). The banner carries the broken halo instead of the sun. Colossal riveted ribs rise through the far hall behind the arches. The party, the potion cart, the HUD and the curio are unchanged. Compare shows the approved crypt.',
+  cbattle: '<b>The crypt battle with the new roster.</b> Hollows, dead knights in blackened, rusted armour with a halo on the shield: the one in the back lane has his breastplate torn open on the iron frame and its crimson heart-lens, and the third has lost his armour down one arm to the frame. Penitents, gaunt flagellants with an iron cage over the head and a candle stub burning on top (a small warm light each), a scourge over the shoulder, lashes across the back. Behind them the Confessor winds up Last Rites: a heretic priest with a pointed hood, an iron confessional grille for a face with crimson light behind it, a serpent crozier and a censer breathing violet smoke. Stats, roles, moves and the HUD are unchanged: this is a reskin. Compare shows the approved skeletons, zombies and necromancer.<span class="films">The nods: the iron frame under the armour, red eyes in the dark; the serpent cult.</span>',
+  ossuary: '<b>Floors 6 to 10, the Ossuary</b>, in umber. Walls of stacked skulls and long bones, pillars of skulls under femur capitals, arches of femurs. A jewelled catacomb saint sits on his throne in gilt armour, crowned. Further on, a chandelier of bones hangs from the vault, candles on its tiers. Cherubs flutter ahead: baroque putti with iron wings, a blank porcelain face, an open mouth, a broken halo with its spark. The curio is a gilt reliquary with a crowned skull behind its glass. All the gilding is umber, so gold still means loot.',
+  iron: '<b>Floors 11 to 15, inside the Iron Saint</b>: stone darks and crimson eye-lights. Riveted hull plates streaked with rust, colossal ribs, organ pipes with crimson vents, and the great eye, an iron socket of rings round a crimson lens. The moon comes in through a tear in the hull. Here the Hollows are bare iron frames. The elite is the Hunter: cloaked, it is only a shimmer that bends the eye behind it, its trophies (three skulls and a dented helm) swinging in the air. Every 5 seconds the cloak fails for a moment and it shows, gaunt, with a smooth iron face, one slit and a hooked spear. It winds up Hunt · position 4.<span class="films">The nods: the shimmer and the trophies; an iron frame with red eyes.</span>',
+  brood: '<b>Floors 16 and down, the Brood</b>, in moss and dusk. The crypt again, overgrown: ribbed, glistening resin over the carving, cocoons hanging from the vault with a pilgrim\'s shape inside and a cold glow, strands and drips, pale glowing nodules. Drones crawl the walls. A green mist on the floor. The curio is a cocoon lying on the floor with a hand pressed against the membrane from inside.<span class="films">The nods: a hive of resin and cocoons; swarms of bugs.</span>',
+  roster: '<b>Every new enemy</b>, flat-lit to judge the shapes. Each replaces one of the approved mob, with its stats and moves: the Hollow (armoured, torn open, the bare iron frame) for the skeleton, the Penitent for the zombie, the Confessor for the necromancer, Cherubs for the imps. The Hunter (an elite) and the drones are new. All are code-drawn stand-ins for your sprites.',
+  foes: '<b>The rest of the roster</b>, flat-lit. <b>The Bat\'s replacement: both stay</b> (Paweł); in the build each bat that spawns is one or the other at random. <b>A · Ironwing</b>: a bat the Church\'s smiths rebuilt in angel iron when the crypt\'s bats died on the angel\'s light: an iron skull with blade ears and fangs, a cage of ribs round a crimson heart-lens, wings of iron finger-struts with black leather stretched between them, torn and patched, hooked talons; its joints spit sparks. <b>B · Vigil</b>: an old flying watcher of the Church: a riveted iron drum held up by a rotor of three iron feathers; its face is one window rimmed by the broken halo, a fallen angel\'s crimson eye in it that follows you, an iron shutter blinking over it; two feather-fins, three hooked blades swinging under it on chains; smoke and sparks from the hub. <b>Gravedigger</b> (the Brute, Shove), approved: a hulking brute in a black oilskin coat and hood, a riveted coffin-lid face-plate with one slit, an iron collar and padlocked chain, a shoulder plate, coffin-lid tassets, a pick and a cage lantern, an iron grave-spade. <b>The Abbot</b> (the troll curio and its fight), redrawn as a war-priest: a deep cowl over a gaunt grey face with embers in its sockets and an iron jaw slotted for his breath, a high iron collar standing behind his head, domed pauldrons (a reliquary candle burning on the near one), a gothic breastplate with a gilt ridge, the halo boss and wax seals on cords, a wine tabard with the halo in the split of his black habit, the iron-bound ledger chained to his belt, a banner pole on his back with a candle at each end of its bar, and a great iron mace whose head is a broken halo ringed with flanges. He swings it two-handed: up over his shoulder, then down in one fast arc. Asleep he sits slumped on the tithe heap, the banner planted behind him.',
+  bosses: '<b>The bosses</b>, flat-lit, each beside its big move, played through: wind-up, the hit, recovery. <b>The Gaoler</b> (the Ogre, floor 5, Smash): the ball is now solid iron. Smash is how a ball and chain is used: he hauls the ball up off the floor, whirls it overhead on a taut chain, faster and faster (the cast), his elbows out and the fists over his hood; then he brings it over his shoulder and down in one accelerating arc onto the floor in front of him, bending into it (a smear marks its speed); it bites in, the chain goes slack, and he drags it back. <b>The Bellringer</b> (the Warlock, floor 10, Summon): unchanged. <b>The Inquisitor</b> (the Black Knight, floor 15, Execute): his near pauldron is strapped to the arm and lifts with it. Execute: he raises the sword (the arm may bend), holds it over his back, then cuts: a straight arm swung from the shoulder, fast, the blade snapping through to forward and down; he holds the follow-through, then brings the sword back to rest.',
+  bf1: '<b>Floor 1 · A, the first battle:</b> Hollows and Ironwings (the build\'s Skeletons and Bats; each bat is an Ironwing or a Vigil at random). The Ironwings flap at head height over the Hollows; each heart-lens throws a little crimson light, so the one in the back lane still reads where everything is dimmed.',
+  bf1b: '<b>Floor 1 · B, the first battle:</b> Hollows and Vigils (the build\'s Skeletons and Bats; each bat is an Ironwing or a Vigil at random). The Vigils hover at head height on their rotors, the crimson eye in each halo watching the party; the one in the back lane reads by its eye.',
+  bf6: '<b>Floor 6:</b> the Gravedigger in the front lane winds up Shove on position 1 and drives the spade; with him a Penitent, a torn Hollow, Cherubs and a Confessor.',
+  bgaoler: '<b>The Gaoler, floor 5:</b> Smash winds up: he hauls the ball up and whirls it overhead on its chain, faster and faster, under the cast bar; when it fills he brings it over and down onto the floor in front of him in a fraction of a second, a flash and dust where it lands; then he drags it back.',
+  bbell: '<b>The Bellringer, floor 10:</b> Summon: he hauls the rope, the bell swings and tolls, the rings go out over the room; Cherubs have already come.',
+  binq: '<b>The Inquisitor, floor 15:</b> his shield up, his wings spread. Execute winds up: the wings flare, the sword comes up from where it stood planted and back over his head, his pauldron lifting with the arm; when the bar fills, the cut: a straight arm, fast, down and forward; he holds it, then brings the sword back.',
+  abbotw: '<b>The Abbot asleep on the tithe</b>, the curio in the corridor (the build\'s Sleeping troll on a loot pile): the war-priest slumped on a heap of gold (it is loot) against an iron-bound chest, his cowled head bowed, the ledger in his folded hands, his mace leaning on his shoulder, his banner planted in the heap behind him with its candles lit; his breath fogs and the coins hop when he snores, and now and then one eye opens. The curio\'s choices stay as built (Sneak and grab, Fight him).',
+  babbot: '<b>The Abbot, woken</b> (the troll\'s fight, a mini-boss): he raises the mace two-handed over his shoulder, then brings it down in one fast arc.',
+  statue: '<b>The iron angel in the crypt\'s alcove</b>, redrawn with more detail, shown as it sits in the walk at 2x (Compare: the approved Game Frame\'s saint). One of the fallen, set up by the Church as a saint: folded wings of riveted iron feathers rising to points above its head, scalloped coverts above and long primaries below; the gilt broken halo with its spark; a serene iron face, one eye still an ember weeping a line of rust; a breastplate with the halo; its hands on the pommel of a great sword, point down; a robe of deep iron folds with riveted bands; green patina low in the folds; the moon\'s cold rim down its right side; a carved plinth with its name worn away, the halo cut into it, wax run down its front.',
+};
+const OLDNOTE = '<b>As approved</b> (the Game Frame, 2026-11-24), for comparison.';
+function syncNote() {
+  const old = version === 'old' && DRAW[scene].o;
+  $('note').innerHTML = old ? OLDNOTE : NOTES[scene];
+  $('tag').textContent = old ? 'As approved' : 'Age of Judgment'; $('tag').className = old ? 'tag old' : 'tag';
+  for (const k of ['new', 'old']) { $('c-' + k).setAttribute('aria-pressed', version === k); $('c-' + k).disabled = !DRAW[scene].o; }
+}
+function setScene(s) {
+  scene = s; for (const k of Object.keys(DRAW)) $('s-' + k).setAttribute('aria-pressed', k === s);
+  const d = DRAW[s]; cv.width = d.w || 474; cv.height = d.h || 232; $('tl').classList.toggle('on', s === 'launch'); fit(); syncNote();
+}
+const STEPS = [['Windows', 0, 3.2, 'desktop'], ['Engine', 3.2, 6.2, 'engine'], ['Publisher', 6.2, 10.6, 'publisher'], ['Developer', 10.6, 15, 'developer'], ['Title', 15, 23, 'title'], ['Log in', 23, 31, 'login'], ['Logging in', 31, 38, 'enter'], ['Ravenhold', 38, 45, 'game']];
+const LOOP_LEN = 45;
+function buildTL() {
+  const tl = $('tl');
+  tl.innerHTML = '<div class="bar" id="tlbar">' + STEPS.map(([n, a, b], k) => `<div class="ph" data-k="${k}" style="width:${(b - a) / LOOP_LEN * 100}%">${n}</div>`).join('') + '<div class="now" id="tlnow"></div></div>'
+    + '<div class="chat">' + FIRST_CHAT_AT.map(([w, l, at], k) => `<div class="msg" id="tlm${k}" title="${w}: ${l.replace(/"/g, '&quot;')}" style="left:${at / LOOP_LEN * 100}%"></div>`).join('') + '</div>'
+    + '<div class="snd">' + LAUNCH_SOUND.map(([at, cue, what], k) => `<div class="cue${what.startsWith('pc:') ? ' pc' : ''}${/strike|thunder_near|aoj_ring|hl_land/.test(cue) ? ' big' : ''}" id="tlc${k}" title="${at.toFixed(2)} s · ${cue}: ${what.replace(/"/g, '&quot;')}" style="left:${at / LOOP_LEN * 100}%"></div>`).join('') + '</div>'
+    + '<div class="mus">' + LAUNCH_MUSIC.parts.map(([a, b, n]) => `<div class="part${n === 'the theme' ? ' theme' : ''}" style="left:${a / LOOP_LEN * 100}%;width:${(b - a) / LOOP_LEN * 100}%" title="music, ${a} to ${b} s: ${n}">${n}</div>`).join('') + LAUNCH_LOOPS.map(([c, a, b]) => `<div class="part" style="left:${a / LOOP_LEN * 100}%;width:${(b - a) / LOOP_LEN * 100}%;top:12px;height:2px;padding:0;background:#4a5a6a" title="${c} loop, ${a} to ${b} s"></div>`).join('') + '</div>'
+    + '<div class="legend"><span>The steps on the monitor (click to jump)</span><span>■ each bubble from The Boys arriving on the phone</span><span>| each sound cue (hover for what it is; red: the heavy ones, grey-blue: the real PC)</span><span>the music and its parts; the rain under it</span></div>';
+  tl.querySelectorAll('.ph').forEach((el) => { el.onclick = () => { clock.launch = STEPS[+el.dataset.k][1] + 0.01; }; });
+}
+function syncTL() {
+  if (scene !== 'launch') return;
+  const T = clock.launch; $('tlnow').style.left = (T / LOOP_LEN * 100) + '%';
+  LAUNCH_SOUND.forEach(([at], k) => { const el = $('tlc' + k); if (el) el.classList.toggle('in', T >= at && T < at + 0.35); });
+  document.querySelectorAll('.tl .ph').forEach((el, k) => el.classList.toggle('cur', T >= STEPS[k][1] && T < STEPS[k][2]));
+  FIRST_CHAT_AT.forEach(([, , at], k) => $('tlm' + k).classList.toggle('in', T >= at));
+}
+let zoom = 'fit';
+function fit() {
+  const base = cv.width, hb = cv.height, dpr = window.devicePixelRatio || 1;
+  const st = $('stage'), availW = st.clientWidth - 32, availH = window.innerWidth > 900 ? window.innerHeight - 60 : 1e9;
+  let s;
+  if (zoom === 'fit') { const k = Math.floor(Math.min(availW / base, availH / hb) * dpr); s = k >= 1 ? k / dpr : Math.min(availW / base, availH / hb); }
+  else s = +zoom;
+  st.classList.toggle('scroll', base * s > availW + 1);
+  document.documentElement.style.setProperty('--sw', Math.floor(base * s) + 'px');
+}
+function setZoom(z) { zoom = z; for (const k of ['fit', '2', '3']) $('z-' + k).setAttribute('aria-pressed', k === z); fit(); }
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (ready) {
+    if (playing) clock[scene] += dt;
+    if (scene === 'launch' && clock.launch > LOOP_LEN) clock.launch = 0;
+    const t0 = performance.now();
+    const d = DRAW[scene], name = version === 'old' && d.o ? d.o : d.n;
+    const c = aojDraw(name, clock[scene]);
+    cx.drawImage(c, 0, 0);
+    syncTL();
+    const ms = performance.now() - t0; msAvg = msAvg ? msAvg * 0.9 + ms * 0.1 : ms;
+    if (now - msT > 500) { $('ms').textContent = msAvg.toFixed(1) + ' ms'; msT = now; }
+  }
+  requestAnimationFrame(frame);
+}
+(async () => {
+  fit(); addEventListener('resize', fit);
+  for (const k of Object.keys(DRAW)) $('s-' + k).onclick = () => setScene(k);
+  $('c-new').onclick = () => { version = 'new'; syncNote(); };
+  $('c-old').onclick = () => { version = 'old'; syncNote(); };
+  for (const k of ['fit', '2', '3']) $('z-' + k).onclick = () => setZoom(k);
+  $('play').onclick = () => { playing = !playing; $('play').setAttribute('aria-pressed', !playing); };
+  $('play').setAttribute('aria-pressed', !playing);
+  syncNote();
+  await Promise.all([document.fonts.load('8px silkb'), document.fonts.load('8px tiny5'), document.fonts.load('11px m5'), document.fonts.load('13px jb9'), document.fonts.load('60px czd'), document.fonts.load('16px cz'), document.fonts.load('25px sora'), document.fonts.load('24px fred')]);
+  TC = document.createElement('canvas'); TC.width = 600; TC.height = 64; TX = TC.getContext('2d', { willReadFrequently: true });
+  setRes(334, 232); buildDungeon(); aojInit(); buildTL(); setScene('launch'); ready = true;
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#111">
+<script src="engine.js"></script><script src="kit.js"></script><script src="hud.js"></script><script src="dungeon.js"></script><script src="chars.js"></script><script src="enemies.js"></script><script src="screens.js"></script><script src="townkit.js"></script><script src="town.js"></script><script src="desk.js"></script><script src="win98.js"></script><script src="q4.js"></script><script src="cans_img.js"></script><script src="ebreak.js"></script><script src="dog.js"></script><script src="cables.js"></script><script src="phone.js"></script><script src="aoj.js"></script><script src="foes.js"></script><script src="logos.js"></script>
+<script>
+const FF={silkb:'silkscreen-latin-700-normal',tiny5:'tiny5-latin-400-normal',m5:'micro-5-latin-400-normal',jb9:'jacquarda-bastarda-9-latin-400-normal',jersey10:'jersey-10-latin-400-normal',czd:'cinzel-decorative-latin-900-normal',cz:'cinzel-latin-900-normal',sora:'sora-latin-800-normal',fred:'fredoka-latin-700-normal'};
+window.ready=(async()=>{for(const [k,f] of Object.entries(FF)){const ff=new FontFace(k,`url(../fonts/${f}.woff2)`);await ff.load();document.fonts.add(ff);}
+ TC=document.createElement('canvas');TC.width=600;TC.height=64;TX=TC.getContext('2d',{willReadFrequently:true});
+ setRes(334,232);buildDungeon();aojInit();return true;})();
+window.shot=(name,t,scale)=>{const c=aojDraw(name,t);const o=document.createElement('canvas');o.width=c.width*scale;o.height=c.height*scale;const x=o.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(c,0,0,o.width,o.height);return o.toDataURL('image/png');};
+</script></body></html>
