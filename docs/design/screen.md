@@ -149,12 +149,12 @@ listening, so her sounds are the most important ones in the game.
   Other rarities are bell pings that grow with rarity. Hits, abilities, level-ups and the UI stay chiptune.
 - **The launch's sound and music** (#127; [aoj-world.md](aoj-world.md) §7b): the launch (the whole of it on the first Monday,
   from the login every night after) has its own cue sheet, `LAUNCH_SOUND` (62 cues by the launch's second), `LAUNCH_LOOPS` (the rain) and `LAUNCH_MUSIC` (the
-  theme, `aoj_theme`, from 6.2 s to 39.6 s) in `render/page/aoj.js`, played by `ui/launchSound.ts` on the launch's
+  theme, `aoj_theme`, from 6.2 s to 43.6 s) in `render/page/aoj.js`, played by `ui/launchSound.ts` on the launch's
   clock: each cue fires once as T passes it and never for a jump past it (`systems/launchSheet.ts`); the theme plays at
   offset T - 6.2 and restarts at the right offset when it drifts more than 0.1 s; pause stops all of it and unpause
   resumes each sound where T is; the skip stops it all. A cue with several files plays them in turn (L A B S rising,
   the keys). All on the game bus; it makes no Noise (the night hasn't started). **From the login** (every night after
-  the first Monday): only the cues from T 23 on fire, and the theme (from its offset at 23, just before bar 2) and the
+  the first Monday): only the cues from T 27 on fire, and the theme (from its offset at 27, just before bar 2) and the
   rain fade in over 1.5 s (`LAUNCH_LOGIN_SOUND_FADE_SEC`); after the Log in press the clock runs fast (#149) and they
   fade out under it, the theme never resynced to the fast clock.
   - **The real PC is clean** (`mouse`, `crt`, `cdspin`, and `kb_clack`, a clacky mechanical keyboard, for the login's typing; no hard-drive chatter after the double-click, Paweł, #127); **the game's own sounds
@@ -163,14 +163,15 @@ listening, so her sounds are the most important ones in the game.
     long dark hall of damped combs and all-passes, about a third wet). The theme is sampled instruments sequenced on
     that chain (organ, a male choir's "oo" and "ah", low strings, low brass, a flute, a harp, timpani, a deep bell, a
     reversed cymbal), 24 voices at most (the oldest note gives its voice up), in stereo (32 kHz, 64 kbps): the deep (a
-    pedal on D and the choir on a fifth, about 14 dB under), silence for the rain, the rise into the strike (19.15 s,
+    pedal on D and the choir on a fifth, about 14 dB under), silence for the rain, the rise into the strike (23.15 s,
     the loudest moment of the launch and the theme's downbeat), a chord a bar at 60 bpm (D minor, B flat, E flat, A,
-    D) under a lone flute, the last chord as the screen goes black, silent by 39.6. The cues and the theme:
+    D) under a lone flute, the last chord as the screen goes black, silent by 43.6 (all of it 4 s later than before #151, the developer's
+    logo holding longer). The cues and the theme:
     `tools/sfx/launch.py`; the whole launch as one file for listening: `python3 tools/sfx/launch_mix.py`.
   - **The levels** are in `MIX` like every cue: the strike loudest, the theme under the title's sounds, the
     Procrastination Studios cues light, the real PC quiet. A file in `src/assets/sfx/own/` replaces any of them; an
-    own `aoj_theme` starts at 6.2 s and keeps the times (silence at 15, the downbeat at 19.15, the last chord at
-    37.15).
+    own `aoj_theme` starts at 6.2 s and keeps the times (silence at 19, the downbeat at 23.15, the last chord at
+    41.15).
 - **Where the sounds come from** (`tools/sfx/make.py`, `python3 tools/sfx/make.py [cue...]`):
   - Kenney CC0 recordings (`tools/sfx/kenney/`): steps, door, latch, creaks, plates, tins, coins, impacts.
   - Seeded synthesis in Python for the rest: two-voice TV babble, laugh track, credits, kettle, shower, hair

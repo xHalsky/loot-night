@@ -1,6 +1,6 @@
 // The launch on the first Monday (#127, the v2 redesign; docs/design/aoj-world.md §7): before the first night the PC
-// launches Age of Judgment on the monitor for 38 s while the boys' first chat comes in on the phone in your hand. Every
-// night after it starts at the login (T 23) and, once Log in is pressed, runs fast to the town (#149). One
+// launches Age of Judgment on the monitor for 42 s while the boys' first chat comes in on the phone in your hand. Every
+// night after it starts at the login (T 27) and, once Log in is pressed, runs fast to the town (#149). One
 // clock for the monitor, the chat and the sound: T starts when the chat comes up and stops while paused. Not
 // interactive; nothing starts the night before it ends. The render side is render/page/aoj.js (launchScreen), the
 // sound ui/launchSound.ts.

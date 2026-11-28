@@ -38,7 +38,7 @@ async def main():
         # the render time of the title and the login (the frames the desk waits on)
         await ev("g.debug = true; 0")
         ms = {}
-        for name, T in (('title', 19.6), ('login', 26.0), ('halsky', 8.5)):
+        for name, T in (('title', 23.6), ('login', 30.0), ('halsky', 8.5)):
             await ev(f"L.launch.seek({T}); 0"); await pg.wait_for_timeout(1200)
             txt = await pg.evaluate("()=>document.querySelector('.debug').innerText")
             import re
@@ -63,7 +63,7 @@ async def main():
         await pg.wait_for_timeout(300)
         n_after_skip = await ev("L.launch.fired.length")
         await pg.wait_for_timeout(1500)
-        check(await ev("L.launch.fired.length") == n_after_skip and await ev("L.launch.t()") >= 38, 'Skip the launch: at its end, nothing fires after it')
+        check(await ev("L.launch.fired.length") == n_after_skip and await ev("L.launch.t()") >= 42, 'Skip the launch: at its end, nothing fires after it')
         await pg.keyboard.press('F1')
         await pg.wait_for_timeout(500)
         await pg.screenshot(path='test/shots/launch_after_skip.png')

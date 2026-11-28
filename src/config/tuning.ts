@@ -152,20 +152,20 @@ export const T = {
   BOYS_RANDOM_SEC: [150, 240] as [number, number],   // a line with no moment of its own, now and then in the dungeon
   BOYS_THREAD_MAX: 30,            // The Boys' chat keeps this many lines
   CHAT_FIRST_SEC: 0.4, CHAT_TYPE_SEC: 0.25, CHAT_TYPE_PER_CHAR: 0.012, CHAT_TYPE_MAX: 0.8, CHAT_GAP_SEC: 0.2,   // the other 20:00 chats (#102): typing dots, then the bubble
-  // The launch on the first Monday (#127, the v2 redesign; aoj-world §7): Age of Judgment launches on the PC for 38 s while
+  // The launch on the first Monday (#127, the v2 redesign; aoj-world §7): Age of Judgment launches on the PC for 42 s while
   // the boys' first chat comes in, its bubbles arriving at these launch seconds, each after the typing dots. Nothing
-  // starts the night before the launch ends; then the town fades in from black, dithered.
-  LAUNCH_SEC: 38, LAUNCH_FADE_SEC: 0.9, LAUNCH_SOUND_END: 40,
-  CHAT_LAUNCH_AT: [2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 27.6, 35.0], CHAT_LAUNCH_TYPING: 1.6,   // four to read while it boots (#133); none from 15 to 21 (the title's sounds); the last 3 s before the town (#135)
-  // Every night after the first Monday starts from the login (#127, Paweł 2026-11-27): T starts at 23, a dithered fade in
-  // from black over it, the sound from T 23 (the theme at its offset and the rain faded in); the night's chat spread
-  // evenly from 25.4 to 35.4 s (three bubbles: 25.4, 30.4, 35.4)
-  LAUNCH_LOGIN_AT: 23, LAUNCH_LOGIN_FADE_SEC: 0.6, LAUNCH_LOGIN_SOUND_FADE_SEC: 1.5,
+  // starts the night before the launch ends; then the town fades in from black, dithered. Since #151 the developer's
+  // logo holds 4 s longer (10.6 to 19), so everything from the title on is 4 s later than it was (38 then).
+  LAUNCH_SEC: 42, LAUNCH_FADE_SEC: 0.9, LAUNCH_SOUND_END: 44,
+  CHAT_LAUNCH_AT: [2.6, 5.0, 8.4, 10.2, 12.8, 25.4, 31.6, 39.0], CHAT_LAUNCH_TYPING: 1.6,   // four to read while it boots (#133); none from 15 to 25 (the developer's scroller, the title's sounds); the last 3 s before the town (#135)
+  // Every night after the first Monday starts from the login (#127, Paweł 2026-11-27): T starts at 27, a dithered fade in
+  // from black over it, the sound from T 27 (the theme at its offset and the rain faded in)
+  LAUNCH_LOGIN_AT: 27, LAUNCH_LOGIN_FADE_SEC: 0.6, LAUNCH_LOGIN_SOUND_FADE_SEC: 1.5,
   // every night after the first (#149): the login and the typing at their pace, then from the Log in press the
   // connecting, verified and the loading bar run fast, LAUNCH_FAST_FROM to LAUNCH_SEC in LAUNCH_FAST_SEC real seconds
   // (the town in about 7.4 s after the chat comes up, not 15). The chat lands from CHAT_LOGIN_FROM to CHAT_LOGIN_TO,
   // its last 3 real s before the town comes in.
-  LAUNCH_FAST_FROM: 28.4, LAUNCH_FAST_SEC: 2.0, CHAT_LOGIN_FROM: 24.6, CHAT_LOGIN_TO: 27.4,
+  LAUNCH_FAST_FROM: 32.4, LAUNCH_FAST_SEC: 2.0, CHAT_LOGIN_FROM: 28.6, CHAT_LOGIN_TO: 31.4,
   WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))

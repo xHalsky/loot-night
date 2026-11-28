@@ -1165,7 +1165,7 @@ rsCanvas.addEventListener('pointerleave', () => { deskPhoneHover = false; stroke
 const phCanvas = el('phHand') as HTMLCanvasElement, phCtx = phCanvas.getContext('2d')!;
 let phHits: { x: number; y: number; w: number; h: number; act: string; arg: string }[] = [], phLast = 0, phWas = false;
 const PH_RISE_MS = 320;
-let phCloseArt = false;
+let phCloseArt = false, phFirstWas = false;
 function drawPhone() {
   const n = S.g.night, on = !!n && phoneShown() && PK.ready() && !S.g.paused;
   if (!phCloseArt && PK.ready()) {   // the close box in pixels (#104): the renderer's, set once as the button's picture
@@ -1174,9 +1174,18 @@ function drawPhone() {
   }
   if (on !== phWas) { phWas = on; phCanvas.style.display = on ? 'block' : 'none'; el('phClose').style.display = on ? 'block' : 'none'; if (!on) phHits = []; }
   if (!on) return;
+  // the first boot (#152, Paweł): the phone in your hand sits over her panel, centred, so the whole launch shows on the
+  // monitor unobscured and the phone covers you on the webcam; after Let's go it goes, and every later time it comes
+  // up in its usual spot (the desk shows no phone either way: it is in your hand)
+  const first = S.g.voice?.launch === 'full';
+  if (first !== phFirstWas) {
+    phFirstWas = first;
+    const dw = el('door').offsetWidth, left = Math.round((dw - phCanvas.offsetWidth) / 2) - dw;   // the desk starts where her panel ends
+    phCanvas.style.left = first ? `${left}px` : ''; el('phClose').style.left = first ? `${left + phCanvas.offsetWidth - 4}px` : '';
+  }
   const now = performance.now(), k = Math.min(1, (now - (n!.phUp ?? 0)) / PH_RISE_MS), dy = Math.round((1 - (1 - (1 - k) ** 3)) * 540);
   phCanvas.style.transform = dy ? `translateY(${dy}px)` : '';
-  el('phClose').style.visibility = launchHolds() ? 'hidden' : '';   // the launch (#127): not escapable, it sets the mood; its 38 s are the night's waiting
+  el('phClose').style.visibility = launchHolds() ? 'hidden' : '';   // the launch (#127): not escapable, it sets the mood; its 42 s are the night's waiting
   el('phClose').dataset.act = voiceUp() ? 'voiceOk' : n!.game?.kind === 'phone' ? 'closeGame' : phoneAction() ? 'preCancel' : 'preMenu';
   if (now - phLast < 33) return;   // 30 fps is plenty for a phone
   phLast = now;

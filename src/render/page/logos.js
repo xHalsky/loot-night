@@ -316,16 +316,21 @@ function textRows(str, x, y, f, rowIdx, o = {}) {
   for (let k = 0; k < p.length; k += 2) { const X = p[k] + x0, Y = p[k + 1] + y; if (o.show && o.show(X, Y) === false) continue; putI(X, Y, rowIdx(p[k + 1], X)); }
   return g.w;
 }
-// a sine scroller: the text moves left at speed px/s from the right edge, each letter riding a sine
+// a sine scroller, the scene's snake (#151, Paweł: the letters move one by one, as the Amiga's did, not as one still
+// wave): the text moves left at speed px/s from the right edge through a sine that stays nearly put on the screen
+// (it drifts at drift px/s), and every pixel column rides it, so each letter bends and bobs as it passes through and
+// the line slithers like a snake. o.k: the wave's number (radians per px), o.amp its height in px.
 function sineScroller(str, y, t, o = {}) {
-  const f = o.font || 'head', sp = o.speed || 95, amp = o.amp ?? 6, ramp = o.ramp || COPPER_FIRE;
+  const f = o.font || 'head', sp = o.speed || 95, amp = o.amp ?? 6, ramp = o.ramp || COPPER_FIRE, k = o.k ?? 0.03, drift = o.drift ?? 18;
+  const off = (X) => Math.round(Math.sin((X + t * drift) * k) * amp + Math.sin((X + t * drift * 2.4) * k * 2.3) * amp * 0.25);
   let x = W - t * sp;
-  for (let k = 0; k < str.length; k++) {
-    const ch = str[k], cw = measure(ch, f) + 1;
+  for (let n = 0; n < str.length; n++) {
+    const ch = str[n], cw = measure(ch, f) + 1;
     if (x > W) break;
     if (x + cw > 0 && ch !== ' ') {
-      const yy = Math.round(y + Math.sin(x * 0.035 + t * 3.2) * amp);
-      textRows(ch, Math.round(x), yy, f, (dy) => ramp[Math.min(ramp.length - 1, Math.max(0, dy + (o.rampOff || 0)))], { shadow: P.void });
+      const p = glyphs(ch, f, 0).pts, x0 = Math.round(x);
+      for (let q = 0; q < p.length; q += 2) { const X = p[q] + x0; putI(X + 1, y + p[q + 1] + off(X + 1) + 1, P.void); }   // its shadow, on the wave too
+      for (let q = 0; q < p.length; q += 2) { const X = p[q] + x0, dy = p[q + 1]; putI(X, y + dy + off(X), ramp[Math.min(ramp.length - 1, Math.max(0, dy + (o.rampOff || 0)))]); }
     }
     x += cw;
   }
@@ -422,9 +427,10 @@ function halskyLabs(u, len, cx, cy) {
 // stars; the logo drops in from above and bounces, wobbling, and lands in a burst of sparkles; its reflection; the band
 // opens; the copper bars swing in and the scroller starts. Then it holds until the title fades in over it.
 // ---------------------------------------------------------------------------
-const PS_T = { drop: 0.15, land: 0.55, refl: 0.8, band: 1.0, studios: 1.35, bars: 1.1, scroll: 1.2 };
+const PS_T = { drop: 0.15, land: 0.55, refl: 0.8, band: 1.0, studios: 1.35, bars: 0.7, scroll: 0.8 };   // the bars and the scroller sooner (#151)
 const PS_BANDS = [[0.1, P.moon], [0.24, P.s6], [0.36, P.s5], [0.44, P.d5], [0.52, P.s2], [0.6, P.d3], [0.72, P.d4], [0.86, P.d5], [1.01, P.d6]];
-const PS_SCROLL = 'YO! THIS INTRO WAS DUE IN MARCH.   GREETINGS TO DUTCH, HIXX, HUDZOR AND ARKBISHOP.   SEE YOU EVENTUALLY...   ';
+// read whole before the title comes in (#151): about 8 s of scrolling at 100 px/s
+const PS_SCROLL = 'YO! THIS INTRO WAS DUE IN MARCH.   GREETZ TO DUTCH, HIXX, HUDZOR AND ARKBISHOP.   ';
 function procrastinationStudios(u, len, cx, cy) {
   const font = '40px rock', LM = typeMask('PROCRASTINATION', font, { sy: 1.45 }), cap = LM.cap, base = 74;
   const lx = Math.round(cx - LM.tw / 2) - 2;
@@ -432,7 +438,7 @@ function procrastinationStudios(u, len, cx, cy) {
   // the copper bars swing in at the bottom, the scroller rides over them
   const bv = clamp((u - PS_T.bars) / 0.4);
   if (bv > 0) { copperBar(182 + Math.sin(u * 2.1) * 12, COPPER_SEA, bv); copperBar(206 + Math.sin(u * 2.1 + 2.6) * 10, COPPER_DUSK, bv); }
-  if (u > PS_T.scroll) sineScroller(PS_SCROLL, 190, u - PS_T.scroll, { speed: 95, amp: 7, ramp: COPPER_FIRE.slice(1), rampOff: 0 });
+  if (u > PS_T.scroll) sineScroller(PS_SCROLL, 190, u - PS_T.scroll, { speed: 100, amp: 7, k: 0.03, drift: 18, ramp: COPPER_FIRE.slice(1), rampOff: 0 });
   // the logo drops in from above, bounces twice and lands; it wobbles row by row while it moves
   let dy = 0;
   if (u < PS_T.land) { const k = clamp((u - PS_T.drop) / (PS_T.land - PS_T.drop)); dy = -Math.round((1 - k * k) * 110); }

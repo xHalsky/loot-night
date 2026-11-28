@@ -131,7 +131,8 @@ time, then is lost. With a drop every battle the bag fills by floor 5 or so: dro
 
 **Trash** (#148, Paweł). A trash can stands in the bag's lower right corner, in the footer under the grid (both the
 Inventory tab and the party panel in the dungeon; the footer is 2 px taller there and "record" moves left for it):
-a tan tin with dark ribs and a crimson lid, so it reads as "throw away" at a glance. Drag any item onto it, from the
+a tan tin with dark ribs, lid and body one colour (#150, Paweł: the lid was crimson), a bin's shape so it reads as
+"throw away" at a glance. Drag any item onto it, from the
 bag or off a hero's gear slot, and it is gone: no question asked (the player knows what he is doing), nothing back
 (Salvage is the paid way out), in town or in the dungeon. Maps and feathers go the same way. While an item is in your
 hand the lid lifts; over the bin the item shrinks to `TRASH_GHOST_SCALE` (0.6) so a breathing crimson glow shows round
@@ -220,7 +221,8 @@ Souls.
 
 - **A trash can, with no confirmation** (0.104.0, #148; Paweł, 2026-11-28): there was no way to throw an item away
   outside town (Salvage and the Merchant are town services), so a full bag in the dungeon meant skipping drops. The
-  bin sits where the eye ends on the bag, its lid crimson; dropping on it is the whole act, no "are you sure" (Paweł:
+  bin sits where the eye ends on the bag, one tan tin (its crimson lid of 0.104.0 went in 0.105.0: Paweł wanted it
+  one colour); dropping on it is the whole act, no "are you sure" (Paweł:
   the player knows what he is doing). A locked item stays out (my call: the lock is the player's own "keep this", the
   same as for Salvage and selling); maps and feathers can go. Rejected: a 7th column or a bag slot for it (the
   Treasury row needs all six), giving Souls for it (that is Salvage, and a free salvage anywhere would make the

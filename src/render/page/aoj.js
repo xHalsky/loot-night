@@ -474,11 +474,13 @@ function screenBoot(t, o = {}) {
 // loading; then Ravenhold. Meanwhile, on the phone in your hand, the boys' first chat comes in a bubble at a time,
 // paced to the launch, and Let's go lights only when the game has loaded.
 // ===========================================================================
-const LAUNCH = [['desktop', 0, 3.2], ['engine', 3.2, 6.2], ['publisher', 6.2, 10.6], ['developer', 10.6, 15], ['title', 15, 23], ['login', 23, 31], ['enter', 31, 38], ['game', 38, 1e9]];
-const LAUNCH_END = 38;
+// the developer's logo holds 8.4 s (#151, Paweł: its scroller needs reading time; it was 4.4), so from the title on
+// everything is 4 s later than it was
+const LAUNCH = [['desktop', 0, 3.2], ['engine', 3.2, 6.2], ['publisher', 6.2, 10.6], ['developer', 10.6, 19], ['title', 19, 27], ['login', 27, 35], ['enter', 35, 42], ['game', 42, 1e9]];
+const LAUNCH_END = 42;
 const launchPhase = (T) => { for (const [k, a, b] of LAUNCH) if (T >= a && T < b) return [k, T - a, b - a]; return ['game', T - LAUNCH_END, 1e9]; };
 // the boys' first chat (data/voice.ts FIRST_CHAT), each bubble's arrival in launch seconds; typing dots before each
-const FIRST_CHAT_AT = [['Billy', "yo. realm's up", 2.6], ['Mike', "launching. still can't skip the intro", 5.0], ['Lance', "good. it's the best part", 8.4], ['Billy', 'patch notes are forty pages, i read zero', 10.2], ['Billy', 'this intro looks like an old crack intro lol', 12.8], ['Lance', 'would you like to know more?', 21.4], ['Lance', 'in. arkbishop ready to be ignored again', 27.6], ['Billy', '11 sharp. and careful with her tonight, they mostly come at night', 35.0]];
+const FIRST_CHAT_AT = [['Billy', "yo. realm's up", 2.6], ['Mike', "launching. still can't skip the intro", 5.0], ['Lance', "good. it's the best part", 8.4], ['Billy', 'patch notes are forty pages, i read zero', 10.2], ['Billy', 'this intro looks like an old crack intro lol', 12.8], ['Lance', 'would you like to know more?', 25.4], ['Lance', 'in. arkbishop ready to be ignored again', 31.6], ['Billy', '11 sharp. and careful with her tonight, they mostly come at night', 39.0]];
 const TYPING_SEC = 1.6;
 // THE LAUNCH'S SOUND (aoj-world §7b): the cue sheet in launch seconds, fired once as T passes each time; one music cue
 // from 6.2 s to the town; the rain under the title, the login and the loading. Times follow the code above exactly.
@@ -501,33 +503,33 @@ const LAUNCH_SOUND = [
   [8.9, 'hl_glint', 'the glint runs across the chrome: a thin bright shimmer (0.7 s)'],
   // Procrastination Studios (developer), u = T - 10.6 (#133: a cracktro; it fades in over Halsky Labs and holds)
   [10.75, 'ps_drop', 'the logo drops in from above: a falling whistle (0.4 s)'],
-  [11.15, 'ps_mod', 'it lands on the first kick of a 4-channel tracker jingle (125 BPM, arpeggio chords, a bass, the drums, a lead) that ends on a D minor chord ringing out by 15 s'],
-  // the title, u = T - 15
-  [15.9, 'thunder_near', 'the first bolt shows the angel: a crack on the flash, a roll for 3 s'],
-  [17.2, 'aoj_ring', 'the halo forged round from its gap: iron dragged round under strain, rising, a forge\'s hiss (1 s); it closes at 18.2 and rings out like a cracked bell (2.5 s)'],
-  [18.15, 'aoj_spark', 'the spark ignites: an electric crackle, a burst, a thin high crimson tone (1.2 s)'],
-  [18.4, 'aoj_word', 'JUDGMENT struck out from the centre, white-hot: a furnace roar widening with the word, a reversed cymbal rising into the strike (0.75 s)'],
-  [19.15, 'aoj_strike', 'the second bolt as it lands, the shake: the loudest moment of the launch. A thunder crack on the frame, a massive iron impact (anvil and slam, pitched low), a sub drop, a long tail. The theme\'s downbeat'],
-  [19.2, 'aoj_quench', 'white-hot cooling: hot iron hissing (0.6 s), under the strike\'s tail'],
-  [19.55, 'aoj_ageof', 'AGE OF and its two gilt rules running out: a low gong for the letters, two metal slides left and right, a bright tink each at 20.25'],
-  [20.3, 'aoj_glint', 'the glint runs across the gilt: a quiet shimmer sweeping left to right (0.9 s)'],
-  [22.0, 'aoj_glint', 'the second glint'],
-  // the login, u = T - 23
-  [23.45, 'ui_panel', 'the iron panel slides up: stone and iron, a soft stop at 23.9'],
-  [23.95, 'mouse', 'pc: a click in Account'],
-  ...[1, 2, 3, 4, 5].map((k) => [23 + 1.1 + k * 0.18, 'kb_clack', 'pc: "dutch" typed on a clacky mechanical keyboard']),
-  [25.7, 'mouse', 'pc: a click in Password'],
-  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => [23 + 2.75 + k * 1.15 / 9, 'kb_clack', 'pc: nine stars typed']),
-  [28.0, 'mouse', 'pc: Log in clicked'], [28.0, 'ui_login', 'Log in pressed: a heavy iron button, a low bell tap'],
-  [28.3, 'thunder_far', 'the scene\'s lightning (27.5): far thunder, a rumble with no crack'],
-  // logging in, u = T - 31
-  [32.7, 'ui_verified', 'Account verified: a solemn two-note bell, soft'],
-  [35.8, 'thunder_far', 'the scene\'s lightning (34.8): far thunder'],
+  [11.15, 'ps_mod', 'it lands on the first kick of a 4-channel tracker jingle (125 BPM, arpeggio chords, a bass, the drums, a lead) that ends on a D minor chord ringing out by 19 s (two more bars since #151)'],
+  // the title, u = T - 19
+  [19.9, 'thunder_near', 'the first bolt shows the angel: a crack on the flash, a roll for 3 s'],
+  [21.2, 'aoj_ring', 'the halo forged round from its gap: iron dragged round under strain, rising, a forge\'s hiss (1 s); it closes at 22.2 and rings out like a cracked bell (2.5 s)'],
+  [22.15, 'aoj_spark', 'the spark ignites: an electric crackle, a burst, a thin high crimson tone (1.2 s)'],
+  [22.4, 'aoj_word', 'JUDGMENT struck out from the centre, white-hot: a furnace roar widening with the word, a reversed cymbal rising into the strike (0.75 s)'],
+  [23.15, 'aoj_strike', 'the second bolt as it lands, the shake: the loudest moment of the launch. A thunder crack on the frame, a massive iron impact (anvil and slam, pitched low), a sub drop, a long tail. The theme\'s downbeat'],
+  [23.2, 'aoj_quench', 'white-hot cooling: hot iron hissing (0.6 s), under the strike\'s tail'],
+  [23.55, 'aoj_ageof', 'AGE OF and its two gilt rules running out: a low gong for the letters, two metal slides left and right, a bright tink each at 24.25'],
+  [24.3, 'aoj_glint', 'the glint runs across the gilt: a quiet shimmer sweeping left to right (0.9 s)'],
+  [26.0, 'aoj_glint', 'the second glint'],
+  // the login, u = T - 27
+  [27.45, 'ui_panel', 'the iron panel slides up: stone and iron, a soft stop at 27.9'],
+  [27.95, 'mouse', 'pc: a click in Account'],
+  ...[1, 2, 3, 4, 5].map((k) => [27 + 1.1 + k * 0.18, 'kb_clack', 'pc: "dutch" typed on a clacky mechanical keyboard']),
+  [29.7, 'mouse', 'pc: a click in Password'],
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => [27 + 2.75 + k * 1.15 / 9, 'kb_clack', 'pc: nine stars typed']),
+  [32.0, 'mouse', 'pc: Log in clicked'], [32.0, 'ui_login', 'Log in pressed: a heavy iron button, a low bell tap'],
+  [32.3, 'thunder_far', 'the scene\'s lightning (31.5): far thunder, a rumble with no crack'],
+  // logging in, u = T - 35
+  [36.7, 'ui_verified', 'Account verified: a solemn two-note bell, soft'],
+  [39.8, 'thunder_far', 'the scene\'s lightning (38.8): far thunder'],
 ];
 // loops: [cue, from, to, fade in, fade out]
-const LAUNCH_LOOPS = [['rain', 15.0, 37.2, 0.8, 0.8]];
+const LAUNCH_LOOPS = [['rain', 19.0, 41.2, 0.8, 0.8]];
 // the music: one through-composed cue from 6.2 s; its sections, for the timeline and the brief (aoj-world §7b)
-const LAUNCH_MUSIC = { cue: 'aoj_theme', at: 6.2, end: 39.6, parts: [[6.2, 15.0, 'the deep'], [15.0, 16.4, 'rain'], [16.4, 19.15, 'the rise'], [19.15, 37.15, 'the theme'], [37.15, 39.6, 'last chord']] };
+const LAUNCH_MUSIC = { cue: 'aoj_theme', at: 6.2, end: 43.6, parts: [[6.2, 19.0, 'the deep'], [19.0, 20.4, 'rain'], [20.4, 23.15, 'the rise'], [23.15, 41.15, 'the theme'], [41.15, 43.6, 'last chord']] };
 
 function launchBuf() { setRes(GS_W, GS_H); const F = buf('launch', GS_W, GS_H); clearFrame(F); bind(F); CLIP = null; MAT = M_STONE; EMI = 0; TAG = 0; DXV = 0; return F; }
 function launchOut(F, lights = [], amb = [0.5, 0.5, 0.6], dither = true) {
@@ -617,7 +619,7 @@ function developerFrame(u, len) {
 }
 // The studio logos hold and the next screen fades in over them (#133, Paweł: no animation out): a palette-exact
 // dithered crossfade over LAUNCH_XFADE seconds. snapLaunch copies a frame aside (every screen draws into one canvas).
-const LAUNCH_XFADE = 0.5, LAUNCH_LEN = { publisher: 4.4 - 1e-3, developer: 4.4 - 1e-3 };
+const LAUNCH_XFADE = 0.5, LAUNCH_LEN = { publisher: 4.4 - 1e-3, developer: 8.4 - 1e-3 };
 let LAUNCH_SNAP = null;
 function snapLaunch(c) { if (!LAUNCH_SNAP || LAUNCH_SNAP.width !== c.width || LAUNCH_SNAP.height !== c.height) { LAUNCH_SNAP = document.createElement('canvas'); LAUNCH_SNAP.width = c.width; LAUNCH_SNAP.height = c.height; } const g = LAUNCH_SNAP.getContext('2d'); g.clearRect(0, 0, c.width, c.height); g.drawImage(c, 0, 0); return LAUNCH_SNAP; }
 // over c, keep the old frame where the Bayer value is at or above k (k: 0 all old, 1 all new)
@@ -646,6 +648,7 @@ function titleFrame(u) {
   const vis = u < 0.9 ? 0.04 : u < 1.18 ? 1 : lerp(0.25, 1, clamp((u - 1.3) / 1.8));
   const L = titleLogo(u), flash = u > 0.9 && u < 1.18 ? (u < 0.98 || u > 1.08 ? 1 : 0.5) : L.flash * 0.7;
   const [cx, cy] = LOGO_BIG;
+  // screenBoot's t is the scene's own clock (its lightning, its rain), the launch's T as it was before #151: 4 s behind
   return screenBoot(15 + u, { vis, flash, halo: false, plaque: false, bar: false, sparkI: L.spark * (1 + L.burst * 1.5), lights: [{ x: cx, y: cy + 20, r: 150, i: 0.35 * L.word, c: WARM }], ui: (F, t) => {
     smokeU(cx, cy + 12, 240, 52, 0.55 * L.word);
     aojLogo(cx + L.shake, cy + L.shake, 1, t, { ring: L.ring, spark: L.spark, sparkBurst: L.burst, word: L.word, heat: L.heat, glint: L.gl, flash: L.flash, ageOf: L.ageOf });

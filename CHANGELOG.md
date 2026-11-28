@@ -3,6 +3,34 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.105.0 (2026-11-28)
+
+Paweł's notes on 0.104.0: the trash can in one colour, the Procrastination logo longer with a snaking scroller, and
+the first boot's phone moved off the monitor (#150 to #152).
+
+- **The trash can is one colour** (#150): its lid is now the body's tan tin, not crimson. The glow when you drag an
+  item over it stays.
+- **Procrastination Studios holds 4 s longer, and its scroller snakes** (#151):
+  - The developer's logo is on screen 8.4 s (10.6 to 19 s; was 4.4). Everything from the title on is 4 s later, so the
+    first Monday's launch is 42 s (was 38).
+  - Moved with it: the cue sheet, the rain, the first Monday's chat after 15 s (25.4, 31.6 and 39.0 s), the login
+    nights' clock (from T 27; the fast part from 32.4) and Let's go at 42 s.
+  - Re-baked: the theme (its deep part runs on under the longer logo, everything after 4 s later) and the tracker
+    jingle (two more bars: a climbing lead first, then the tune, ending on its chord by 19 s).
+  - The scroller's wave now stays nearly still on the screen and the text runs through it. Every pixel column rides
+    the wave, so the letters bend and bob one after another like a snake. Before, the wave moved with the text and the
+    line looked like one still curve.
+  - The scroller starts sooner (0.8 s) at 100 px/s, and the message is cut to fit: "YO! THIS INTRO WAS DUE IN MARCH.
+    GREETZ TO DUTCH, HIXX, HUDZOR AND ARKBISHOP." All of it is read before the title comes in.
+  - The review audio (`design/v2/audio/`) is re-mixed to 44 s.
+- **First boot: the phone sits over her panel** (#152): on the first Monday's launch the phone in your hand is centred
+  on the left panel, covering you on the webcam, so the whole launch shows on the monitor. There is no phone on the
+  desk meanwhile. After Let's go it goes away. Every later time, including the later nights' logins, it comes up in its
+  usual spot.
+- Seeded sims (good and idle) identical: no balance change.
+- Tests: `test/launch.ts`, `test/launch.py`, `test/week.py`, `test/fastboot.py` and `test/v2_stills.py` follow the
+  new times.
+
 ## 0.104.0 (2026-11-28)
 
 Paweł's notes: a way to throw items away, and a faster boot after the first night (#148, #149).

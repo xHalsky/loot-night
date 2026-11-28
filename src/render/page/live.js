@@ -408,11 +408,11 @@ function liveBag(st, X0, PW, y0) {
     if (c && !c.locked && !c.empty) panelHit(x, y, 21, 21, 'bagCell', c.id, 'bag:' + c.id);
   });
 }
-// the bag's trash can (#148, loot.md): a bin standing in the footer's right corner, its lid crimson so it reads as
-// "throw away". open: an item in your hand (the lid lifts off, the dark mouth shows); hot: the item is over it (a crimson
+// the bag's trash can (#148, loot.md): a bin standing in the footer's right corner, one tan tin, lid and body alike
+// (#150: Paweł, the lid was crimson). open: an item in your hand (the lid lifts off, the dark mouth shows); hot: the item is over it (a crimson
 // glow round it, wide enough to show past the item in hand, the lid higher and jumping); bad: the item over it is locked
 // (the lid stays down, no glow: the item in hand gets the refusal ring and shakes); clap: the lid slamming shut after an item went in (0..1)
-const BIN_LID = ['....RRR....', '.RRRRRRRRR.', 'RRRRRRRRRRR', 'WWWWWWWWWWW'];
+const BIN_LID = ['....utr....', '.vuuttttrv.', 'vuuttttttrv', 'vqqqqqqqqqv'];   // the body's tan tin, all of it one colour (#150)
 const BIN_BODY = [   // 11 wide, 9 tall: tan tin, dark ribs, a little narrower at the foot
   '.vvvvvvvvv.',
   '.vuqtqtqrv.',

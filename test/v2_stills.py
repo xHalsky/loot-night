@@ -9,7 +9,7 @@ REF = 'design/v2/stills/1x'
 OUT = '/tmp/w6'; os.makedirs(OUT, exist_ok=True); os.makedirs('design/v2/review', exist_ok=True)
 GO = "a=>{const e=document.createElement('button'); e.dataset.act=a; document.getElementById('stage').appendChild(e); e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); e.remove()}"
 EV = "js=>{const L=window.__lootnight, S=L.S, g=S.g, n=g.night; return eval(js)}"
-PH = {'01': 0, '02': 3.2, '03': 6.2, '04': 10.6, '05': 15, '06': 23, '07': 31, '08': 38}   # each beat's start (the stills' times are from it)
+PH = {'01': 0, '02': 3.2, '03': 6.2, '04': 10.6, '05': 19, '06': 27, '07': 35, '08': 42}   # each beat's start (the stills' times are from it; from the title on 4 s later since #151)
 GAME = "()=>{const a=document.getElementById('rpgArea').getBoundingClientRect(); return {x:a.left,y:a.top,width:a.width*474/334,height:a.height}}"
 pairs, ms = [], {}
 
@@ -31,8 +31,8 @@ async def launch(b):
     await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
     await pg.evaluate(GO, 'newGame'); await pg.wait_for_timeout(1200)
     for f in sorted(x for x in os.listdir(REF) if x.startswith('desk-launch-')):
-        T = float(re.search(r'T([0-9.]+)\.png', f).group(1))
-        await ev(f"L.launch.seek({min(T, 37.99) if T < 38 else T}, true); 0"); await pg.wait_for_timeout(300)
+        T = float(re.search(r'T([0-9.]+)\.png', f).group(1)); T = T + 4 if T >= 15 else T   # the references' times are from before #151
+        await ev(f"L.launch.seek({min(T, 41.99) if T < 42 else T}, true); 0"); await pg.wait_for_timeout(300)
         p = f'{OUT}/{f}'; await pg.screenshot(path=p)
         im = Image.open(p).convert('RGB').resize((640, 360), Image.NEAREST).crop((148, 0, 640, 360)); im.save(p)
         pairs.append(('launch', f, p))
@@ -41,7 +41,7 @@ async def launch(b):
         m = re.match(r'launch-(\d\d)[a-z]?-.*?-([0-9.]+)s\.png', f); T = PH[m.group(1)] + float(m.group(2))
         await ev(f"L.launch.seek({T}, true); 0"); await pg.wait_for_timeout(200)
         pairs.append(('launch', f, await game_shot(pg, f[:-4])))
-    for key, T in (('launch title (19.6 s)', 19.6), ('launch login (26 s)', 26.0)):
+    for key, T in (('launch title (23.6 s)', 23.6), ('launch login (30 s)', 30.0)):
         await ev(f"L.launch.seek({T}, true); 0"); await render_ms(pg, ev, key)
     await pg.close()
 

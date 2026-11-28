@@ -102,16 +102,16 @@ def write_stereo(write_dir, name, x2, sr=32000, br='64k'):
     os.unlink(tmp)
 
 
-# ---------------------------------------------------------------- the theme (aoj_theme): 6.2 s to 39.6 s of the launch
+# ---------------------------------------------------------------- the theme (aoj_theme): 6.2 s to 43.6 s of the launch
 THEME_AT = 6.2
 
 
 def theme():
-    """Through-composed to the launch (§7b): the deep (6.2-15), rain (15-16.4, silent), the rise (16.4-19.15), the theme
-    (19.15-37.15, 60 bpm, a chord a bar: Dm, Bb, Eb, A, D) and the last chord (37.15, D open, dying by 39.6). Times
+    """Through-composed to the launch (§7b): the deep (6.2-19), rain (19-20.4, silent), the rise (20.4-23.15), the theme
+    (23.15-41.15, 60 bpm, a chord a bar: Dm, Bb, Eb, A, D) and the last chord (41.15, D open, dying by 43.6). Times
     in launch seconds; the file starts at 6.2."""
     D.seed(4100)
-    L = 39.6 - THEME_AT + 0.6
+    L = 43.6 - THEME_AT + 0.6
     seq = ps1.Sequencer(L)
     T = lambda s: s - THEME_AT   # launch seconds to file seconds
 
@@ -126,38 +126,39 @@ def theme():
     harp = ps1.Instrument(ps1.harp_samples(), adsr=(0.002, 0.4, 0.3, 0.6), pan=-0.4, gain=0.17)
     bell = ps1.Instrument([ps1.bell_sample('D3')], adsr=(0.002, 2.5, 0.0, 2.5), pan=0.05, gain=0.36)
 
-    # 1. the deep (6.2-15), about 14 dB under the theme: a low organ pedal on D and the choir's "oo" on an open fifth,
+    # 1. the deep (6.2-19; 4 s longer since #151, the developer's logo holding), about 14 dB under the theme: a low organ
+    #    pedal on D and the choir's "oo" on an open fifth,
     #    swelling slowly; from 10.6 a slow low-strings figure, D to E flat and back, every 4 s. Thins out with the fade.
     deep = 10 ** (-14 / 20) * 1.8
-    seq.note(pedal, nf('D2'), T(6.2), 8.3, vel=deep)
-    seq.note(pedal, nf('D1') * 2, T(6.2), 8.3, vel=deep * 0.6)
-    seq.note(oo, nf('D3'), T(6.8), 7.6, vel=deep)
-    seq.note(oo, nf('A3'), T(7.6), 6.8, vel=deep * 0.85)
-    for k, at in enumerate((10.6, 12.6)):
+    seq.note(pedal, nf('D2'), T(6.2), 12.3, vel=deep)
+    seq.note(pedal, nf('D1') * 2, T(6.2), 12.3, vel=deep * 0.6)
+    seq.note(oo, nf('D3'), T(6.8), 11.6, vel=deep)
+    seq.note(oo, nf('A3'), T(7.6), 10.8, vel=deep * 0.85)
+    for k, at in enumerate((10.6, 12.6, 14.6, 16.6)):
         seq.note(strings, nf('D3'), T(at), 1.9, vel=deep * 0.9)
-        seq.note(strings, nf('Eb3'), T(at + 2.0), 1.9 if at < 12 else 0.8, vel=deep * 0.9)
-    # 2. rain (15-16.4): no music.
-    # 3. the rise (16.4-19.15): the choir's "ah" low on D; a timpani roll from 17.2 growing with the halo; string tremolo
-    #    climbing D, E flat, F, G to A by 19; a reversed cymbal from 18.4 into the strike.
-    seq.note(ah, nf('D3'), T(16.4), 2.6, vel=0.55, adsr=(1.6, 0.5, 0.95, 0.5))
-    seq.note(ah, nf('A2'), T(17.4), 1.6, vel=0.35, adsr=(1.2, 0.5, 0.95, 0.5))
-    climb = [('D3', 16.6), ('Eb3', 17.2), ('F3', 17.7), ('G3', 18.2), ('A3', 18.7)]
+        seq.note(strings, nf('Eb3'), T(at + 2.0), 1.9 if at < 16 else 0.8, vel=deep * 0.9)
+    # 2. rain (19-20.4): no music.
+    # 3. the rise (20.4-23.15): the choir's "ah" low on D; a timpani roll from 21.2 growing with the halo; string tremolo
+    #    climbing D, E flat, F, G to A by 23; a reversed cymbal from 22.4 into the strike.
+    seq.note(ah, nf('D3'), T(20.4), 2.6, vel=0.55, adsr=(1.6, 0.5, 0.95, 0.5))
+    seq.note(ah, nf('A2'), T(21.4), 1.6, vel=0.35, adsr=(1.2, 0.5, 0.95, 0.5))
+    climb = [('D3', 20.6), ('Eb3', 21.2), ('F3', 21.7), ('G3', 22.2), ('A3', 22.7)]
     for i, (nn, at) in enumerate(climb):
-        end = climb[i + 1][1] if i + 1 < len(climb) else 19.15
+        end = climb[i + 1][1] if i + 1 < len(climb) else 23.15
         t = at
         while t < end - 0.02:   # tremolo: the bow re-striking about 12 times a second
-            seq.note(trem, nf(nn), T(t), 0.06, vel=0.35 + 0.5 * (t - 16.6) / 2.5)
-            seq.note(trem, nf(nn) * 2, T(t + 0.04), 0.05, vel=0.22 + 0.3 * (t - 16.6) / 2.5)
+            seq.note(trem, nf(nn), T(t), 0.06, vel=0.35 + 0.5 * (t - 20.6) / 2.5)
+            seq.note(trem, nf(nn) * 2, T(t + 0.04), 0.05, vel=0.22 + 0.3 * (t - 20.6) / 2.5)
             t += 0.083
-    t = 17.2
-    while t < 19.1:   # the timpani roll, growing
-        k = (t - 17.2) / 1.9
+    t = 21.2
+    while t < 23.1:   # the timpani roll, growing
+        k = (t - 21.2) / 1.9
         seq.add(ps1.timpani_hit(nf('D2'), 0.6, vel=0.12 + 0.5 * k ** 1.6, seed=int(t * 100)), T(t), gain=0.8)
         t += 0.07 - 0.025 * k
-    cym = ps1.rev_cymbal(19.15 - 18.4)
-    seq.add(cym, T(18.4), gain=0.32)
-    # 4. the theme (19.15-37.15): bars at 19.15, 23.15, 27.15, 31.15, 35.15. On the strike the full chord.
-    bars = [19.15, 23.15, 27.15, 31.15, 35.15]
+    cym = ps1.rev_cymbal(23.15 - 22.4)
+    seq.add(cym, T(22.4), gain=0.32)
+    # 4. the theme (23.15-41.15): bars at 23.15, 27.15, 31.15, 35.15, 39.15. On the strike the full chord.
+    bars = [23.15, 27.15, 31.15, 35.15, 39.15]
     chords = [
         (['D2'], ['D3', 'A3', 'D4', 'F4'], ['D3', 'A3', 'F4'], ['D2', 'A2', 'D3']),        # D minor
         (['Bb1'], ['Bb2', 'F3', 'Bb3', 'D4'], ['Bb2', 'F3', 'D4'], ['Bb1', 'F2', 'Bb2']),  # B flat
@@ -166,7 +167,7 @@ def theme():
         (['D2'], ['D3', 'A3', 'D4', 'F4'], ['D3', 'A3', 'F4'], ['D2', 'A2', 'D3']),        # D
     ]
     for b, (at, (ped, org, cho, low)) in enumerate(zip(bars, chords)):
-        d = (bars[b + 1] if b + 1 < len(bars) else 37.15) - at
+        d = (bars[b + 1] if b + 1 < len(bars) else 41.15) - at
         for p in ped:
             seq.note(pedal, nf(p), T(at), d + 0.1, vel=0.95)
         for nn in org:
@@ -182,8 +183,8 @@ def theme():
         if b >= 1:   # a deep bell tolling each bar from bar 2
             seq.note(bell, nf('D3') if b != 3 else nf('A2'), T(at), 0.1, vel=0.8)
     # the melody on the flute, once the strike has settled
-    mel = [('A4', 21.15, 1), ('C5', 22.15, 1), ('D5', 23.15, 2), ('C5', 25.15, 1), ('Bb4', 26.15, 1), ('G4', 27.15, 2),
-           ('Bb4', 29.15, 1), ('A4', 30.15, 1), ('G4', 31.15, 1), ('F4', 32.15, 1), ('E4', 33.15, 2), ('D4', 35.15, 2.4)]
+    mel = [('A4', 25.15, 1), ('C5', 26.15, 1), ('D5', 27.15, 2), ('C5', 29.15, 1), ('Bb4', 30.15, 1), ('G4', 31.15, 2),
+           ('Bb4', 33.15, 1), ('A4', 34.15, 1), ('G4', 35.15, 1), ('F4', 36.15, 1), ('E4', 37.15, 2), ('D4', 39.15, 2.4)]
     for nn, at, beats in mel:
         seq.note(flute, nf(nn), T(at), beats * 0.96, vel=0.9, vib=(5.2, 0.18))
     # from the login (bar 2) a quiet harp in eighths on the chord's notes under the typing, out at bar 4
@@ -191,24 +192,24 @@ def theme():
     for b in (1, 2):
         for k, nn in enumerate(harp_notes[b]):
             seq.note(harp, nf(nn), T(bars[b] + k * 0.5), 0.45, vel=0.75 - 0.08 * (k % 2))
-    # 5. the last chord (37.15, the screen going black): D open (D, A, D, no third) on organ, choir and the bell, swelling
-    #    for a moment and dying into the reverb; silent by about 39.6
+    # 5. the last chord (41.15, the screen going black): D open (D, A, D, no third) on organ, choir and the bell, swelling
+    #    for a moment and dying into the reverb; silent by about 43.6
     for nn in ('D2', 'A2', 'D3', 'A3', 'D4'):
-        seq.note(organ, nf(nn), T(37.15), 0.9, vel=0.85, adsr=(0.35, 0.4, 0.9, 1.0))
+        seq.note(organ, nf(nn), T(41.15), 0.9, vel=0.85, adsr=(0.35, 0.4, 0.9, 1.0))
     for nn in ('D3', 'A3', 'D4'):
-        seq.note(oo, nf(nn), T(37.15), 0.8, vel=0.8, adsr=(0.4, 0.4, 0.9, 1.0))
-    seq.note(pedal, nf('D2'), T(37.15), 0.9, vel=0.8, adsr=(0.3, 0.4, 0.9, 1.0))
-    seq.note(bell, nf('D3'), T(37.15), 0.1, vel=0.9)
+        seq.note(oo, nf(nn), T(41.15), 0.8, vel=0.8, adsr=(0.4, 0.4, 0.9, 1.0))
+    seq.note(pedal, nf('D2'), T(41.15), 0.9, vel=0.8, adsr=(0.3, 0.4, 0.9, 1.0))
+    seq.note(bell, nf('D3'), T(41.15), 0.1, vel=0.9)
     dry = seq.mix()
     wet = ps1.hall(dry, decay=3.4, wet=0.36, pre=0.035)
-    out = wet[:int((39.6 - THEME_AT + 0.4) * PSR)]
-    # fade the last of the tail to silence by 39.6
-    n0, n1 = int((39.0 - THEME_AT) * PSR), int((39.6 - THEME_AT) * PSR)
+    out = wet[:int((43.6 - THEME_AT + 0.4) * PSR)]
+    # fade the last of the tail to silence by 43.6
+    n0, n1 = int((43.0 - THEME_AT) * PSR), int((43.6 - THEME_AT) * PSR)
     if n1 <= len(out):
         out[n0:n1] *= np.linspace(1, 0, n1 - n0)[:, None] ** 2
         out[n1:] = 0
-    # the deep part thins out with the dithered fade (14.45) and is gone at 15
-    a0, a1 = int((14.45 - THEME_AT) * PSR), int((15.0 - THEME_AT) * PSR)
+    # the deep part thins out with the dithered fade (18.45) and is gone at 19
+    a0, a1 = int((18.45 - THEME_AT) * PSR), int((19.0 - THEME_AT) * PSR)
     out[a0:a1] *= np.linspace(1, 0, a1 - a0)[:, None]
     return out, seq.voices_max()
 
@@ -414,12 +415,14 @@ def register(cue, write, level, kenney, out_dir):
     def _ps_mod():
         """A 4-channel tracker jingle in D minor at 125 BPM (a row 0.12 s, speed 6 at 50 Hz): the logo lands on its first
         kick; arpeggio chords (the effect that plays a chord on one channel, a note per tick), a bass, the drums, a lead;
-        a final chord on row 28 rings out by 15 s, as the title comes in. Original."""
+        two passes over Dm, Bb, C, A (the lead climbing in the first, the tune in the second); a final chord on row 60
+        rings out by 19 s, as the title comes in (#151: the logo holds 4 s longer, so two more bars). Original."""
         D.seed(6520)
-        ROW, TICK, N = 0.12, 0.02, 28
+        ROW, TICK, N = 0.12, 0.02, 60
         out = np.zeros(secs(N * ROW + 0.62))
         nf = lambda m: 440.0 * 2 ** ((m - 69) / 12)   # MIDI note to Hz
-        chords = [(0, 8, 62, 'min'), (8, 16, 58, 'maj'), (16, 22, 60, 'maj'), (22, 28, 57, 'maj')]   # D4 m, Bb3, C4, A3
+        chords = [(0, 8, 62, 'min'), (8, 16, 58, 'maj'), (16, 24, 60, 'maj'), (24, 32, 57, 'maj'),
+                  (32, 40, 62, 'min'), (40, 48, 58, 'maj'), (48, 54, 60, 'maj'), (54, 60, 57, 'maj')]   # D4 m, Bb3, C4, A3, twice
         # channel 1: the arpeggio, a 25% pulse, a note per tick
         for r0, r1, root, kind in chords:
             iv = [0, 3, 7] if kind == 'min' else [0, 4, 7]
@@ -442,20 +445,21 @@ def register(cue, write, level, kenney, out_dir):
             return D.bp(D.white(0.14), 1200, 7000) * np.exp(-tt(0.14) / 0.05) * 0.8 + dsine(185, 0.14, 0.04) * 0.5
         def hat():
             return D.hp(D.white(0.04), 7000) * np.exp(-tt(0.04) / 0.012) * 0.5
-        for r in (0, 6, 8, 14, 16, 22, 24):
+        for r in [b + o for b in range(0, 56, 8) for o in (0, 6)] + [56]:
             place(out, kick() * 0.5, r * ROW)
-        for r in (4, 12, 20, 26, 27):
-            place(out, snare() * (0.32 if r != 27 else 0.22), r * ROW)
+        for r in list(range(4, 56, 8)) + [58, 59]:
+            place(out, snare() * (0.32 if r != 59 else 0.22), r * ROW)
         for r in range(1, N, 2):
             place(out, hat() * 0.12, r * ROW)
         # channel 4: the lead, a 50% pulse with a little vibrato
-        melody = [(8, 69, 2), (10, 72, 2), (12, 74, 4), (16, 76, 2), (18, 77, 2), (20, 76, 2), (22, 73, 2), (24, 76, 4)]
+        melody = [(8, 74, 2), (10, 77, 2), (12, 74, 4), (16, 76, 2), (18, 79, 2), (20, 76, 4), (24, 73, 2), (26, 76, 2), (28, 81, 4)]   # it climbs
+        melody += [(r + 32, m, ln) for r, m, ln in [(8, 69, 2), (10, 72, 2), (12, 74, 4), (16, 76, 2), (18, 77, 2), (20, 76, 2), (22, 73, 2), (24, 76, 4)]]   # the tune
         for r, m, ln in melody:
             d = ln * ROW
             t = tt(d)
             f = nf(m) * (1 + 0.012 * np.sin(2 * np.pi * 6 * t) * np.clip((t - 0.08) / 0.05, 0, 1))
             place(out, D.osc(f, d, 'square', 0.5) * np.clip(t / 0.005, 0, 1) * (0.75 + 0.25 * np.exp(-t / 0.1)) * np.clip((d - t) / 0.01, 0, 1) * 0.11, r * ROW)
-        # row 28: the final D minor chord, everything at once, ringing out
+        # row 60: the final D minor chord, everything at once, ringing out
         r = N * ROW
         place(out, kick() * 0.55, r)
         place(out, D.hp(D.white(0.6), 3000) * np.exp(-tt(0.6) / 0.22) * 0.2, r)

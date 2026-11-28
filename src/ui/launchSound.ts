@@ -1,6 +1,6 @@
 // The launch's sound and music (#127, aoj-world §7b): the cue sheet (render/page/aoj.js LAUNCH_SOUND, LAUNCH_LOOPS,
 // LAUNCH_MUSIC) played against the launch's one clock (systems/launch.ts). From the login (every night after the first
-// Monday) nothing before T 23 fires and the theme and the rain fade in over LAUNCH_LOGIN_SOUND_FADE_SEC; once Log in
+// Monday) nothing before T 27 fires and the theme and the rain fade in over LAUNCH_LOGIN_SOUND_FADE_SEC; once Log in
 // is pressed the clock runs fast (#149) and the theme fades out under it. Each cue fires once as T passes its time,
 // never for a jump past it; the theme plays at offset T - 6.2 and restarts at the right offset when it drifts more than
 // 0.1 s; pause stops all of it and unpause resumes it where T is; the skip stops it all. All on the game bus; the

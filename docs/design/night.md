@@ -39,14 +39,18 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   shooters (an inside joke for Paweł's friends) and read as plain gamer talk without them: no film, character or game is
   named, and a quote is kept exact only up to five words. **The first Monday** is their chat, live (`FIRST_CHAT`), paced
   to **the launch** (#127, below): eight bubbles, one at a time, each after the name and three hopping dots, arriving at
-  2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 27.6 and 35.0 s (`CHAT_LAUNCH_AT`, 1.6 s of dots each, `CHAT_LAUNCH_TYPING`; a
-  soft tick as each lands; none while the title's heavy sounds play; the last 3 s before the town comes in, #135):
+  2.6, 5.0, 8.4, 10.2, 12.8, 25.4, 31.6 and 39.0 s (`CHAT_LAUNCH_AT`, 1.6 s of dots each, `CHAT_LAUNCH_TYPING`; a
+  soft tick as each lands; none over the developer's scroller and the title's heavy sounds; the last 3 s before the town
+  comes in, #135):
   Billy's realm is up; then four lines to read while it boots, setting the mood (#133, Paweł): Mike can't skip the
   intro, Lance "good. it's the best part", Billy's patch notes he didn't read and "this intro looks like an old crack
   intro lol"; Lance's "would you like to know more?"; Lance's own login, "in. arkbishop ready to be ignored again",
-  as the password is typed (#141: he can't see your screen); last, Billy's 11 sharp, "careful with her tonight". Until
-  38 s **there is no button** (#142, Paweł: no "Age of Judgment is loading" pill), and Esc, Enter, the home bar and the
-  close box do nothing. **At 38 s, as the town comes in, the gold Let's go appears and the night waits for it** (#142,
+  as the password is typed (#141: he can't see your screen); last, Billy's 11 sharp, "careful with her tonight". **On
+  this first boot the phone sits over her panel** (#152, Paweł): centred on the left panel, so the launch shows whole on
+  the monitor and the phone covers you on the webcam; no phone on the desk meanwhile; after Let's go it goes, and every
+  later time it comes up in its usual spot. Until
+  42 s **there is no button** (#142, Paweł: no "Age of Judgment is loading" pill), and Esc, Enter, the home bar and the
+  close box do nothing. **At 42 s, as the town comes in, the gold Let's go appears and the night waits for it** (#142,
   Paweł: the player clicks to go on; it went down by itself in 0.101.1); Enter, Esc and the home bar work too. Then
   the How-to cards.
   **The boys always text, never send voice notes**
@@ -58,31 +62,31 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   entertainment.", Sunday "monday the patch drops. tonight we farm". After the plug the boys react the same way (Billy
   "game over man. GAME OVER.", "tuesday again then.", Lance "all that loot, gone like tears in rain", Mike "she pulled
   the plug? mid-raid??"; `replayChat`), under "Tuesday, again". These
-  nights' chats are paced to the launch from the login (below): their bubbles spread evenly from 24.6 to 27.4 s
-  (`CHAT_LOGIN_FROM`, `CHAT_LOGIN_TO`; three bubbles at 24.6, 26.0 and 27.4, the replay's four at 24.6, 25.5, 26.5 and
-  27.4), each after up to 1.6 s of dots, all in before Log in is pressed and 3 real s before the town; no button until
-  38 s; then Let's go (#142; `chatDown`), and How to hide
+  nights' chats are paced to the launch from the login (below): their bubbles spread evenly from 28.6 to 31.4 s
+  (`CHAT_LOGIN_FROM`, `CHAT_LOGIN_TO`; three bubbles at 28.6, 30.0 and 31.4, the replay's four at 28.6, 29.5, 30.5 and
+  31.4), each after up to 1.6 s of dots, all in before Log in is pressed and 3 real s before the town; no button until
+  42 s; then Let's go (#142; `chatDown`), and How to hide
   follows on a night with a new tile, then tonight's stars; then the night starts. The message stays in The Boys' chat
   until the next call. Week two has no chat (nothing new): the phone comes up empty while the login plays, Let's go
-  at 38 s.
+  at 42 s.
 - **The launch** (#127, the v2 redesign; [aoj-world.md](aoj-world.md) §6 to §7b; `systems/launch.ts`,
   the screens `render/page/aoj.js` and `logos.js`, the sound `ui/launchSound.ts`): before the first night the PC
-  launches Age of Judgment on the monitor for 38 s (`LAUNCH_SEC`) while the boys' first chat comes in. Not interactive:
+  launches Age of Judgment on the monitor for 42 s (`LAUNCH_SEC`) while the boys' first chat comes in. Not interactive:
   it sets the mood. One clock for the monitor, the chat and the sound: T starts when the chat comes up and stops while
   paused; the night's clock waits all through it. The beats: Windows 98 and the Age of Judgment icon (the broken halo)
   double-clicked (0 to 3.2 s); the engine's start-up lines (to 6.2); **Halsky Labs**, the publisher, its mark Paweł's
   logo as a two-tone pixel mark (`HALSKY_MARK`, `tools/halsky_mark.py` from `design/v2/assets/`; to 10.6);
-  **Procrastination Studios**, the developer (to 15; both logos redrawn for #133: each holds once it is in and the
-  next screen fades in over it, dithered, `LAUNCH_XFADE` in `aoj.js`); the title, rain and lightning over the fallen
-  angel, the halo forged, JUDGMENT struck (to 23); the login, "dutch" and nine stars typed, Log in (to 31); logging in
-  and the world loading (to 38). Then the town fades in from black (dithered, 0.9 s, `LAUNCH_FADE_SEC`) and the feed
+  **Procrastination Studios**, the developer, its sine scroller snaking under it (to 19; 4 s longer since #151 so the
+  scroller can be read; both logos redrawn for #133: each holds once it is in and the next screen fades in over it,
+  dithered, `LAUNCH_XFADE` in `aoj.js`); the title, rain and lightning over the fallen angel, the halo forged, JUDGMENT
+  struck (to 27); the login, "dutch" and nine stars typed, Log in (to 35); logging in and the world loading (to 42). Then the town fades in from black (dithered, 0.9 s, `LAUNCH_FADE_SEC`) and the feed
   gets the realm's welcome, "Welcome to Age of Judgment. The sky has judged. Ravenhold endures." (empty before; #145:
   "have fun, don't get caught" read as the game knowing about her). **The whole launch on the first Monday
   only; every night after it starts from the login** (Paweł; replays, "Monday, again" included, and week two too;
-  `voiceNote`'s `launch`: `full` or `login`): T starts at 23 (`LAUNCH_LOGIN_AT`), the login fades in from black
+  `voiceNote`'s `launch`: `full` or `login`): T starts at 27 (`LAUNCH_LOGIN_AT`), the login fades in from black
   (dithered, 0.6 s, `LAUNCH_LOGIN_FADE_SEC`), the typing and the Log in press play at their pace, then the rest runs
-  fast (#149; `launchRate`: T 28.4 to 38 in 2 s, `LAUNCH_FAST_FROM`, `LAUNCH_FAST_SEC`), the town in 7.4 s, with their
-  sound (only the cues from 23 on; the theme from its offset there and the rain, both faded in over 1.5 s,
+  fast (#149; `launchRate`: T 32.4 to 42 in 2 s, `LAUNCH_FAST_FROM`, `LAUNCH_FAST_SEC`), the town in 7.4 s, with their
+  sound (only the cues from 27 on; the theme from its offset there and the rain, both faded in over 1.5 s,
   `LAUNCH_LOGIN_SOUND_FADE_SEC`, and out over the fast part). F1's "Skip
   the launch" goes straight to its end and stops its sound; the bot sims and `test/` skip it. Its sound and music: [screen.md](screen.md), Audio.
 - **The boys' chat between the calls** (#109; `data/boys.ts`, `systems/boys.ts`): moments of the night post a line (or
@@ -262,29 +266,41 @@ happening.
   and the scroller carries the joke (the intro was due in March) and greets the boys. Rejected: Sora and Fredoka (too
   soft), the ring and hourglass (too corporate for the scene), copying a real group's logo or a real crack's text
   (original only), a scroller with real groups' names.
-- **The boys chat while it boots** (0.101.0, #133; Paweł): the launch is 38 s, and five bubbles left long gaps. Four
+- **The boys chat while it boots** (0.101.0, #133; Paweł): the launch was 38 s, and five bubbles left long gaps. Four
   early lines set the mood (the intro you can't skip, "it's the best part", the crack intro look) and one lands as
   the password is typed: Lance logging in himself (0.102.0, #141: his "nine stars" line was dropped, he can't see
-  your screen). None from 15 to 21 s, where the title's sounds stand alone. Rejected: more lines
+  your screen). None from 15 to 25 s, where the developer's scroller and the title's sounds stand alone (15 to 21 s before #151). Rejected: more lines
   later (the login has its own beats), a skip button (the wait is the joke and the theme).
 - **The chat ends 3 s before the town; the player starts the night with Let's go** (0.101.1, #135; 0.103.0, #142;
-  Paweł): the last bubble lands 3 real s before the town on every launch (35.0 s on the first Monday, 27.4 s from the
+  Paweł): the last bubble lands 3 real s before the town on every launch (39.0 s on the first Monday, 31.4 s from the
   login), so it is read before the town comes in. The phone went down
   by itself at 38 s in 0.101.1; Paweł reversed it: the night starts when the player clicks the gold Let's go, which
   appears only then (no loading pill with a percentage before it: the monitor already shows the loading). Mike's Tab
   tip was dropped from the first Monday's chat: the How-to cards teach it. Rejected: the phone going down by itself
   (the player should choose the moment), a dim pill before it's time (a button that does nothing).
 
+- **The developer's logo holds 4 s longer; its scroller snakes** (0.105.0, #151; Paweł, 2026-11-28): at 4.4 s the
+  sine scroller showed its first line and was gone, and its letters rode one wave that moved with the text, so the
+  line looked like a still curve. The logo now holds 8.4 s, so the first Monday's launch is 42 s (everything from the
+  title on is 4 s later: the cue sheet, the theme, re-baked with its deep section running on, the tracker jingle with
+  two more bars, the chat after 15 s, the login nights' T); the scroller starts sooner and its wave stays nearly put
+  on the screen while the text runs through it, each pixel column riding it, as the Amiga's did. The message was cut
+  to fit ("SEE YOU EVENTUALLY..." went; the band under the logo says it). Rejected: a slower scroller (a crawl reads
+  as broken), taking the time from Halsky Labs (Paweł likes it as it is).
+- **The first boot's phone sits over her panel** (0.105.0, #152; Paweł, 2026-11-28): the phone in your hand covered
+  the left third of the monitor all through the launch, the logos included. On the first boot only it is centred on
+  the left panel, covering you on the webcam, and the launch shows whole; after Let's go it reveals you. Every later
+  night (a short login) it stays in its usual spot, so the phone in your hand is always where you look for it in play.
 - **The launch has its own clock, and holds the night** (#127, Paweł's v2 redesign, approved 2026-11-27): one T for the
   monitor, the chat and the sound, started when the chat comes up, stopped by pause, running in real seconds (not the
-  game's time scale), so the bubbles, the beats and the music never drift apart. Nothing starts the night before 38 s,
-  and the close box is hidden: the 38 s are the waiting the night already did while the chat was up, and the launch is
+  game's time scale), so the bubbles, the beats and the music never drift apart. Nothing starts the night before 42 s,
+  and the close box is hidden: the 42 s are the waiting the night already did while the chat was up, and the launch is
   there to set the mood; at its end the gold Let's go appears (#142). Rejected: letting a button cut it short (the
   boys' last line and the theme's downbeat would be skipped by most players); drawing it as a video (it is the renderer's code, palette-exact, and stays editable). The
   sims never run it; F1 skips it.
 - **From the login every night after the first Monday, loading fast** (0.99.1, #127; 0.104.0, #149; Paweł, 2026-11-27
-  and 11-28): the whole 38 s every night would wear thin, and none at all would lose the ritual of logging in to the
-  boys' chat. The login carries it: the same clock from T 23, the chat over the typing, the theme picked up at its
+  and 11-28): the whole launch every night would wear thin, and none at all would lose the ritual of logging in to the
+  boys' chat. The login carries it: the same clock from T 27, the chat over the typing, the theme picked up at its
   offset (just before bar 2) and faded in. The 15 s login was still too slow on a new night or after a lost one
   (Paweł: "watching the long load after that is killing the pacing"), so from the Log in press the clock runs 4.8x:
   the connecting, verified and loading screens still show (it reads as a fast load, not a cut) and the town is in at

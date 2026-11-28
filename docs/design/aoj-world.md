@@ -217,25 +217,33 @@ winged plaque).
 
 ## 7. The launch on night one (approved 2026-11-27)
 
-Not interactive: it sets the mood. 38 s on the monitor, live on the samples page (The launch: the whole on the desk with
-the phone in hand, and each step on its own, with a timeline strip that also shows the sound cues and the music, §7b).
+Not interactive: it sets the mood. 42 s on the monitor (38 until #151, when the developer's logo got 4 s more so its
+scroller can be read; everything from the title on moved 4 s later), live on the samples page (The launch: the whole
+on the desk with the phone in hand, and each step on its own, with a timeline strip that also shows the sound cues and
+the music, §7b; the page keeps the 38 s timings).
+
+**On the first boot the phone sits over her panel** (#152, Paweł 2026-11-28): the phone in your hand is moved
+horizontally to the centre of the left panel, so the whole launch shows on the monitor unobscured, as a showpiece, and
+the phone covers you on the webcam. There is no phone on the desk meanwhile (it is in your hand). After Let's go it
+goes away and reveals you; every later time it comes up in its usual spot, over the left of the monitor. Rejected:
+shrinking the phone (its chat must stay readable) and leaving it over the monitor (it hid the logos' left third).
 
 | s | On the monitor |
 |---|---|
 | 0 to 3.2 | **Windows 98:** the teal desktop, the Age of Judgment icon at the top of the column (above where the phone sits), the pointer double-clicks it, the hourglass, then the display mode switches: a line collapses to black. |
 | 3.2 to 6.2 | **The engine boots:** black, the client's start-up lines a little at a time, each with its OK in moss (the version, Iron Engine 3, video, sound, input, ravenhold.pak, the patch server); a block caret. |
 | 6.2 to 10.6 | **The publisher, Halsky Labs** (redrawn 2026-11-27, #133: Paweł asked for an 80s Japanese studio-gear flair, then the feel of the 16-bit cracktro and demo scene's logos, with more detail; original). Its mark is **Paweł's logo** (a stippled face on a white sticker, his PNG, `design/v2/assets/`) as a two-tone pixel mark, void and moon only, 75 x 88 (`HALSKY_MARK`, made by `halsky_mark.py`), given a dark extrusion like the word's and sparkles on its rim. Beside it **HALSKY** in a wide, heavy face (Syncopate Bold) in banded chrome (hard steps on the stone ramp) with a deep violet extrusion and twinkling sparkles; a red three-row copper rule under it ending in a crimson **LABS** badge with screws in its corners, like a rack unit's model badge; **PRESENTS** (Tiny5 doubled, spaced, a chrome gradient through it) centred under the whole lockup between two rules as wide as it. A slow parallax starfield behind. In: the stars; a red power-on line sweeps across (0.2 s); the mark rasters in top to bottom behind a bright scanline (0.45 s); HALSKY flies in from the right on speed lines and locks (1.42 s, 7.62) with a flash, a lens streak and a burst of sparkles, its extrusion and the sticker's pushing out; the badge lights like a panel LED, two flickers then on (1.6 s); PRESENTS opens from the middle (2.0 s); a glint runs across the chrome (2.7 s). Then it holds, the face's grain alive, the sparkles twinkling; **no animation out:** the next screen fades in over it (dithered, 0.5 s). |
-| 10.6 to 15 | **The developer, Procrastination Studios** (redrawn 2026-11-27, #133: Paweł asked for it changed completely, after the cracktros and demos the pirate scene put before the games; the name and the tagline kept). It fades in over the held Halsky Labs. A parallax starfield; a big chrome **PROCRASTINATION** in a spiky display face (New Rocker, stretched tall) in banded chrome (moon and teal on top, mauve and peach below) with a deep violet extrusion, sparkles and a rippling mirror reflection; **STUDIOS** tagged at its right under the reflection like an artist's signature; **"est. eventually"** in uncial lettering (Uncial Antiqua) with a gradient through it, in a dark band between two rules; at the bottom two copper bars swing and a sine scroller rides over them ("YO! THIS INTRO WAS DUE IN MARCH. GREETINGS TO DUTCH, HIXX, HUDZOR AND ARKBISHOP. SEE YOU EVENTUALLY..."). In: the logo drops in from above (0.15 s), bounces twice wobbling row by row, and lands in a burst of sparkles (0.55 s); its reflection (0.8 s); the band opens (1.0 s); the copper bars swing in (1.1 s) and the scroller starts (1.2 s); STUDIOS (1.35 s). Then it holds until the title fades in over it (dithered, 0.5 s). |
-| 15 to 23 | **The title:** black and rain; lightning shows the angel; the scene comes up out of the dark. The logo (section 6): the halo forged round from its gap, the spark ignites, JUDGMENT struck out from the centre, white-hot and cooling, a second bolt and a shake as it lands, AGE OF, a glint across the gilt, "The realm of Ravenhold"; rain in front of it. |
-| 23 to 31 | **The login screen:** the logo shrinks to the top as the scene dims, and the iron panel slides up: Account and Password wells, Remember ticked, Log in in gold. The pointer types "dutch" and nine stars, presses Log in (copper, down a pixel), turns to the hourglass. Options, Credits, Quit; the version and the realm in the corners. |
-| 31 to 38 | **Logging in:** the logo stays at the top; the panel becomes a status line with the halo turning: Connecting to Ravenhold, Authenticating, Account verified (moss). Then the world loads: "Ravenhold" in blackletter, "Entering the world", a tip, the bar and what it loads (the town, your party, the night). A dithered fade to black. |
-| 38 | **Ravenhold** fades in (dithered), the town panel beside it; the feed gets "Welcome to Age of Judgment. The sky has judged. Ravenhold endures." (the realm's voice: it knows nothing of her, #145); the gold Let's go appears on the phone (#142) and the How-to cards come after it. |
+| 10.6 to 19 | **The developer, Procrastination Studios** (redrawn 2026-11-27, #133: Paweł asked for it changed completely, after the cracktros and demos the pirate scene put before the games; the name and the tagline kept). It fades in over the held Halsky Labs. A parallax starfield; a big chrome **PROCRASTINATION** in a spiky display face (New Rocker, stretched tall) in banded chrome (moon and teal on top, mauve and peach below) with a deep violet extrusion, sparkles and a rippling mirror reflection; **STUDIOS** tagged at its right under the reflection like an artist's signature; **"est. eventually"** in uncial lettering (Uncial Antiqua) with a gradient through it, in a dark band between two rules; at the bottom two copper bars swing and a sine scroller snakes over them ("YO! THIS INTRO WAS DUE IN MARCH. GREETZ TO DUTCH, HIXX, HUDZOR AND ARKBISHOP.", 100 px/s): the wave stays nearly put on the screen (it drifts 18 px/s) and the text runs through it, every pixel column riding the wave, so the letters bend and bob one after another as they pass, like the Amiga's (#151, Paweł: not one still wave). In: the logo drops in from above (0.15 s), bounces twice wobbling row by row, and lands in a burst of sparkles (0.55 s); the copper bars swing in (0.7 s) and the scroller starts (0.8 s); its reflection (0.8 s); the band opens (1.0 s); STUDIOS (1.35 s). Then it holds, 8.4 s in all (#151, Paweł: 4.4 s was too short to read the scroller; it was cut to fit: "SEE YOU EVENTUALLY..." is gone, the band says it), until the title fades in over it (dithered, 0.5 s). |
+| 19 to 27 | **The title:** black and rain; lightning shows the angel; the scene comes up out of the dark. The logo (section 6): the halo forged round from its gap, the spark ignites, JUDGMENT struck out from the centre, white-hot and cooling, a second bolt and a shake as it lands, AGE OF, a glint across the gilt, "The realm of Ravenhold"; rain in front of it. |
+| 27 to 35 | **The login screen:** the logo shrinks to the top as the scene dims, and the iron panel slides up: Account and Password wells, Remember ticked, Log in in gold. The pointer types "dutch" and nine stars, presses Log in (copper, down a pixel), turns to the hourglass. Options, Credits, Quit; the version and the realm in the corners. |
+| 35 to 42 | **Logging in:** the logo stays at the top; the panel becomes a status line with the halo turning: Connecting to Ravenhold, Authenticating, Account verified (moss). Then the world loads: "Ravenhold" in blackletter, "Entering the world", a tip, the bar and what it loads (the town, your party, the night). A dithered fade to black. |
+| 42 | **Ravenhold** fades in (dithered), the town panel beside it; the feed gets "Welcome to Age of Judgment. The sky has judged. Ravenhold endures." (the realm's voice: it knows nothing of her, #145); the gold Let's go appears on the phone (#142) and the How-to cards come after it. |
 
 - **The boys' first chat is paced to it** (`FIRST_CHAT`): the phone rises into your hand at 20:00 and the bubbles come
-  one at a time after their typing dots (1.6 s), arriving at **2.6, 5.0, 8.4, 10.2, 12.8, 21.4, 27.6 and 35.0 s**
-  (#133: Paweł asked for more to read while it boots, four mood lines; none from 15 to 21 s so the title's sounds stand
+  one at a time after their typing dots (1.6 s), arriving at **2.6, 5.0, 8.4, 10.2, 12.8, 25.4, 31.6 and 39.0 s**
+  (#133: Paweł asked for more to read while it boots, four mood lines; none from 19 to 25 s so the title's sounds stand
   alone, §7b; #135: Mike's Tab tip dropped, the How-to cards teach it, and the last lands 3 s before the town comes in).
-  Until 38 s there is no button (#142: no loading pill); **at 38 s, as Ravenhold comes in, the gold Let's go appears**
+  Until 42 s there is no button (#142: no loading pill); **at 42 s, as Ravenhold comes in, the gold Let's go appears**
   and the night waits for the player's click (#142); the How-to cards follow. This replaces Monday's `CHAT_FIRST_SEC` /
   `CHAT_TYPE_*` pacing (about 6 s for six).
 - All fades are palette-exact (a Bayer-dithered fade to and from the void colour), never a blend.
@@ -245,13 +253,13 @@ the phone in hand, and each step on its own, with a timeline strip that also sho
 - **When it plays (W1):** **the whole launch on the first Monday only,** with the boys' first chat. **Every night after
   it starts from the login screen, and loads fast** (Paweł, 2026-11-27: from Tuesday on; 2026-11-28, #149: the long
   boot sets the mood once, watching it again kills the pacing; my call: replays too, "Monday, again" included, and
-  week two's nights): T 23 to 38, opening with a 0.6 s dithered fade in from black: the logo shrinking to the top, the
-  panel sliding up, "dutch" and the stars typed and Log in pressed, all at their own pace (5.4 s); then from T 28.4
+  week two's nights): T 27 to 42, opening with a 0.6 s dithered fade in from black: the logo shrinking to the top, the
+  panel sliding up, "dutch" and the stars typed and Log in pressed, all at their own pace (5.4 s); then from T 32.4
   (`LAUNCH_FAST_FROM`) the clock runs fast, so logging in, verified, the loading bar and Ravenhold's fade go by in
   2 s (`LAUNCH_FAST_SEC`, 4.8x). The town is in 7.4 s after the chat comes up (15 s before). Its sound is the cue
-  sheet from T 23 (§7b). That night's 20:00 chat is paced to it: its bubbles spread evenly from 24.6 to 27.4 s (three
-  bubbles: 24.6, 26.0 and 27.4 s), each after up to 1.6 s of typing dots, all landed before the fast part and 3 real
-  s before the town; no button until 38 s, then Let's go (#142).
+  sheet from T 27 (§7b). That night's 20:00 chat is paced to it: its bubbles spread evenly from 28.6 to 31.4 s (three
+  bubbles: 28.6, 30.0 and 31.4 s), each after up to 1.6 s of typing dots, all landed before the fast part and 3 real
+  s before the town; no button until 42 s, then Let's go (#142).
 
 ## 7b. The launch's sound and music (Paweł, 2026-11-27)
 
@@ -268,35 +276,35 @@ ones, grey-blue for the real PC), the music's parts and the rain. In short:
 | 0 to 3.2 | **The real PC, clean:** the double-click (1.25, 1.45), the display mode switching (2.85: a relay clunk, the whine cut off). No hard-drive chatter under the hourglass (Paweł, 2026-11-27: it read as a repeated clacking). |
 | 3.2 to 6.2 | The CD drive spinning up (quiet); a soft tick per start-up line. |
 | 6.2 to 10.6 | **Halsky Labs** (#133), an 80s studio-gear sting through the 16-bit home computer's sound (8-bit samples at a low rate, no interpolation): an analog synth sweeping up through its filter for the red line (6.4); a soft digital data chirp as the mark rasters in (6.65); a whoosh rising into the lock (7.2); **the lock** (7.62): a sampler's orchestra stab with a gated reverb snare, then an FM bell chord ringing on (the sting's one big beat); three digital blips as the badge flickers on (7.8); a soft two-note FM chime for PRESENTS (8.2); a thin shimmer with the glint (8.9). **The music starts** (6.2). |
-| 10.6 to 15 | **Procrastination Studios** (#133), a cracktro's: a falling whistle as the logo drops in (10.75); it lands on the first kick of **a 4-channel tracker jingle** (11.15, `ps_mod`): 125 BPM, a row 0.12 s, arpeggio chords on one channel a note per tick (D minor, B flat, C, A), a filtered saw bass in eighths, the drums, a pulse lead with a little vibrato, ending on a D minor chord on row 28 that rings out by 15 s, through the same 8-bit chain. Original. |
-| 15 to 23 | **The title, the heavy part.** The rain comes in. **The first bolt** (15.9): a crack on the flash, a roll for three seconds. **The halo** (17.2 to 18.2): iron dragged round under strain, rising, a forge's hiss; as it closes, a deep ring like a cracked bell. **The spark** (18.15): an electric crackle, a thin high crimson tone. **JUDGMENT** (18.4 to 19.15): a furnace roar widening out from the centre with the word, a reversed cymbal rising into **the strike** (19.15): the second bolt's crack, a huge low iron impact, a sub drop under it. It is the loudest moment of the launch, and the theme's first chord lands on it. Hot iron hissing as the word cools. **AGE OF** (19.55 to 20.25): a low gong for the letters, two metal slides as its rules run out, a bright tink at each end. A quiet shimmer with each glint (20.3, 22.0). |
-| 23 to 31 | The iron panel sliding up; the clicks, and a clacky mechanical keyboard (`kb_clack`, Paweł 2026-11-27) for "dutch" and nine stars; **Log in** (28.0): a heavy iron button, a low bell tap. Far thunder after the scene's lightning (28.3). |
-| 31 to 38 | **Account verified** (32.7): a solemn two-note bell. Far thunder (35.8). The rain fades with the fade to black (37.2 to 38). |
-| 38 | The theme's last chord rings out as Ravenhold fades in; from there the game sounds as now. |
+| 10.6 to 19 | **Procrastination Studios** (#133), a cracktro's: a falling whistle as the logo drops in (10.75); it lands on the first kick of **a 4-channel tracker jingle** (11.15, `ps_mod`): 125 BPM, a row 0.12 s, arpeggio chords on one channel a note per tick (D minor, B flat, C, A, twice), a filtered saw bass in eighths, the drums, a pulse lead with a little vibrato (climbing in the first pass, the tune in the second), ending on a D minor chord on row 60 that rings out by 19 s, through the same 8-bit chain. Original. It was 28 rows, ringing out by 15 s; two more bars since the logo holds longer (#151). |
+| 19 to 27 | **The title, the heavy part.** The rain comes in. **The first bolt** (19.9): a crack on the flash, a roll for three seconds. **The halo** (21.2 to 22.2): iron dragged round under strain, rising, a forge's hiss; as it closes, a deep ring like a cracked bell. **The spark** (22.15): an electric crackle, a thin high crimson tone. **JUDGMENT** (22.4 to 23.15): a furnace roar widening out from the centre with the word, a reversed cymbal rising into **the strike** (23.15): the second bolt's crack, a huge low iron impact, a sub drop under it. It is the loudest moment of the launch, and the theme's first chord lands on it. Hot iron hissing as the word cools. **AGE OF** (23.55 to 24.25): a low gong for the letters, two metal slides as its rules run out, a bright tink at each end. A quiet shimmer with each glint (24.3, 26.0). |
+| 27 to 35 | The iron panel sliding up; the clicks, and a clacky mechanical keyboard (`kb_clack`, Paweł 2026-11-27) for "dutch" and nine stars; **Log in** (32.0): a heavy iron button, a low bell tap. Far thunder after the scene's lightning (32.3). |
+| 35 to 42 | **Account verified** (36.7): a solemn two-note bell. Far thunder (39.8). The rain fades with the fade to black (41.2 to 42). |
+| 42 | The theme's last chord rings out as Ravenhold fades in; from there the game sounds as now. |
 
-**The music** (`aoj_theme`): one file, through-composed to the launch from 6.2 s to about 39.6 s. No loop: the launch is
-a fixed 38 s.
+**The music** (`aoj_theme`): one file, through-composed to the launch from 6.2 s to about 43.6 s. No loop: the launch is
+a fixed 42 s.
 
 - **The vein:** the King's Field games' music on the PlayStation (FromSoftware, 1994 to 1996). Slow, sparse, ominous
   and melancholic; sequenced, sampled orchestra and organ, a long reverb; a lonely melody over held chords; minor and
   modal (the Phrygian half step). Original: never a melody or a phrase from those games or any other, only their way
   of sounding. Their name never appears in the game.
 - **Its parts** (they meet the beats):
-  1. **The deep** (6.2 to 15), under the logos and about 14 dB under the theme: a low organ pedal on D and a male
+  1. **The deep** (6.2 to 19), under the logos and about 14 dB under the theme: a low organ pedal on D and a male
      choir's "oo" on an open fifth, swelling slowly; from 10.6 a slow low-strings figure, D to E flat and back, every
      4 s. It thins out with the dithered fade (14.45).
-  2. **Rain** (15 to 16.4): no music, the rain and the first bolt alone.
-  3. **The rise** (16.4 to 19.15): the choir's "ah" comes in low on D; a timpani roll from 17.2 grows with the halo;
-     string tremolo climbs D, E flat, F, G to A by 19; a reversed cymbal from 18.4 into the strike. A crescendo.
-  4. **The theme** (19.15 to 37.15): 60 bpm, a bar is 4 s (bars at 19.15, 23.15, 27.15, 31.15, 35.15). On the strike
+  2. **Rain** (19 to 20.4): no music, the rain and the first bolt alone.
+  3. **The rise** (20.4 to 23.15): the choir's "ah" comes in low on D; a timpani roll from 21.2 grows with the halo;
+     string tremolo climbs D, E flat, F, G to A by 23; a reversed cymbal from 22.4 into the strike. A crescendo.
+  4. **The theme** (23.15 to 41.15): 60 bpm, a bar is 4 s (bars at 23.15, 27.15, 31.15, 35.15, 39.15). On the strike
      the full chord: organ, low brass, choir, a timpani hit. A chord a bar: D minor, B flat, E flat (the Phrygian flat
      second), A (with C sharp), then D. A lone melody on a solo voice or a flute, something like: A4 and C5 on beats
      3 and 4 of bar 1 (once the strike has settled) | D5 (two beats), C5, B flat 4 | G4 (two), B flat 4, A4 | G4, F4,
      E4 (two) | D4, held into the last chord. Under it organ and low strings held; a deep bell tolling each bar from
      bar 2; from the login (bar 2) a quiet harp or harpsichord in eighths on the chord's notes, under the typing,
      dropping out at bar 4 (logging in).
-  5. **The last chord** (37.15, as the screen goes black): D open (D, A, D, no third) on organ, choir and the bell,
-     swelling for a moment and dying into the reverb; silent by about 39.6, once Ravenhold has faded in (38 to 38.9).
+  5. **The last chord** (41.15, as the screen goes black): D open (D, A, D, no third) on organ, choir and the bell,
+     swelling for a moment and dying into the reverb; silent by about 43.6, once Ravenhold has faded in (42 to 42.9).
 - The notes can change; the parts, their times, the downbeat on the strike and the last chord on the fade stay.
 
 **PlayStation 1 fidelity,** so it sounds like the console and not a modern orchestra. Baked offline like every sound in
@@ -335,13 +343,13 @@ sound chip did:
   the cues it jumps over. The theme starts at T 6.2 at offset T - 6.2; each frame, if it is more than 0.1 s from where
   T says, it restarts at the right offset (after a pause, a hitch, a hidden tab). Pause stops all of it and unpause
   resumes it where T is; "Skip the launch" stops it all.
-- **From the login (every night after the first, §7):** T starts at 23, so only the cues from 23 on fire; the rain
-  fades in from 23; the theme plays from its offset at T 23 (16.8 s in, just before bar 2) with a 1.5 s fade in. Once
+- **From the login (every night after the first, §7):** T starts at 27, so only the cues from 27 on fire; the rain
+  fades in from 27; the theme plays from its offset at T 27 (20.8 s in, just before bar 2) with a 1.5 s fade in. Once
   Log in is pressed the clock runs fast (§7, #149): the theme plays on at its own pace (never resynced to the fast
   clock) and it and the rain fade out over the fast part, silent when the town is in; the cues in it fire as T passes
   them (a fast frame is not a jump).
 - **Replaceable like every cue:** a file in `src/assets/sfx/own/` named after a cue replaces it. For `aoj_theme` it
-  starts at T 6.2 and keeps the times above (silence at 15, the downbeat at 19.15, the last chord at 37.15), so Paweł
+  starts at T 6.2 and keeps the times above (silence at 19, the downbeat at 23.15, the last chord at 41.15), so Paweł
   can score it himself.
 - **The RPG's own sounds in play stay chiptune** (the build's decision at 0.33): the launch is the exception, the
   game's own cinematic. Open, Paweł's call: whether the play sounds follow the launch later.
