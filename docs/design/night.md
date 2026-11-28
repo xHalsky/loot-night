@@ -44,7 +44,8 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   comes in, #135):
   Billy's realm is up; then four lines to read while it boots, setting the mood (#133, Paweł): Mike can't skip the
   intro, Lance "good. it's the best part", Billy's patch notes he didn't read and "this intro looks like an old crack
-  intro lol"; Lance's "would you like to know more?"; Lance's own login, "in. arkbishop ready to be ignored again",
+  intro lol"; Lance answering the patch notes, "i read all forty. healers got nerfed. obviously." (the support main,
+  #156); Lance's own login, "in. arkbishop ready to be ignored again",
   as the password is typed (#141: he can't see your screen); last, Billy's 11 sharp, "careful with her tonight". **On
   this first boot the phone sits over her panel** (#152, Paweł): centred on the left panel, so the launch shows whole on
   the monitor and the phone covers you on the webcam; no phone on the desk meanwhile; after Let's go it goes, and every
@@ -271,6 +272,10 @@ happening.
   the password is typed: Lance logging in himself (0.102.0, #141: his "nine stars" line was dropped, he can't see
   your screen). None from 15 to 23 s, where the developer's scroller and the title's sounds stand alone (15 to 21 s before #151). Rejected: more lines
   later (the login has its own beats), a skip button (the wait is the joke and the theme).
+  Lance's 23.4 s bubble answers Billy's unread patch notes (0.107.1, #156, Paweł: "would you like to know more?" made
+  no sense there): he read all forty, healers got nerfed, obviously; the support main, like his login after it.
+  Rejected: keeping the quote (it asked nothing anyone had raised), a line about the title on screen (he can't see
+  your screen, #141). The skill tree keeps the quote when a node is bought, where it fits.
 - **The chat ends 3 s before the town; the player starts the night with Let's go** (0.101.1, #135; 0.103.0, #142;
   Paweł): the last bubble lands 3 real s before the town on every launch (37.0 s on the first Monday, 29.4 s from the
   login), so it is read before the town comes in. The phone went down

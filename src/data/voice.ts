@@ -11,7 +11,7 @@ export const FIRST_CHAT: [string, string][] = [   // paced to the launch (CHAT_L
   ['Lance', "good. it's the best part"],
   ['Billy', 'patch notes are forty pages, i read zero'],
   ['Billy', 'this intro looks like an old crack intro lol'],
-  ['Lance', 'would you like to know more?'],
+  ['Lance', 'i read all forty. healers got nerfed. obviously.'],   // to Billy's patch notes; the support main (#156)
   ['Lance', 'in. arkbishop ready to be ignored again'],   // his own login, not your screen (#141)
   ['Billy', '11 sharp. and careful with her tonight, they mostly come at night'],
 ];

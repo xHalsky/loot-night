@@ -3,6 +3,15 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.107.1 (2026-11-28)
+
+Paweł's note: in the first Monday's chat, Lance's "would you like to know more?" made no sense (#156).
+
+- **Lance answers Billy's patch notes instead:** "i read all forty. healers got nerfed. obviously." He is the support
+  main, as in his login right after it. Same bubble, same time (23.4 s). The skill tree keeps the quote for a node
+  bought, where it fits.
+- Text only: the seeded sims (good and idle) are identical.
+
 ## 0.107.0 (2026-11-28)
 
 Paweł's note: the RPG's sounds were the prototype's blips. With the 32-bit look they should sound like the console
