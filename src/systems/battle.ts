@@ -19,6 +19,7 @@ import { curioDmgMult, curioSpeedMult, partyCrit, partyCdMult } from './curios';
 import { coach } from './coach';
 import { POS_X, ENEMY_SLOTS, MID_SLOT, HEAD_Y } from '../core/arena';
 import { dropFromKill } from './loot';
+import { layFallen } from './corpses';
 import { positionMult, auraTaken, auraCrit, auraCd, heroById, hookLine, shoveLine } from './positions';
 import { legendOn, setOn } from './gear';
 import { skillOwned, rule, heroFx, autocastOn } from './tree';
@@ -642,6 +643,7 @@ export function updateBattle(dt: number): 'victory' | 'wipe' | null {
       const ot = overtimeGold();   // Spreadsheet Warrior: kills while Excel is up pay overtime
       if (ot) { gainGold(ot); const c = enemyCenter(e); floatText(c.x, enemyNumY(e) + 8, `+${ot}g overtime`, '#6fcf7f'); }
       dropFromKill(e);   // #52, 1.3: drops fall where the enemy died
+      layFallen(e);   // #154: it crumbles where it stood and leaves its pile of iron bones
       if (n.cond === 'haunted') n.noise = Math.min(100, n.noise + T.COND_HAUNTED_NOISE);
       if (e.boss) {
         n.noise += T.NOISE_BOSS_KILL; toast(`${e.name} defeated!`, '#f2b84b'); boysSay('bossKill');

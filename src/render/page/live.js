@@ -109,6 +109,9 @@ function liveBattleArea(ctx, vm, t) {
   const r = drawDungeon(F, t, {
     battle, live: { cam: vm.cam, walking: vm.walking }, cam: vm.cam, foreOff: battle ? 98 : undefined,
     behind(F, t, lights) {
+      // the fallen (#154, corpses.js): on the floor, behind the party (they walk over them) and the living; the back
+      // lane's dimmer, as the living (in drawCorpse)
+      (vm.corpses || []).forEach((c, k) => drawCorpse(F, c, t, lights, 40 + (k % 60)));
       if (vm.curio && vm.curio.id && CURIO_DRAW[vm.curio.id]) {   // the v2 curios, drawn in code (#131, curios.js)
         const cx = vm.curio.x;
         mulEllipse(cx, CART_Y, 24, 3, 0.3);

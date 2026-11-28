@@ -53,11 +53,16 @@ export interface Enemy {
   shield?: boolean;                                  // takes SHIELD_TAKEN damage until a Bash breaks it
   burn?: number; burnDps?: number;                   // Wildfire (a tree rule, #53): seconds left burning, damage a second
   per?: number;                                      // swarm: HP of one body (stacks = ceil(hp / per))
+  bodiesSeen?: number;                               // swarm: bodies last frame (each one lost leaves its own wreck, #154)
   windMax?: number; evict?: number;                  // boss: length of the current wind-up; EXECUTE's target hero
   look?: 'ironwing' | 'vigil';                       // a bat's figure and name (#130), rolled from its uid when it spawns, kept for its life
   wind?: number; acts?: number; braced?: boolean; enraged?: boolean;   // braced: the next big attack cannot be interrupted          // boss: seconds left of a telegraphed big attack; actions taken
 }
 
+/** A fallen enemy (#154): it crumbles where it stood, leaves a pile of iron bones of its own kind, and the pile fades
+ *  after CORPSE_SEC. Visual only. slot and lane where it stood; dx how far the walk has carried it since (grid px); t its
+ *  age in seconds; body: one cherub of a swarm (its index in the swarm), else undefined. */
+export interface Corpse { uid: number; defId: string; look?: 'ironwing' | 'vigil'; slot: number; boss: boolean; dx: number; t: number; body?: number }
 export type MarkId = 'stagger' | 'chill' | 'judged' | 'taunted';
 export interface FloatFx { x: number; y: number; text: string; color: string; t: number }
 export interface Toast { text: string; color: string; t: number }
@@ -184,6 +189,7 @@ export interface Night {
   action: 'none' | 'miniGame' | 'pre';   // pre: busy with a pre-emptive action (systems/preemptive.ts)
   dropQueue: BagEntry[];
   floorLoot: { entry: BagEntry; x: number; t: number }[];   // drops lying on the dungeon floor (screen x)
+  corpses?: Corpse[];                                        // the fallen (#154): crumbling, then a pile of iron bones that fades
   fresh: { id: string; t: number }[];                       // bag slots that just received loot (blink)
   reject: { id: string; t: number; glow?: number } | null;  // a bag item that wouldn't go on (#113): it shakes in its square for t s; its class's portrait glows for glow s (#121)
   lootFly: { x: number; text: string; color: string; t: number; max: number; delay: number; dx: number }[];   // picked-up loot: names flying up from the floor (#49)

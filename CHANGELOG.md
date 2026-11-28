@@ -3,6 +3,29 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.106.0 (2026-11-28)
+
+Paweł's note: enemies just vanished at 0 HP. Now they crumble and leave a corpse (#154).
+
+- **Enemies crumble to the ground.** The figure breaks into small chunks that fall under gravity, a little apart and
+  staggered. Its eye-lights go out and dust rises where the chunks land. Over 0.9 s its pile dithers in over them.
+- **Each kind has its own pile of iron bones** (the roster is iron under the cloth), with the figure's own pieces on
+  it:
+  - The Hollow: his helm, greatsword and kite shield. The Guardian: under his great halo shield, cracked. The
+    Revenant: his skull, and his heart-lens going dark.
+  - The Penitent: his head-cage and snuffed candle, with a last thread of smoke. The Confessor: his grille with its
+    glow going out, his crozier and censer.
+  - A Cherub: a broken wing, the porcelain head and the little halo. A swarm leaves one per body it loses.
+  - The Ironwing: one wing broken upward. The Vigil: its rotor fanned out.
+  - The Gravedigger: his spade driven into the floor.
+  - The bosses and the Abbot have their own, bigger piles: the Gaoler's ball and chain, the Bellringer's cracked bell,
+    the Inquisitor's wings and headsman's sword, the Abbot's halo mace and fallen banner.
+- **Corpses lie 9 s, then dither out** over 1.2 s. They move with the floor as the party walks, and the party walks
+  over them. A new floor, the town or a wipe clears them. Enemies that run when their boss falls leave nothing.
+- Visual only. Nothing in it is random, so the seeded sims (good and idle) are identical. A lying pile costs no frame
+  time (each is drawn once and kept); a falling one costs about what a living enemy does.
+- Tests: `test/corpses.ts` (the rules), `test/corpses.py` (every pile, the fall frame by frame, a real kill).
+
 ## 0.105.1 (2026-11-28)
 
 Paweł's note on 0.105.0: the Procrastination part shorter, and its greetz (#153).

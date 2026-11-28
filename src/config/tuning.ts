@@ -166,6 +166,9 @@ export const T = {
   // (the town in about 7.4 s after the chat comes up, not 15). The chat lands from CHAT_LOGIN_FROM to CHAT_LOGIN_TO,
   // its last 3 real s before the town comes in.
   LAUNCH_FAST_FROM: 30.4, LAUNCH_FAST_SEC: 2.0, CHAT_LOGIN_FROM: 26.6, CHAT_LOGIN_TO: 29.4,
+  // the fallen (#154): an enemy at 0 HP crumbles to the ground over DEATH_SEC (its iron pieces drop and pile up, then
+  // its own pile of iron bones dithers in), lies there CORPSE_SEC, then dithers out over CORPSE_FADE_SEC
+  DEATH_SEC: 0.9, CORPSE_SEC: 9, CORPSE_FADE_SEC: 1.2,
   WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))

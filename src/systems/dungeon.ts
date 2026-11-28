@@ -1,4 +1,5 @@
 import { T } from '../config/tuning';
+import { updateCorpses, walkCorpses, clearCorpses } from './corpses';
 import { S, N, type MapKind } from '../core/state';
 import { spawnBattle, updateBattle, reviveHero, tickCooldowns } from './battle';
 import { rollBattleDrops, rollBattleExtras, removeEntry, entryName, moveFloorLoot, sweepFloorLoot, looterIndex } from './loot';
@@ -32,7 +33,7 @@ function startFloor(map: MapKind | 'plain', card?: PathCard) {
   n.feature = card?.feat ?? null; n.cond = card?.cond ?? null;
   if (n.feature && FEATURES[n.feature].map) map = FEATURES[n.feature].map!;   // Elite Pack, Goblin Den
   if (n.cond && CONDITIONS[n.cond].map) map = CONDITIONS[n.cond].map!;          // Cursed
-  n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.pack = null; n.phaseT = 0;
+  n.floorMap = map; n.battleIdx = 0; n.enemies = []; n.pack = null; n.phaseT = 0; clearCorpses();
   n.curio = null; n.curioAt = null; n.curioFight = false; n.curioPlan = []; curioFloorEnd();
   n.deepest = Math.max(n.deepest, n.floor);
   S.g.mapPath[n.floor] = map === 'plain' ? (n.floor % T.CHECKPOINT_EVERY === 0 ? 'boss' : 'plain') : map;   // the dungeon map (#48)
@@ -118,6 +119,7 @@ export function updateDungeon(realDt: number) {
   const n = N();
   if (n.location !== 'dungeon') return;
   updateMapAway(realDt);
+  updateCorpses(realDt);   // the fallen age, and fade (#154)
   const dt = realDt;   // an open item window does not slow the fight: gearing is part of the juggle (#49)
   if (n.goblin) { n.goblin.t -= dt; if (n.goblin.t <= 0) { n.goblin = null; toast('The loot goblin escaped.', '#a999bd'); sfx.goblinLost(); } }
   // the Blood pact (#52, 1.5b): heroes bleed outside fights, never below 1 HP
@@ -131,7 +133,7 @@ export function updateDungeon(realDt: number) {
     if (!n.curioAt && !n.pack && n.curioPlan.includes(n.battleIdx)) approachCurio();   // a curio comes into view (#99)
     const c = n.curioAt, sp = n.floorLoot.length || c?.passed ? T.WALK_HURRY_PACE : n.pack ? T.PACK_PACE : c ? T.CURIO_PACE : T.WALK_PACE;   // hurry over to the loot, and on past a curio
     n.walkScroll += dt * sp;
-    moveFloorLoot(dt * sp * 0.7, dt);   // the camera's pace on the grid (render/rpgView.ts): the front hero walks over it (#95)
+    moveFloorLoot(dt * sp * 0.7, dt); walkCorpses(dt * sp * 0.7);   // the camera's pace on the grid (render/rpgView.ts): the front hero walks over it (#95)
     walkCurio(dt * sp * 0.7);
     if (n.phase !== 'walk') return;   // the party stopped at the curio
     if (n.pack) { walkPack(dt * sp * 0.7, dt); return; }   // the next pack comes up; the fight starts when it is in position (#118)
@@ -199,7 +201,7 @@ function wipe() {
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
   toast(`[You] You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
   const trash = !n.enemies.some(e => e.boss);
-  n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null;
+  n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null; clearCorpses();
   loseRun();
   boysSay(trash ? 'wipeTrash' : 'wipe');   // the boys' chat (#109)
   S.g.heroes.forEach(h => { h.downed = false; h.hp = maxHp(h); h.atb = 0; h.queued = null; });
@@ -234,7 +236,7 @@ export function returnToTown() {
   n.clock += T.COST_TRAVEL_MIN;
   sweepFloorLoot();
   bankRun();
-  n.location = 'town'; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null; n.phase = 'walk';
+  clearCorpses(); n.location = 'town'; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null; n.phase = 'walk';
   toast('Back in town.', '#8fb3ff');
 }
 

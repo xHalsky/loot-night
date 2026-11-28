@@ -377,6 +377,14 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
       ahead: !!pack, alert,   // coming up: no HP bar; as it sees the party, a red "!" pops over its head for a moment
     };
   });
+  // the fallen (#154): crumbling (k 0 to 1 over DEATH_SEC), then their pile, fading after CORPSE_SEC (fade 0 to 1)
+  const corpses = (n.corpses ?? []).map(c => {
+    const look = c.defId === 'bat' ? (c.look ?? 'ironwing') : LOOK[c.defId], sl = ENEMY_SLOTS[c.slot] ?? ENEMY_SLOTS[0];
+    let x = sl.x + (look && LOOK_DX[look] && c.slot === MID_SLOT ? LOOK_DX[look] : 0) - Math.round(c.dx), fly = look && FLY[look] ? FLY[look][sl.lane] ?? 60 : 0;
+    if (c.body != null) { x += (c.body % 2) * 16 - 8 + (c.body >> 1) * 6; fly += (c.body % 2) * 14 - (c.body >> 1) * 10; }   // its place in the swarm (foes.js cherubAt)
+    return { look: look ?? 'hollow', x, lane: sl.lane, back: sl.lane === 'back', boss: c.boss, fly, n: c.uid % 4, seed: c.uid,
+      k: Math.min(1, c.t / T.DEATH_SEC), fade: Math.max(0, Math.min(1, (c.t - T.CORPSE_SEC) / T.CORPSE_FADE_SEC)), age: c.t };
+  }).filter(c => c.x > -80 && c.x < 420);
   // floating numbers and effects: the systems place them on the grid (core/arena.ts)
   const floaters = n.fx.map(f => ({ text: f.text, x: f.x, y: f.y, idx: colorIdx(f.color), big: f.text.endsWith('!') }));
   const vfx = n.vfx.map(v => ({ kind: v.kind, x: v.kind === 'chain' ? heroX(0) + 6 : v.x, y: v.kind === 'ward' ? 196 : v.y, x2: v.x2, y2: v.y2, k: v.t / v.dur }));   // the Hook's chain follows the hooked hero
@@ -397,7 +405,7 @@ export function buildBattleView(nowMs: number, hov = -1, hovT = 0, pp: PartyPoin
   // a drag: the portrait lifts under the pointer, rings under both heroes, the target's portrait gets the gold frame
   const drag = pp.drag ? { id: PAGE_ID[g.heroes[pp.drag.from]?.id ?? 'knight'], x: pp.drag.x, y: pp.drag.y, rings: [heroX(pp.drag.from), ...(pp.drag.over >= 0 && pp.drag.over !== pp.drag.from ? [heroX(pp.drag.over)] : [])] } : null;
   if (pp.drag && pp.drag.over >= 0 && pp.drag.over !== pp.drag.from) (bar as { dropOn: number }).dropOn = pp.drag.over;
-  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', bank: bankLabel(u), buffs: buffList(), curio: curioView(), goblin: goblinView(), bar,
+  return { mode: n.phase, cam: n.walkScroll * 0.7, walking: n.phase === 'walk', party, enemies, corpses, floaters, vfx, loot, flies, corner, portalOk: n.phase !== 'battle', bank: bankLabel(u), buffs: buffList(), curio: curioView(), goblin: goblinView(), bar,
     drag, heroCard: !pp.drag && pp.hover >= 0 ? heroCard(pp.hover) : null };
 }
 

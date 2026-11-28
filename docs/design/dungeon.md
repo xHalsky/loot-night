@@ -121,6 +121,25 @@ crit and luck stay linear); big numbers show as 1.2K, 34.5K, 1.2M. Floating
 numbers, crits in gold, every action has a visible effect (lunge, slash arc, bolt, beam, claw marks,
 shockwaves, sparks).
 
+**The fallen** (#154, Paweł; `systems/corpses.ts` keeps the list, `render/page/corpses.js` draws it). An enemy at 0
+HP crumbles where it stood: its figure breaks into 3 px chunks that drop under gravity, a little apart and staggered
+(the high ones first), its eye-lights going out, dust where they land; over `DEATH_SEC` (0.9 s) the chunks pile up and
+**its own pile of iron bones** dithers in over them. The roster is iron under the cloth, so every pile is a heap of
+iron bones and the pieces that make the figure: the Hollow's great helm, greatsword and kite shield; the Guardian
+under his great halo shield, cracked; the Revenant's bare frame and skull round its heart-lens; the Penitent's robe,
+head-cage and snuffed candle (a last thread of smoke) and scourge; the Confessor's grille (its glow going out),
+crozier and censer (its last smoke); a Cherub's broken wing, porcelain head and little halo (a swarm leaves one wreck
+per body it loses, where that body flew); the Ironwing's struts and torn leather, one wing broken upward; the Vigil's
+fanned rotor, drum and eye; the Gravedigger's coffin-lid plate, lantern and pick, his spade driven into the floor. The
+bosses and the Abbot have their own, bigger: the Gaoler's giant bones, ball and chain and muzzle; the Bellringer's
+bell fallen on its side and cracked, the yoke and the rope; the Inquisitor's wings (one flat, one broken upward),
+pauldrons, angel-masked helm and the headsman's sword its whole length; the Abbot's halo mace, cowl and fallen
+banner. Embers in them (eyes, heart-lenses) go out over 3.2 s. A pile lies `CORPSE_SEC` (9 s), moving with the floor
+as the party walks (they walk over it), then dithers out over `CORPSE_FADE_SEC` (1.2 s); a new floor, the town or a
+wipe clears them. Those who run when their boss falls leave nothing. Visual only: no rule reads a corpse and nothing
+in it is random (a hash of the enemy), so the sims are unchanged. Each pile is drawn once and kept (it moves with the
+floor, its grain with it), so lying corpses cost nothing; a falling one costs about what a living enemy does.
+
 **Skills: three slots per hero, two skills and the ultimate** (#52; decisions 2026-11-20). Skill 1 from the start,
 skill 2 and the ultimate from the skill tree ([trees.md](trees.md), #53). The third key is the ultimate: a charge that
 fills over `ULT_CHARGE_SEC` (20) seconds of combat once it is bought, only during fights; cast it when full, never
@@ -428,6 +447,14 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 ([city.md](city.md)).
 
 ## Decisions
+
+- **Enemies crumble and leave a pile of iron bones** (0.106.0, #154; Paweł, 2026-11-28): an enemy at 0 HP just
+  vanished. Now it breaks into chunks that fall and heap up, and its own pile (one per kind, the bosses and the Abbot
+  their own, bigger) lies there and fades. Iron bones because the roster is iron (the angels' iron, the Church's
+  smiths); each pile carries the figure's own pieces so it reads as who fell. Drawn behind the party, who walk over
+  them. Rejected: a generic pile for all (Paweł asked for one per kind), the figure tipping over whole (they are
+  constructs: they come apart), corpses that stay all floor (the corridor fills up; 9 s covers the fight and the walk
+  on), a sound for it (the RPG's sounds are chiptune and the hit already sounds; open).
 
 - **The floor map reads like the world's** (0.103.0, #146, #147; Paweł, 2026-11-28): the cards show only what a floor
   has, named in the lore from it (a "Floor 4" told you nothing the subtitle didn't), the margin in the darkest ink,

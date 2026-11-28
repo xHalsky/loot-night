@@ -134,6 +134,11 @@ the Inquisitor's pauldron, the Abbot). On the samples page, The roster, round fo
 
 The loot goblin stays as it is (a critter you catch, not an enemy, and Goblin Fuel's mascot).
 
+**The fallen** (#154, Paweł 2026-11-28): every enemy crumbles to the ground and leaves a pile of iron bones of its own
+kind, with its own pieces (the helm, the shield, the cage, the grille, the wings, the rotor, the spade, the ball, the
+bell, the headsman's sword, the halo mace); the bosses and the Abbot their own, bigger. The fall and the piles:
+[dungeon.md](dungeon.md), Battle.
+
 **In the build (W4):** Skeleton becomes the Hollow; the Guardian a Hollow with the halo shield (its name stays); the Orc
 the **Revenant**, a Hollow torn open; the Ghoul the Penitent; the Shaman the Confessor; the Imps the Cherubs. The ids
 stay. The Bat, the Brute, the bosses and the troll become the designs above (W4 has the mapping by id and the
