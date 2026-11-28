@@ -160,7 +160,12 @@ export const T = {
   // Every night after the first Monday starts from the login (#127, Paweł 2026-11-27): T starts at 23, a dithered fade in
   // from black over it, the sound from T 23 (the theme at its offset and the rain faded in); the night's chat spread
   // evenly from 25.4 to 35.4 s (three bubbles: 25.4, 30.4, 35.4)
-  LAUNCH_LOGIN_AT: 23, LAUNCH_LOGIN_FADE_SEC: 0.6, LAUNCH_LOGIN_SOUND_FADE_SEC: 1.5, CHAT_LOGIN_FROM: 25.4, CHAT_LOGIN_TO: 35.0,
+  LAUNCH_LOGIN_AT: 23, LAUNCH_LOGIN_FADE_SEC: 0.6, LAUNCH_LOGIN_SOUND_FADE_SEC: 1.5,
+  // every night after the first (#149): the login and the typing at their pace, then from the Log in press the
+  // connecting, verified and the loading bar run fast, LAUNCH_FAST_FROM to LAUNCH_SEC in LAUNCH_FAST_SEC real seconds
+  // (the town in about 7.4 s after the chat comes up, not 15). The chat lands from CHAT_LOGIN_FROM to CHAT_LOGIN_TO,
+  // its last 3 real s before the town comes in.
+  LAUNCH_FAST_FROM: 28.4, LAUNCH_FAST_SEC: 2.0, CHAT_LOGIN_FROM: 24.6, CHAT_LOGIN_TO: 27.4,
   WALK_PACE: 40, WALK_HURRY_PACE: 75,   // the walk's pace (render/rpgView.ts cam units/s; the grid moves at 0.7 of it): hurry while loot lies ahead or a curio is behind
   // Packs (#52, 1.3): an encounter is a pack; six on screen, the rest wait off screen and step in as the front ones die
   PACK_MIN: 5, PACK_MAX: 12,      // pack size = min(PACK_MAX, PACK_MIN + floor(floor / 2))
@@ -270,6 +275,8 @@ export const T = {
   RIGHT_CLASS_GLOW_SEC: 1.2,      // refused (right-click, or let go on his slot): the portrait of the class it is for glows this long (#121); in hand, as long as you hold it
   PICKUP_HOLD_SEC: 0.12,          // held this long on a bag item (or dragged), it is picked up: its gear slot lights (#114)
   GHOST_RETURN_SEC: 0.16,         // an item let go where it can't go flies back to its square in this long
+  TRASH_GHOST_SCALE: 0.6,         // the item in hand shrinks to this over the trash can, so the bin and its glow show round it (#148)
+  TRASH_CLAP_SEC: 0.35,           // the bag's trash can (#148): its lid claps shut over this long after an item goes in
   LOOT_FLY_SEC: 1.6, LOOT_FLY_LEGENDARY_SEC: 2.6, LOOT_FLY_STAGGER_SEC: 0.3,   // picked-up loot: its name flies up from the floor (#49)
   POWER_PER_ILVL: 10,             // item power = 10 x item level x rarity multiplier; hero Power = average of 6 slots
   POWER_BEHIND: 0.85,             // a hero under this share of the party's best Power gets a 'needs gear' tag

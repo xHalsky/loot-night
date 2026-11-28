@@ -94,7 +94,7 @@ async def main():
         # --- Tuesday: the boys' chat (Let's go with the mouse), then How to hide with the headset new ---
         check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.chat[0][1].startsWith(\"no curfew\")"), 'Tuesday: the boys\' chat: no curfew')
         await pg.wait_for_timeout(3000)
-        await shot('6b_tuesday_chat')   # from the login (#127): the first bubble at 25.4 s, the monitor on the login
+        await shot('6b_tuesday_chat')   # from the login (#127): the first bubble at 24.6 s, the monitor on the login
         check(23 < await ev("L.launch.t()") < 27.5 and not await tap('voiceOk'), 'Tuesday: Age of Judgment from the login (T 23), the phone stays up')
         await ev("L.launch.skip(); 0"); await pg.wait_for_timeout(300)
         check(await tap('voiceOk'), "Let's go on the phone")

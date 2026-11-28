@@ -13,7 +13,7 @@ export const MIX: Record<string, number> = {
   bark: 0.6, whine: 0.35,
   // the RPG: the five events you must hear while Excel covers the screen (synergy.md, audio-first loot)
   legendary: 0.85, bagfull: 0.6, goblin: 0.6, goblincatch: 0.65, goblinlost: 0.5, down: 0.6, enrage: 0.8,
-  wipe: 0.65, slam: 0.75, coins: 0.5,
+  wipe: 0.65, slam: 0.75, coins: 0.5, trash: 0.5,
   // the launch on the first Monday (#127, aoj-world §7b): the real PC clean and quiet; the game's own through the console
   // chain: Halsky Labs, Procrastination Studios light, the title the heavy part (the strike the loudest), the theme
   // under the title's sounds

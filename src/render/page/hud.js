@@ -278,10 +278,11 @@ const SOUL = ['..X..', '.XM..', '.XMX.', 'XMMMX', 'XMMMX', '.XXX.'];
 function soulGlyph(x, y, dim) { sprite(x, y, SOUL, dim ? { X: 'u3', M: 'u4' } : null); }
 // footer: gold · Souls on the left, the record on the right
 function footerMoney(X0, PW, st) {
-  for (let j = H - 11; j < H; j++) for (let i = X0; i < X0 + PW; i++) putU(i, j, j === H - 11 ? 0.02 : j === H - 10 ? 0.62 : lerp(0.34, 0.18, (j - H + 9) / 8) + 0.05 * (GR(i, j) - 0.5));
-  let fx = X0 + 4; fx += text(st.gold + ' g', fx, H - 7, 'tiny', P.gold, { shadow: P.void }); fx += text(' · ', fx, H - 7, 'tiny', P.u4);
-  soulGlyph(fx, H - 8); text(String(st.souls ?? st.scraps), fx + 7, H - 7, 'tiny', P.u6, { shadow: P.void });
-  text('record ' + st.record, X0 + PW - 4, H - 7, 'tiny', P.u5, { align: 'r', shadow: P.void });
+  const fh = st.trash ? 13 : 11, ty = H - (st.trash ? 8 : 7);   // the bag panels' footer is 2 px taller: the trash can stands in it (#148)
+  for (let j = H - fh; j < H; j++) for (let i = X0; i < X0 + PW; i++) putU(i, j, j === H - fh ? 0.02 : j === H - fh + 1 ? 0.62 : lerp(0.34, 0.18, (j - H + fh - 2) / (fh - 3)) + 0.05 * (GR(i, j) - 0.5));
+  let fx = X0 + 4; fx += text(st.gold + ' g', fx, ty, 'tiny', P.gold, { shadow: P.void }); fx += text(' · ', fx, ty, 'tiny', P.u4);
+  soulGlyph(fx, ty - 1); text(String(st.souls ?? st.scraps), fx + 7, ty, 'tiny', P.u6, { shadow: P.void });
+  text('record ' + st.record, X0 + PW - (st.trash ? 19 : 4), ty, 'tiny', P.u5, { align: 'r', shadow: P.void });
 }
 // ---------------------------------------------------------------- side panel (140 x 232)
 const RAR_MAT = { common: [M_UMBER, 0.22], uncommon: [M_MOSS, 0.3], rare: [M_STONE, 0.32], epic: [M_MAGIC, 0.36], legendary: [M_LOOT, 0.5] };

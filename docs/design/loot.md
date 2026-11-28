@@ -129,6 +129,17 @@ locked until the Treasury opens them, 2 per level). Icons by type, colour by rar
 unidentified. When full, a popup over the party block offers swap or skip; the drop waits `DROP_WAIT_SEC` of threat
 time, then is lost. With a drop every battle the bag fills by floor 5 or so: drop the junk or turn on auto-salvage.
 
+**Trash** (#148, Paweł). A trash can stands in the bag's lower right corner, in the footer under the grid (both the
+Inventory tab and the party panel in the dungeon; the footer is 2 px taller there and "record" moves left for it):
+a tan tin with dark ribs and a crimson lid, so it reads as "throw away" at a glance. Drag any item onto it, from the
+bag or off a hero's gear slot, and it is gone: no question asked (the player knows what he is doing), nothing back
+(Salvage is the paid way out), in town or in the dungeon. Maps and feathers go the same way. While an item is in your
+hand the lid lifts; over the bin the item shrinks to `TRASH_GHOST_SCALE` (0.6) so a breathing crimson glow shows round
+it and the lid jumps higher; let go, the lid claps shut (`TRASH_CLAP_SEC` 0.35 s), the `trash` sound plays (a tin
+clank, a crunch, two notes down) and the feed says "Destroyed <name>." A locked item is refused: the lid stays down,
+the item in hand gets the crimson ring and shakes, flies back, and the feed says "Locked. Unlock it first (L)."
+Hovered, the bin's tooltip: "Trash. Drag an item here to destroy it. No way back." `python3 test/trash.py` plays it.
+
 **Power** (Destiny's Light level). Every item has a power: `POWER_PER_ILVL` (10) × item level × the rarity
 multiplier, the same scale that sets its stats (unidentified items count as 0 until identified). A hero's
 Power is the average of their 6 slots, an empty slot counting as 0, so filling an empty slot matters as much
@@ -157,7 +168,7 @@ name, rarity, slot and power, the stats and special affix, and for bag items whe
 selected hero; the detailed stat comparison is in the item's click panel. Next to the grid, a stat block shows the selected
 hero's HP, ATK, ARM, SPD, CRIT and LUCK, with the share that comes from gear in green (red if gear lowers it).
 
-**Lock.** Hover an item and press L: a padlock; it cannot be sold, salvaged, listed, dropped or
+**Lock.** Hover an item and press L: a padlock; it cannot be sold, salvaged, listed, dropped, trashed or
 swapped out. A locked item you haven't banked is still lost on a wipe (#52; tune after the playtests).
 
 **Auto-salvage.** A toggle in the bag header: while on, common and uncommon pickups turn straight into
@@ -207,6 +218,13 @@ Souls.
   compare at a glance. The average-of-slots rule (Destiny) rewards filling empty slots, and the "!" points
   at who is falling behind. Rejected: summing stats into a score (hides what the item is good for).
 
+- **A trash can, with no confirmation** (0.104.0, #148; Paweł, 2026-11-28): there was no way to throw an item away
+  outside town (Salvage and the Merchant are town services), so a full bag in the dungeon meant skipping drops. The
+  bin sits where the eye ends on the bag, its lid crimson; dropping on it is the whole act, no "are you sure" (Paweł:
+  the player knows what he is doing). A locked item stays out (my call: the lock is the player's own "keep this", the
+  same as for Salvage and selling); maps and feathers can go. Rejected: a 7th column or a bag slot for it (the
+  Treasury row needs all six), giving Souls for it (that is Salvage, and a free salvage anywhere would make the
+  town's Forge pointless), an undo (no question asked means no take-backs either).
 - **Players never buy gear**, in any build. Buying kills the thrill of drops. The auction house only sells.
 - **Loot at the kill, not in a popup** (0.11, 0.13): the floor becomes the reward moment, Diablo-style.
 - **Downsides from rare up** to avoid "bigger number wins" and give the comparison tooltip a job.

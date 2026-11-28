@@ -155,7 +155,8 @@ listening, so her sounds are the most important ones in the game.
   resumes each sound where T is; the skip stops it all. A cue with several files plays them in turn (L A B S rising,
   the keys). All on the game bus; it makes no Noise (the night hasn't started). **From the login** (every night after
   the first Monday): only the cues from T 23 on fire, and the theme (from its offset at 23, just before bar 2) and the
-  rain fade in over 1.5 s (`LAUNCH_LOGIN_SOUND_FADE_SEC`).
+  rain fade in over 1.5 s (`LAUNCH_LOGIN_SOUND_FADE_SEC`); after the Log in press the clock runs fast (#149) and they
+  fade out under it, the theme never resynced to the fast clock.
   - **The real PC is clean** (`mouse`, `crt`, `cdspin`, and `kb_clack`, a clacky mechanical keyboard, for the login's typing; no hard-drive chatter after the double-click, Paweł, #127); **the game's own sounds
     sound like the console** it is styled on: every other cue and the theme are baked through `tools/sfx/ps1.py`
     (22,050 Hz, a 4-bit ADPCM round trip in blocks of 28 with five prediction filters, the console's kind of reverb: a

@@ -1,5 +1,6 @@
 // The launch on the first Monday (#127, the v2 redesign; docs/design/aoj-world.md §7): before the first night the PC
-// launches Age of Judgment on the monitor for 38 s while the boys' first chat comes in on the phone in your hand. One
+// launches Age of Judgment on the monitor for 38 s while the boys' first chat comes in on the phone in your hand. Every
+// night after it starts at the login (T 23) and, once Log in is pressed, runs fast to the town (#149). One
 // clock for the monitor, the chat and the sound: T starts when the chat comes up and stops while paused. Not
 // interactive; nothing starts the night before it ends. The render side is render/page/aoj.js (launchScreen), the
 // sound ui/launchSound.ts.
@@ -23,6 +24,12 @@ export const launchHolds = () => running && T < TU.LAUNCH_SEC;
 /** Whether the last jump of T was a skip (the sound fires nothing it jumped over). */
 export const launchSkipped = () => skipped;
 
+/** How fast the launch's clock runs (#149): every night after the first Monday, once Log in is pressed, the
+ *  connecting, verified and the loading bar fly by (LAUNCH_FAST_FROM to LAUNCH_SEC in LAUNCH_FAST_SEC real seconds).
+ *  The first Monday's long boot sets the mood and plays at 1. */
+export function launchRate(t = T, start = from): number {
+  return start > 0 && t >= TU.LAUNCH_FAST_FROM && t < TU.LAUNCH_SEC ? (TU.LAUNCH_SEC - TU.LAUNCH_FAST_FROM) / TU.LAUNCH_FAST_SEC : 1;
+}
 /** Real seconds, every frame. The clock runs while the chat is up (it stops while paused) and keeps running past the
  *  end until the town has faded in and the music's last chord is out. */
 export function updateLaunch(real: number) {
@@ -33,7 +40,7 @@ export function updateLaunch(real: number) {
   if (g.paused || g.screen !== 'night') return;
   if (v?.launch && !(g.howto)) return;   // up but not shown (debug)
   const was = T;
-  if (!frozen) T += real;
+  if (!frozen) T = Math.min(T + real * launchRate(), Math.max(T + real, TU.LAUNCH_SEC));   // fast from the Log in press on later nights (#149); the fast part stops on the town's T
   if (was < TU.LAUNCH_SEC && T >= TU.LAUNCH_SEC && !skipped) toast(WELCOME, '#f2e9d8', 'GAME');   // the town is in: its welcome
   if (T >= TU.LAUNCH_SOUND_END && !v?.launch) running = false;   // done: the town is in, the chord rang out
 }

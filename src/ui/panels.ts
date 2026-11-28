@@ -1,4 +1,5 @@
 import { VERSION } from '../config/version';
+import { TRASH_TIP } from '../data/items';
 import { launchT } from '../systems/launch';
 import { dayName } from '../systems/week';
 // HTML renderers for the DOM parts of the screen. Every clickable element carries
@@ -98,6 +99,7 @@ export function tooltipHtml(): string {
     return `<div class="tooltip" style="left:${left}px;top:${top}px"><div>${esc(hover.key.slice(5))}</div></div>`;
   }
   if (parts[0] === 'autosalvage') return `<div class="tooltip" style="left:${Math.min(hover.x - 120, 1280 - 250)}px;top:${hover.y + 14}px"><div class="tt-name">Auto-salvage</div><div>Common and uncommon drops turn straight into Souls.</div></div>`;
+  if (parts[0] === 'trash') return `<div class="tooltip" style="left:${Math.min(hover.x - 120, 1280 - 250)}px;top:${hover.y - 60}px"><div class="tt-name">Trash</div><div>${TRASH_TIP}</div></div>`;   // the bag's trash can (#148)
   if (parts[0] === 'pre') return `<div class="tooltip" style="left:${Math.min(hover.x + 16, 1280 - 270)}px;bottom:${Math.max(8, 720 - hover.y + 14)}px">${preTip(parts[1] as PreId)}</div>`;   // low on screen: open upwards
   else if (parts[0] === 'skill' || parts[0] === 'hero') {
     const h = S.g.heroes[Number(parts[1])];

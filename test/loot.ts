@@ -12,9 +12,9 @@ import { ensureParty, heroById } from '../src/systems/positions';
 import { LEGENDS, SETS, type LegendId, type SetId } from '../src/data/legendaries';
 import { CLASS_NOUNS, NOUNS, isClassSlot, SOFT_NOUNS, METAL_ADJECTIVES } from '../src/data/items';
 import { canWear } from '../src/systems/gear';
-import { equipItemOn, unequip } from '../src/systems/bag';
+import { equipItemOn, unequip, trashItem } from '../src/systems/bag';
 import { classGear } from '../src/systems/save';
-import { itemEntry, nameIsCurrent } from '../src/systems/loot';
+import { itemEntry, nameIsCurrent, mapEntry, featherEntry } from '../src/systems/loot';
 
 let fail = 0;
 const ok = (c: boolean, what: string) => { console.log((c ? 'ok   ' : 'FAIL ') + what); if (!c) fail++; };
@@ -124,6 +124,25 @@ party(2);
   ok(H('knight').gear.armor!.name === 'renamed', 'and a worn word that is not his class\'s gets renamed');
   ok(fb.cls === 'mage' && !H('healer').gear.weapon && S.g.bag.some(e => e.id === fb.id), 'Frostbinder on the priest goes back to the bag as the mage\'s');
   ok(robe.cls === 'mage' && axe.cls === 'knight' && !ring.cls, 'in the bag: a Robe is the mage\'s, an Axe the knight\'s, a ring nobody\'s');
+}
+
+// the trash can (#148): a bag item, a map, a worn piece go for good and give nothing; a locked one stays
+party(2);
+{
+  const gold = S.g.gold, mats = S.g.mats, a = itemEntry(genItem(3)), m = mapEntry('vault'), f = featherEntry();
+  S.g.bag = [a, m, f]; N().fresh = [{ id: a.id, t: 1 }];
+  ok(trashItem({ bag: a.id }) && !S.g.bag.some(e => e.id === a.id) && !N().fresh.length, 'trash: a bag item goes, and its blink with it');
+  ok(trashItem({ bag: m.id }) && trashItem({ bag: f.id }) && S.g.bag.length === 0, 'trash: a map and a feather go too');
+  ok(S.g.gold === gold && S.g.mats === mats, 'trash: nothing back (no gold, no Souls)');
+  const l = itemEntry(genItem(3)); (l as { item: Item }).item.locked = true; S.g.bag = [l];
+  ok(!trashItem({ bag: l.id }) && S.g.bag.length === 1, 'trash: a locked item stays in the bag');
+  const h = S.g.heroes[0], it = genItem(3); it.slot = 'boots'; it.cls = undefined; h.gear.boots = it; h.hp = maxHp(h);
+  const n0 = S.g.bag.length;
+  ok(trashItem({ hero: 0, slot: 'boots' }) && !h.gear.boots && S.g.bag.length === n0 && h.hp <= maxHp(h) && h.hp >= 1, 'trash: a worn piece goes off the hero, not into the bag; his HP stays in range');
+  const it2 = genItem(3); it2.slot = 'ring'; it2.cls = undefined; it2.locked = true; h.gear.ring = it2;
+  ok(!trashItem({ hero: 0, slot: 'ring' }) && h.gear.ring === it2, 'trash: a locked worn piece stays on');
+  delete h.gear.helm;
+  ok(!trashItem({ bag: 'nope' }) && !trashItem({ hero: 0, slot: 'helm' }), 'trash: nothing there, nothing happens');
 }
 
 console.log(fail ? `${fail} failed` : 'all passed');

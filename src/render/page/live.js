@@ -408,6 +408,44 @@ function liveBag(st, X0, PW, y0) {
     if (c && !c.locked && !c.empty) panelHit(x, y, 21, 21, 'bagCell', c.id, 'bag:' + c.id);
   });
 }
+// the bag's trash can (#148, loot.md): a bin standing in the footer's right corner, its lid crimson so it reads as
+// "throw away". open: an item in your hand (the lid lifts off, the dark mouth shows); hot: the item is over it (a crimson
+// glow round it, wide enough to show past the item in hand, the lid higher and jumping); bad: the item over it is locked
+// (the lid stays down, no glow: the item in hand gets the refusal ring and shakes); clap: the lid slamming shut after an item went in (0..1)
+const BIN_LID = ['....RRR....', '.RRRRRRRRR.', 'RRRRRRRRRRR', 'WWWWWWWWWWW'];
+const BIN_BODY = [   // 11 wide, 9 tall: tan tin, dark ribs, a little narrower at the foot
+  '.vvvvvvvvv.',
+  '.vuqtqtqrv.',
+  '.vuqtqtqrv.',
+  '.vuqtqtqrv.',
+  '.vuqtqtqrv.',
+  '.vuqtqtqrv.',
+  '..vuqtqrv..',
+  '..vuqtqrv..',
+  '..vvvvvvv..',
+];
+function trashCan(st, X0, PW, t) {
+  const b = st.trash; if (!b) return;
+  const x = X0 + PW - 13, y = H - 9;   // the body's top row (the bin stands on the panel's bottom edge); the lid sits on it
+  if (b.hot && !b.bad) {   // a dithered crimson glow, breathing, wide enough to show past the item in your hand
+    const br = 0.08 * Math.sin(t * 9);
+    for (let j = -16; j <= 8; j++) for (let i = -9; i <= 19; i++) {
+      const dx = (i - 5) / 14, dy = (j - 1) / 13, d = dx * dx + dy * dy + br, X = x + i, Y = y + j;
+      if (d > 1) continue;
+      if (d < 0.45 || (d < 0.75 && ((X + Y) & 1) === 0) || (((X + Y) & 1) === 0 && (Y & 1) === 0)) putI(X, Y, d < 0.3 ? P.crimson : P.wine);
+    }
+  }
+  sprite(x, y, BIN_BODY);
+  if (b.open) {
+    rectI(x + 2, y + 1, 7, 1, P.void);
+    const lift = b.hot ? 6 + (Math.sin(t * 18) > 0 ? 1 : 0) : 4;
+    sprite(x, y - 4 - lift, BIN_LID);
+  } else {
+    const k = b.clap >= 0 ? b.clap : 1, hop = k < 0.35 ? -3 : k < 0.6 ? -1 : 0;   // the lid claps down: a hop, then still
+    sprite(x, y - 4 + hop, BIN_LID);
+  }
+  panelHit(x - 3, H - 15, 17, 15, 'trash', '', 'trash');
+}
 function livePartyPanel(st, t) {
   const X0 = 4, PW = W - 4, top = st.tabs ? 12 : 0;
   panelFrame();
@@ -443,6 +481,7 @@ function livePartyPanel(st, t) {
   liveBag(st, X0, PW, 113);
   for (let j = H - 11; j < H; j++) for (let i = X0; i < X0 + PW; i++) putU(i, j, j === H - 11 ? 0.02 : j === H - 10 ? 0.62 : lerp(0.34, 0.18, (j - H + 9) / 8) + 0.05 * (GR(i, j) - 0.5));
   footerMoney(X0, PW, st);
+  trashCan(st, X0, PW, t);
   void top;
 }
 function liveTownPanel(st, t) {
@@ -471,13 +510,14 @@ function liveTownPanel(st, t) {
   if (st.canDown) panelHit(X0 + 3, fy + 1, 9, 10, 'pickFloor', -1, '');
   if (st.canUp) panelHit(X0 + PW - 13, fy + 1, 9, 10, 'pickFloor', 1, '');
   text('floor ' + F0, X0 + PW / 2 - 4, fy + 4, 'tiny', P.moon, { align: 'r', shadow: P.void }); text(F0 === 1 ? 'the start' : 'checkpoint', X0 + PW / 2, fy + 4, 'tiny', P.u4);
-  const bx = X0 + 2, by = fy + 14, bw = PW - 4, bh = 15;
+  const bx = X0 + 2, by = fy + 13, bw = PW - 4, bh = 15;   // 1 px up, and the bag 3 (#148): its last row clears the taller footer
   shadowU(bx, by, bw, bh, { k: 0.6, r: 3, dx: 1, dy: 2 });
   plateU(bx, by, bw, bh, { mat: M_MAGIC, top: 0.4, bot: 0.3, hi: 0.86, hiMat: M_DUSK, lo: 0.2, grain: 0.03 });
   text(`Enter the dungeon · floor ${F0}`, bx + bw / 2, by + 5, 'tiny', P.moon, { align: 'c', shadow: P.void });
   panelHit(bx, by, bw, bh, 'portal', '', `Into the Shadow Crypt at floor ${F0} (15 min).`);
-  liveBag(st, X0, PW, 124);
+  liveBag(st, X0, PW, 121);
   footerMoney(X0, PW, st);
+  trashCan(st, X0, PW, t);
 }
 // the panel's dispatcher (replaces the Skill-Tree-only one above)
 function livePanelAll(ctx, st, t) {

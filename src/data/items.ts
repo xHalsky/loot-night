@@ -1,5 +1,7 @@
 import type { Rarity, Slot, Stat, MapKind, HeroId } from '../core/state';
 
+/** The bag's trash can, its tooltip (#148). */
+export const TRASH_TIP = 'Drag an item here to destroy it. No way back.';
 export const RARITY_COLOR: Record<Rarity, string> = {
   common: '#8e8a99', uncommon: '#6fcf7f', rare: '#6aa8ff', epic: '#b98cff', legendary: '#ff9a4d',
 };

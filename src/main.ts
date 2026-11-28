@@ -1,4 +1,5 @@
 import './style.css';
+import { TRASH_TIP } from './data/items';
 import { launchHolds, skipLaunch, launchT, launchSeek } from './systems/launch';
 import { stopLaunchSound, updateLaunchSound, launchFired } from './ui/launchSound';
 import { fmtClock } from './core/fx';
@@ -14,8 +15,8 @@ import { toggleHeadset } from './systems/apartment';
 import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_CLASS, HERO_COLORS } from './data/heroes';
 import { queueAbility } from './systems/battle';
-import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip } from './systems/bag';
-import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock } from './systems/loot';
+import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip, trashItem } from './systems/bag';
+import { skipDrop, rollBattleDrops, genItem, itemEntry, mapEntry, toggleLock, isLocked } from './systems/loot';
 import { choosePath, returnToTown, travelToDungeon, catchGoblin, pickStartFloor, debugEndFloor } from './systems/dungeon';
 import { chooseCurio, endCurio } from './systems/curios';
 import { toast } from './core/fx';
@@ -307,15 +308,19 @@ function shakeGhost() {
 /** Held past PICKUP_HOLD_SEC, a bag item is picked up (#114): an open item window closes, so the gear slots it lights
  *  (and could land on) show. Let go without a drag, it is a click as before and selects the item. */
 function pickUp(key: string) { window.setTimeout(() => { if (inv?.key === key && S.g.night) S.g.night.selected = null; }, T.PICKUP_HOLD_SEC * 1000); }
-/** Where a drag would land: a gear slot ('slot:weapon'), a party card ('hero:2'), the bag ('bag'), or nowhere (''). */
+/** Where a drag would land: a gear slot ('slot:weapon'), a party card ('hero:2'), the bag ('bag'), the trash can
+ *  ('trash', #148), or nowhere (''). */
 function dropAt(ev: PointerEvent): string {
   const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
   const dropEl = under?.closest('[data-drop]') as HTMLElement | null;
   return under?.id === 'spArea' ? panelDrop(ev) : dropEl?.dataset.drop ?? '';
 }
-/** A bag item whose drop target can't wear it (class gear, #113): a party card under it, else the selected hero. */
+/** A bag item whose drop target can't wear it (class gear, #113): a party card under it, else the selected hero. Over
+ *  the trash can: a locked item (#148). */
 function dragBad(key: string, over: string): boolean {
-  const [kind, a] = key.split(':'), e = kind === 'bag' ? S.g.bag.find(x => x.id === a) : undefined;
+  const [kind, a, b] = key.split(':');
+  if (over === 'trash') return !!(kind === 'bag' ? isLocked(a) : kind === 'gear' && S.g.heroes[Number(a)]?.gear[b as 'weapon']?.locked);   // the trash can keeps a locked item out (#148)
+  const e = kind === 'bag' ? S.g.bag.find(x => x.id === a) : undefined;
   if (!e || e.kind !== 'item') return false;
   const [dk, dv] = over.split(':'), h = S.g.heroes[dk === 'hero' ? Number(dv) : N().heroTab];
   return !!h && !canWear(h, e.item);
@@ -354,7 +359,11 @@ document.addEventListener('pointermove', ev => {
       if (inv.ring && inv.shot) {
         const over = dropAt(ev), bad = dragBad(inv.key, over);
         if (bad !== inv.bad) { inv.bad = bad; ghostCell(inv.shot, bad, inv.ring); }
-        if (over !== inv.over) { inv.over = over; if (bad && /^(slot|hero):/.test(over)) shakeGhost(); }   // onto a slot or a card it can't go on
+        if (over !== inv.over) {
+          inv.over = over; setPanelPtr({ trash: over === 'trash' });
+          ghostShakeAt = 0; ghost().style.transition = 'transform 0.08s'; ghost().style.transform = over === 'trash' && !bad ? `scale(${T.TRASH_GHOST_SCALE})` : '';   // over the trash can it shrinks, going in (#148)
+          if (bad && /^(slot|hero|trash)/.test(over)) { ghost().style.transition = ''; shakeGhost(); }   // onto a slot or a card it can't go on (or a locked item onto the trash)
+        }
       }
     }
   } else if (!['rpgArea', 'spArea', 'rsArea', 'herArea', 'ebArea', 'headHit'].includes((ev.target as HTMLElement).id)) {   // the renderer's canvases (V2, V3) and his head (#103) set their own hover
@@ -378,7 +387,12 @@ document.addEventListener('pointerup', ev => {
       else if (kind === 'bag' && dk === 'hero') went = equipItemOn(a, Number(dv));
       else if (kind === 'gear' && dk === 'bag') went = unequip(Number(a), b);
       else if (kind === 'hero' && dk === 'hero' && dv !== a) actions.swap(`${a},${dv}`);
+      else if (dk === 'trash' && (kind === 'bag' || kind === 'gear')) {   // into the trash can, gone (#148): no question asked
+        went = trashItem(kind === 'bag' ? { bag: a } : { hero: Number(a), slot: b });
+        if (went) setPanelPtr({ binAt: performance.now() });
+      }
     }
+    setPanelPtr({ trash: false });
     // an item that didn't go anywhere goes back to its square (#113); anything else, the ghost just goes
     if (moved && ring && rect && !went) ghostHome(rect, kind === 'bag' ? `bag:${a}` : `gear:${b}`, kind === 'bag' ? a : '');
     else ghostDone();
@@ -447,7 +461,7 @@ el('spArea').addEventListener('pointermove', ev => {
   (el('spArea') as HTMLElement).style.cursor = h?.act ? 'pointer' : 'default';
   if (inv?.moved) return;
   setPanelPtr({ hover: h?.act === 'bagCell' ? h.arg : null });   // its ring, when the selected hero can't wear it (#113)
-  hover.key = h?.tip ? (/^(bag|gear|hero|skill):|^autosalvage$/.test(h.tip) ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
+  hover.key = h?.tip ? (/^(bag|gear|hero|skill):|^(autosalvage|trash)$/.test(h.tip) ? h.tip : `text:${h.tip}`) : ''; hover.x = p.x; hover.y = p.y;
   hover.src = 'rpg'; hover.area = 'sp'; hover.ax = x; hover.ay = y;
 });
 el('spArea').addEventListener('contextmenu', ev => {
@@ -464,6 +478,7 @@ function panelDrop(ev: PointerEvent): string {
   if (h.act === 'gearCell') return `slot:${h.arg}`;
   if (h.act === 'heroTab') return `hero:${h.arg}`;
   if (h.act === 'bagCell' || h.act === 'bagArea') return 'bag';
+  if (h.act === 'trash') return 'trash';   // the bag's trash can (#148)
   return '';
 }
 el('spArea').addEventListener('pointerleave', () => { hover.key = ''; setPanelPtr({ hover: null }); });
@@ -1018,8 +1033,9 @@ function realTip(): TipModel | null {
 }
 function rpgTipNow(): RpgTip | null {
   const k = hover.key;
-  if (!k || hover.src !== 'rpg' || !/^(text|skill|hero):|^autosalvage$/.test(k)) return null;
-  const lines: [string, string][] = k.startsWith('text:') ? [['b', k.slice(5)]] : k === 'autosalvage' ? [['h', 'Auto-salvage'], ['b', 'Common and uncommon drops turn straight into Souls.']] : htmlLines(tooltipHtml());
+  if (!k || hover.src !== 'rpg' || !/^(text|skill|hero):|^(autosalvage|trash)$/.test(k)) return null;
+  const lines: [string, string][] = k.startsWith('text:') ? [['b', k.slice(5)]] : k === 'autosalvage' ? [['h', 'Auto-salvage'], ['b', 'Common and uncommon drops turn straight into Souls.']]
+    : k === 'trash' ? [['h', 'Trash'], ['b', TRASH_TIP]] : htmlLines(tooltipHtml());
   return lines.length ? { area: hover.area as 'ba' | 'sp', x: hover.ax, y: hover.ay, w: hover.area === 'sp' ? 132 : 150, lines } : null;
 }
 function drawTips() {

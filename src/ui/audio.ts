@@ -327,6 +327,8 @@ export const sfx = {
   // Audio-first: each of these must be recognisable with Excel covering the screen.
   legendary() { if (!play('legendary')) [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, 0.2, 'square', 0.14, i * 0.07)); },
   bagFull() { play('bagfull') || tone(330, 0.2, 'square', 0.1, 0, 220); },
+  /** An item thrown in the bag's trash can (#148): a clank in the bin, a crunch, a short fall. */
+  trash() { play('trash') || (noise(0.12, 0.14, 2600, 0), tone(420, 0.16, 'square', 0.08, 0.04, 140)); },
   goblin() { play('goblin') || [1200, 1400, 1200, 1500].forEach((f, i) => tone(f, 0.05, 'square', 0.08, i * 0.08)); },
   goblinCatch() { play('goblincatch') || sfx.good(); },
   goblinLost() { play('goblinlost') || tone(600, 0.3, 'triangle', 0.08, 0, 300); },

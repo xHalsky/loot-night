@@ -243,12 +243,15 @@ the phone in hand, and each step on its own, with a timeline strip that also sho
   check before the Steam page. The engine's start-up lines name Procrastination Studios. **Halsky Labs' mark is Paweł's
   logo** (2026-11-27; it replaced the H in a hexagon).
 - **When it plays (W1):** **the whole launch on the first Monday only,** with the boys' first chat. **Every night after
-  it starts from the login screen** (Paweł, 2026-11-27: from Tuesday on; my call: replays too, "Monday, again"
-  included, and week two's nights): the last 15 s of the launch, T 23 to 38, opening with a 0.6 s dithered fade in
-  from black: the logo shrinking to the top, the panel sliding up, "dutch" and the stars typed, Log in, logging in, the
-  world loading, then Ravenhold. Its sound is the cue sheet from T 23 (§7b). That night's 20:00 chat is paced to it:
-  its bubbles spread evenly from 25.4 to 35.0 s (three bubbles: 25.4, 30.2 and 35.0 s), each after its 1.6 s of typing
-  dots; no button until 38 s, then Let's go (#142).
+  it starts from the login screen, and loads fast** (Paweł, 2026-11-27: from Tuesday on; 2026-11-28, #149: the long
+  boot sets the mood once, watching it again kills the pacing; my call: replays too, "Monday, again" included, and
+  week two's nights): T 23 to 38, opening with a 0.6 s dithered fade in from black: the logo shrinking to the top, the
+  panel sliding up, "dutch" and the stars typed and Log in pressed, all at their own pace (5.4 s); then from T 28.4
+  (`LAUNCH_FAST_FROM`) the clock runs fast, so logging in, verified, the loading bar and Ravenhold's fade go by in
+  2 s (`LAUNCH_FAST_SEC`, 4.8x). The town is in 7.4 s after the chat comes up (15 s before). Its sound is the cue
+  sheet from T 23 (§7b). That night's 20:00 chat is paced to it: its bubbles spread evenly from 24.6 to 27.4 s (three
+  bubbles: 24.6, 26.0 and 27.4 s), each after up to 1.6 s of typing dots, all landed before the fast part and 3 real
+  s before the town; no button until 38 s, then Let's go (#142).
 
 ## 7b. The launch's sound and music (Paweł, 2026-11-27)
 
@@ -333,8 +336,10 @@ sound chip did:
   T says, it restarts at the right offset (after a pause, a hitch, a hidden tab). Pause stops all of it and unpause
   resumes it where T is; "Skip the launch" stops it all.
 - **From the login (every night after the first, §7):** T starts at 23, so only the cues from 23 on fire; the rain
-  fades in from 23; the theme plays from its offset at T 23 (16.8 s in, just before bar 2) with a 1.5 s fade in, and
-  ends on its last chord as on the first Monday.
+  fades in from 23; the theme plays from its offset at T 23 (16.8 s in, just before bar 2) with a 1.5 s fade in. Once
+  Log in is pressed the clock runs fast (§7, #149): the theme plays on at its own pace (never resynced to the fast
+  clock) and it and the rain fade out over the fast part, silent when the town is in; the cues in it fire as T passes
+  them (a fast frame is not a jump).
 - **Replaceable like every cue:** a file in `src/assets/sfx/own/` named after a cue replaces it. For `aoj_theme` it
   starts at T 6.2 and keeps the times above (silence at 15, the downbeat at 19.15, the last chord at 37.15), so Paweł
   can score it himself.

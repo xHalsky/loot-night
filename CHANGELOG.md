@@ -3,6 +3,33 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.104.0 (2026-11-28)
+
+Paweł's notes: a way to throw items away, and a faster boot after the first night (#148, #149).
+
+- **A trash can in the bag** (#148):
+  - It stands at the bag's lower right, in the footer under the grid, on the Inventory tab and on the party panel in
+    the dungeon. A tan tin with a crimson lid, so it reads as "throw away".
+  - Drag any item onto it and it is gone, with no question asked and nothing back. This works for bag items, worn gear
+    dragged off a slot, maps and feathers, in town and in the dungeon.
+  - While an item is in your hand the lid lifts. Over the bin the item shrinks, a crimson glow shows round it and the
+    lid jumps. Let go: the lid claps shut, a new `trash` sound plays (a tin clank and a crunch) and the feed says
+    "Destroyed <name>."
+  - A locked item is refused (my call): the lid stays down, the item shakes and flies back.
+  - Its tooltip: "Trash. Drag an item here to destroy it. No way back."
+  - The bag panels' footer is 2 px taller for it. The Town tab's portal button and bag moved up, so the Treasury row
+    is no longer cut by the footer.
+- **Every night after the first boots fast** (#149):
+  - The login, the typing and the Log in press play as before. From the press on, the clock runs 4.8 times as fast:
+    connecting, verified, the loading bar and the fade take 2 s instead of 10.
+  - The town is in 7.4 s after the chat comes up. It was 15 s. The first Monday's full boot is unchanged.
+  - The theme and the rain fade out over the fast part.
+  - The night's chat lands earlier, from 24.6 to 27.4 s, so all of it is in before Log in is pressed and 3 s before
+    the town.
+- Seeded sims (good and idle) identical: no balance change.
+- Tests: `test/trash.py` (new), `test/fastboot.py` (new), `test/loot.ts` (the trash rules), `test/launch.ts` (the
+  login's pacing and the fast part).
+
 ## 0.103.0 (2026-11-28)
 
 Paweł's notes on the launch chat, her bubble, the loot, the GAME lines and the floor map (#142 to #147).

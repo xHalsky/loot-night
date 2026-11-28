@@ -25,6 +25,7 @@ import { GOBLIN, goblinPos } from '../ui/monitor';
 import { POS_X, ENEMY_SLOTS, FLOOR_Y, MID_SLOT } from '../core/arena';
 import { floorName } from '../data/floorNames';
 import { unbanked } from '../systems/run';
+import { isLocked } from '../systems/loot';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
 
 /** The live battle area replaces the old one whenever the party is in the dungeon (the floor map too), and in town
@@ -81,8 +82,9 @@ function itemIcon(it: Item): string {
 }
 /** The pointer over the side panel (#113, from main.ts): the bag item under it (its ring when the selected hero can't
  *  wear it), what is in your hand ('bag:id' or 'gear:slot': its square stays empty till it lands), and the bag item the
- *  button is held on (#114: once picked up, its slot in the selected hero's gear lights). */
-const panelPtr: { hover: string | null; lift: string | null; hold: { id: string; at: number } | null } = { hover: null, lift: null, hold: null };
+ *  button is held on (#114: once picked up, its slot in the selected hero's gear lights). trash: the item in hand is
+ *  over the bag's trash can (#148); binAt: when the last item went in (performance.now ms, the lid's clap). */
+const panelPtr: { hover: string | null; lift: string | null; hold: { id: string; at: number } | null; trash: boolean; binAt: number } = { hover: null, lift: null, hold: null, trash: false, binAt: -1e9 };
 /** The gear slot a picked-up bag item goes in (#114): gold, or crimson when the selected hero can't wear it. */
 function aimOf(h: Hero): { slot: string; bad: boolean } | null {
   const hd = panelPtr.hold;
@@ -128,11 +130,20 @@ function gearCell(it: Item | undefined, slot: string) {
   if (panelPtr.lift === `gear:${slot}`) return { id: it.id, lifted: true };
   return { id: it.id, icon: itemIcon(it), r: it.rarity, pow: it.identified ? itemPower(it) : '?', lock: !!it.locked, run: !!it.run };
 }
+/** The bag's trash can (#148): open (its lid up) while an item is in your hand, hot (glowing) with the item over it,
+ *  bad when that item is locked (the lid stays down), clap: 0..1 through the lid slamming after an item went in. */
+function binView() {
+  const lift = panelPtr.lift, held = !!lift, id = lift?.startsWith('bag:') ? lift.slice(4) : null;
+  const bad = held && panelPtr.trash && (id ? isLocked(id) : !!heldGear()?.locked);
+  const k = (performance.now() - panelPtr.binAt) / (T.TRASH_CLAP_SEC * 1000);
+  return { open: held && !bad, hot: held && panelPtr.trash, bad, clap: k >= 0 && k < 1 ? k : -1 };
+}
+function heldGear() { const lift = panelPtr.lift; return lift?.startsWith('gear:') ? S.g.heroes[N().heroTab]?.gear[lift.slice(5) as Item['slot']] : undefined; }
 /** ring: the party tab, where the selected hero is on show; hovering class gear he can't wear rings it red (#113). */
 function bagView(ring = false) {
   const g = S.g, cells: Record<string, unknown>[] = [];
   for (let k = 0; k < T.BAG_SIZE + T.TREASURY_ROW; k++) cells.push(k >= g.bagSize ? { locked: true } : cellOf(g.bag[k], ring));
-  return { bag: cells, bagCount: g.bag.length, bagSize: g.bagSize, autoSalvage: g.autoSalvage };
+  return { bag: cells, bagCount: g.bag.length, bagSize: g.bagSize, autoSalvage: g.autoSalvage, trash: binView() };
 }
 const foot = () => ({ gold: S.g.gold, souls: S.g.mats, record: Math.max(S.g.record, N().deepest) });
 function partyCards(glowFor: HeroId | null = null) {

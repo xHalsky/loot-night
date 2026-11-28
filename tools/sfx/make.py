@@ -672,6 +672,19 @@ def _legendary():
     write('legendary', D.lp(x, 12000), 'desk')
 
 
+@cue('trash')
+def _trash():
+    """An item thrown in the bag's trash can (#148): it lands in a tin bin, a dry crunch, two notes down."""
+    D.seed(1950)
+    x = np.zeros(secs(0.55))
+    place(x, kenney('impact_tin_medium_002'), 0, 0.75)
+    crunch = D.hp(kenney('cloth_2'), 900)[:secs(0.2)]
+    place(x, D.fade(crunch, 0.002, 0.06), 0.04, 0.6)
+    place(x, chip(note('D4'), 0.08, 0.5) * D.env_exp(0.08, 0.05) * 0.2, 0.12)
+    place(x, chip(note('A3'), 0.16, 0.5) * D.env_exp(0.16, 0.08) * 0.2, 0.21)
+    write('trash', D.lp(x, 7000), 'desk')
+
+
 @cue('bagfull')
 def _bagfull():
     """A stuffed bag thumps, then 'nuh-uh'."""

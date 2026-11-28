@@ -76,3 +76,27 @@ export function unequip(heroIdx: number, slot: string): boolean {
   sfx.click();
   return true;
 }
+
+/** The trash can (#148, loot.md): an item dragged onto it is gone for good, no question asked and nothing back (Salvage
+ *  is the paid way out). A bag entry, or a piece a hero wears (his HP keeps its share, as unequip). A locked item stays:
+ *  the lock is the player's own "keep this". True when it went. */
+export function trashItem(from: { bag: string } | { hero: number; slot: string }): boolean {
+  if ('bag' in from) {
+    const e = S.g.bag.find(x => x.id === from.bag);
+    if (!e) return false;
+    if (e.kind === 'item' && e.item.locked) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return false; }
+    removeEntry(e.id);
+    const n = N(); n.fresh = n.fresh.filter(f => f.id !== e.id);
+    toast(`Destroyed ${entryName(e)}.`, '#c9a46a');
+  } else {
+    const h = S.g.heroes[from.hero], it = h?.gear[from.slot as Item['slot']];
+    if (!it) return false;
+    if (it.locked) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return false; }
+    const ratio = h.hp / maxHp(h);
+    delete h.gear[from.slot as Item['slot']];
+    if (!h.downed) h.hp = Math.max(1, Math.min(maxHp(h), Math.round(maxHp(h) * ratio)));
+    toast(`Destroyed ${it.identified ? it.name : 'an unidentified item'}.`, '#c9a46a');
+  }
+  sfx.trash();
+  return true;
+}
