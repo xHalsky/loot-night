@@ -3,6 +3,39 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.109.0 (2026-11-28)
+
+Paweł's notes: her sounds overpower everything and give away where she is by their loudness; the TV is annoying; the
+RPG needs music (#158, #159).
+
+- **Her sounds come through your door** (#158). While it is shut, everything of hers is low, dull and quieter
+  (`DOOR_SHUT_LOWPASS` 550 Hz, `DOOR_SHUT_GAIN` 0.38). A peek's first crack brings her back full and clear, so a quick
+  peek also tells you what she is doing. Leaning in and her in the open doorway do the same; let go and it shuts.
+- **No room makes her quieter or duller** (#158). The volume and wall low-pass by room are gone (`APT_ROOM_GAIN`,
+  `APT_ROOM_LOWPASS`): you find her by what you hear, not by how loud it is.
+  - Her steps still grow as a visit comes down the hall to your door.
+  - Your Noise still reaches her by distance.
+- **The dog at your desk and your own door are on your side of the door.** Your door's handle, creak, opening and
+  shutting move to a new room bus with the dog. The headset still muffles them; the door does not.
+- **The TV comes out of a TV** (#158). The show, its laugh track and its credits are re-baked through a small set's
+  speaker: no lows and no air, a boxy cabinet, squashed flat by the set's compressor, a little grit. They are also
+  lower in the mix.
+- **Music in play** (#159), in the flavour Paweł asked for: the King's Field revival (Lunacid, Queen's Domain), King's
+  Field mixed with lofi. Three original loops in D:
+  - **Ravenhold** (the town, 77 s): D Dorian, a harp over warm strings, a flute, a brushed beat, a far bell, rain.
+  - **The Crypt** (the dungeon, 64 s): D Phrygian, an organ drone and a choir, a music box in a huge hall, a lone
+    flute, a slow heavy beat, a toll, drips.
+  - **Judgment** (a boss or the Abbot, from his pack waiting in the corridor, 60 s): a driving low-string ostinato,
+    choir stabs, dark horns with the theme, timpani, bells, a harder beat.
+  - They use the console's own instruments (the launch theme's) with a lofi beat, tape wow and flutter, a warm
+    low-pass and vinyl crackle. Each is an exact loop.
+  - They sit under her sounds and crossfade over 1.6 s. Paused, the music holds its place silently. There is none
+    during the launch.
+- The build is about 6.2 MB (the music adds 1.2 MB).
+- Sound only: the seeded sims (good and idle) are identical.
+- Tests: `test/sound.py` (the door shut, peeking and let go; the music's loops); `test/music.py` (the track by
+  place, a boss, paused, none in the launch).
+
 ## 0.108.0 (2026-11-28)
 
 Paweł on 0.107.0: the battle sounds sounded awful, like empty pots or porcelain on porcelain, no weight, too tiny

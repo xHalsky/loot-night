@@ -3,7 +3,7 @@ import { N } from '../core/state';
 import { addMood } from './meters';
 import { toastAs } from '../core/fx';
 const toast = toastAs('HER');   // feed tag (#49)
-import { sfx } from '../ui/audio';
+import { sfx, setDoorOpen } from '../ui/audio';
 
 // Peeking through your door (docs/design/her.md). Hold the door: it opens to a narrow crack, then creeps wider;
 // the crack shows the hallway and her tells in the doorways (door.ts). If she is somewhere she can see your door
@@ -35,6 +35,9 @@ export function updatePeek(dt: number) {
   if (!n.peeking) n.peek = Math.max(0, n.peek - dt / T.PEEK_OPEN_SEC);                      // let go: it closes
   else if (n.peek < narrow) n.peek = Math.min(narrow, n.peek + dt * narrow / T.PEEK_OPEN_SEC);   // quickly to a crack
   else n.peek = Math.min(1, n.peek + dt * (1 - narrow) / T.PEEK_CREEP_SEC);                 // then it creeps wider
+  // what you hear of her (#158): through the shut door, low and dull; the first crack opens it up, so a quick peek
+  // tells you what she is doing; leaning in and her in the doorway too
+  setDoorOpen(n.visit.stage === 'in' || n.lean ? 1 : Math.min(1, n.peek / narrow));
   if (n.peek > 0.1) n.peekSus += seenRate() * dt * n.peek;
   else n.peekSus = Math.max(0, n.peekSus - dt * 0.4);
   if (n.peekSus >= 1) spotted();

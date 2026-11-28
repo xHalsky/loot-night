@@ -432,10 +432,14 @@ export const T = {
   HIS_GRIN_SEC: 2.5,              // ...for this long
   HIS_FLICK_SEC: 0.9,             // his eyes flick toward a new sound for this long (not with the headset on)
   HIS_RELIEF_SEC: 2,              // after she leaves happy, relief lingers
-  // What you hear of her by distance (her sounds, not your Noise): volume and the walls' low-pass (Hz).
-  APT_ROOM_GAIN: { next: 1, middle: 0.65, far: 0.45 } as Record<string, number>,
-  APT_ROOM_LOWPASS: { next: 2800, middle: 1600, far: 1000 } as Record<string, number>,
+  // Her sounds through your door (#158): shut, they come through low and dull; a peek (its first crack), leaning in or
+  // her in the doorway opens them up. No room makes her quieter or duller: you find her by what you hear (was
+  // APT_ROOM_GAIN and APT_ROOM_LOWPASS by distance). Her hearing you still goes by distance (HEAR_DISTANCE).
+  DOOR_SHUT_LOWPASS: 550,         // Hz
+  DOOR_SHUT_GAIN: 0.38,
+  DOOR_SOUND_SEC: 0.06,           // how fast it follows the door (a time constant)
   AMB_FADE_SEC: 0.6,              // her TV, kettle and shower fade in and out this fast
+  MUSIC_FADE_SEC: 1.6,            // the RPG's music (#159): one track crossfades into the next this fast
   TV_LAUGH_CHANCE: 0.35,          // at each TV sound tick (2.5 s): the laugh track
   SLEEP_BREATH_CHANCE: 0.25,      // at each sleep tick (3 s): you hear her breathe (bedroom, very quiet)
   APT_MOVE_SEC: 2,

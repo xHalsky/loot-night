@@ -360,6 +360,10 @@ sound chip did:
   crunchy"): every blow, skill, wind-up, fall, loot and curio sound through the same console chain, in the world's
   materials (iron, stone, chain, bells, choir, fire), each action its own and each boss its own
   ([screen.md](screen.md), Audio). Was: chiptune blips from the prototype (0.33), the launch the one exception.
+- **The RPG has music in play** (#159, Paweł: the King's Field revival, King's Field mixed with lofi): Ravenhold for
+  the town (the refuge in the rain), the Crypt for the dungeon (lonely, in the angel's body), Judgment for a boss
+  fight; the console's own instruments as in the launch's theme, a lofi beat and tape under them
+  ([screen.md](screen.md), Audio).
 
 ## 8. When it gets built
 

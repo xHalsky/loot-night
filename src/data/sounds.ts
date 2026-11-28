@@ -6,7 +6,7 @@
 export const MIX: Record<string, number> = {
   // her (apartment bus, also scaled by room distance)
   step: 0.75, stepsoft: 0.55, latch: 0.55, door: 0.5, doorclose: 0.45, plate: 0.35, hum: 0.4,
-  tv: 0.42, laugh: 0.35, credits: 0.45, kettle: 0.4, kettleoff: 0.5, shower: 0.5, dryer: 0.45,
+  tv: 0.3, laugh: 0.26, credits: 0.34,   // through the set's speaker (#158) kettle: 0.4, kettleoff: 0.5, shower: 0.5, dryer: 0.45,
   flush: 0.55, tap: 0.5, bye: 0.65, breath: 0.25, creak: 0.4, bath: 0.5, drain: 0.55, babe: 0.7,
   // the desk
   buzz: 0.55, buzzmsg: 0.55, can: 0.6, gulp: 0.5, fridge: 0.45, tin: 0.45, bin: 0.4, key: 0.35,
@@ -44,10 +44,13 @@ export const MIX: Record<string, number> = {
   aoj_ring: 0.8, aoj_spark: 0.6, aoj_word: 0.75, aoj_strike: 1.0, aoj_quench: 0.4, aoj_ageof: 0.65, aoj_glint: 0.3,
   ui_panel: 0.45, ui_login: 0.55, ui_verified: 0.5,
   aoj_theme: 0.6,
+  // the RPG's music in play (#159): under everything, her sounds above it
+  mus_town: 0.22, mus_dungeon: 0.24, mus_boss: 0.26,
 };
 
 /** Seamless loops: their loop length in seconds (the baked files carry LOOP_PAD of wrap-around on both sides). */
-export const LOOP_SEC: Record<string, number> = { tv: 9, kettle: 4, shower: 4, bath: 8, rain: 6 };
+export const LOOP_SEC: Record<string, number> = { tv: 9, kettle: 4, shower: 4, bath: 8, rain: 6,
+  mus_town: 76.8, mus_dungeon: 64, mus_boss: 60 };   // the music (#159): tools/sfx/aoj_music.py's LENGTHS
 export const LOOP_PAD = 0.25;
 
 /** Her activity -> its continuous sound while she is at it. */

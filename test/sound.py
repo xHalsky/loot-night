@@ -2,7 +2,7 @@
 # the headset does not stop them, and the F1 sound board renders. Run after `npm run build`.
 import asyncio, json
 from playwright.async_api import async_playwright
-LOOPS = {'tv': 9, 'kettle': 4, 'shower': 4, 'rain': 6}   # the rain: the launch's (#127)
+LOOPS = {'tv': 9, 'kettle': 4, 'shower': 4, 'rain': 6, 'mus_town': 76.8, 'mus_dungeon': 64, 'mus_boss': 60}   # the rain: the launch's (#127); the music (#159)
 async def act(pg, sel):
     await pg.evaluate("s=>{const e=document.querySelector(s); const m=/^\\[data-act=\\x22?(\\w+)\\x22?\\](?:\\[data-arg=\\x22?([^\\x22\\]]*)\\x22?\\])?$/.exec(s); if(!e && m){const b=document.createElement('button'); b.dataset.act=m[1]; if(m[2]!=null) b.dataset.arg=m[2]; document.getElementById('stage').appendChild(b); b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0})); b.remove(); return;} e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0}))}", sel); await pg.wait_for_timeout(150)
 async def main():
@@ -32,6 +32,18 @@ async def main():
             now = await pg.evaluate("()=>window.__lootnight.audio.ambienceNow()")
             got = now['cue'] if now else None
             print(f'{act_id:6} cued={cued!s:5} -> {got}', 'ok' if got == want else f'FAIL (want {want})'); ok &= got == want
+        # her side of the door (#158): shut, low and dull; a peek's first crack opens it up; let go and it shuts again
+        ds = await pg.evaluate("()=>window.__lootnight.audio.doorSound()")
+        good = ds and ds['open'] == 0 and ds['lowpass'] < 700 and ds['gain'] < 0.5
+        print('door shut ->', ds, 'ok' if good else 'FAIL'); ok &= bool(good)
+        await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; n.peeking=true;}"); await pg.wait_for_timeout(600)
+        ds = await pg.evaluate("()=>window.__lootnight.audio.doorSound()")
+        good = ds and ds['open'] > 0.99 and ds['lowpass'] > 15000 and ds['gain'] > 0.95
+        print('peeking ->', ds, 'ok' if good else 'FAIL'); ok &= bool(good)
+        await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; n.peeking=false;}"); await pg.wait_for_timeout(1200)
+        ds = await pg.evaluate("()=>window.__lootnight.audio.doorSound()")
+        good = ds and ds['open'] == 0 and ds['lowpass'] < 700
+        print('let go ->', ds, 'ok' if good else 'FAIL'); ok &= bool(good)
         await pg.keyboard.press('h'); await pg.wait_for_timeout(300)   # headset on: still looping (muffled, not stopped)
         await pg.evaluate("()=>{const n=window.__lootnight.S.g.night; Object.assign(n.apt,{activity:'tv',room:'living',moving:0,t:30,cued:false});}")
         await pg.wait_for_timeout(300)

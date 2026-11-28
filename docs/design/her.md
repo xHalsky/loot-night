@@ -89,7 +89,9 @@ opens to a narrow crack (`PEEK_CRACK_MIN` of its width) in `PEEK_OPEN_SEC`, then
 hallway, laid out like the blueprint and seen from your door. The crack opens from the door's right edge, so
 the kitchen opening (first on the right) shows first, then the bedroom door, and the far end (the arch into the
 living room on the left, the bathroom's door facing you) only when wide. Lights are on only where she is. From
-Tuesday, holding it past `LEAN_DELAY` is lean in (below).
+Tuesday, holding it past `LEAN_DELAY` is lean in (below). **The crack also opens your ears** (#158): shut, the door makes
+everything of hers low, dull and quieter; from its first crack she comes through full and clear, so a quick peek
+tells you what she is doing even where the crack can't see her ([screen.md](screen.md), Audio).
 
 | She is | Through the crack | Crack | Can she see you |
 |---|---|---|---|
@@ -173,8 +175,8 @@ ends each activity (`END_HINT`); later nights rely on the sound. Onboarding: [ni
 | On her phone | A short goodbye jingle ("ok bye love you") | Peek (85%) |
 | Shower | Hair dryer | Cuddle 55%, Peek 35% (Peek 88% when she is not green) |
 
-Each cue plays once per activity, from the room she is in, so distance and the headset mute it like any
-other sound (`APT_ROOM_GAIN`, `APT_ROOM_LOWPASS`: the TV next door is clear, the bedroom goodbye is faint).
+Each cue plays once per activity, through your door like any other sound of hers: low and dull while it is shut,
+clear while you peek (#158); no room makes it quieter, so you know where she is by what the sound is.
 The activity's loop stops when its cue starts. Sounds and files: [screen.md](screen.md), Audio. Listening now tells you that she is about to come *and* what to clear.
 
 | Type | Hallway cue | She checks | Your answer | Outcome |

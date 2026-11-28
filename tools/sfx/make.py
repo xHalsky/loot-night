@@ -180,6 +180,22 @@ def babble(d, speakers=((205, 1.0), (118, 0.82)), rate=(0.11, 0.21)):
     return out
 
 
+def tv_speaker(x):
+    """Through a TV's small speakers (#158): no lows and no air, a boxy cabinet, squashed flat by the set's own
+    compressor (a TV's dialogue is all one loudness), a little grit. So it reads as a TV in another room, not as the
+    room's own sound."""
+    y = D.bp(x, 330, 3600, 2)
+    y = y + 0.7 * D.peak(y, 900, 2.5) + 0.35 * D.peak(y, 2300, 3.5)   # the cabinet and the small cone
+    w = secs(0.025)
+    env = np.sqrt(np.convolve(y ** 2, np.ones(w) / w, mode='same')) + 1e-7
+    thr = np.percentile(env, 35)
+    g = np.where(env > thr, (thr / env) ** (1 - 1 / 6), 1.0)   # 6:1 over the threshold
+    g = D.lp(g, 12, 1)                                         # its attack and release, about 15 ms
+    y = y * g
+    y = np.tanh(1.8 * y / (np.max(np.abs(y)) + 1e-9))
+    return D.lp(y, 3800, 2)
+
+
 @cue('tv')
 def _tv():
     D.seed(101)
@@ -187,8 +203,8 @@ def _tv():
     talk = babble(L + X + 0.2)
     bed = D.lp(D.pink(L + X + 0.2), 600) * 0.06            # room tone of the show
     x = talk + bed
-    x = D.bp(x, 140, 5200)                                    # a TV speaker
-    x = D.reverb(x, 0.35, 0.22, 5000)
+    x = tv_speaker(x)                                         # through the set's own speaker (#158)
+    x = D.reverb(x, 0.3, 0.18, 4000)                          # the living room round it
     loop = D.make_loop(x, L, X)
     write('tv', D.rms_norm(loop, -20), 'wall', loop=L)
 
@@ -221,8 +237,8 @@ def _laugh():
             f0 = float(D.rng.choice([D.rng.uniform(120, 180), D.rng.uniform(210, 330)]))
             x += laugh_person(d, f0, float(D.rng.uniform(0, 0.3)), int(D.rng.integers(4, 10)),
                               float(D.rng.uniform(4.0, 6.0)), float(D.rng.uniform(0.35, 1.0)))
-        x = D.bp(x, 150, 5000)
-        x = D.reverb(x, 0.6, 0.35, 4000)
+        x = D.reverb(x, 0.6, 0.35, 4000)                          # the studio audience's hall...
+        x = tv_speaker(x)                                         # ...through the set's speaker (#158)
         x *= D.env_lin(d, [(0, 0), (0.12, 1), (1.4, 0.8), (d, 0)])
         write(f'laugh_{k}', x, 'wall')
 
@@ -271,8 +287,7 @@ def _credits():
     place(x, D.hp(D.white(0.8), 5000) * D.env_exp(0.8, 0.2) * 0.25, end)   # cymbal
     for k, n in enumerate(['C6', 'E6', 'G6']):
         place(x, bell(note(n), 0.8, 0.18), end + k * 0.06)
-    x = D.bp(x, 140, 6000)
-    x = D.reverb(x, 0.5, 0.2)
+    x = D.reverb(tv_speaker(x), 0.4, 0.15)                    # the set's speaker, the room (#158)
     write('credits', D.fade(x, 0.005, 0.3), 'wall')
 
 
@@ -663,6 +678,9 @@ _launch.register(cue, write, level, kenney, OUT)
 # the RPG's own sounds (#155): tools/sfx/aoj_sfx.py, the same chain
 import aoj_sfx as _aoj  # noqa: E402
 _aoj.register(cue, write, kenney)
+# its music in play (#159): tools/sfx/aoj_music.py
+import aoj_music as _mus  # noqa: E402
+_mus.register(cue, OUT, LOOP_PAD)
 
 
 if __name__ == '__main__':

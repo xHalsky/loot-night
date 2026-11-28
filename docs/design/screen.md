@@ -124,14 +124,26 @@ highlights), jagged bangs, long dark hair, a pink clip, cel-shaded clothes. Draw
 **Audio** (`src/ui/audio.ts`, mix in `src/data/sounds.ts`, files in `src/assets/sfx/`). The stealth runs on
 listening, so her sounds are the most important ones in the game.
 
-- **Three buses:**
-  - **apt:** her. The headset turns it down (`HEADSET_APT_VOLUME`) and low-passes it (`HEADSET_APT_LOWPASS`).
+- **Four buses:**
+  - **apt:** her, beyond your door: through the door (below), then the headset.
+  - **room:** your side of the door (the dog at your desk, your door's own handle, its creak, opening and shutting):
+    the headset only.
+  - The headset turns both down (`HEADSET_APT_VOLUME`) and low-passes them (`HEADSET_APT_LOWPASS`).
   - **game:** the RPG and the desk.
   - **loud:** the game through the speakers (the bosses' big moves and their falls, the enrage roars, a smashed chest,
     the potion rack kicked, the desk slam), never muffled.
-- **Her by distance:** each of her sounds plays from her room. Volume and a wall low-pass come from
-  `ROOM_DISTANCE` (`APT_ROOM_GAIN`, `APT_ROOM_LOWPASS`), so the TV next door is clear and the bedroom is faint.
-  It is the same distance table that decides how much of your Noise reaches her.
+- **Her through your door** (#158, Paweł): while your door is shut, everything of hers comes through low and dull
+  and quieter (`DOOR_SHUT_LOWPASS` 550 Hz, `DOOR_SHUT_GAIN` 0.38). A peek opens it up: its first crack brings her
+  back full and clear (gliding over `DOOR_SOUND_SEC`), so a quick peek also tells you what she is doing; leaning in
+  and her in the open doorway too. Let go and it shuts again.
+- **No room makes her quieter or duller** (#158): her sounds are the same wherever she is, so you find her by what
+  you hear (the kettle is the kitchen, the tap the bathroom, the TV the living room), not by how loud it is. Her steps
+  coming down the hall still grow as she nears your door (a visit's tell), and her hearing you still goes by
+  `ROOM_DISTANCE` (Noise by distance, [her.md](her.md)).
+- **The TV comes out of a TV** (#158): the show, its laugh track and its credits are baked through a small set's
+  speaker (no lows and no air, a boxy cabinet, squashed flat by the set's compressor, a little grit; `tv_speaker` in
+  `tools/sfx/make.py`) and sit lower in the mix, so they read as a TV in another room, not as loud and clear as the
+  dishes.
 - **Her activities:** a continuous loop while she is at it (TV, kettle rising towards the boil, shower, her bath music
   through the door, louder ajar), with
   extras on top (the laugh track; her breathing when asleep). The loop stops when the end cue starts (see
@@ -183,6 +195,22 @@ listening, so her sounds are the most important ones in the game.
     for the RPG's (no apartment latch on the Hook, no desk slam on a SMASH).
   - **Listening:** `python3 tools/sfx/aoj_reel.py /tmp/out` writes every cue in groups at the game's mix, and a short
     made-up fight; `test/aojsound.py` checks every action plays its own cue in a real fight.
+- **The RPG's music in play** (#159, Paweł: the King's Field revival, Lunacid and Queen's Domain, "King's Field's
+  soundtrack mixed with lofi"; `tools/sfx/aoj_music.py`, played by `ui/music.ts`): three original loops in D, on the
+  console's own sampled instruments and its reverb (the launch theme's), with a lofi beat under them and a lofi master
+  over them (tape wow and flutter, a warm low-pass, a little saturation, vinyl crackle and hiss).
+
+  | Track | Where | What |
+  |---|---|---|
+  | Ravenhold (`mus_town`, 76.8 s) | The town | The refuge in the rain: D Dorian, 75 BPM; a harp turning over warm strings, a round bass, a soft brushed beat, the flute singing in the middle and the end, a church bell far off, rain on the roofs |
+  | The Crypt (`mus_dungeon`, 64 s) | The dungeon | Lonely and slow: D Phrygian, 60 BPM; an organ drone and a choir in the dark, a music box falling down the scale in a huge hall, a flute alone, a slow heavy beat from bar 5, a toll far off, water dripping |
+  | Judgment (`mus_boss`, 60 s) | A boss or the Abbot stands (from his pack waiting in the corridor) | D minor and its Phrygian dominant, 96 BPM; a driving ostinato in the low strings and the bass, the choir stabbing on every change, the organ, dark horns carrying the theme, timpani, a bell every eight bars, a harder beat |
+
+  - Each is an exact loop (rendered twice, the second pass kept, so the notes and the reverb over its end ring into
+    its start; the tape's wow runs whole cycles per loop), at 22,050 Hz stereo, `LOOP_SEC` in `data/sounds.ts`.
+  - Under everything (`MIX` 0.22 to 0.26): her sounds stay above it. A new track crossfades in over `MUSIC_FADE_SEC`
+    (1.6 s); paused, the music holds its place silently; none while the launch runs (it has its own theme) or off the
+    night. `test/music.py` checks it.
 - **The launch's sound and music** (#127; [aoj-world.md](aoj-world.md) §7b): the launch (the whole of it on the first Monday,
   from the login every night after) has its own cue sheet, `LAUNCH_SOUND` (62 cues by the launch's second), `LAUNCH_LOOPS` (the rain) and `LAUNCH_MUSIC` (the
   theme, `aoj_theme`, from 6.2 s to 41.6 s) in `render/page/aoj.js`, played by `ui/launchSound.ts` on the launch's
@@ -436,7 +464,21 @@ webcam (#103): "Headset" and what it does; there is no ring or label of its own.
   - More reverb for size: on short hits the console's combs ring too.
 - **Size:** the build grows to 928 KB, still one file that loads instantly. Lower bitrates were not worth it:
   through-wall sounds are already 32 kbps. With the RPG's own sounds (#155, 95 cues) and the launch's music it is about
-  4.7 MB; the RPG's files are 22,050 Hz at 40 kbps (their console holds nothing above 11 kHz).
+  4.7 MB; the RPG's files are 22,050 Hz at 40 kbps (their console holds nothing above 11 kHz). The three music loops
+  (#159) add 1.2 MB (22,050 Hz stereo at 48 kbps): about 6.2 MB.
+- **Her sound goes by the door, not the room** (0.109.0, #158; Paweł): with every room at its own volume and dullness,
+  you could tell where she was by how loud she was, which made listening too easy; and next door she overpowered
+  everything. Now the shut door muffles all of her alike and a peek opens it up: listening tells you what she is
+  doing, a peek tells you clearly. Rejected: keeping a softer distance (it is still a loudness map); muffling only
+  her loops (her steps and calls would cut through and give the room away); the dog and your door's sounds through
+  her door (they are in your room).
+- **The TV through a TV speaker** (0.109.0, #158): a full-range TV over the walls was the loudest, clearest thing in
+  the flat and grated over time. Baked through a small set's speaker and its compressor, and lower.
+- **Music in play: the King's Field revival** (0.109.0, #159; Paweł). The console's own instruments keep it in the
+  world and the launch's family; the lofi beat and master give it the revival's warmth. It sits under her sounds
+  because the stealth is listening. Rejected: one track for the whole RPG (town, crypt and a boss want different
+  moods); a full mix at the effects' level (it would mask her steps); a modern clean orchestra (out of the console's
+  look).
 
 ## Planned
 

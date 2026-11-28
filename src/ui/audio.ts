@@ -1,16 +1,19 @@
 // Sound (docs/design/screen.md, Audio). Her and the desk play real samples (src/assets/sfx/, inlined into the build);
 // the RPG's own blips stay generated tones, like the game on the monitor they come from.
-// Buses: game (the RPG and the desk), apt (her: muffled by the headset) and loud (through the speakers, never muffled).
+// Buses: game (the RPG and the desk), apt (her, beyond your door: muffled while it is shut, #158, and by the headset),
+// room (in your room: the dog, your own door; the headset only) and loud (through the speakers, never muffled).
 import { T } from '../config/tuning';
 import { MIX, LOOP_SEC, LOOP_PAD, AMBIENCE, END_CUE } from '../data/sounds';
-import { ROOM_DISTANCE } from '../data/apartment';
 import type { Room } from '../core/state';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
-let aptBus: GainNode | null = null;
-let aptFilter: BiquadFilterNode | null = null;
+let aptBus: GainNode | null = null;     // her side of the door
+let doorLP: BiquadFilterNode | null = null, doorGain: GainNode | null = null;   // the door: shut, it muffles her
+let roomBus: GainNode | null = null;    // your side of the door
+let hsIn: GainNode | null = null, hsFilter: BiquadFilterNode | null = null;   // the headset over both
 let gameBus: GainNode | null = null;
+let doorNow = -1;
 
 // ---------- the sample bank ----------
 
@@ -85,24 +88,46 @@ export function initAudio() {
   try {
     ctx = new AudioContext();
     master = ctx.createGain(); master.gain.value = 0.35; master.connect(ctx.destination);
-    aptFilter = ctx.createBiquadFilter(); aptFilter.type = 'lowpass'; aptFilter.frequency.value = 20000;
+    hsIn = ctx.createGain(); hsIn.gain.value = 1;
+    hsFilter = ctx.createBiquadFilter(); hsFilter.type = 'lowpass'; hsFilter.frequency.value = 20000;
+    hsIn.connect(hsFilter); hsFilter.connect(master);
+    doorLP = ctx.createBiquadFilter(); doorLP.type = 'lowpass'; doorLP.frequency.value = T.DOOR_SHUT_LOWPASS; doorLP.Q.value = 0.5;
+    doorGain = ctx.createGain(); doorGain.gain.value = T.DOOR_SHUT_GAIN;
     aptBus = ctx.createGain(); aptBus.gain.value = 1;
-    aptBus.connect(aptFilter); aptFilter.connect(master);
+    aptBus.connect(doorLP); doorLP.connect(doorGain); doorGain.connect(hsIn);
+    roomBus = ctx.createGain(); roomBus.gain.value = 1; roomBus.connect(hsIn);
+    doorNow = 0; doorTo = { lowpass: T.DOOR_SHUT_LOWPASS, gain: T.DOOR_SHUT_GAIN };
     gameBus = ctx.createGain(); gameBus.gain.value = 1; gameBus.connect(master);
     void loadBank(ctx);
   } catch { ctx = null; }
 }
 
 export function setHeadset(on: boolean) {
-  if (!ctx || !aptBus || !aptFilter) return;
-  aptBus.gain.setTargetAtTime(on ? T.HEADSET_APT_VOLUME : 1, ctx.currentTime, 0.05);
-  aptFilter.frequency.setTargetAtTime(on ? T.HEADSET_APT_LOWPASS : 20000, ctx.currentTime, 0.05);
+  if (!ctx || !hsIn || !hsFilter) return;
+  hsIn.gain.setTargetAtTime(on ? T.HEADSET_APT_VOLUME : 1, ctx.currentTime, 0.05);
+  hsFilter.frequency.setTargetAtTime(on ? T.HEADSET_APT_LOWPASS : 20000, ctx.currentTime, 0.05);
 }
 
-type Bus = 'game' | 'apt' | 'loud';
-const out = (bus: Bus) => (bus === 'apt' ? aptBus : bus === 'loud' ? master : gameBus);
+/** How open your door is, 0 shut .. 1 open (a peek's crack opens it all the way for sound; leaning in; her in the
+ *  doorway). Shut, her side comes through low and dull (#158): a peek hears what she is doing, clear. Every frame. */
+export function setDoorOpen(open: number) {
+  if (!ctx || !doorLP || !doorGain) return;
+  const o = Math.max(0, Math.min(1, open));
+  if (Math.abs(o - doorNow) < 0.01) return;
+  doorNow = o;
+  const t = ctx.currentTime;
+  doorTo = { lowpass: T.DOOR_SHUT_LOWPASS * (20000 / T.DOOR_SHUT_LOWPASS) ** o, gain: T.DOOR_SHUT_GAIN + (1 - T.DOOR_SHUT_GAIN) * o };
+  doorLP.frequency.setTargetAtTime(doorTo.lowpass, t, T.DOOR_SOUND_SEC);
+  doorGain.gain.setTargetAtTime(doorTo.gain, t, T.DOOR_SOUND_SEC);
+}
+let doorTo = { lowpass: 0, gain: 0 };
+/** For the tests: where the door's sound is going (its low-pass and gain glide there over DOOR_SOUND_SEC). */
+export const doorSound = () => (doorLP && doorGain ? { ...doorTo, open: doorNow } : null);
 
-interface PlayOpts { vol?: number; bus?: Bus; when?: number; room?: Room; lowpass?: number; jitter?: number; variant?: number; pan?: number }
+type Bus = 'game' | 'apt' | 'room' | 'loud';
+const out = (bus: Bus) => (bus === 'apt' ? aptBus : bus === 'room' ? roomBus : bus === 'loud' ? master : gameBus);
+
+interface PlayOpts { vol?: number; bus?: Bus; when?: number; lowpass?: number; jitter?: number; variant?: number; pan?: number }
 
 /** The cues started lately, newest last (for the tests: test/aojsound.py). */
 const heard: string[] = [];
@@ -121,9 +146,8 @@ function start(cue: string, o: PlayOpts = {}): { src: AudioBufferSourceNode; g: 
   src.buffer = list[k];
   if (o.jitter) src.playbackRate.value = 1 + (Math.random() * 2 - 1) * o.jitter;
   const g = ctx.createGain();
-  let vol = (o.vol ?? 1) * (MIX[cue] ?? 0.5);
-  let lowpass = o.lowpass;
-  if (o.room) { const d = ROOM_DISTANCE[o.room]; vol *= T.APT_ROOM_GAIN[d]; lowpass = Math.min(lowpass ?? 20000, T.APT_ROOM_LOWPASS[d]); }
+  const vol = (o.vol ?? 1) * (MIX[cue] ?? 0.5);   // no room makes her quieter or duller (#158): the door does, and you find her by what you hear
+  const lowpass = o.lowpass;
   g.gain.value = vol;
   let node: AudioNode = src;
   if (lowpass && lowpass < 16000) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lowpass; src.connect(f); node = f; }
@@ -173,7 +197,7 @@ export function ambience(cue: string | null, room: Room = 'living', level = 1) {
   if (!ctx || !aptBus) return;
   const now = ctx.currentTime;
   if (amb && amb.cue === cue && amb.room === room) {
-    if (Math.abs(amb.level - level) > 0.02) { amb.level = level; amb.gain.gain.setTargetAtTime(ambVol(cue!, room, level), now, 0.3); }
+    if (Math.abs(amb.level - level) > 0.02) { amb.level = level; amb.gain.gain.setTargetAtTime(ambVol(cue!, level), now, 0.3); }
     return;
   }
   if (amb) {
@@ -189,15 +213,50 @@ export function ambience(cue: string | null, room: Room = 'living', level = 1) {
   const [ls, le] = loopAt[cue] ?? [0, b.duration];
   const src = ctx.createBufferSource();
   src.buffer = b; src.loop = true; src.loopStart = ls; src.loopEnd = le;
-  const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = T.APT_ROOM_LOWPASS[ROOM_DISTANCE[room]];
   const g = ctx.createGain();
   g.gain.setValueAtTime(0, now);
-  g.gain.linearRampToValueAtTime(ambVol(cue, room, level), now + T.AMB_FADE_SEC);
-  src.connect(f); f.connect(g); g.connect(aptBus);
+  g.gain.linearRampToValueAtTime(ambVol(cue, level), now + T.AMB_FADE_SEC);
+  src.connect(g); g.connect(aptBus);   // through the door, like the rest of her (#158)
   src.start(now, ls + Math.random() * (le - ls));   // never starts the TV show at the same line
   amb = { cue, room, level, src, gain: g };
 }
-const ambVol = (cue: string, room: Room, level: number) => (MIX[cue] ?? 0.5) * T.APT_ROOM_GAIN[ROOM_DISTANCE[room]] * level;
+const ambVol = (cue: string, level: number) => (MIX[cue] ?? 0.5) * level;   // the same in every room (#158)
+
+// ---------- the RPG's music (#159) ----------
+
+let mus: { cue: string; level: number; src: AudioBufferSourceNode; gain: GainNode } | null = null;
+
+/** Keeps the RPG's music going: call every frame with the track that fits (null: none). level 0..1: 0 while paused
+ *  (it keeps its place). A new track crossfades in from its loop's start. */
+export function music(cue: string | null, level = 1) {
+  if (!ctx || !gameBus) return;
+  const now = ctx.currentTime;
+  if (mus && mus.cue === cue) {
+    if (Math.abs(mus.level - level) > 0.01) { mus.level = level; mus.gain.gain.setTargetAtTime((MIX[cue!] ?? 0.3) * level, now, 0.15); }
+    return;
+  }
+  if (mus) {
+    const old = mus;
+    old.gain.gain.cancelScheduledValues(now);
+    old.gain.gain.setValueAtTime(old.gain.gain.value, now);
+    old.gain.gain.linearRampToValueAtTime(0, now + T.MUSIC_FADE_SEC);
+    old.src.stop(now + T.MUSIC_FADE_SEC + 0.05);
+    mus = null;
+  }
+  const b = cue ? buffers[cue]?.[0] : undefined;
+  if (!cue || !b) return;                         // not decoded yet: the next frame tries again
+  const [ls, le] = loopAt[cue] ?? [0, b.duration];
+  const src = ctx.createBufferSource();
+  src.buffer = b; src.loop = true; src.loopStart = ls; src.loopEnd = le;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime((MIX[cue] ?? 0.3) * level, now + T.MUSIC_FADE_SEC);
+  src.connect(g); g.connect(gameBus);
+  src.start(now, ls);
+  mus = { cue, level, src, gain: g };
+}
+/** For tests: the track playing and its level. */
+export const musicNow = () => (mus ? { cue: mus.cue, level: mus.level } : null);
 export const stopAmbience = () => ambience(null);
 /** For tests: what is looping now. */
 export const ambienceNow = () => (amb ? { cue: amb.cue, room: amb.room, level: amb.level } : null);
@@ -286,25 +345,25 @@ export const sfx = {
   },
   /** A step that the headset does not muffle (Earplugs of Peace). */
   stepClear(loud: number) { if (!play('step', { bus: 'game', vol: 0.25 + loud * 0.6, lowpass: 900 + loud * 2000, jitter: 0.05 })) noise(0.09, 0.15 + loud * 0.4, 300 + loud * 300, 0, 'game'); },
-  handle() { if (!play('latch', { bus: 'apt' })) { tone(900, 0.05, 'square', 0.15, 0, undefined, 'apt'); tone(500, 0.08, 'square', 0.15, 0.06, undefined, 'apt'); } },
-  door() { if (!play('door', { bus: 'apt' })) tone(180, 0.5, 'sawtooth', 0.08, 0, 120, 'apt'); },
-  doorClose() { play('doorclose', { bus: 'apt' }); },
+  handle() { if (!play('latch', { bus: 'room' })) { tone(900, 0.05, 'square', 0.15, 0, undefined, 'room'); tone(500, 0.08, 'square', 0.15, 0.06, undefined, 'room'); } },   // your door's own handle: in your room
+  door() { if (!play('door', { bus: 'room' })) tone(180, 0.5, 'sawtooth', 0.08, 0, 120, 'room'); },
+  doorClose() { play('doorclose', { bus: 'room' }); },
   /** She arrives at an activity. */
-  aptStart(id: string, room: Room) { if (id === 'toilet') play('flush', { bus: 'apt', room }); if (id === 'bath') play('tap', { bus: 'apt', room }); },   // the bath: the tap runs as she fills it
+  aptStart(id: string, _room: Room) { if (id === 'toilet') play('flush', { bus: 'apt' }); if (id === 'bath') play('tap', { bus: 'apt' }); },   // the bath: the tap runs as she fills it
   /** Every few seconds while she is at it (on top of the loop). */
-  aptTick(id: string, room: Room) {
-    if (id === 'tv' && Math.random() < T.TV_LAUGH_CHANCE) play('laugh', { bus: 'apt', room, vol: 0.7 + Math.random() * 0.5 });
-    if (id === 'sleep' && Math.random() < T.SLEEP_BREATH_CHANCE) play('breath', { bus: 'apt', room });
+  aptTick(id: string, _room: Room) {
+    if (id === 'tv' && Math.random() < T.TV_LAUGH_CHANCE) play('laugh', { bus: 'apt', vol: 0.7 + Math.random() * 0.5 });
+    if (id === 'sleep' && Math.random() < T.SLEEP_BREATH_CHANCE) play('breath', { bus: 'apt' });
   },
   /** The sound that ends each activity: credits, the kettle clicks off, the tap, the hair dryer, a goodbye. */
-  endCue(id: string, room: Room) { const c = END_CUE[id]; if (c) play(c, { bus: 'apt', room }); },
+  endCue(id: string, _room: Room) { const c = END_CUE[id]; if (c) play(c, { bus: 'apt' }); },
   plates() { play('plate', { bus: 'apt', jitter: 0.04 }) || tone(2600 + Math.random() * 500, 0.05, 'triangle', 0.07, 0, undefined, 'apt'); },
   hum() { play('hum', { bus: 'apt', lowpass: 2400 }) || tone(440, 0.35, 'sine', 0.05, 0, 449, 'apt'); },
   /** Her voice calling you: 0 "babe?" (the tease), 1 "baaabe.", 2 "babe, towel!", 3 "babe, wine?" (from the bathroom). */
-  babe(k: number, room?: Room) { play('babe', { bus: 'apt', variant: k, room }) || tone(520, 0.3, 'sine', 0.05, 0, 600, 'apt'); },
-  creak() { play('creak', { bus: 'apt' }) || tone(140, 0.4, 'sawtooth', 0.04, 0, 210, 'apt'); },
-  bark() { if (!play('bark', { bus: 'apt' })) { tone(420, 0.09, 'sawtooth', 0.14, 0, 300, 'apt'); tone(380, 0.12, 'sawtooth', 0.14, 0.14, 260, 'apt'); } },
-  whine() { play('whine', { bus: 'apt', jitter: 0.05 }) || tone(900, 0.5, 'sine', 0.06, 0, 1300, 'apt'); },
+  babe(k: number, _room?: Room) { play('babe', { bus: 'apt', variant: k }) || tone(520, 0.3, 'sine', 0.05, 0, 600, 'apt'); },
+  creak() { play('creak', { bus: 'room' }) || tone(140, 0.4, 'sawtooth', 0.04, 0, 210, 'room'); },   // your door
+  bark() { if (!play('bark', { bus: 'room' })) { tone(420, 0.09, 'sawtooth', 0.14, 0, 300, 'room'); tone(380, 0.12, 'sawtooth', 0.14, 0.14, 260, 'room'); } },   // the dog is at your desk
+  whine() { play('whine', { bus: 'room', jitter: 0.05 }) || tone(900, 0.5, 'sine', 0.06, 0, 1300, 'room'); },
 
   // ----- the desk -----
   ring() { for (let i = 0; i < 4; i++) { tone(880, 0.08, 'sine', 0.2, i * 0.16); tone(660, 0.08, 'sine', 0.2, i * 0.16 + 0.08); } },
@@ -449,6 +508,7 @@ export const sfx = {
 /** Debug board (F1): play any cue as it would sound next door. */
 export function audition(cue: string) {
   initAudio();
+  if (cue.startsWith('mus_')) { music(mus?.cue === cue ? null : cue); return; }   // a track: on, or off again
   if (LOOP_SEC[cue]) { ambience(amb?.cue === cue ? null : cue, 'living'); return; }
   play(cue);
 }

@@ -2,6 +2,7 @@ import './style.css';
 import { TRASH_TIP } from './data/items';
 import { launchHolds, skipLaunch, launchT, launchSeek } from './systems/launch';
 import { stopLaunchSound, updateLaunchSound, launchFired } from './ui/launchSound';
+import { updateMusic, musicFor } from './ui/music';
 import { fmtClock } from './core/fx';
 import { on, rules, dayName, howtoTiles, chatDown } from './systems/week';
 import './ios.css';
@@ -12,7 +13,7 @@ import { drawMonitor, MON_W, MON_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
 import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
-import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints, soundLog } from './ui/audio';
+import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints, soundLog, doorSound, musicNow } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_CLASS, HERO_COLORS } from './data/heroes';
 import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip, trashItem } from './systems/bag';
@@ -77,7 +78,7 @@ import { COACH } from './data/tips';
 // the renderer's hero tables read the game's names and classes (data/heroes.ts, the one table; cast of 2026-11-27)
 PK.heroNames(Object.fromEntries((['knight', 'rogue', 'mage', 'healer'] as const).map(id => [id === 'healer' ? 'priest' : id, { name: HERO_NAME[id], cls: HERO_CLASS[id] }])));
 
-(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints, soundLog }, herView: () => herView(), launch: { t: launchT, seek: launchSeek, skip: () => actions.dbgSkipLaunch(''), fired: launchFired } };   // test hook for the Playwright scripts
+(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints, soundLog, doorSound, musicNow, musicFor }, herView: () => herView(), launch: { t: launchT, seek: launchSeek, skip: () => actions.dbgSkipLaunch(''), fired: launchFired } };   // test hook for the Playwright scripts
 
 // ---------- DOM skeleton (#49, monitor-first; docs/design/screen.md) ----------
 // Left: the webcam view and her panel. Right: the desk, with the monitor on top. All RPG UI lives inside the game
@@ -1244,6 +1245,7 @@ function render() {
   drawFeed();   // the game chat (#138), its own layer
   drawPhone();   // V8 (#73): the phone in your hand, drawn by the renderer
   updateLaunchSound();   // the launch's sound and music (#127), on its clock
+  updateMusic();   // the RPG's music (#159): town, dungeon, boss
   drawEnergyBreak();   // V5 (#70): the energy break over the right screen, drawn by the renderer
   { const di = el('deskInner'), a = deskShake * 6, tt = performance.now() / 1000;   // the dog's slam: the whole desk jolts (V6)
     di.style.transform = a > 0.2 ? `translate(${Math.round(Math.sin(tt * 61) * a)}px, ${Math.round(Math.cos(tt * 47) * a * 0.7)}px)` : ''; }
