@@ -251,8 +251,8 @@ function livePaths(ctx, st, t) {
     for (const ic of icons) { inkIcon(ic, ix, y - 5, k !== hov); ix += 13; }
   });
   const nx = 202, ny = 42;
-  if (hov >= 0 && hov < n) pathNote(st, st.cards[hov], nx, ny, 114);
-  else { text('FLOOR ' + st.floor, nx, ny, 'silkb', P.u1); wrapInk('Hover a path to read it.', nx, ny + 12, 114, P.u2); }
+  if (hov >= 0 && hov < n) pathNote(st, st.cards[hov], nx, ny, 114, hov === st.safest);
+  else { text('FLOOR ' + st.floor, nx, ny, 'silkb', NOTE_INK); wrapInk('Hover a path to read it.', nx, ny + 12, 114, NOTE_INK); }
   const fw = text('Flow x' + st.flow, 20, 20, 'tiny', P.u1);
   flowBar(20 + fw + 4, 21, 30, 4, st.flowBar, false);
   const [px, pw] = portalPlate(W - 18, 15, st.portalLabel, st.portalOk, { right: true });

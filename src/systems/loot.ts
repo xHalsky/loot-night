@@ -257,7 +257,7 @@ function legendaryYell() {
   const n = N();
   const v = n.headset ? T.ECHO_YELL_HEADSET : T.ECHO_YELL_NOISE;
   n.noise = Math.min(100, n.noise + v);
-  toast(`You: "LET'S GOOOO!" Noise +${v}.`, '#ff9a4d');
+  toast(`[You] You: "LET'S GOOOO!" Noise +${v}.`, '#ff9a4d');   // you, in the room, not the realm (#145)
   if (!n.apt.asleep && !n.headset) toast('[Her] "what was that??"', '#ff9ab8');
 }
 

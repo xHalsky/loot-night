@@ -30,7 +30,7 @@ export function identify() {
   n.reveal = { name: e.item.name, t: 2.5 };
   if (!isUpgradeForSomeone(e.item)) boysSay('badDrop');   // the boys' chat (#109)
   sfx.loot(RARITIES.indexOf(e.item.rarity));
-  toast(`Identified: ${e.item.name} (10 min)`, '#b98cff');
+  toast(`Identified: ${e.item.name}.`, '#b98cff');
 }
 
 export function vendorValue(id: string): number {
@@ -84,7 +84,7 @@ export function list() {
   S.g.pendingListings.push({ name: entryName(e), zl });
   if (e.kind === 'item' && (e.item.rarity === 'common' || e.item.rarity === 'uncommon')) boysSay('cheap');   // the boys' chat (#109)
   n.clock += T.COST_LIST_MIN;
-  toast(`Listed ${entryName(e)} for ~$${zl}. Pays tomorrow morning. (5 min)`, '#6fcf7f'); sfx.good();
+  toast(`Listed ${entryName(e)} for ~$${zl}. Pays tomorrow morning.`, '#6fcf7f'); sfx.good();
 }
 
 export function buildCity(id: CityId) {
@@ -101,7 +101,7 @@ export function buildCity(id: CityId) {
   applyCity();
   S.g.heroes.forEach((h, i) => { if (!h.downed) h.hp = Math.round(maxHp(h) * hpRatios[i]); });
   n.clock += T.COST_FURNITURE_MIN;
-  toast(`${f.name} ${lvl ? `upgraded to level ${lvl + 1}` : 'built'}! ${f.effect[lvl]} (15 min)`, '#f2b84b'); sfx.level();
+  toast(`${f.name} ${lvl ? `upgraded to level ${lvl + 1}` : 'built'}! ${f.effect[lvl]}`, '#f2b84b'); sfx.level();
   save();
 }
 

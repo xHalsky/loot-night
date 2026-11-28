@@ -11,6 +11,7 @@ import { T } from '../src/config/tuning';
 import { S, N, initialState } from '../src/core/state';
 import { startNight, endNight } from '../src/systems/night';
 import { FIRST_CHAT } from '../src/data/voice';
+import { chatDown } from '../src/systems/week';
 import { updateLaunch, launchT, launchHolds, launchChatAt, launchChatTime, skipLaunch, launchSkipped } from '../src/systems/launch';
 import { stepLaunchSheet, LAUNCH_JUMP_SEC } from '../src/systems/launchSheet';
 
@@ -73,12 +74,15 @@ ok(n.clock === clock0, 'the night\'s clock waits all through it');
 ok(!n.log.some(l => l.text.startsWith('Welcome to Age of Judgment')), 'no welcome line before the town is in');
 run(0.2);
 ok(!launchHolds() && n.log.some(l => l.text.startsWith('Welcome to Age of Judgment') && l.tag === 'GAME'), 'at 38 s: the welcome in the feed');
-ok(!S.g.voice && S.g.howto === true && S.g.boysThread?.length === FIRST_CHAT.length + 1 && S.g.boysThread[1].text === "Billy: yo. realm's up", 'and the phone goes down by itself: the chat in The Boys\', the How-to cards next (#135)');
+ok(!!S.g.voice && !launchHolds(), 'and the phone stays up: Let\'s go is there now, the player clicks it (#142)');
+run(3); ok(!!S.g.voice, 'it waits for the player');
+chatDown();
+ok(!S.g.voice && S.g.howto === true && S.g.boysThread?.length === FIRST_CHAT.length + 1 && S.g.boysThread[1].text === "Billy: yo. realm's up", "Let's go: the chat in The Boys', the How-to cards next");
 // the skip (F1)
 S.g = initialState(); S.g.day = 0; startNight(); run(5);
 skipLaunch();
 run(1 / 60);
-ok(launchT() >= T.LAUNCH_SEC && !launchHolds() && launchSkipped() && !S.g.voice, 'Skip the launch: straight to its end, the phone down');
+ok(launchT() >= T.LAUNCH_SEC && !launchHolds() && launchSkipped() && !!S.g.voice, 'Skip the launch: straight to its end, Let\'s go up');
 
 // --- every night after the first Monday: from the login (Paweł, 2026-11-27): the replays and week two too ---
 const fromLogin = (setup: () => void) => { setup(); startNight(); run(1 / 60); return S.g.voice; };
@@ -98,7 +102,8 @@ ok(launchChatAt(rep, 35.01, 23).shown === 4, 'all in by 35.0');
 const lc0 = N().clock; run(14.9);
 ok(launchHolds() && launchT() < T.LAUNCH_SEC && N().clock === lc0, 'it holds the night until 38 s, the clock waiting');
 run(0.2);
-ok(!launchHolds() && N().log.some(l => l.text.startsWith('Welcome to Age of Judgment')) && !S.g.voice && S.g.howto === true, 'at 38 s: the welcome, the phone down by itself, How to hide next (Tuesday\'s new tile)');
+ok(!launchHolds() && N().log.some(l => l.text.startsWith('Welcome to Age of Judgment')) && !!S.g.voice, 'at 38 s: the welcome, Let\'s go up');
+chatDown(); ok(!S.g.voice && S.g.howto === true, 'Let\'s go: How to hide next (Tuesday\'s new tile)');
 // its sound: nothing before T 23 fires (the stepper starts at the login's T)
 fired = []; for (t = 23; t < 39; t += 1 / 60) stepLaunchSheet(sorted, t, t + 1 / 60, (at, cue) => fired.push([at, cue]));
 ok(fired.length > 0 && fired.every(([at2]) => at2 > 23) && fired.length === sheet.sound.filter(([at2]) => at2 > 23).length, `from the login: the ${fired.length} cues after 23 s fire, none before`);

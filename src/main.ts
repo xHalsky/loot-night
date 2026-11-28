@@ -841,7 +841,7 @@ let modalHits: SmHit[] = [], rsSmallHits: SmHit[] = [], modalWas = '', modalAt =
  *  next call; How to hide next on a night with a new tile, else the night starts. */
 function voiceOk() {
   const v = S.g.voice;
-  if (!v || launchHolds()) return;   // nothing starts the night before Age of Judgment has loaded (#127); at 38 s it goes down by itself (#135)
+  if (!v || launchHolds()) return;   // nothing starts the night before Age of Judgment has loaded (#127); then Let's go (#142)
   chatDown(); sfx.click();
 }
 // The cards before the night (#124): the first Monday (and the pause menu's How to play) shows all four, one area

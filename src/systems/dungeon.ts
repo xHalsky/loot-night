@@ -45,12 +45,12 @@ function startFloor(map: MapKind | 'plain', card?: PathCard) {
   if (map === 'vault') {   // no fights: the drops, the walk to pick them up, the floor end
     rollBattleDrops(n.floor, { count: T.VAULT_DROPS });
     n.noise += T.NOISE_VAULT;
-    toast('Treasure Vault! (loud)', '#ff9a4d');
+    toast('Treasure Vault!', '#ff9a4d');
     n.phase = 'walk'; n.phaseT = 0; n.battleIdx = T.BATTLES_PER_FLOOR; return;
   }
   planCurios();
   if (map === 'cursed') toast('Cursed Floor: your heals do half, every drop is one rarity better.', '#c77dff');
-  if (map === 'goblin') toast('Goblin Den: a goblin after every battle. They squeal when caught.', '#9fe05a');
+  if (map === 'goblin') toast('Goblin Den: a goblin after every battle.', '#9fe05a');
   n.phase = 'walk';
 }
 
@@ -197,7 +197,7 @@ function wipe() {
   battleEnded();
   n.noise = Math.min(100, n.noise + T.ECHO_SLAM_NOISE);   // echo: he slams the desk, the dog comes to see
   if (n.dog.stage === 'away' && !n.unplugged) triggerDog();
-  toast(`You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
+  toast(`[You] You slam the desk. Noise +${T.ECHO_SLAM_NOISE}.`, '#ff8a80');
   const trash = !n.enemies.some(e => e.boss);
   n.floorLoot = []; n.dropQueue = []; n.lootFly = []; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null;
   loseRun();
@@ -235,7 +235,7 @@ export function returnToTown() {
   sweepFloorLoot();
   bankRun();
   n.location = 'town'; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null; n.phase = 'walk';
-  toast('Back in town (15 min)', '#8fb3ff');
+  toast('Back in town.', '#8fb3ff');
 }
 
 /** A run starts at the Dungeon Portal, at floor 1 or an unlocked checkpoint (the town's floor picker). */
@@ -245,7 +245,7 @@ export function travelToDungeon(floor = S.g.startFloor) {
   n.clock += T.COST_TRAVEL_MIN;
   startRun(start);
   enterDungeon(start);
-  toast(`Dungeon Portal: floor ${start} (15 min)`, '#8fb3ff');
+  toast(`Dungeon Portal: floor ${start}.`, '#8fb3ff');
 }
 /** The town's floor picker: floor 1 and every unlocked checkpoint. */
 export function pickStartFloor(step: number) {

@@ -23,6 +23,7 @@ import { curioDef, curioBlocked, curioText } from '../systems/curios';
 import { CURIO_BY_ID } from '../data/curios';
 import { GOBLIN, goblinPos } from '../ui/monitor';
 import { POS_X, ENEMY_SLOTS, FLOOR_Y, MID_SLOT } from '../core/arena';
+import { floorName } from '../data/floorNames';
 import { unbanked } from '../systems/run';
 import { BLESSINGS, type BlessingId } from '../data/blessings';
 
@@ -296,9 +297,11 @@ function pathsView(hov: number, hovT: number) {
   const n = N(), next = n.floor + 1, start = n.run?.startFloor ?? 1;
   const hist: number[] = []; for (let f = Math.max(start, n.floor - 3); f <= n.floor; f++) hist.push(f);
   const mapInfo: Record<string, { name: string; r: string; pays: string; cost: string }> = {};
-  const cards = (n.paths ?? []).map(c => {
-    if (c.map && c.mapKind) { mapInfo[c.mapKind] = { name: MAP_INFO[c.mapKind].name, r: 'rare', ...MAP_CARD[c.mapKind] }; return { map: c.mapKind }; }
-    return { ...(c.feat ? { feat: c.feat } : {}), ...(c.cond ? { cond: c.cond } : {}), ...(c.boss ? { boss: true } : {}) };
+  const bossId = next % T.CHECKPOINT_EVERY === 0 ? bossFor(next, T.CHECKPOINT_EVERY).id : '';
+  const cards = (n.paths ?? []).map((c, k) => {   // each with its name from the world's lore (#147)
+    if (c.map && c.mapKind) { mapInfo[c.mapKind] = { name: MAP_INFO[c.mapKind].name, r: 'rare', ...MAP_CARD[c.mapKind] }; return { map: c.mapKind, ...floorName(next, { map: c.mapKind }, k) }; }
+    return { ...(c.feat ? { feat: c.feat } : {}), ...(c.cond ? { cond: c.cond } : {}), ...(c.boss ? { boss: true } : {}),
+      ...floorName(next, { feat: c.feat, cond: c.cond, boss: c.boss ? bossId : undefined }, k) };
   });
   const portalOk = !n.run?.oath;
   return { title: 'Shadow Crypt', sub: `Floor ${n.floor} cleared · ${next % T.CHECKPOINT_EVERY === 0 ? 'the boss waits below' : 'choose the way down'}`, floor: next, hist, cards, mapInfo,

@@ -10,7 +10,7 @@ export const ENEMY_SLOTS: EnemySlot[] = [
   { x: 300, lane: 'mid', y: 196, bar: 121 },
 ];
 export const MID_SLOT = 5;
-export const FLOOR_Y = 201;            // where drops lie
+export const FLOOR_Y = PARTY_Y;        // where drops lie: on the party's walk line, so the front hero's feet reach them (#144; was 201, below it)
 export const LOOTER_REACH = 8;         // the front hero picks up what lies this close in front of his feet (#95)
 /** Over a unit's head (numbers float up from here). */
 export const HEAD_Y = 150;

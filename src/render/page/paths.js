@@ -82,33 +82,40 @@ function noteLine(kind, str, x, y, w) {
   return wrapInk(str, x + 5, y, w - 5, P.u1);
 }
 function dangerPips(x, y, d, empty) { for (let k = 0; k < 3; k++) if (k < d || empty != null) spr(x + k * 6, y, SKULL, { a: k < d ? P.crimson : empty }); }
-// the margin note: the hovered path's full text, in the cartographer's hand
-function pathNote(st, c, x, y, w) {
-  const head = c.boss ? 'FLOOR ' + st.floor + ' - BOSS' : c.map ? 'FLOOR ' + st.floor + ' - BY MAP' : 'FLOOR ' + st.floor;
-  text(head, x, y, 'silkb', P.u1); y += 8;
+// the margin note: the hovered path's full text, in the cartographer's hand. Its name (#147), the floor's number under
+// it; every line in the darkest ink, the old map's brown (#146: the lighter one was barely readable on the parchment);
+// at its foot what the card's corner icons mean (#146): the danger and the safest way
+const NOTE_INK = P.u1;
+function pathNote(st, c, x, y, w, safe = false) {
+  text((c.name || 'Floor ' + st.floor).toUpperCase(), x, y, 'silkb', NOTE_INK); y += 9;
+  text('Floor ' + st.floor + (c.boss ? ' · the boss' : c.map ? ' · by map' : ''), x, y, 'tiny', NOTE_INK); y += 7;
   for (let i = x; i < x + w; i++) if (hash(i, 3, 17) > 0.15) inkP(i, y, 0.2); y += 4;
-  if (!c.feat && !c.cond && !c.map) { y = wrapInk(c.boss ? (st.bossName ? 'The boss: ' + st.bossName + '. ' : 'The boss. ') + 'Beat it and new runs can start below it.' : 'The stairs down. A plain floor: fights and the usual random curios.', x, y, w, P.u2); return y; }
+  if (!c.feat && !c.cond && !c.map) y = wrapInk(c.boss ? (st.bossName ? 'The boss: ' + st.bossName + '. ' : 'The boss. ') + 'Beat it and new runs can start below it.' : 'The stairs down. A plain floor: fights and the usual random curios.', x, y, w, NOTE_INK);
   if (c.map) {
     const M = MAPITEM[c.map]; inkIcon(ITEM.map, x - 1, y - 3);
-    text(M.name, x + 14, y, 'tiny', P.u1); y += 10;
-    y = wrapInk('Uses the map from your bag.', x + 14, y, w - 14, P.u2);
+    text(M.name, x + 14, y, 'tiny', NOTE_INK); y += 10;
+    y = wrapInk('Uses the map from your bag.', x + 14, y, w - 14, NOTE_INK);
     y = noteLine('+', M.pays + '.', x + 14, y, w - 14);
     y = noteLine('-', M.cost + '.', x + 14, y, w - 14);
-    return wrapInk('Never taken for you.', x + 14, y + 2, w - 14, P.u2);
+    y = wrapInk('Never taken for you.', x + 14, y + 2, w - 14, NOTE_INK);
   }
   if (c.feat) {
     const F = FEAT[c.feat]; inkIcon(PICON[c.feat], x, y - 3);
-    text(F.name, x + 14, y, 'tiny', P.u1); y += 10;
-    if (F.bless) { y = wrapInk(F.act + ' for a blessing:', x + 14, y, w - 14, P.u2); y = noteLine('+', F.bless + '.', x + 14, y, w - 14); y = noteLine('-', F.cost + '.', x + 14, y, w - 14); }
-    else y = wrapInk(F.line, x + 14, y, w - 14, P.u2);
+    text(F.name, x + 14, y, 'tiny', NOTE_INK); y += 10;
+    if (F.bless) { y = wrapInk(F.act + ' for a blessing:', x + 14, y, w - 14, NOTE_INK); y = noteLine('+', F.bless + '.', x + 14, y, w - 14); y = noteLine('-', F.cost + '.', x + 14, y, w - 14); }
+    else y = wrapInk(F.line, x + 14, y, w - 14, NOTE_INK);
     y += 4;
   }
   if (c.cond) {
     const C = COND[c.cond]; inkIcon(PICON[c.cond], x, y - 3);
-    const nw = text(C.name, x + 14, y, 'tiny', P.u1); dangerPips(x + 14 + nw + 4, y, C.danger); y += 10;
+    const nw = text(C.name, x + 14, y, 'tiny', NOTE_INK); dangerPips(x + 14 + nw + 4, y, C.danger); y += 10;
     y = noteLine('+', C.pays + '.', x + 14, y, w - 14);
     y = noteLine('-', C.cost + '.', x + 14, y, w - 14);
   }
+  // the card's corner, explained: its skulls (how dangerous its condition is) and the hourglass (the safest way)
+  if (c.cond || safe) { y += 2; for (let i = x; i < x + w; i += 2) if (hash(i, 9, 3) > 0.3) inkP(i, y, 0.35); y += 4; }
+  if (c.cond) { const d = COND[c.cond].danger; dangerPips(x, y, d, P.u3); y = wrapInk(`Danger: ${d} of 3.`, x + 21, y, w - 21, NOTE_INK); }
+  if (safe) { hourglass(x + 5, y - 1, 0, NOTE_INK, P.u3); y = wrapInk('The safest way down.', x + 14, y, w - 14, NOTE_INK); }   // the footer says the rest
   return y;
 }
 // a path card: bronze-framed leather, pinned; one feature row and one condition row
@@ -126,14 +133,17 @@ function pathCard2(x, y, c, st, hov, safest, awayF) {
   leatherU(x + 3, yy + 3, w - 6, h - 6, { v: 0.15, vig: 0.3 });
   mouldU(x, yy, w, h, { mat: hov ? M_LOOT : M_UMBER, k: hov ? 1.05 : 0.9, bosses: false });
   bossU(x + w / 2 - 2, yy - 1, 5);
-  text(c.boss ? 'Floor ' + st.floor + ' · boss' : 'Floor ' + st.floor, x + 6, yy + 5, 'tiny', c.boss ? P.crimson : hov ? P.u6 : P.u5, { shadow: P.void });
   let rx = x + w - 6;
   if (c.cond) { rx -= 17; dangerPips(rx, yy + 5, COND[c.cond].danger, P.u2); }
   if (safest) { rx -= 7; hourglass(rx, yy + 4, awayF); }
-  if (c.map) cardRow(x + 5, yy + 13, 'map', c.map, hov), text('uses your map', x + 21, yy + 32, 'tiny', P.u5, { shadow: P.void });
+  // its name from the lore (#147); the place alone when the full name doesn't fit beside the icons
+  const room = rx - 3 - (x + 6), name = c.name ? (measure(c.name, 'tiny') <= room ? c.name : c.short) : 'Floor ' + st.floor;
+  text(name, x + 6, yy + 5, 'tiny', c.boss ? P.crimson : hov ? P.moon : P.u6, { shadow: P.void });
+  // only what it has (#146): a feature, a condition, both, or neither; one row sits in the middle
+  if (c.map) { cardRow(x + 5, yy + 15, 'map', c.map, hov); text('uses your map', x + 21, yy + 32, 'tiny', P.u5, { shadow: P.void }); }
   else {
-    cardRow(x + 5, yy + 13, c.feat ? 'feat' : 'none', c.feat || 'no feature', hov);
-    cardRow(x + 5, yy + 28, c.cond ? 'cond' : 'none', c.cond || 'no condition', hov);
+    const rows = [c.feat && ['feat', c.feat], c.cond && ['cond', c.cond]].filter(Boolean);
+    rows.forEach(([kind, id], k) => cardRow(x + 5, yy + (rows.length === 1 ? 21 : 14 + k * 15), kind, id, hov));
   }
   if (hov) spr(x + w / 2 - 2, yy + h + 1, ['aaaaa', '.aaa.', '..a..'], { a: P.gold });
 }
@@ -172,8 +182,8 @@ function screenPaths(ctx, t) {
   });
   // the margin note
   const nx = 202, ny = 42;
-  if (hov >= 0) pathNote(st, st.cards[hov], nx, ny, 114);
-  else { text('FLOOR ' + st.floor, nx, ny, 'silkb', P.u1); wrapInk('Hover a path to read it.', nx, ny + 12, 114, P.u2); }
+  if (hov >= 0) pathNote(st, st.cards[hov], nx, ny, 114, hov === st.safest);
+  else { text('FLOOR ' + st.floor, nx, ny, 'silkb', NOTE_INK); wrapInk('Hover a path to read it.', nx, ny + 12, 114, NOTE_INK); }
   // HUD over the map: Flow (yellow bar, ink label) and the town portal
   const fw = text('Flow x1.4', 20, 20, 'tiny', P.u1);
   flowBar(20 + fw + 4, 21, 30, 4, 0.42, false);

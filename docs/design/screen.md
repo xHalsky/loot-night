@@ -88,7 +88,11 @@ with no YOU card, the chat takes the whole column, from under the monitor to the
 **It is a chat:** the newest line at the bottom, every line at full brightness (the older lines' fade read as a
 gradient over its bottom), each message wrapped in full (never cut with "..."), the night's last 60 lines. Each line
 has its time and a tag for whose it is: YOU, LOOT (in the rarity colour), HER, PHONE, GAME, EXCEL, DOG, NIGHT,
-PARTY, GUILD. **Its own layer** (`#feedArea`, `PK.feed`, desk.js `drawFeedLive`): drawn at 30 fps above the desk,
+PARTY, GUILD. **GAME is Age of Judgment talking** (#145, Paweł): it knows the realm and nothing of the room it runs in,
+so no GAME line mentions her, Noise, Flow, Sleep or the night's clock ("(15 min)"); those lines are the room's and
+carry its tags (NIGHT for the bedtime, dawn and the night's name, HER for the plug warning, YOU for the desk slam, the
+Sleep button and your "LET'S GOOOO!"). Its welcome: "Welcome to Age of Judgment. The sky has judged. Ravenhold
+endures." (it was "Have fun, don't get caught.", which read as the game knowing about her). **Its own layer** (`#feedArea`, `PK.feed`, desk.js `drawFeedLive`): drawn at 30 fps above the desk,
 the dog's overlay and everything on the desk, under the full-screen windows; the desk lays only its shadow, and the
 right screen's copy gets it too (for what dims it). **It scrolls back** (#140): grab it with the left button and
 drag (the lines follow the pointer; let go and it settles on a line's edge, so none is cut at rest, #45), or the

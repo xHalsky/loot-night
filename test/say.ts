@@ -13,6 +13,10 @@ import { toast, herWords } from '../src/core/fx';
 import { feedView } from '../src/render/deskView';
 import { NIGHT_CHAT, FIRST_CHAT, replayChat } from '../src/data/voice';
 import { TIPS } from '../src/data/tips';
+import { readdirSync, readFileSync } from 'node:fs';
+import { ENEMIES, BOSSES } from '../src/data/enemies';
+import { WELCOME } from '../src/systems/launch';
+import { floorName } from '../src/data/floorNames';
 
 let fails = 0;
 const ok = (c: boolean, m: string) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fails++; };
@@ -68,6 +72,30 @@ const teach = boys.filter(([, s]) => TEACH.test(s));
 ok(!teach.length, `no instructions in their chats${teach.length ? ': ' + teach.map(c => c[1]).join(' | ') : ''}`);
 ok(!FIRST_CHAT.some(c => /star|password/.test(c[1])), "Lance can't see your screen: no password line");
 ok(T.CHAT_LAUNCH_AT.length === FIRST_CHAT.length, 'one arrival per bubble');
+
+// --- GAME is Age of Judgment talking (#145): it knows nothing of her or the room. Every toast in a GAME module (no
+// [Tag] of its own) and every enemy's first-meet line: no her, Noise, Flow, Mood, Sleep, the night's minutes, "caught"
+const GAME_BAD = /\b(she|her|babe|noise|flow|mood|sleep|caught|tab)\b|\(\d+ min\)|\bloud\b/i;
+const bad: string[] = [];
+for (const f of readdirSync('src/systems')) {
+  const src = readFileSync(`src/systems/${f}`, 'utf8');
+  if (!/toastAs\('GAME'\)/.test(src)) continue;
+  for (const m of src.matchAll(/toast\((['`"])(.*?)\1/g)) if (!/^\[/.test(m[2]) && GAME_BAD.test(m[2])) bad.push(`${f}: ${m[2]}`);
+}
+for (const e of [...ENEMIES, ...BOSSES]) if (e.meet && (GAME_BAD.test(e.meet) || /\b(bash|ward|taunt|frost|fire|drag)\b[^.]*[!.]?$/i.test(e.meet.replace(/^[^.]*\. /, '')) && /\b(goes for|drag him|kill|fire burns|bash his|taunt or ward|or taunt)\b/i.test(e.meet))) bad.push(`meet: ${e.meet}`);
+ok(!bad.length, `GAME lines know only the realm${bad.length ? ': ' + bad.join(' | ') : ''}`);
+ok(WELCOME.startsWith('Welcome to Age of Judgment') && !/caught|fun/i.test(WELCOME), `its welcome: "${WELCOME}"`);
+
+// --- the floors' names (#147): from what is on them, short, fixed
+const nm = (f: number, o: Parameters<typeof floorName>[1], k = 0) => floorName(f, o, k).name;
+ok(nm(4, { feat: 'altar', cond: 'cursed' }) === 'Cursed Altar' && nm(4, { feat: 'den' }) === 'Goblin Warren' && nm(4, { cond: 'flooded' }).startsWith('Drowned '), 'a condition leads, a feature is the place');
+ok(nm(10, { boss: 'shark' }) === 'Bell Tower' && nm(3, { map: 'vault' }) === 'Sealed Vault', 'a boss floor is its keeper\'s hall, a map floor its own');
+ok(nm(6, {}) === nm(6, {}) && nm(6, {}, 0) !== '' && nm(6, {}, 0) !== nm(6, {}, 1), 'fixed for a floor; two plain cards differ');
+const all: string[] = [];
+const FE = ['shrine', 'pilgrim', 'cart', 'altar', 'moonwell', 'circle', 'chest', 'elite', 'den'] as const, CO = ['silent', 'haunted', 'flooded', 'dark', 'swarm', 'cursed'] as const;
+for (let f = 1; f <= 25; f++) for (let k = 0; k < 3; k++) { all.push(nm(f, {}, k)); for (const c of CO) all.push(nm(f, { cond: c }, k)); for (const fe of FE) { all.push(nm(f, { feat: fe }, k)); for (const c of CO) all.push(nm(f, { feat: fe, cond: c }, k)); } }
+const long = [...new Set(all)].filter(x => x.length > 15);
+ok(!long.length, `every name 15 letters at most (${new Set(all).size} names)${long.length ? ': ' + long.join(', ') : ''}`);
 
 console.log(fails ? `${fails} FAILED` : 'PASS');
 process.exit(fails ? 1 : 0);

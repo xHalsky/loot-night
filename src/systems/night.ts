@@ -62,7 +62,7 @@ export function startNight() {
   // before the night (#28, #56): the boys' chat on the phone, then How to hide on the first Monday and a night with a new tile
   S.g.voice = voiceNote();
   S.g.howto = howtoOpens() || !!S.g.voice;
-  toast(`${dayName()}, 20:00. Town is quiet.`, '#8fb3ff');
+  toast(`[Night] ${dayName()}, 20:00.`, '#8fb3ff');   // the night's name: the room's clock, not the realm's (#145)
 }
 
 /** Checks the three ways a night ends (docs/design/night.md). */
@@ -78,10 +78,10 @@ export function checkNightEnd() {
 function warnRun() {
   const n = N(), w = (n.runWarned ??= {});
   const end = rules().end;
-  if (end && !w.bed && n.clock >= end - T.BEDTIME_WARN_MIN) { w.bed = true; toast(`Bedtime at ${String(Math.floor(end / 60) % 24).padStart(2, '0')}:00 tonight: the night ends then, your run banked.`, '#8fb3ff'); }
+  if (end && !w.bed && n.clock >= end - T.BEDTIME_WARN_MIN) { w.bed = true; toast(`[Night] Bedtime at ${String(Math.floor(end / 60) % 24).padStart(2, '0')}:00 tonight: the night ends then, your run banked.`, '#8fb3ff'); }
   if (!n.run) return;
-  if (!w.dawn && n.clock >= T.DAWN - T.RUN_WARN_DAWN_MIN) { w.dawn = true; toast(`Dawn in ${T.RUN_WARN_DAWN_MIN} minutes. This run isn't banked.`, '#ff8a80'); }
-  if (!w.plug && n.mood >= T.MOOD_RED) { w.plug = true; toast("She's close to pulling the plug. This run isn't banked.", '#ff8a80'); }
+  if (!w.dawn && n.clock >= T.DAWN - T.RUN_WARN_DAWN_MIN) { w.dawn = true; toast(`[Night] Dawn in ${T.RUN_WARN_DAWN_MIN} minutes. This run isn't banked.`, '#ff8a80'); }
+  if (!w.plug && n.mood >= T.MOOD_RED) { w.plug = true; toast("[Her] She's close to pulling the plug. This run isn't banked.", '#ff8a80'); }
 }
 
 export function canSleep() { const n = N(); return n.clock >= T.EARLIEST_SLEEP && (n.location === 'town' || n.phase !== 'battle'); }
@@ -89,7 +89,7 @@ export function canSleep() { const n = N(); return n.clock >= T.EARLIEST_SLEEP &
 export function endNight(ending: Results['ending'], bedtime = false, coming = false) {
   stopAmbience();
   const n = N();
-  if (ending === 'sleep' && !bedtime && !canSleep()) { toast(n.clock < T.EARLIEST_SLEEP ? 'Too early to sleep. Play until at least 23:00.' : 'Finish the battle first.', '#a999bd'); return; }
+  if (ending === 'sleep' && !bedtime && !canSleep()) { toast(n.clock < T.EARLIEST_SLEEP ? '[You] Too early to sleep. Play until at least 23:00.' : '[You] Finish the battle first.', '#a999bd'); return; }
   // A run still going: Sleep (your choice) banks it; a forced end (dawn, unplugged) loses it like a wipe, Souls
   // kept (#52, 1.4; decided 2026-11-24: going deeper always carries a risk). What lies on the floor goes with it.
   const bank = ending === 'sleep';

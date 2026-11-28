@@ -3,6 +3,45 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.103.0 (2026-11-28)
+
+Paweł's notes on the launch chat, her bubble, the loot, the GAME lines and the floor map (#142 to #147).
+
+- **Let's go is back; no loading pill** (#142):
+  - The phone no longer goes down by itself after the launch: the night waits for the player's click on the gold
+    Let's go. It appears only at 38 s, as the town comes in. Enter, Esc and the home bar work then too.
+  - Before 38 s there is no button at all: the "Age of Judgment is loading" pill and its percentage are gone.
+  - The bubbles still end at 35.0 s.
+- **Her bubble has a normal short tail** (#143): a comic's short wedge, only the direction. It points toward the
+  door's latch side when the door is shut, and down toward her in the open doorway. It no longer runs into the door's
+  seam to be cut there.
+- **Loot lies on the party's walk line** (#144): `FLOOR_Y` = `PARTY_Y` (196, was 201). The front hero's feet reach
+  each drop as he picks it up.
+- **GAME lines know only the realm** (#145):
+  - The welcome is now "Welcome to Age of Judgment. The sky has judged. Ravenhold endures." It was "Have fun, don't
+    get caught.", which read as the game knowing about her.
+  - Every GAME line was checked. The night's name, the bedtime and the dawn warnings are now NIGHT. The plug warning is
+    HER. The desk slam, the Sleep button's refusals and your "LET'S GOOOO!" are YOU.
+  - GAME lines lost "(15 min)", "Noise +N", "(loud)" and "Flow builds faster". A blessing's line no longer carries its
+    cost: some costs are the room's (Noise, Flow), and the well's tooltip still shows them.
+  - The enemies' first-meet lines say what an enemy is and does, never what to do about it ("Frost goes for him
+    first", "Bash, Ward or Taunt" gone).
+- **The floor map** (#146, #147):
+  - A card shows only what its floor has: a feature, a condition, both, or neither. No more "no feature" or "no
+    condition" rows; a single row sits in the middle of the card.
+  - The hovered card's text on the parchment is in the darkest ink: umber's darkest, the old map's brown, not black.
+  - The text's foot explains the card's corner icons: the skulls with "Danger: N of 3." and the hourglass with "The
+    safest way down."
+  - **Floors are named from the lore and from what is on them** (`src/data/floorNames.ts`). A condition gives the
+    first word, a feature the place: "Cursed Altar", "Drowned Chapel". A feature alone has its own name ("Pilgrim's
+    Way", "Goblin Warren"). A plain floor is named for its depth ("Weeping Crypt", "Judged Cairn"). A boss floor is its
+    keeper's hall ("Bell Tower"), and a map's floor has its own name ("Sealed Vault").
+  - Names are fixed and at most 15 letters. A card falls back to the place alone when its icons leave less room. The
+    margin shows the name with "Floor N" under it.
+- **Tests:** `test/say.ts` checks every GAME line and first-meet line against the room's words, the welcome, and the
+  floor names (fixed, distinct, 15 letters at most). `test/launch.ts`, `test/launch.py`, `test/week.py`,
+  `test/small.py` and `test/chats.py` click Let's go again. Seeded sims are identical: no balance change.
+
 ## 0.102.0 (2026-11-27)
 
 Paweł's notes on the game chat, her lines and the boys (#138 to #141).

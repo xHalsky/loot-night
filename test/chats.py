@@ -24,7 +24,7 @@ async def main():
         async def box(i): return await pg.evaluate(f"()=>{{const r=document.getElementById('{i}').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]}}")
         await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await pg.evaluate(GO, 'newGame'); await pg.wait_for_timeout(900)
-        await ev("L.launch.skip(); 0"); await pg.wait_for_timeout(400)
+        await ev("L.launch.skip(); 0"); await pg.wait_for_timeout(400); await pg.evaluate(GO, 'voiceOk'); await pg.wait_for_timeout(200)
         await ev("g.howto=false; " + QUIET); await pg.wait_for_timeout(300)
 
         # Monday: the whole column, from under the monitor to the bottom
@@ -91,7 +91,7 @@ async def main():
         pg2 = await b.new_page(viewport={'width': 1280, 'height': 720})
         await pg2.add_init_script('window.__lnDay = 1'); await pg2.goto('file:///home/claude/loot-night/dist/index.html'); await pg2.wait_for_timeout(500)
         await pg2.evaluate(GO, 'newGame'); await pg2.wait_for_timeout(900)
-        await pg2.evaluate(EV, "L.launch.skip(); 0"); await pg2.wait_for_timeout(400); await pg2.evaluate(EV, "g.howto=false; " + QUIET); await pg2.wait_for_timeout(400)
+        await pg2.evaluate(EV, "L.launch.skip(); 0"); await pg2.wait_for_timeout(400); await pg2.evaluate(GO, 'voiceOk'); await pg2.wait_for_timeout(200); await pg2.evaluate(EV, "g.howto=false; " + QUIET); await pg2.wait_for_timeout(400)
         fb2 = await pg2.evaluate("()=>{const r=document.getElementById('feedArea').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]}")
         check(await pg2.evaluate(EV, "g.day") == 1 and abs(fb2[1] - 296 * 2) < 2 and abs(fb2[3] - 61 * 2) < 2 and abs(fb2[0] - fb[0]) < 2, f'Tuesday: under the YOU card, the same column {fb2}')
         path = 'test/shots/chats_7_tuesday.png'; await pg2.screenshot(path=path, clip=crop); shots.append(('7_tuesday', path))

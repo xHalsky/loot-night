@@ -6,9 +6,9 @@
 import { S } from '../core/state';
 import { T as TU } from '../config/tuning';
 import { toast } from '../core/fx';
-import { chatDown } from './week';
 
-const WELCOME = "Welcome to Age of Judgment. Have fun, don't get caught.";
+// the realm's own welcome, in its own voice: the MMO knows nothing of her or of the room it runs in (#145)
+export const WELCOME = 'Welcome to Age of Judgment. The sky has judged. Ravenhold endures.';
 
 let T = 0, running = false, of: unknown = null, skipped = false, frozen = false, from = 0;
 /** Where tonight's launch started: 0 (the whole launch, the first Monday) or the login's T (every night after). */
@@ -17,8 +17,8 @@ export const launchFrom = () => from;
 export const launchT = () => (running ? T : -1);
 /** Tonight's chat is up with its launch (the voice flag), whether or not it has finished. */
 export const launchNight = () => !!S.g.voice?.launch;
-/** True while the launch still holds the night (Esc, Enter, the home bar and the close box do nothing; at its end the
- *  phone goes down by itself, #135). */
+/** True while the launch still holds the night (no Let's go yet; Esc, Enter, the home bar and the close box do
+ *  nothing). At its end the gold Let's go comes up and the player starts the night (#142: not by itself, Paweł). */
 export const launchHolds = () => running && T < TU.LAUNCH_SEC;
 /** Whether the last jump of T was a skip (the sound fires nothing it jumped over). */
 export const launchSkipped = () => skipped;
@@ -35,7 +35,6 @@ export function updateLaunch(real: number) {
   const was = T;
   if (!frozen) T += real;
   if (was < TU.LAUNCH_SEC && T >= TU.LAUNCH_SEC && !skipped) toast(WELCOME, '#f2e9d8', 'GAME');   // the town is in: its welcome
-  if (T >= TU.LAUNCH_SEC && v?.launch) chatDown();   // and the phone goes down by itself (#135): How to hide or the night next
   if (T >= TU.LAUNCH_SOUND_END && !v?.launch) running = false;   // done: the town is in, the chord rang out
 }
 /** For the tests and the stills: put the clock at t (a jump: the sound fires nothing it passes). */

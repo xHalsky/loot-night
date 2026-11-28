@@ -91,7 +91,7 @@ export function chooseCurio(choice: string) {
   const noise = (v: number) => { n.noise = Math.min(100, n.noise + v); };
   switch (choice) {
     case 'pick': c.stage = 'pick'; c.t = c.max = T.CURIO_PICK_SEC; sfx.click(); return;
-    case 'smash': noise(T.CURIO_SMASH_NOISE); sfx.slam(); toast(`CRASH. The chest gives up. Noise +${T.CURIO_SMASH_NOISE}.`, '#ff9a4d'); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); break;
+    case 'smash': noise(T.CURIO_SMASH_NOISE); sfx.slam(); toast('CRASH. The chest gives up.', '#ff9a4d'); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); break;
     case 'open': {
       noise(T.CURIO_GROAN_NOISE);
       const r = Math.random(), [g, rare] = T.CURIO_MAIL_ODDS;
@@ -110,7 +110,7 @@ export function chooseCurio(choice: string) {
     case 'potion':
       noise(T.CURIO_KICK_NOISE); sfx.slam();
       if (chance(0.5)) { bless('potion'); markDone('potion', 'caught'); }
-      else { markDone('potion', 'glass'); S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP. Noise +${T.CURIO_KICK_NOISE}.`, '#ff9a4d'); }
+      else { markDone('potion', 'glass'); S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP.`, '#ff9a4d'); }
       break;
     case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking...', '#8fd0ff'); return;
     case 'fight': return trollFight();
@@ -133,7 +133,7 @@ export function chooseCurio(choice: string) {
 function bless(id: BlessingId) {
   addBlessing(id);
   const b = BLESSINGS[id], k = blessCount(id);
-  toast(`${b.name}${k > 1 ? ` x${k}` : ''}, this run: ${b.got}. ${b.cost}.`, '#6ef06e');
+  toast(`${b.name}${k > 1 ? ` x${k}` : ''}, this run: ${b.got}.`, '#6ef06e');   // its cost is on its well's tooltip: some are the room's (Noise, Flow), not the realm's (#145)
   if (id === 'shrine') boysSay('dmgBuff');   // the boys' chat (#109): a damage buff
 }
 

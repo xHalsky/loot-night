@@ -44,9 +44,11 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   Billy's realm is up; then four lines to read while it boots, setting the mood (#133, Paweł): Mike can't skip the
   intro, Lance "good. it's the best part", Billy's patch notes he didn't read and "this intro looks like an old crack
   intro lol"; Lance's "would you like to know more?"; Lance's own login, "in. arkbishop ready to be ignored again",
-  as the password is typed (#141: he can't see your screen); last, Billy's 11 sharp, "careful with her tonight". Until 38 s the pill reads "Age of Judgment is loading"
-  with the percentage, dim and not a button, and Esc, Enter, the home bar and the close box do nothing. **At 38 s, as
-  the town comes in, the phone goes down by itself** (#135, Paweł) and the How-to cards come up.
+  as the password is typed (#141: he can't see your screen); last, Billy's 11 sharp, "careful with her tonight". Until
+  38 s **there is no button** (#142, Paweł: no "Age of Judgment is loading" pill), and Esc, Enter, the home bar and the
+  close box do nothing. **At 38 s, as the town comes in, the gold Let's go appears and the night waits for it** (#142,
+  Paweł: the player clicks to go on; it went down by itself in 0.101.1); Enter, Esc and the home bar work too. Then
+  the How-to cards.
   **The boys always text, never send voice notes**
   (#108): **from Tuesday** it is the same live chat, three bubbles (one from each, `NIGHT_CHAT`): banter about her and
   the raid in their chat voice, **never how to play** (#141, Paweł: the boys only talk about your girlfriend in the
@@ -58,10 +60,10 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   the plug? mid-raid??"; `replayChat`), under "Tuesday, again". These
   nights' chats are paced to the launch from the login (below): their bubbles spread evenly from 25.4 to 35.0 s
   (`CHAT_LOGIN_FROM`, `CHAT_LOGIN_TO`; three bubbles at 25.4, 30.2 and 35.0, the replay's four at 25.4, 28.6, 31.8 and
-  35.0), each after its 1.6 s of dots, and the pill is "Age of Judgment is loading" until 38 s. At 38 s the phone goes
-  down by itself as the town comes in (#135; `chatDown`); How to hide follows on a night with a new tile, then
-  tonight's stars; then the night starts. The message stays in The Boys' chat until the next call. Week two has no
-  chat (nothing new): the phone comes up with only the loading pill while the login plays.
+  35.0), each after its 1.6 s of dots, with no button until 38 s; then Let's go (#142; `chatDown`), and How to hide
+  follows on a night with a new tile, then tonight's stars; then the night starts. The message stays in The Boys' chat
+  until the next call. Week two has no chat (nothing new): the phone comes up empty while the login plays, Let's go
+  at 38 s.
 - **The launch** (#127, the v2 redesign; [aoj-world.md](aoj-world.md) §6 to §7b; `systems/launch.ts`,
   the screens `render/page/aoj.js` and `logos.js`, the sound `ui/launchSound.ts`): before the first night the PC
   launches Age of Judgment on the monitor for 38 s (`LAUNCH_SEC`) while the boys' first chat comes in. Not interactive:
@@ -73,7 +75,8 @@ earlier nights stays on. What is not in yet does not happen and is not shown: no
   next screen fades in over it, dithered, `LAUNCH_XFADE` in `aoj.js`); the title, rain and lightning over the fallen
   angel, the halo forged, JUDGMENT struck (to 23); the login, "dutch" and nine stars typed, Log in (to 31); logging in
   and the world loading (to 38). Then the town fades in from black (dithered, 0.9 s, `LAUNCH_FADE_SEC`) and the feed
-  gets "Welcome to Age of Judgment. Have fun, don't get caught." (empty before). **The whole launch on the first Monday
+  gets the realm's welcome, "Welcome to Age of Judgment. The sky has judged. Ravenhold endures." (empty before; #145:
+  "have fun, don't get caught" read as the game knowing about her). **The whole launch on the first Monday
   only; every night after it starts from the login** (Paweł; replays, "Monday, again" included, and week two too;
   `voiceNote`'s `launch`: `full` or `login`): T starts at 23 (`LAUNCH_LOGIN_AT`), the login fades in from black
   (dithered, 0.6 s, `LAUNCH_LOGIN_FADE_SEC`), and the last 15 s play to 38 with their sound (only the cues from 23 on;
@@ -261,17 +264,18 @@ happening.
   the password is typed: Lance logging in himself (0.102.0, #141: his "nine stars" line was dropped, he can't see
   your screen). None from 15 to 21 s, where the title's sounds stand alone. Rejected: more lines
   later (the login has its own beats), a skip button (the wait is the joke and the theme).
-- **The chat ends 3 s before the town, and the phone goes down by itself** (0.101.1, #135; Paweł): the last bubble
-  lands at 35.0 s on every launch, so it is read before the town comes in, and at 38 s the phone goes down on its own
-  and the How-to cards (or the night) follow, as Let's go did. Mike's Tab tip was dropped from the first Monday's chat:
-  the How-to cards teach it. Let's go no longer exists in the launch. Rejected: keeping Let's go after the town is in
-  (one more click with nothing left to read), the phone going down before 38 s (the loading pill is what you watch).
+- **The chat ends 3 s before the town; the player starts the night with Let's go** (0.101.1, #135; 0.103.0, #142;
+  Paweł): the last bubble lands at 35.0 s on every launch, so it is read before the town comes in. The phone went down
+  by itself at 38 s in 0.101.1; Paweł reversed it: the night starts when the player clicks the gold Let's go, which
+  appears only then (no loading pill with a percentage before it: the monitor already shows the loading). Mike's Tab
+  tip was dropped from the first Monday's chat: the How-to cards teach it. Rejected: the phone going down by itself
+  (the player should choose the moment), a dim pill before it's time (a button that does nothing).
 
 - **The launch has its own clock, and holds the night** (#127, Paweł's v2 redesign, approved 2026-11-27): one T for the
   monitor, the chat and the sound, started when the chat comes up, stopped by pause, running in real seconds (not the
   game's time scale), so the bubbles, the beats and the music never drift apart. Nothing starts the night before 38 s,
   and the close box is hidden: the 38 s are the waiting the night already did while the chat was up, and the launch is
-  there to set the mood; at its end the phone goes down by itself (#135). Rejected: letting a button cut it short (the
+  there to set the mood; at its end the gold Let's go appears (#142). Rejected: letting a button cut it short (the
   boys' last line and the theme's downbeat would be skipped by most players); drawing it as a video (it is the renderer's code, palette-exact, and stays editable). The
   sims never run it; F1 skips it.
 - **From the login every night after the first Monday** (0.99.1, #127; Paweł, 2026-11-27): the whole 38 s every night

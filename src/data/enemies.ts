@@ -4,7 +4,8 @@ import { TROLL } from './curios';
 /** role: what answer the enemy asks for (docs/design/dungeon.md). healer: heals friends; shield: takes
  *  SHIELD_TAKEN damage until Bash breaks it; swarm: `stacks` small bodies, one per single-target hit.
  *  from: first floor it appears on. move: a boss's telegraphed big move (slam = SMASH, loan = SUMMON / EMPOWER,
- *  evict = EXECUTE; the ids are older than the names). meet: shown the first time you meet it. */
+ *  evict = EXECUTE; the ids are older than the names). meet: shown the first time you meet it: what it is and does,
+ *  never what to do about it (#141; the coach marks teach). */
 export type EnemyRole = 'healer' | 'shield' | 'swarm';
 export type BossMove = 'slam' | 'loan' | 'evict' | 'hook' | 'shove';   // hook, shove: they break the marching order (#52, 1.6)
 export interface EnemyDef {
@@ -30,25 +31,25 @@ export const ENEMIES: EnemyDef[] = [
   { id: 'bat', name: 'Ironwing', hp: 55, atk: 7, armor: 0, speed: 13, sprite: bat },
   { id: 'collector', name: 'Revenant', hp: 125, atk: 11, armor: 3, speed: 7, sprite: orc },
   { id: 'auditor', name: 'Confessor', hp: 55, atk: 5, armor: 1, speed: 9, sprite: shaman, role: 'healer', from: 2,
-    meet: 'New: Confessor. Heals his friends. Frost goes for him first.' },
+    meet: 'New: Confessor. Heals his friends.' },
   { id: 'shelter', name: 'Guardian', hp: 110, atk: 8, armor: 4, speed: 6, sprite: guardian, role: 'shield', from: 3,
-    meet: 'New: Guardian. Takes 75% less damage until Bash breaks his shield.' },
+    meet: 'New: Guardian. Takes 75% less damage until his shield breaks.' },
   { id: 'junk', name: 'Cherubs', hp: 75, atk: 4, armor: 0, speed: 11, sprite: IMP, role: 'swarm', stacks: 5, from: 4,
-    meet: 'New: Cherubs. One cherub per hit, and each one bites. Fire burns them all.' },
+    meet: 'New: Cherubs. One cherub per hit, and each one bites.' },
   // Enemies that break the line (#52, 1.6): one may join an encounter from LINE_BREAK_FROM; 1 s wind-up names the position
   { id: 'ghoul', name: 'Penitent', hp: 95, atk: 8, armor: 2, speed: 8, sprite: orc, move: 'hook', breaker: true,
-    meet: 'New: Penitent. Its Hook drags your last hero to the front. Drag him back.' },
+    meet: 'New: Penitent. Its Hook drags your last hero to the front.' },
   { id: 'brute', name: 'Gravedigger', hp: 150, atk: 12, armor: 4, speed: 6, sprite: ogre, move: 'shove', breaker: true,
-    meet: 'New: Gravedigger. Its Shove knocks your front hero back one position. Drag him back.' },
+    meet: 'New: Gravedigger. Its Shove knocks your front hero back one position.' },
 ];
 // One boss per checkpoint floor, in this order, then around again (floors 5, 10, 15, 20...).
 export const BOSSES: EnemyDef[] = [
   { id: 'bailiff', name: 'The Gaoler', hp: 1700, atk: 28, armor: 5, speed: 8, boss: true, sprite: ogre, move: 'slam',
-    meet: 'Boss: The Gaoler. SMASH hits everyone: Bash, Ward or Taunt.' },
+    meet: 'Boss: The Gaoler. His SMASH hits everyone.' },
   { id: 'shark', name: 'The Bellringer', hp: 1700, atk: 28, armor: 4, speed: 9, boss: true, sprite: warlock, move: 'loan',
-    meet: 'Boss: The Bellringer. He summons a friend, or empowers the one still standing: full HP, hits harder. Kill friends fast.' },
+    meet: 'Boss: The Bellringer. He summons a friend, or empowers the one still standing: full HP, hits harder.' },
   { id: 'landlord', name: 'The Inquisitor', hp: 1600, atk: 26, armor: 6, speed: 7, boss: true, sprite: blackKnight, move: 'evict', role: 'shield',
-    meet: 'Boss: The Inquisitor. Bash his shield off. EXECUTE hits one hero hard: Taunt or Ward.' },
+    meet: 'Boss: The Inquisitor. Shielded. His EXECUTE hits one hero hard.' },
 ];
 export const bossFor = (floor: number, every: number) => BOSSES[(Math.max(1, Math.floor(floor / every)) - 1) % BOSSES.length];
 export const ENEMY_BY_ID: Record<string, EnemyDef> = Object.fromEntries([...ENEMIES, ...BOSSES, TROLL].map(e => [e.id, e]));

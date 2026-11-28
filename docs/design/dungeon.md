@@ -73,7 +73,8 @@ flyer's 27 px over its centre); the Gaoler, the Inquisitor and the Abbot stand a
 (`LOOK_DX`) so the ball, the wings and the banner stay in the battle area.
 
 **Enemies.** Three plain ones (Hollow, the flyers, Revenant) and three that each ask for a
-different answer, joining from floors 2, 3 and 4. The first time you meet one, a line says what it wants.
+different answer, joining from floors 2, 3 and 4. The first time you meet one, a line says what it is and does, never
+what to do about it (#141; the coach marks teach): "New: Penitent. Its Hook drags your last hero to the front."
 
 | Enemy | From | Role | Answer |
 |---|---|---|---|
@@ -301,10 +302,25 @@ sweep and level lock. The auto attack has no button.
 the battle area shows the floor map on vellum: the run so far down the left (the last four floors as gilded roundels,
 boss floors crimson, the last one "you are here" in a red-ink ring), and a fork from there to each candidate room,
 pencilled with its icons until you hover its card. Under the map, 2 path cards (`PATHS_EARLY`, up to floor 5) or 3
-(`PATHS_LATE` from floor `PATHS_LATE_FROM`), one before a boss floor. Each card shows the floor, a **feature** row
-and a **condition** row ("no feature", "no condition" when empty), the danger as 1 to 3 skulls. Hover a card: its
-road inks itself, the room gets the floor's numeral, and the margin writes its full text with a + for what you get
-and a - for what it costs. Click the card (or its room) to go down.
+(`PATHS_LATE` from floor `PATHS_LATE_FROM`), one before a boss floor. **Each card has the floor's name** (below) and
+**only what it has** (#146, Paweł): its feature row, its condition row, both, or neither (no "no feature" or "no
+condition" row; one row sits in the middle); in its top right corner the danger as 1 to 3 skulls (from its
+condition) and the hourglass on the safest card. Hover a card: its road inks itself, the room gets the floor's
+numeral, and the margin writes its full text: the name, "Floor N" under it, a + for what you get and a - for what
+it costs, and at its foot **what the corner icons mean** (#146): the skulls with "Danger: N of 3.", the hourglass with
+"The safest way down." **The margin is written in the darkest ink** (`NOTE_INK`, umber's darkest: the old map's brown,
+not black; #146, the lighter brown was barely readable on the lit vellum). Click the card (or its room) to go down.
+- **The floors' names** (#147, Paweł; `src/data/floorNames.ts`): from the world's lore and what is on the floor, so a
+  card no longer reads "Floor 4". A condition gives the leading word (Hushed, Haunted, Drowned, Unlit, Teeming,
+  Cursed), a feature the place (Chapel, Way, Camp, Altar, Well, Ring, Coffer, Keep, Warren): "Drowned Chapel",
+  "Cursed Altar". A feature alone has its own name (Ash Chapel, Pilgrim's Way, Supply Camp, Red Altar, Moonlit Well,
+  Chanting Ring, Sealed Coffer, Iron Keep, Goblin Warren); a condition alone leads the depth's place ("Haunted
+  Nave"); a plain floor is a word of the judgment (Fallen, Ashen, Broken, Weeping, Judged, Sunken, Hollow, Iron) and
+  the depth's place ("Weeping Crypt"). The depths' places: the Shadow Crypt's Nave, Crypt, Chancel, Narthex, Tombs;
+  the Ossuary's Ossuary, Charnel, Barrow, Boneway, Cairn; the Iron Saint's Ribcage, Forge, Spine, Halo, Wings; the
+  Brood's Nest, Hive, Brood, Roots, Hatch. A boss floor is its keeper's hall (Gaoler's Cells, Bell Tower, Judgment
+  Seat); a map's floor its own (Sealed Vault, Iron Keep, Saint's Font, Accursed Deep, Goblin Warren). Fixed by the
+  floor, the card and what is on it; at most 15 letters, and the place alone when the card's icons leave less room.
 - **Features** (`NODE_FEATURE_CHANCE` a card): what stands on that floor. Six are curios with a run blessing
   (Wayside Shrine, Pilgrim, Supply Cart, Blood Altar, Moonwell, Ritual Circle), the Locked Chest is the strongbox;
   each is sure to stand on the floor, in place of one of the random curios. Elite Pack and Goblin Den turn the floor
@@ -412,6 +428,12 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
 ([city.md](city.md)).
 
 ## Decisions
+
+- **The floor map reads like the world's** (0.103.0, #146, #147; Paweł, 2026-11-28): the cards show only what a floor
+  has, named in the lore from it (a "Floor 4" told you nothing the subtitle didn't), the margin in the darkest ink,
+  and its foot explains the corner's skulls and hourglass. The floor's number moved under the name in the margin (every
+  card is the same floor). Rejected: random names (a card should keep its name while you look, and the name should
+  say what is there), long names that push the icons off the card, black ink (the map's style is brown ink).
 - **The curios drawn in code** (0.99, #131, the v2 redesign; aoj-world.md §4b): each curio is a figure in the world's
   lore (Church iron, the broken halo, crimson only for the angels' light, gold only for loot) at the characters'
   detail, with its states after each choice, instead of a prototype sprite that looked the same before and after. The

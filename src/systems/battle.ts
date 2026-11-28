@@ -344,7 +344,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   if (isCrit && e.hp <= 0 && !e.per) boysSay(attacker?.id === 'mage' && e.boss ? 'mageBoss' : full ? 'oneShot' : 'combo');   // the boys' chat (#109): a crit kill
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * T.ECHO_ENRAGE_HP) {   // enrage: the fight of the night, don't look away
     e.enraged = true; sfx.enrage();
-    toast(`${e.name} is ENRAGED! Flow builds faster.`, '#ff5a3a');
+    toast(`${e.name} is ENRAGED!`, '#ff5a3a');
   }
   floatText(enemyCenter(e).x, enemyNumY(e), isCrit ? `-${fmtNum(dmg)}!` : `-${fmtNum(dmg)}`, isCrit ? '#f2b84b' : '#ff8a80');
   if (isCrit) sfx.crit(); else sfx.hit();

@@ -1,6 +1,6 @@
 // The right screen around the monitor (V3, #68; grid doc §7) as a view model for the renderer's live desk
 import { on } from '../systems/week';
-import { launchHolds } from '../systems/launch';
+import { launchHolds, WELCOME } from '../systems/launch';
 import { battOn, battery } from '../systems/home';
 import { isWitching } from '../systems/affixes';
 // (desk.js drawDeskLive): the taskbar, the Tonight note, the keyboard's lights, the phone lying on the desk, the YOU
@@ -24,7 +24,7 @@ export function feedView(): { rows: [string, string, string, string?][]; you: bo
   const n = N(), you = on('tired') || on('headset') || on('fuel');   // the YOU card above it from Tuesday (#56)
   if (launchHolds()) return { rows: [], you };
   const rows = n.log.map(l => { const tag = (l.tag ?? '').toUpperCase(); return [l.time, tag, l.text, tag === 'LOOT' ? RARITY_SLOT[l.color] ?? 'u6' : undefined] as [string, string, string, string?]; });
-  return { rows: rows.length ? rows : [[fmtClock(n.clock), 'GAME', "Welcome to Age of Judgment. Have fun, don't get caught."]], you };
+  return { rows: rows.length ? rows : [[fmtClock(n.clock), 'GAME', WELCOME]], you };
 }
 
 /** What the phone lying on the desk shows (phone.js deskScreen): a call, banners, face down, or in your hand. */

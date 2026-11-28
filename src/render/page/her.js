@@ -520,40 +520,40 @@ function pill9(x, y, w, h, top, bot, o = {}) {   // her pink answer: a name and 
   text(top, x + 4, y + 3, 'tiny', off ? C9.lilac : C9.plum);
   if (bot) text(bot, x + 4, y + 10, 'tiny', off ? C9.pink : o.botCol ?? C9.purple);
 }
-// What she says, from behind the door (#139, Paweł: the way manga draw it): a speech bubble over the door's upper half,
-// its tail running into the door's latch-side seam and cut there, so the voice comes from the other side. A wavy
-// outline for her ordinary lines (muffled through the door), a spiky one when she shouts (a '!'). White, ink outline,
-// her words in plum; drawn over the webcam, under nothing.
+// What she says (#139): a speech bubble on her panel, as comics and manga draw a voice from behind a door. The door
+// shut: over its upper half, a short tail toward the door's latch side, where she is; the door open (she is in view):
+// above her head, the short tail down toward her, her face clear. Only the direction (#143, Paweł: a normal short
+// tail). A wavy outline for her ordinary lines (muffled through the door), a spiky burst when she shouts (a '!').
+// White, ink outline, her words in plum; drawn over the webcam, under nothing.
 const SAY_SEAM = [120, 84];   // the door's opening edge (door.ts X0 + DW, in the panel's px), a little above the handle
-const SAY_HEAD = [68, 42];   // her head in the open doorway (door.ts), where the tail points when she is in view
+const SAY_HEAD = [68, 42];    // her head in the open doorway (door.ts)
+const SAY_TAIL = 8;           // how far the tail reaches out of the bubble
 function sayBubble(str, open = false) {
   const lines = wrap9(str, 90).slice(0, 4), tw = Math.max(...lines.map((l) => measure(l, 'tiny'))), shout = /!/.test(str);
   const w = tw + (shout ? 38 : 18), h = lines.length * 8 + (shout ? 22 : 12);
-  // the door shut: over its upper half, the tail into the seam; the door open (she is in view): above her head, the
-  // tail down to her, her face clear
-  const x = open ? Math.max(3, Math.min(HP_W - 3 - w, SAY_HEAD[0] - w / 2)) : Math.max(4, 114 - w), y = open ? Math.max(1, SAY_HEAD[1] - 8 - h) : shout ? 20 : 24;
+  const x = open ? Math.max(3, Math.min(HP_W - 3 - w, SAY_HEAD[0] - w / 2)) : Math.max(4, 114 - w), y = open ? Math.max(1, SAY_HEAD[1] - 4 - SAY_TAIL - h) : shout ? 20 : 24;
   const cx = x + w / 2, cy = y + h / 2, a = w / 2, b = h / 2, amp = shout ? 0.3 : 0.05, freq = shout ? 9 : 13;
   const inB = (px, py) => {
     const u = (px + 0.5 - cx) / a, v = (py + 0.5 - cy) / b, r = Math.pow(Math.abs(u) ** 3 + Math.abs(v) ** 3, 1 / 3);
     const th = Math.atan2(v * b, u * a), wv = shout ? Math.abs(((th * freq / Math.PI) % 2 + 2) % 2 - 1) : 0.5 + 0.5 * Math.cos(th * freq);
     return r <= 1 - amp * wv;
   };
-  // the tail: from the bubble's lower right to the seam, a wedge that thins to the door's edge and is cut there
-  const [sx, sy] = open ? [HP_W, 0] : SAY_SEAM, b1 = open ? [SAY_HEAD[0] - 4, y + h - 3] : [x + w * 0.6, y + h - 3], b2 = open ? [SAY_HEAD[0] + 3, y + h - 3] : [x + w * 0.84, y + h * 0.55];
+  // the tail: a short wedge from the bubble's rim toward her (the door's latch side, or her in the doorway)
+  const aim = open ? [SAY_HEAD[0] + 2, SAY_HEAD[1]] : SAY_SEAM;
+  const base = open ? [Math.round(cx) + 2, y + h - 2] : [x + w * 0.78, y + h * 0.82];
+  const dx = aim[0] - base[0], dy = aim[1] - base[1], dl = Math.hypot(dx, dy) || 1, ux = dx / dl, uy = dy / dl;
+  const T = [base[0] + ux * (SAY_TAIL + 4), base[1] + uy * (SAY_TAIL + 4)], b1 = [base[0] - uy * 4, base[1] + ux * 4], b2 = [base[0] + uy * 4, base[1] - ux * 4];
   const side = (p, q, r) => (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
   const inT = (px, py) => {
-    if (px >= sx) return false;   // behind the door's edge
-    const P = [px + 0.5, py + 0.5], T = open ? [SAY_HEAD[0] + 1, SAY_HEAD[1] - 3] : [sx + 14, sy + 6], d1 = side(b1, b2, P), d2 = side(b2, T, P), d3 = side(T, b1, P);
+    const P = [px + 0.5, py + 0.5], d1 = side(b1, b2, P), d2 = side(b2, T, P), d3 = side(T, b1, P);
     return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
   };
-  const x0 = x - 2, x1 = open ? x + w + 2 : sx, y0 = y - 2, y1 = Math.max(y + h + 2, open ? SAY_HEAD[1] : sy + 3), M = new Map();
+  const x0 = Math.floor(Math.min(x, T[0])) - 2, x1 = Math.ceil(Math.max(x + w, T[0])) + 2, y0 = y - 2, y1 = Math.ceil(Math.max(y + h, T[1])) + 2, M = new Map();
   const inside = (px, py) => { const k = px + ',' + py; if (!M.has(k)) M.set(k, inB(px, py) || inT(px, py)); return M.get(k); };
   for (let py = y0; py <= y1; py++) for (let px = x0; px < x1; px++) {
     if (!inside(px, py)) continue;
-    const edge = !inside(px - 1, py) || !inside(px + 1, py) || !inside(px, py - 1) || !inside(px, py + 1) || (!open && px === sx - 1);
-    putI(px, py, edge ? C9.void : C9.moon);
+    putI(px, py, !inside(px - 1, py) || !inside(px + 1, py) || !inside(px, py - 1) || !inside(px, py + 1) ? C9.void : C9.moon);
   }
-  if (shout && !open) for (const [dx, dy] of [[-3, -9], [-2, -10], [2, -7], [3, -8], [4, 4], [5, 5]]) putI(sx + dx, sy + dy, C9.moon);   // a jolt where it comes through
   lines.forEach((l, k) => text(l, Math.round(cx), Math.round(cy - lines.length * 4) + 1 + k * 8, 'tiny', C9.plum, { align: 'c' }));
 }
 function herUILive(st, t) {

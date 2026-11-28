@@ -1173,9 +1173,9 @@ const LIVE = {
     const y0 = chatHead('The Boys (3)', 'boys', null, null, 'Billy, Mike, Lance', '20:00');
     const items = [['date', v.date], ...v.items, ...(v.typing ? [['typing', v.typing]] : [])];
     if (herThread(items, y0 + 2, 198, items.length - 1, t, v.scroll || 0, v.drag) > 0.5) newestChip(198);
-    // the first Monday (#127): while Age of Judgment launches on the PC the pill is dim and not a button, with how far it
-    // has loaded; at the end it turns into Let's go
-    if (v.loading != null) { pill('Age of Judgment is loading', 203, { fill: P.s2, ink: P.s5, shadow: P.s1 }); tx(Math.round(v.loading * 100) + '%', 56, 223, P.s4, { align: 'c' }); homeBar(); return; }
+    // while Age of Judgment launches on the PC (#127) there is no button at all (#142, Paweł: no loading pill); once
+    // the town is in, the gold Let's go, and the player clicks it to start the night
+    if (v.loading != null) { homeBar(); return; }
     const gh = pill("Let's go", 203); tx('the night starts', 56, 223, P.s4, { align: 'c' });
     hit(8, 203, PH.sw - 16, gh - 2, 'voiceOk', ''); homeBar(); homeHit('voiceOk');
   },

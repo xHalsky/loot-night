@@ -108,8 +108,9 @@ while active.
 | of the Wolf | Luck | `AFFIX_DOG_SEC` (60 s) after you pet the dog |
 | of Greed | `AFFIX_SPREADSHEET_GOLD` (3) gold per kill | Excel is up |
 
-**Loot on the floor.** Drops land where each enemy fell (spread out when several share a spot) and
-bounce once. Each shows a bundle with a gleam, an additive beam in its rarity colour (taller and wider
+**Loot on the floor.** Drops land where each enemy fell (spread out when several share a spot), **on the party's walk
+line** (`FLOOR_Y` = `PARTY_Y`, #144, Paweł: they lay below it, so the heroes never seemed to touch them), and bounce
+once; the front hero picks one up as his feet reach it. Each shows a bundle with a gleam, an additive beam in its rarity colour (taller and wider
 for better rarities) with a soft halo, a glow pool, rising sparkles and a pool of light in the darkness.
 Drops fall where the enemy died; there is no loot pause. On the walk after the fight the drops come toward the party
 with the floor and **whoever walks in front** (the first standing hero in the marching order) picks each one up as he
