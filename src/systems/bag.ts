@@ -14,7 +14,7 @@ export function clickBagSlot(id: string) {
   const n = N();
   if (n.dropPopup) { swapDrop(id); return; }
   n.selected = n.selected === id ? null : id;
-  sfx.click();
+  sfx.ui();
 }
 
 export function closeSelection() { N().selected = null; }
@@ -31,10 +31,10 @@ export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string):
   if (!e || e.kind !== 'item' || !h) { if (e && e.kind === 'feather') useFeather(e.id); return false; }
   if (!canWear(h, e.item)) {
     n.reject = { id: e.id, t: T.WRONG_CLASS_SHAKE_SEC, glow: T.RIGHT_CLASS_GLOW_SEC };   // shakes; whose it is glows (#121)
-    toast(`${HERO_CLASS[e.item.cls!]} only: ${heroLabel(h.id)} can't use it.`, '#ff8a80'); sfx.bad(); return false;
+    toast(`${HERO_CLASS[e.item.cls!]} only: ${heroLabel(h.id)} can't use it.`, '#ff8a80'); sfx.refuse(); return false;
   }
-  if (wantSlot && e.item.slot !== wantSlot) { toast(`That goes in the ${e.item.slot} slot.`, '#a999bd'); sfx.bad(); return false; }
-  if (!e.item.identified) { toast('Identify it at the Appraiser in town first.', '#b98cff'); sfx.bad(); return false; }
+  if (wantSlot && e.item.slot !== wantSlot) { toast(`That goes in the ${e.item.slot} slot.`, '#a999bd'); sfx.refuse(); return false; }
+  if (!e.item.identified) { toast('Identify it at the Appraiser in town first.', '#b98cff'); sfx.refuse(); return false; }
   const ratio = h.hp / maxHp(h);
   const old: Item | undefined = h.gear[e.item.slot];
   h.gear[e.item.slot] = e.item;
@@ -43,16 +43,16 @@ export function equipItemOn(itemId: string, heroIdx: number, wantSlot?: string):
   if (!h.downed) h.hp = Math.max(1, Math.round(maxHp(h) * ratio));
   n.selected = null;
   n.heroTab = heroIdx;
-  toast(`${heroLabel(h.id)} equipped ${e.item.name}`, '#f2e9d8'); sfx.good();
+  toast(`${heroLabel(h.id)} equipped ${e.item.name}`, '#f2e9d8'); sfx.aoj('equip');
   return true;
 }
 
 export function dropSelected() {
   const n = N();
   if (!n.selected) return;
-  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.refuse(); return; }
   const e = removeEntry(n.selected);
-  if (e) { toast(`Dropped ${entryName(e)}`, '#a999bd'); sfx.click(); }
+  if (e) { toast(`Dropped ${entryName(e)}`, '#a999bd'); sfx.aoj('drop'); }
 }
 
 export function useSelected() {
@@ -61,19 +61,19 @@ export function useSelected() {
   if (e && e.kind === 'feather') useFeather(e.id);
 }
 
-export function setHeroTab(i: number) { N().heroTab = i; sfx.click(); }
+export function setHeroTab(i: number) { N().heroTab = i; sfx.ui(); }
 
 /** Drag a worn item back to the bag. False when it stays on (a full bag). */
 export function unequip(heroIdx: number, slot: string): boolean {
   const h = S.g.heroes[heroIdx];
   const it = h?.gear[slot as Item['slot']];
   if (!it) return false;
-  if (S.g.bag.length >= S.g.bagSize) { toast('Bag is full.', '#ff8a80'); sfx.bad(); return false; }
+  if (S.g.bag.length >= S.g.bagSize) { toast('Bag is full.', '#ff8a80'); sfx.refuse(); return false; }
   const ratio = h.hp / maxHp(h);
   delete h.gear[slot as Item['slot']];
   S.g.bag.push({ kind: 'item', id: it.id, item: it });
   if (!h.downed) h.hp = Math.max(1, Math.min(maxHp(h), Math.round(maxHp(h) * ratio)));
-  sfx.click();
+  sfx.aoj('unequip');
   return true;
 }
 
@@ -84,14 +84,14 @@ export function trashItem(from: { bag: string } | { hero: number; slot: string }
   if ('bag' in from) {
     const e = S.g.bag.find(x => x.id === from.bag);
     if (!e) return false;
-    if (e.kind === 'item' && e.item.locked) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return false; }
+    if (e.kind === 'item' && e.item.locked) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.refuse(); return false; }
     removeEntry(e.id);
     const n = N(); n.fresh = n.fresh.filter(f => f.id !== e.id);
     toast(`Destroyed ${entryName(e)}.`, '#c9a46a');
   } else {
     const h = S.g.heroes[from.hero], it = h?.gear[from.slot as Item['slot']];
     if (!it) return false;
-    if (it.locked) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return false; }
+    if (it.locked) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.refuse(); return false; }
     const ratio = h.hp / maxHp(h);
     delete h.gear[from.slot as Item['slot']];
     if (!h.downed) h.hp = Math.max(1, Math.min(maxHp(h), Math.round(maxHp(h) * ratio)));

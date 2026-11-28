@@ -10,6 +10,7 @@ import { heroStats, maxHp, xpNeeded } from './stats';
 import { floatText, toastAs, fmtNum } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx } from '../ui/audio';
+import { ENRAGE_OF } from '../data/sounds';
 import { speedMult } from './tired';
 import { CD_PCT } from '../data/city';
 import { isAway, autopilotPull } from './autopilot';
@@ -28,6 +29,8 @@ import { boysSay, boysNoteDown } from './boys';
 let enemyUid = 1;
 // A multi-hit skill (Fire, Cataclysm) is one noisy moment: its crits add Noise once.
 let loudOnce = false, critHeard = false;
+/** The sound the next blows make instead of their weapon's (Backstab's own; none under Cataclysm, which has its own). */
+let hitAs: string | null = null;
 
 // Visual effects on the battle area, in grid px (core/arena.ts; docs/design/dungeon.md: every action must be visible).
 // Party positions are the heroes' order (marching order, #52 1.6: position 1 is S.g.heroes[0]).
@@ -157,16 +160,18 @@ export function castableNow(id: HeroId, slot: number): boolean {
 export function queueAbility(heroIdx: number, slot: number) {
   const h = S.g.heroes[heroIdx];
   if (!h || slot === 0 || h.downed) return;
-  if (abilitiesLocked()) { sfx.bad(); return; }
-  if (!abilityUnlocked(h, slot) || h.cd[slot] > 0 || (slot === ULT_SLOT && !ultReady(h))) { sfx.bad(); return; }
-  if (h.moving) { toast(`${heroLabel(h.id)} is changing places.`, '#a999bd'); sfx.bad(); return; }   // a swap: 1 s without acting (#52, 1.6)
+  if (abilitiesLocked()) { sfx.refuse(); return; }
+  if (!abilityUnlocked(h, slot) || h.cd[slot] > 0 || (slot === ULT_SLOT && !ultReady(h))) { sfx.refuse(); return; }
+  if (h.moving) { toast(`${heroLabel(h.id)} is changing places.`, '#a999bd'); sfx.refuse(); return; }   // a swap: 1 s without acting (#52, 1.6)
   const n = N();
-  if (!castableNow(h.id, slot)) { toast('No enemies in reach.', '#a999bd'); sfx.bad(); return; }   // party skills work between fights too (#122)
+  if (!castableNow(h.id, slot)) { toast('No enemies in reach.', '#a999bd'); sfx.refuse(); return; }   // party skills work between fights too (#122)
   // Cast right now: no waiting for the hero's turn, no global cooldown.
   h.lunge = 0.3;
   castAbility(h, slot);
 }
 
+/** A skill's own sound when it is cast (#155); Bash, Backstab, Fire and Frost sound in their blows. */
+const SKILL_SOUND: Partial<Record<HeroId, string[]>> = { knight: ['', 'taunt'], rogue: ['', '', 'smoke'], healer: ['', 'mend', 'ward'] };
 /** The skill slot that is a melee hit with the weapon (#97): the Knight's Bash, the Rogue's Backstab. */
 const MELEE_SKILL: Partial<Record<HeroId, number>> = { knight: 2, rogue: 1 };
 function castAbility(h: Hero, slot: number) {
@@ -184,7 +189,8 @@ function castAbility(h: Hero, slot: number) {
   const extraCd = (h.id === 'mage' && slot === 1 && rule('mage', 'inferno') ? T.RULE_INFERNO_CD : 0);
   h.cd[slot] = (ABILITIES[h.id][slot].cd + extraCd) * (1 - heroFx(h, 'cd')) * (h.id === 'rogue' && slot === 1 && rule('rogue', 'shiv') ? 1 - T.RULE_SHIV : 1) * auraCd(h) * (1 - CD_PCT[S.g.furniture.library ?? 0]) * (1 - T.BLESS_PILGRIM_CD) ** blessCount('pilgrim') * (n.cond === 'flooded' ? 1 + T.COND_FLOODED_CD : 1) * partyCdMult();
   if (n.cond !== 'silent') n.noise = Math.min(100, n.noise + T.NOISE_ABILITY);   // Silent Halls: skills make no Noise
-  sfx.ability();
+  const snd = SKILL_SOUND[h.id]?.[slot];
+  if (snd) sfx.skill(snd);
   const A = ABILITIES[h.id][slot];
   if (h.id === 'knight' && slot === 1) {
     n.taunt = A.dur!; vfx('taunt', me, undefined, 0.7); toast(`${heroLabel(h.id)}: TAUNT`, '#6aa8ff');
@@ -196,7 +202,7 @@ function castAbility(h: Hero, slot: number) {
     const first = bashTarget();
     const targets = first ? [first, ...(rule('knight', 'cleave') ? n.enemies.filter(x => x !== first && x.hp > 0).slice(0, 1) : [])] : [];   // Cleaving Bash
     for (const e of targets) {
-      if (e.shield) { e.shield = false; const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 10, 'SHIELD BROKEN!', '#8fd8ff'); sfx.crit(); }
+      if (e.shield) { e.shield = false; const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 10, 'SHIELD BROKEN!', '#8fd8ff'); sfx.shieldBreak(); }
       if (e.marks?.stagger! > 0 && legendOn('lantern') && h.cd[1] > 0) { h.cd[1] = 0; floatText(me.x, heroNumY - 8, 'TAUNT READY', '#f2b84b'); }   // Last Lantern
       const sx = rule('mage', 'shatterpoint') ? T.RULE_SHATTER : T.MARK_CHILL_BASH;   // Shatterpoint (the mage's tree)
       const shatter = cashIn(e, 'chill', `SHATTER x${sx}`) ? sx : 1;
@@ -205,7 +211,7 @@ function castAbility(h: Hero, slot: number) {
       const slam = (e.wind ?? 0) > 0 && moveOf(e) === 'slam';
       if (slam && e.braced) toast(`${e.name} is braced: Bash can't stop it.`, '#ff8a80');
       else if ((e.wind ?? 0) > 0 && !slam) { /* only SMASH can be interrupted */ }
-      else { e.stunned = T.BASH_STUN_SEC * (rule('knight', 'concussion') ? T.RULE_CONCUSSION : 1); if (slam) { e.wind = 0; e.braced = true; toast(`${heroLabel(h.id)} interrupts SMASH! The boss braces for the next one.`, '#8fb3ff'); sfx.good(); } }
+      else { e.stunned = T.BASH_STUN_SEC * (rule('knight', 'concussion') ? T.RULE_CONCUSSION : 1); if (slam) { e.wind = 0; e.braced = true; toast(`${heroLabel(h.id)} interrupts SMASH! The boss braces for the next one.`, '#8fb3ff'); sfx.interrupt(e.uid); } }
     }
     return;
   }
@@ -215,7 +221,7 @@ function castAbility(h: Hero, slot: number) {
     if (e) {
       const sure = (legendOn('widow') && e.marks?.chill! > 0) || (rule('rogue', 'ambush') && e.marks?.stagger! > 0);   // Widow's Kiss on Chilled; Ambush on Staggered
       const m = cashIn(e, 'stagger', `BACKSTAB x${T.MARK_STAGGER_BACKSTAB}`) ? T.MARK_STAGGER_BACKSTAB : 1;
-      hitEnemy(e, st.atk * A.power! * mult * m, sure ? 1000 : st.crit, 'slash', me);
+      hitAs = 'backstab'; hitEnemy(e, st.atk * A.power! * mult * m, sure ? 1000 : st.crit, 'slash', me); hitAs = null;
     }
     return;
   }
@@ -244,7 +250,7 @@ function castAbility(h: Hero, slot: number) {
     return;
   }
   if (h.id === 'healer' && slot === 1) {
-    sfx.heal(); aliveHeroes().forEach(x => healHero(x, (st.atk * A.power! + A.flat!) * healPow(h) * (rule('healer', 'greaterMend') ? 1 + T.RULE_GREATER_MEND : 1)));
+    aliveHeroes().forEach(x => healHero(x, (st.atk * A.power! + A.flat!) * healPow(h) * (rule('healer', 'greaterMend') ? 1 + T.RULE_GREATER_MEND : 1)));
     if (rule('healer', 'sanctuary')) n.sanctuary = T.RULE_SANCTUARY_SEC;   // Sanctuary
     if (legendOn('ashchoir')) clearDebuffs();   // Ash Choir
     return;
@@ -258,27 +264,27 @@ function castUlt(h: Hero, st: ReturnType<typeof heroStats>, mult: number, me: { 
   attacker = h;
   h.ult = 0;
   if (h.id === 'knight') {
-    n.lastStand = T.LAST_STAND_SEC; vfx('taunt', me, undefined, 0.9); sfx.level();
+    n.lastStand = T.LAST_STAND_SEC; vfx('taunt', me, undefined, 0.9); sfx.skill('laststand');
     toast(`${heroLabel(h.id)}: LAST STAND! Nobody falls for ${T.LAST_STAND_SEC} s.`, '#f2b84b');
     return;
   }
   if (h.id === 'rogue') {
-    n.heist = T.HEIST_SEC; sfx.level();
+    n.heist = T.HEIST_SEC; sfx.skill('heist');
     toast(`${HERO_NAME[h.id]}: HEIST! Every kill drops an item for ${T.HEIST_SEC} s.`, '#f2b84b');   // name alone: with the class the line runs past the feed's two rows
     return;
   }
   if (h.id === 'mage') {
-    loudOnce = true; critHeard = false;
+    loudOnce = true; critHeard = false; hitAs = 'none'; sfx.skill('cataclysm');
     toast(`${heroLabel(h.id)}: CATACLYSM!`, '#f2b84b');
     n.enemies.filter(e => e.hp > 0).forEach(e => {
       const marked = (e.marks?.stagger ?? 0) > 0 || (e.marks?.chill ?? 0) > 0;
       hitEnemy(e, st.atk * T.CATACLYSM_POWER * mult * (marked ? T.CATACLYSM_MARK_MULT : 1), st.crit, 'fire', me);
     });
-    loudOnce = false;
+    loudOnce = false; hitAs = null;
     return;
   }
   if (h.id === 'healer') {
-    sfx.heal(); toast(`${heroLabel(h.id)}: MIRACLE!`, '#f2b84b');
+    sfx.skill('miracle'); toast(`${heroLabel(h.id)}: MIRACLE!`, '#f2b84b');
     S.g.heroes.forEach(x => { if (x.downed) reviveHero(x, 1); x.hp = maxHp(x); vfx('heal', heroCenter(S.g.heroes.indexOf(x)), undefined, 1); });
     if (legendOn('vigil')) { n.ward = Math.max(n.ward, T.LEGEND_VIGIL_WARD_SEC); vfx('ward', heroCenter(1), undefined, 0.8); }   // Vigil Censer
   }
@@ -313,7 +319,7 @@ function cashIn(e: Enemy, id: MarkId, label: string): boolean {
   delete e.marks![id];
   const c = enemyCenter(e); floatText(c.x, enemyNumY(e) - 10, label + '!', MARKS[id].color);
   boysSay('combo');
-  sfx.crit();
+  sfx.combo();
   return true;
 }
 const mostHurt = () => aliveHeroes().sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
@@ -328,7 +334,7 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   const n = N();
   vfx(kind, enemyCenter(e), from, kind === 'bolt' ? 0.35 : kind === 'fire' ? 0.6 : 0.35);
   if (n.tired >= T.TIRED_SLUGGISH && chance(T.ECHO_DROWSY_MISS)) {   // Drowsy: your eyes close mid-swing
-    const c = enemyCenter(e); floatText(c.x + rand(-6, 6), enemyNumY(e), 'zzz', '#a999bd');
+    const c = enemyCenter(e); floatText(c.x + rand(-6, 6), enemyNumY(e), 'zzz', '#a999bd'); sfx.whiff(false);
     return 0;
   }
   const isCrit = chance((crit + partyCrit()) / 100);
@@ -344,11 +350,11 @@ function hitEnemy(e: Enemy, raw: number, crit: number, kind: VfxKind = 'slash', 
   e.hp -= dmg; e.flash = 0.15;
   if (isCrit && e.hp <= 0 && !e.per) boysSay(attacker?.id === 'mage' && e.boss ? 'mageBoss' : full ? 'oneShot' : 'combo');   // the boys' chat (#109): a crit kill
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * T.ECHO_ENRAGE_HP) {   // enrage: the fight of the night, don't look away
-    e.enraged = true; sfx.enrage();
+    e.enraged = true; sfx.enrage(ENRAGE_OF[e.defId] ?? 0);
     toast(`${e.name} is ENRAGED!`, '#ff5a3a');
   }
   floatText(enemyCenter(e).x, enemyNumY(e), isCrit ? `-${fmtNum(dmg)}!` : `-${fmtNum(dmg)}`, isCrit ? '#f2b84b' : '#ff8a80');
-  if (isCrit) sfx.crit(); else sfx.hit();
+  sfx.strike(hitAs ?? (kind === 'slash' && attacker?.id === 'rogue' ? 'stab' : kind), isCrit);   // each weapon its own blow (#155)
   if (skill && e.marks?.judged! > 0) { const low = mostHurt(); if (low && low.hp < maxHp(low)) healHero(low, dmg * T.MARK_JUDGED_HEAL); }
   return dmg;
 }
@@ -387,7 +393,7 @@ function heroAct(h: Hero, skill = false) {
   // Auto attack (slot 0).
   if (h.id === 'healer') {
     const hurt = aliveHeroes().filter(x => x.hp < maxHp(x) * T.HEALER_AUTO_HEAL_BELOW).sort((a, b) => a.hp / maxHp(a) - b.hp / maxHp(b))[0];
-    if (hurt) { sfx.heal(); healHero(hurt, (st.atk * 1.6 + 8) * healPow(h)); return; }
+    if (hurt) { sfx.healOne(); healHero(hurt, (st.atk * 1.6 + 8) * healPow(h)); return; }
   }
   const target = h.id === 'mage' ? weakestEnemy() : frontEnemy();
   if (!target) return;
@@ -409,7 +415,7 @@ function enemyAct(e: Enemy) {
     if (hurt) {
       const amt = Math.min(hurt.maxHp - hurt.hp, Math.round(e.maxHp * T.AUDITOR_HEAL));
       hurt.hp += amt; e.lunge = 0.3;
-      const c = enemyCenter(hurt); vfx('heal', c, undefined, 0.7); floatText(c.x, enemyNumY(hurt), `+${fmtNum(amt)}`, '#9fe08a');
+      const c = enemyCenter(hurt); vfx('heal', c, undefined, 0.7); floatText(c.x, enemyNumY(hurt), `+${fmtNum(amt)}`, '#9fe08a'); sfx.darkMend();
       return;
     }
   }
@@ -432,8 +438,8 @@ function attackHero(e: Enemy, atk: number) {
   else if (e.defId === 'bat') target = pick(alive);
   else target = alive[chance(0.7) || alive.length < 2 ? 0 : 1];
   if (n.smoke > 0 && rule('rogue', 'vanish') && target.id === 'rogue') { const vis = alive.filter(h => h.id !== 'rogue'); if (vis.length) target = pick(vis); }
-  if (heroFx(target, 'dodge') > 0 && chance(heroFx(target, 'dodge'))) { floatText(heroCenter(S.g.heroes.indexOf(target)).x + rand(-6, 6), heroNumY, 'dodge', '#a999bd'); return; }   // Shadow
-  if (n.smoke > 0 && chance(T.SMOKE_MISS)) { floatText(heroCenter(S.g.heroes.indexOf(target)).x + rand(-6, 6), heroNumY, 'miss', '#a999bd'); return; }   // Smoke Bomb
+  if (heroFx(target, 'dodge') > 0 && chance(heroFx(target, 'dodge'))) { floatText(heroCenter(S.g.heroes.indexOf(target)).x + rand(-6, 6), heroNumY, 'dodge', '#a999bd'); sfx.whiff(); return; }   // Shadow
+  if (n.smoke > 0 && chance(T.SMOKE_MISS)) { floatText(heroCenter(S.g.heroes.indexOf(target)).x + rand(-6, 6), heroNumY, 'miss', '#a999bd'); sfx.whiff(); return; }   // Smoke Bomb
   const st = heroStats(target);
   let raw = atk;
   if (n.cond === 'dark') raw *= 1 + T.COND_DARK_ATK;   // Pitch Dark
@@ -445,6 +451,7 @@ function attackHero(e: Enemy, atk: number) {
   const dmg = Math.max(1, Math.round(raw * rand(0.9, 1.1) - armor * 0.5));
   const i = S.g.heroes.indexOf(target);
   vfx('claw', heroCenter(i), undefined, 0.35);
+  sfx.hurt(role === 'healer' ? 'hex' : e.defId === 'bat' || role === 'swarm' ? 'bite' : 'hurt');   // its own blow (#155)
   floatText(heroCenter(i).x + rand(-6, 6), heroNumY, `-${fmtNum(dmg)}`, '#ff8a80');
   hurtHero(target, dmg);
   reflect(e, dmg);
@@ -466,24 +473,24 @@ function bossMove(e: Enemy): boolean {
   const move = moveOf(e);
   if (move === 'slam' && e.acts % T.BOSS_SLAM_EVERY === 0) {
     e.wind = e.windMax = T.BOSS_WINDUP_SEC;
-    toast(`${e.name} winds up SMASH!`, '#ff8a80'); sfx.windup(); coach('windup');
+    toast(`${e.name} winds up SMASH!`, '#ff8a80'); sfx.windup('smash', e.uid); coach('windup');
     return true;
   }
   if (move === 'loan' && e.acts % T.LOAN_EVERY === 0) {
     e.wind = e.windMax = T.LOAN_WINDUP_SEC;
     const friend = n.enemies.find(x => x !== e && x.hp > 0);
-    toast(friend ? `${e.name} empowers the ${friend.name}!` : `${e.name} summons help.`, '#ff8a80'); sfx.windup();
+    toast(friend ? `${e.name} empowers the ${friend.name}!` : `${e.name} summons help.`, '#ff8a80'); sfx.windup('toll', e.uid);
     return true;
   }
   if (move === 'evict' && e.acts % T.EVICT_EVERY === 0) {   // EXECUTE names a position: whoever stands there takes it
     const v = mostHurt();
     if (!v) return false;
     e.evict = S.g.heroes.indexOf(v); e.wind = e.windMax = T.EVICT_WINDUP_SEC;
-    toast(`${e.name}: EXECUTE on position ${e.evict + 1} (${HERO_NAME[v.id]})!`, '#ff8a80'); sfx.windup();   // name alone: no room for the class
+    toast(`${e.name}: EXECUTE on position ${e.evict + 1} (${HERO_NAME[v.id]})!`, '#ff8a80'); sfx.windup('execute', e.uid);   // name alone: no room for the class
     return true;
   }
   if ((move === 'hook' || move === 'shove') && S.g.heroes.length > 1 && (e.acts === T.LINE_BREAK_FIRST || (e.acts > T.LINE_BREAK_FIRST && (e.acts - T.LINE_BREAK_FIRST) % T.LINE_BREAK_EVERY === 0))) {
-    e.wind = e.windMax = T.LINE_BREAK_WINDUP_SEC; sfx.windup();
+    e.wind = e.windMax = T.LINE_BREAK_WINDUP_SEC; sfx.windup(move, e.uid);
     return true;
   }
   return false;
@@ -495,8 +502,8 @@ function landMove(e: Enemy) {
   if (move === 'slam') return bossSlam(e);
   if (move === 'loan') return loanFriend(e);
   if (move === 'evict') return eviction(e);
-  if (move === 'hook') { e.lunge = 0.3; sfx.handle(); hookLine(); vfx('chain', { x: POS_X[0], y: 178 }, { x: enemyCenter(e).x - 8, y: 178 }, T.SWAP_SEC); return; }
-  if (move === 'shove') { e.lunge = 0.3; sfx.slam(); return shoveLine(); }
+  if (move === 'hook') { e.lunge = 0.3; sfx.land('hook', e.uid); hookLine(); vfx('chain', { x: POS_X[0], y: 178 }, { x: enemyCenter(e).x - 8, y: 178 }, T.SWAP_SEC); return; }
+  if (move === 'shove') { e.lunge = 0.3; sfx.land('shove', e.uid); return shoveLine(); }
 }
 
 /** The Warlock's summon takes the free slot next to him (move id 'loan'). */
@@ -506,7 +513,7 @@ function loanFriend(e: Enemy) {
   if (old) {   // empowered: back to full and meaner
     old.hp = old.maxHp; old.atk *= T.LOAN_REFI; old.aliveSec = 0;
     const c = enemyCenter(old); floatText(c.x, enemyNumY(old) - 6, 'EMPOWERED', '#ff8a80'); vfx('heal', c, undefined, 0.7);
-    e.lunge = 0.3; sfx.handle();
+    e.lunge = 0.3; sfx.land('toll', e.uid);
     return;
   }
   const def = ENEMY_BY_ID[e.acts! % (2 * T.LOAN_EVERY) === 0 ? 'junk' : 'auditor'];
@@ -516,7 +523,7 @@ function loanFriend(e: Enemy) {
   add.atb = 0; add.enter = T.STEP_IN_SEC;
   const i = n.enemies.findIndex(x => x.hp <= 0 && x.slot === slot);
   if (i >= 0) n.enemies[i] = add; else n.enemies.push(add);
-  e.lunge = 0.3; sfx.handle();
+  e.lunge = 0.3; sfx.land('toll', e.uid);
   toast(`The ${def.name} join${def.role === 'swarm' ? '' : 's'} the fight.`, '#ff8a80');
 }
 
@@ -527,7 +534,7 @@ function eviction(e: Enemy) {
   let v = S.g.heroes[e.evict ?? 0];
   if (!v || v.downed) v = mostHurt();
   e.evict = undefined; e.lunge = 0.3;
-  sfx.slam(); n.noise = Math.min(100, n.noise + T.NOISE_CRIT);
+  sfx.land('execute', e.uid); n.noise = Math.min(100, n.noise + T.NOISE_CRIT);
   if (v) {
     const taunted = n.taunt > 0 && !knight.downed;
     const h = taunted ? knight : v;
@@ -549,7 +556,7 @@ function grantXp(amount: number) {
     while (h.xp >= xpNeeded(h)) {
       h.xp -= xpNeeded(h); h.level++;
       h.hp = maxHp(h);
-      toast(`${heroLabel(h.id)} reached level ${h.level}!`, '#f2b84b'); sfx.level();
+      toast(`${heroLabel(h.id)} reached level ${h.level}!`, '#f2b84b'); sfx.levelUp();
       N().noise = Math.min(100, N().noise + T.NOISE_LEVEL);
     }
   }
@@ -572,7 +579,7 @@ function bossSlam(e: Enemy) {
   const n = N();
   e.braced = false;
   e.lunge = 0.3;
-  sfx.slam(); n.noise = Math.min(100, n.noise + T.NOISE_CRIT);
+  sfx.land('smash', e.uid); n.noise = Math.min(100, n.noise + T.NOISE_CRIT);
   const ward = n.ward > 0 ? T.BOSS_SLAM_WARD_MULT : 1;
   const knight = heroById('knight')!;
   const targets = n.taunt > 0 && !knight.downed ? [knight] : aliveHeroes();

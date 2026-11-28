@@ -52,10 +52,10 @@ function reorder(next: Hero[]) {
 export function swapHeroes(a: number, b: number) {
   const hs = [...S.g.heroes];
   if (a === b || !hs[a] || !hs[b]) return;
-  if (hs[a].moving || hs[b].moving) { sfx.bad(); return; }
+  if (hs[a].moving || hs[b].moving) { sfx.refuse(); return; }
   [hs[a], hs[b]] = [hs[b], hs[a]];
   reorder(hs);
-  sfx.click();
+  sfx.aoj('swap');
   if (S.g.night?.location !== 'dungeon') return;
   floatText(Math.round((POS_X[a] + POS_X[b]) / 2), 104, 'swap', '#e2d6c0');
   for (const h of [hs[a], hs[b]]) if (outOfPosition(h)) floatOut(h);

@@ -3,6 +3,55 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.107.0 (2026-11-28)
+
+Paweł's note: the RPG's sounds were the prototype's blips. With the 32-bit look they should sound like the console
+game it looks like, more detailed and crunchier, every action with its own sound, and each enemy kind and each boss
+falling with its own (#155).
+
+- **Every RPG sound is new, made the way the launch's sound is:** each cue is layered (Kenney impacts pitched down
+  for weight, synthesised iron, chain, grit and debris, the console's sampled choir, organ, brass, harp, bell and
+  timpani). It then goes through the console chain: a little drive for the crunch, the sample's own low rate, the 4-bit
+  ADPCM round trip, the console's reverb. Iron, stone, chain, bells, choir and fire: the world's materials, played
+  straight. 95 cues in `tools/sfx/aoj_sfx.py`, baked like the rest (`python3 tools/sfx/make.py 'rpg_*' 'die_*'`).
+- **Each weapon its own blow:** the Knight's sword on iron, the Rogue's dagger, the Mage's crackling bolt, the Priest's
+  mace with a small bell. A crit adds a heavy crunch over it.
+- **Each skill its own:** Taunt, Bash, Backstab, Smoke Bomb, Fire, Frost, Mend, Ward, a combo, a shield broken. The
+  ultimates too: Last Stand, Heist, Cataclysm, Miracle.
+- **Sounds that were missing:**
+  - Enemies hitting the party: steel on mail, a bite from the Ironwings and Cherubs, the Confessor's hex and its dark mend.
+  - Misses: Smoke Bomb, a dodge, a drowsy swing.
+  - The fallen: one fall per kind and its own for each boss and the Abbot (see below).
+  - The crypt: the portal there and back, a floor cleared, a boss slain.
+  - Loot: drops clinking on the stone (a rare or better glints), the looter picking them up.
+  - Curios: approached, the lock picked, the chest, the reliquary's stone lid, a curse, each blessing its own.
+- **The fallen fall with their own sounds:** the Hollow's helm rolling, the Guardian's shield, the Revenant's rods and
+  heart-lens, the Penitent's cage and candle, the Confessor's grille and censer, a Cherub's porcelain face per body,
+  the Ironwing's last shriek, the Vigil's rotor winding down, the Gravedigger's coffin lids. The bosses get bigger
+  ones: the Gaoler's ball and chain running out, the Bellringer's last cracked toll, the Inquisitor's blade-feathers
+  and sword, the Abbot's mace and the tithe spilling. Several at once follow each other a beat apart.
+- **The big moves:**
+  - Each wind-up has its own sound, as long as the move: the Gaoler whirling the ball faster and faster, the
+    Bellringer hauling the rope, the Inquisitor drawing the sword, the Penitent's hook, the Gravedigger heaving.
+  - The wind-up is cut where the move lands, into its own blow. Bash stopping a SMASH has its own sound, and a
+    wind-up stops when its maker dies.
+  - Battle no longer borrows real-life sounds: the apartment door latch was the Hook and the summon, and the desk slam
+    was SMASH, EXECUTE, Shove and the smashed chest.
+- **Each boss roars its own way when ENRAGED.** The Abbot roars that way when he wakes, too.
+- **Audio-first, redone:**
+  - Legendary: the choir on D major, the brass, two bells.
+  - Full bag: a "nuh-uh" on a dull iron bell.
+  - Hero down: armour crashing, a low toll.
+  - Party wipe: a dirge on the organ and the funeral bell, then his desk slam (real life).
+  - The goblin keeps its giggle.
+- **Mix:** the blows come about once a second all night, so they sit quiet under everything. Skills are a step up;
+  the big moves, the bosses' falls and the audio-first cues are the loudest. The party sits a little left in the
+  stereo field, the enemies a little right. Real life keeps all its own sounds.
+- Sound only. Nothing in it draws a random number in the game's logic, so the seeded sims (good and idle) are
+  identical. The build is about 4.7 MB (the RPG's files at 22,050 Hz, 40 kbps).
+- Tests: `test/aojsound.py`, every action's own cue in a real fight (51 checks); `test/sound.py`, every file decodes.
+  For listening: `python3 tools/sfx/aoj_reel.py /tmp/out` writes every cue in groups and a short fight.
+
 ## 0.106.0 (2026-11-28)
 
 Paweł's note: enemies just vanished at 0 HP. Now they crumble and leave a corpse (#154).

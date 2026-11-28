@@ -27,11 +27,11 @@ export function nodeState(hero: HeroId, node: NodeId): NodeState {
 /** Buys a node with Souls (in town only). An autocast starts switched on. */
 export function buyNode(hero: HeroId, node: NodeId): boolean {
   const st = nodeState(hero, node);
-  if (st !== 'buy' || S.g.night?.location === 'dungeon') { sfx.bad(); return false; }
+  if (st !== 'buy' || S.g.night?.location === 'dungeon') { sfx.refuse(); return false; }
   S.g.mats -= nodeCost(hero, node);
   bought(hero).push(node);
   if (NODES[node].kind === 'auto') (S.g.autocast ??= {})[`${hero}:${node === 'a1' ? 1 : 2}`] = true;
-  sfx.level(); boysSay('build');   // the boys' chat (#109)
+  sfx.aoj('tree'); boysSay('build');   // the boys' chat (#109)
   return true;
 }
 /** Free while testing: every Soul spent in that tree comes back. */
@@ -42,7 +42,7 @@ export function respec(hero: HeroId) {
   for (let k = 0; k < list.length; k++) { const kind = NODES[list[k]].kind; refund += Math.round((T.TREE_COST[kind] ?? 0) * (1 + T.TREE_COST_STEP * k)); }
   S.g.mats += refund; S.g.trees![hero] = [];
   for (const s of [1, 2]) delete S.g.autocast?.[`${hero}:${s}`];
-  toast(`Respec: +${refund} Souls back.`, '#c9b08a'); sfx.click();
+  toast(`Respec: +${refund} Souls back.`, '#c9b08a'); sfx.aoj('respec');
 }
 
 /** A rule this hero owns. */
@@ -69,5 +69,5 @@ export const autocastOn = (hero: HeroId, slot: number) => autocastBought(hero, s
 export function toggleAutocast(hero: HeroId, slot: number) {
   if (!autocastBought(hero, slot)) return;
   const k = `${hero}:${slot}`; (S.g.autocast ??= {})[k] = !autocastOn(hero, slot);
-  sfx.click();
+  sfx.ui();
 }

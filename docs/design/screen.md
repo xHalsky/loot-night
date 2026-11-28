@@ -127,7 +127,8 @@ listening, so her sounds are the most important ones in the game.
 - **Three buses:**
   - **apt:** her. The headset turns it down (`HEADSET_APT_VOLUME`) and low-passes it (`HEADSET_APT_LOWPASS`).
   - **game:** the RPG and the desk.
-  - **loud:** the game through the speakers (boss slams, the enrage roar), never muffled.
+  - **loud:** the game through the speakers (the bosses' big moves and their falls, the enrage roars, a smashed chest,
+    the potion rack kicked, the desk slam), never muffled.
 - **Her by distance:** each of her sounds plays from her room. Volume and a wall low-pass come from
   `ROOM_DISTANCE` (`APT_ROOM_GAIN`, `APT_ROOM_LOWPASS`), so the TV next door is clear and the bedroom is faint.
   It is the same distance table that decides how much of your Noise reaches her.
@@ -135,18 +136,47 @@ listening, so her sounds are the most important ones in the game.
   through the door, louder ajar), with
   extras on top (the laugh track; her breathing when asleep). The loop stops when the end cue starts (see
   [her.md](her.md)), when she moves and during visits.
-- **Audio-first RPG events,** each recognisable with Excel covering the screen:
+- **The RPG's sounds** (#155, `tools/sfx/aoj_sfx.py`): Age of Judgment sounds like the late-90s console game it looks
+  like, the same chain as its launch (`tools/sfx/ps1.py`). Each cue is layered (Kenney impacts pitched down for weight,
+  synthesised iron, chain, grit and debris, the console's sampled choir, organ, brass, harp, bell and timpani), then goes
+  through the console: a little drive for the crunch, down to the sample's own rate (16,000 or 22,050 Hz), the 4-bit
+  ADPCM round trip, back up with a plain interpolation, the console's reverb. Iron, stone, chain, bells, choir, fire:
+  the world's materials ([aoj-world.md](aoj-world.md)), played straight. Files at 22,050 Hz (the `game` profile).
+  The party sits left in the stereo field, the enemies right (a light pan).
+  - **Every action its own:**
 
-  | Event | Sound |
-  |---|---|
-  | Legendary | Fanfare with drums and sparkles |
-  | Full bag | Thump, "nuh-uh" |
-  | Goblin appears / caught / escapes | Giggle and coins / squeal / taunt, coins fading |
-  | Hero down | Body thud, three sad notes |
-  | Boss enrage | Roar |
-  | Party wipe | Wah wah wah waaah, then the desk slam |
+    | What | Sound |
+    |---|---|
+    | The party's blows | The Knight's sword on iron (slash), the Rogue's dagger (stab), the Mage's crackling bolt, the Priest's mace with a small bell (smite); a crit adds a heavy crunch over the weapon's own |
+    | The skills | Taunt (the sword beaten on the shield, a war horn), Bash, Backstab (drawn, driven in, twisted), Smoke Bomb (a vial bursting, the smoke hissing), Fire (a burst, heard once however many it hits), Frost (crystals, a crack), Mend (the choir, a harp), Ward (a deep bell, the barrier humming), a combo (Shatter and the like), a shield broken |
+    | The ultimates | Last Stand (drums, horns, the men's choir), Heist (a lock picked, coins, a sly harp), Cataclysm (fire coming down, the crypt's stone falling, the choir in terror), Miracle (the whole choir, the organ, bells) |
+    | The enemies' blows | Steel on mail; a bite (Ironwings, Cherubs); the Confessor's hex; its dark mend; a miss (Smoke Bomb, a dodge, a drowsy swing) is a swing alone |
+    | The big moves | Each a wind-up as long as the move's (the Gaoler whirling the ball, faster and faster; the Bellringer hauling the rope; the Inquisitor drawing the sword, his wings unfolding; the Penitent's hook swung; the Gravedigger heaving), cut where it lands into its blow (SMASH, the toll, EXECUTE, Hook, Shove); Bash stopping the SMASH has its own; the wind-up also stops when its maker dies |
+    | Enraged | Each boss its own roar (the Gaoler muzzled, chains thrashing; the Bellringer's cracked bell; the Inquisitor's iron roar and the organ; the Abbot through his jaw-plate, the pipe hissing, also when he wakes) |
+    | The fallen (#154) | Each kind its own fall, the pieces landing as its figure crumbles (the Hollow's helm rolling, the Guardian's shield, the Revenant's rods and heart-lens, the Penitent's cage and candle, the Confessor's grille and censer, a Cherub's porcelain face per body, the Ironwing's shriek, the Vigil's rotor winding down, the Gravedigger's coffin lids); the bosses and the Abbot their own, bigger (the Gaoler's ball and chain, the Bellringer's last cracked toll, the Inquisitor's blade-feathers and sword, the Abbot's mace and the tithe spilling). Several at once follow each other a beat apart; the variant follows the corpse, never a random draw |
+    | The crypt | The pack sees the party ("!"), the portal there and back, a floor cleared, a path card taken, a boss slain (after his fall) |
+    | Loot | It clinks on the stone where it fell (a rare or better glints); the looter picks it up; the bag takes it with its rarity's sound (common to epic, a step richer each); gold, Souls, sold, identified (the runes, then its rarity), listed, built, a tree point, a respec, equipped, taken off, dropped, locked, the realm's buttons; "not now" (a latch that will not give) |
+    | Curios | One approached, the lock picked, the chest opened, smashed, the potion rack kicked and its glass, the reliquary's stone lid, a curse, each blessing its own, sneaking, the guild bank |
 
-  Other rarities are bell pings that grow with rarity. Hits, abilities, level-ups and the UI stay chiptune.
+  - **Audio-first,** each recognisable with Excel covering the screen:
+
+    | Event | Sound |
+    |---|---|
+    | Legendary | The sky opens: a rising shimmer, a drum, the whole choir on D major with the brass, two bells, the harp to the top |
+    | Full bag | A stuffed bag thumps, the leather strains, "nuh-uh" on a dull iron bell |
+    | Goblin appears / caught / escapes | Its giggle and a purse / its squeal, the purse bursting / a last giggle, coins jingling off |
+    | Hero down | His armour crashing down, a low toll |
+    | Boss enrage | Its own roar |
+    | SMASH wind-up | The ball whirling faster and faster, 3 s |
+    | Party wipe | A dirge on the organ down to D minor, the funeral bell; on its last chord he slams the desk (real life) |
+
+  - **Mix** (`MIX`): the blows come about once a second all night, so they sit quiet, under everything; the skills a
+    step up; the big moves, the bosses' falls and the audio-first cues the loudest. Repeats are thinned in `ui/audio.ts`
+    (a Fire hitting five plays once, a swarm's five bites once).
+  - **Real life keeps its own** (the desk, her, the phone, the dog): the RPG's sounds never stand in for them, nor theirs
+    for the RPG's (no apartment latch on the Hook, no desk slam on a SMASH).
+  - **Listening:** `python3 tools/sfx/aoj_reel.py /tmp/out` writes every cue in groups at the game's mix, and a short
+    made-up fight; `test/aojsound.py` checks every action plays its own cue in a real fight.
 - **The launch's sound and music** (#127; [aoj-world.md](aoj-world.md) §7b): the launch (the whole of it on the first Monday,
   from the login every night after) has its own cue sheet, `LAUNCH_SOUND` (62 cues by the launch's second), `LAUNCH_LOOPS` (the rain) and `LAUNCH_MUSIC` (the
   theme, `aoj_theme`, from 6.2 s to 41.6 s) in `render/page/aoj.js`, played by `ui/launchSound.ts` on the launch's
@@ -376,10 +406,21 @@ webcam (#103): "Headset" and what it does; there is no ring or label of its own.
   - Waiting for hand-recorded files: kept open through `own/` instead.
 - **MP3, not Ogg or Opus:** every browser decodes it, older Safari included. The cost is encoder padding, which the
   loop pad absorbs.
-- **The RPG stays chiptune:** it is a game on a monitor, and the contrast makes her real sounds stand out.
-  Only the five audio-first events got designed sounds.
+- **The RPG sounds like its console** (#155, Paweł 2026-11-28: the prototype's blips no longer fit the 32-bit look;
+  "PS1 fidelity, more detailed, more crunchy"): every RPG sound through the launch's console chain, each action its
+  own, each kind its own fall and each boss its own. Her real sounds still stand apart: clean and full-band, where the
+  RPG's are 22,050 Hz, ADPCM-grained and driven. Rejected:
+  - Keeping the chiptune blips (the first version's call: "a game on a monitor"): they belonged to the prototype's
+    8-bit look, not to iron angels.
+  - Clean modern recordings: too hi-fi for the look, and they would blur into her sounds.
+  - One death sound for all, or one per size: Paweł asked for each kind and each boss.
+  - A random variant per death or per blow from game logic: the sims must stay byte for byte; the variant follows the
+    corpse's id, the blows' variants are picked in the audio only.
+  - Real-life cues standing in for RPG moves (the apartment latch on Hook and the summon, the desk slam on SMASH,
+    EXECUTE and Shove): they told the wrong story.
 - **Size:** the build grows to 928 KB, still one file that loads instantly. Lower bitrates were not worth it:
-  through-wall sounds are already 32 kbps.
+  through-wall sounds are already 32 kbps. With the RPG's own sounds (#155, 95 cues) and the launch's music it is about
+  4.7 MB; the RPG's files are 22,050 Hz at 40 kbps (their console holds nothing above 11 kHz).
 
 ## Planned
 

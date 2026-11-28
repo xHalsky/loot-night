@@ -1,9 +1,11 @@
 // The fallen (#154, Paweł 2026-11-28): an enemy at 0 HP no longer just vanishes. It crumbles to the ground where it
 // stood, leaves a pile of iron bones of its own kind (the bosses and the Abbot their own, bigger), and the pile fades
-// after a while. Visual only: no rule reads it, no random draw (the sims stay byte for byte). The look is the
+// after a while. Visual and sound only: no rule reads it, no random draw (the sims stay byte for byte). The look is the
 // renderer's (render/page/corpses.js); this keeps the list: who fell where, how old, how far the walk has carried it.
 import { N, type Enemy } from '../core/state';
 import { T } from '../config/tuning';
+import { sfx } from '../ui/audio';
+import { DIE_CUE } from '../data/sounds';
 
 const list = () => (N().corpses ??= []);
 const bodies = (e: Enemy) => (e.per ? Math.max(0, Math.ceil(e.hp / e.per - 1e-6)) : e.hp > 0 ? 1 : 0);   // battle.ts bodies (no import cycle)
@@ -14,6 +16,8 @@ export function layFallen(e: Enemy) {
   for (let k = Math.max(1, e.bodiesSeen ?? 1) - 1; k >= 0; k--) layCorpse(e, k);
 }
 function layCorpse(e: Enemy, body?: number) {
+  const cue = e.defId === 'bat' ? (e.look === 'vigil' ? 'die_vigil' : 'die_ironwing') : DIE_CUE[e.defId];
+  if (cue) sfx.die(cue, e.uid * 8 + (body ?? 7), e.boss || e.defId === 'troll');   // its own fall (#155)
   list().push({ uid: e.uid * 8 + (body ?? 7), defId: e.defId, ...(e.look ? { look: e.look } : {}), slot: e.slot, boss: e.boss, dx: 0, t: 0, ...(body != null ? { body } : {}) });
 }
 /** Every frame in the dungeon: the corpses age; a swarm that lost a body lays that body's wreck; old ones go. */

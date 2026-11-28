@@ -102,15 +102,19 @@ export function setHeadset(on: boolean) {
 type Bus = 'game' | 'apt' | 'loud';
 const out = (bus: Bus) => (bus === 'apt' ? aptBus : bus === 'loud' ? master : gameBus);
 
-interface PlayOpts { vol?: number; bus?: Bus; when?: number; room?: Room; lowpass?: number; jitter?: number; variant?: number }
+interface PlayOpts { vol?: number; bus?: Bus; when?: number; room?: Room; lowpass?: number; jitter?: number; variant?: number; pan?: number }
 
-/** Plays a sample cue. Returns false when it is not loaded (yet), so callers can fall back to a tone. */
-export function play(cue: string, o: PlayOpts = {}): boolean {
+/** The cues started lately, newest last (for the tests: test/aojsound.py). */
+const heard: string[] = [];
+export const soundLog = (clear = false) => { const out = heard.slice(); if (clear) heard.length = 0; return out; };
+
+/** Starts a sample cue; returns its source and gain (to stop it), or null when it is not loaded (yet). */
+function start(cue: string, o: PlayOpts = {}): { src: AudioBufferSourceNode; g: GainNode } | null {
   const list = buffers[cue];
   const dest = out(o.bus ?? 'game');
-  if (!ctx || !dest || !list?.length) return false;
-  let k = o.variant ?? Math.floor(Math.random() * list.length);
-  if (o.variant === undefined && list.length > 1 && k === lastPick[cue]) k = (k + 1) % list.length;   // never the same step twice
+  if (!ctx || !dest || !list?.length) return null;
+  let k = o.variant != null ? o.variant % list.length : Math.floor(Math.random() * list.length);
+  if (o.variant == null && list.length > 1 && k === lastPick[cue]) k = (k + 1) % list.length;   // never the same step twice
   lastPick[cue] = k;
   const t0 = ctx.currentTime + (o.when ?? 0);
   const src = ctx.createBufferSource();
@@ -123,10 +127,16 @@ export function play(cue: string, o: PlayOpts = {}): boolean {
   g.gain.value = vol;
   let node: AudioNode = src;
   if (lowpass && lowpass < 16000) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lowpass; src.connect(f); node = f; }
-  node.connect(g); g.connect(dest);
+  node.connect(g);
+  if (o.pan) { const p = ctx.createStereoPanner(); p.pan.value = o.pan; g.connect(p); p.connect(dest); }   // the RPG: the party left, the enemies right
+  else g.connect(dest);
   src.start(t0);
-  return true;
+  heard.push(cue); if (heard.length > 300) heard.shift();
+  return { src, g };
 }
+
+/** Plays a sample cue. Returns false when it is not loaded (yet), so callers can fall back to a tone. */
+export function play(cue: string, o: PlayOpts = {}): boolean { return !!start(cue, o); }
 
 // ---------- timeline-locked sources (the launch, #127) ----------
 
@@ -242,6 +252,31 @@ function lootTone(r: number) {
 
 let downAt = -1;
 
+// ---------- the RPG's helpers (#155) ----------
+const PAN_FOE = 0.22, PAN_PARTY = -0.22;
+const BOSS_MOVE = new Set(['smash', 'toll', 'execute']);   // the bosses' moves come through the speakers
+const lastAt: Record<string, number> = {};
+const dieNext: Record<string, number> = {};
+/** An RPG cue heard at most once per `gap` s (a Fire hitting five, a swarm biting five times). True when it played or
+ *  was just heard; false when it is not loaded (the caller's tone then). */
+function rpg(cue: string, o: PlayOpts = {}, gap = 0.05): boolean {
+  if (!ctx || !buffers[cue]?.length) return false;
+  const now = ctx.currentTime;
+  if (now - (lastAt[cue] ?? -9) < gap) return true;
+  lastAt[cue] = now;
+  return play(cue, o);
+}
+/** The wind-ups playing, by who makes them. */
+const winds = new Map<number, { src: AudioBufferSourceNode; g: GainNode }>();
+function windStop(uid: number, fade = 0.05) {
+  const w = winds.get(uid);
+  if (!w || !ctx) return;
+  winds.delete(uid);
+  const t = ctx.currentTime;
+  w.g.gain.cancelScheduledValues(t); w.g.gain.setValueAtTime(w.g.gain.value, t); w.g.gain.linearRampToValueAtTime(0, t + fade);
+  try { w.src.stop(t + fade + 0.02); } catch { /* already stopped */ }
+}
+
 export const sfx = {
   // ----- her (apartment bus) -----
   /** Her footsteps. loud 0..1 (quiet room-to-room moves use the soft ones). */
@@ -311,32 +346,102 @@ export const sfx = {
   buzz() { tone(110, 0.25, 'sawtooth', 0.12, 0); tone(110, 0.25, 'sawtooth', 0.12, 0.35); },
   flip() { noise(0.12, 0.15, 1200); tone(240, 0.06, 'square', 0.08, 0.1); },
 
-  // ----- the RPG (game bus) -----
-  hit() { tone(220, 0.06, 'square', 0.08, 0, 110); },
-  crit() { tone(440, 0.1, 'square', 0.12, 0, 220); noise(0.08, 0.15, 2000); },
-  ability() { tone(520, 0.12, 'triangle', 0.18, 0, 1040); },
-  heal() { tone(660, 0.1, 'sine', 0.15); tone(990, 0.15, 'sine', 0.15, 0.08); },
-  loot(r: number) { if (r >= 4) sfx.legendary(); else lootTone(Math.max(0, r)); },
-  level() { [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.12, 'square', 0.12, i * 0.08)); },
-  bad() { tone(200, 0.25, 'sawtooth', 0.15, 0, 90); },
-  spotted() { tone(620, 0.07, 'square', 0.09, 0, 1240); tone(1240, 0.06, 'square', 0.07, 0.07); },   // the next pack sees the party: "!" (#118)
-  good() { tone(660, 0.08, 'square', 0.12); tone(880, 0.12, 'square', 0.12, 0.07); },
-  coin() { play('coins', { variant: 1 }) || (tone(1320, 0.05, 'square', 0.1), tone(1760, 0.12, 'square', 0.1, 0.06)); },
-  windup() { tone(110, 1.4, 'sawtooth', 0.12, 0, 330, 'loud'); tone(55, 1.4, 'square', 0.08, 0, 110, 'loud'); },
-  slam() { if (!play('slam', { bus: 'loud' })) { tone(70, 0.5, 'sawtooth', 0.25, 0, 35, 'loud'); noise(0.4, 0.4, 900, 0, 'loud'); } },
+  // ----- the RPG (game bus): Age of Judgment's own sounds (#155), console samples (tools/sfx/aoj_sfx.py). The tones
+  // only play until the bank has loaded. The party sits left in the stereo field, the enemies right. -----
+  /** A blow lands on an enemy: the weapon's own (slash, stab, bolt, smite, bash, backstab, fire, frost); a crit's crunch
+   *  over it. 'none': the cast has its own sound (Cataclysm). */
+  strike(kind: string, crit: boolean) {
+    if (kind === 'none') return;
+    if (!rpg('rpg_' + kind, { pan: PAN_FOE, vol: crit ? 1.15 : 1 }, 0.045)) { if (crit) { tone(440, 0.1, 'square', 0.12, 0, 220); noise(0.08, 0.15, 2000); } else tone(220, 0.06, 'square', 0.08, 0, 110); }
+    if (crit) rpg('rpg_crit', { pan: PAN_FOE }, 0.06);
+  },
+  /** An enemy's blow on a hero: steel on mail, a bite (Ironwings, Cherubs), a hex (the Confessor). */
+  hurt(kind: 'hurt' | 'bite' | 'hex') { rpg('rpg_' + kind, { pan: PAN_PARTY }, 0.06) || tone(160, 0.06, 'square', 0.06, 0, 90); },
+  /** A miss: Smoke Bomb, a dodge, a drowsy swing. */
+  whiff(party = true) { rpg('rpg_whiff', { pan: party ? PAN_PARTY : PAN_FOE }, 0.08); },
+  /** A skill or an ultimate: each has its own (taunt, backstab, smoke, mend, ward, laststand, heist, cataclysm, miracle). */
+  skill(id: string) { rpg('rpg_' + id, {}, 0.05) || tone(520, 0.12, 'triangle', 0.18, 0, 1040); },
+  /** The Priest heals one hero. */
+  healOne() { rpg('rpg_heal', { pan: PAN_PARTY }, 0.2) || (tone(660, 0.1, 'sine', 0.15), tone(990, 0.15, 'sine', 0.15, 0.08)); },
+  /** A hero back on his feet (the shrine, a feather). */
+  revive() { rpg('rpg_revive', {}, 0.3) || (tone(660, 0.1, 'sine', 0.15), tone(990, 0.15, 'sine', 0.15, 0.08)); },
+  /** The Confessor mends one of them. */
+  darkMend() { rpg('rpg_darkmend', { pan: PAN_FOE }, 0.4); },
+  shieldBreak() { rpg('rpg_shieldbreak', { pan: PAN_FOE }) || (tone(440, 0.1, 'square', 0.12, 0, 220), noise(0.08, 0.15, 2000)); },
+  /** A mark cashed in (Shatter, Backstab on Stagger, Fire on Stagger). */
+  combo() { rpg('rpg_combo', { pan: PAN_FOE }, 0.08) || tone(880, 0.12, 'square', 0.1, 0, 1320); },
+  /** A hero levels up (several at once: heard once). */
+  levelUp() { rpg('rpg_levelup', {}, 0.4) || [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.12, 'square', 0.12, i * 0.08)); },
+  /** Not now (a skill not ready, the wrong slot, locked, too poor): a latch that will not give. */
+  refuse() { rpg('rpg_refuse', {}, 0.08) || tone(200, 0.25, 'sawtooth', 0.15, 0, 90); },
+  /** The realm's own buttons (the town's tabs, the tree, the heroes, a service). */
+  ui() { rpg('rpg_ui', {}, 0.03) || tone(700, 0.03, 'square', 0.08); },
+  /** A named RPG cue with nothing else to it: swap, page, pickup, equip, unequip, drop, lock, gold, sell, souls, list,
+   *  build, tree, respec, curio, pick, chest, groan, curse, sneak, withdraw, floor; loud: through the speakers (a crash,
+   *  the potion rack: they make Noise). */
+  aoj(cue: string, loud = false) { rpg('rpg_' + cue, loud ? { bus: 'loud' } : {}, 0.05) || tone(700, 0.03, 'square', 0.08); },
+  /** A big move winds up (smash, toll, execute: the bosses; hook, shove: the line-breakers): its sound runs for the
+   *  wind-up and is cut where the move lands, is stopped or its maker dies. */
+  windup(move: string, uid: number) {
+    windStop(uid);
+    const w = start('rpg_wind_' + move, { bus: BOSS_MOVE.has(move) ? 'loud' : 'game', pan: PAN_FOE });
+    if (w) winds.set(uid, w);
+    else if (ctx) { tone(110, 1.4, 'sawtooth', 0.12, 0, 330, 'loud'); tone(55, 1.4, 'square', 0.08, 0, 110, 'loud'); }
+  },
+  /** The move lands. */
+  land(move: string, uid: number) {
+    windStop(uid, 0.02);
+    if (!play('rpg_' + move, { bus: BOSS_MOVE.has(move) ? 'loud' : 'game', pan: move === 'toll' ? PAN_FOE : 0.1 })) { tone(70, 0.5, 'sawtooth', 0.25, 0, 35, 'loud'); noise(0.4, 0.4, 900, 0, 'loud'); }
+  },
+  /** Bash stops the SMASH. */
+  interrupt(uid: number) { windStop(uid, 0.06); play('rpg_interrupt', { pan: PAN_FOE }) || sfx.good(); },
+  /** An enemy crumbles (#154): its own kind's fall (DIE_CUE), a boss its own; a swarm's bodies one by one. Several at
+   *  once (a Fire, a Cataclysm) follow each other a moment apart; the variant follows the corpse (no random draw). */
+  die(cue: string, uid: number, boss: boolean) {
+    windStop(Math.floor(uid / 8), 0.08);
+    if (!ctx) return;
+    const now = ctx.currentTime, next = dieNext[cue] ?? 0, when = Math.max(0, next - now);
+    if (!boss && when > (cue === 'die_cherub' ? 0.25 : 0.5)) return;   // heard enough of those
+    dieNext[cue] = now + when + (cue === 'die_cherub' ? 0.09 : 0.16);
+    play(cue, { variant: uid, when, pan: PAN_FOE, bus: boss ? 'loud' : 'game' });
+  },
+  /** Loot falls on the stone from a kill; one rare or better glints as it lands. */
+  dropFloor(rare: boolean) { rpg('rpg_floordrop', { pan: PAN_FOE, when: 0.35 }, 0.1); if (rare) rpg('rpg_glint', { pan: PAN_FOE, when: 0.4 }, 0.2); },
+  /** An item goes in the bag: its rarity's sound (r 0 to 3); the legendary its own. */
+  loot(r: number) { if (r >= 4) sfx.legendary(); else rpg('rpg_loot', { variant: Math.max(0, r) }, 0.12) || lootTone(Math.max(0, r)); },
+  /** The Appraiser reads it, then its rarity sounds. */
+  identify(r: number) { rpg('rpg_identify', {}, 0.1); if (r >= 4) play('legendary', { when: 0.35 }) || sfx.legendary(); else play('rpg_loot', { variant: r, when: 0.35 }) || lootTone(r); },
+  /** Gold in the realm. */
+  gold(when = 0) { rpg('rpg_gold', { when }, 0.1) || sfx.coin(); },
+  /** A run blessing taken (curios): one each. */
+  bless(k: number) { rpg('rpg_bless', { variant: k }, 0.1) || sfx.good(); },
+  spotted() { rpg('rpg_spotted', { pan: PAN_FOE }, 0.3) || (tone(620, 0.07, 'square', 0.09, 0, 1240), tone(1240, 0.06, 'square', 0.07, 0.07)); },   // the next pack sees the party: "!" (#118)
+  /** Through the portal (to the crypt, back to town). */
+  portal() { rpg('rpg_portal', {}, 0.5) || tone(220, 0.6, 'triangle', 0.08, 0, 660); },
+  /** A boss or the Abbot slain: after his fall. */
+  victory() { play('rpg_victory', { when: 1.2 }) || [523, 659, 784].forEach((f, i) => tone(f, 0.2, 'square', 0.1, 1.2 + i * 0.1)); },
   // Audio-first: each of these must be recognisable with Excel covering the screen.
   legendary() { if (!play('legendary')) [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, 0.2, 'square', 0.14, i * 0.07)); },
   bagFull() { play('bagfull') || tone(330, 0.2, 'square', 0.1, 0, 220); },
-  /** An item thrown in the bag's trash can (#148): a clank in the bin, a crunch, a short fall. */
+  /** An item thrown in the bag's trash can (#148): a clank in the iron bin, a crunch, two notes down. */
   trash() { play('trash') || (noise(0.12, 0.14, 2600, 0), tone(420, 0.16, 'square', 0.08, 0.04, 140)); },
   goblin() { play('goblin') || [1200, 1400, 1200, 1500].forEach((f, i) => tone(f, 0.05, 'square', 0.08, i * 0.08)); },
   goblinCatch() { play('goblincatch') || sfx.good(); },
   goblinLost() { play('goblinlost') || tone(600, 0.3, 'triangle', 0.08, 0, 300); },
   /** A hero goes down (once per moment, even when a slam drops three). */
-  down() { const now = ctx?.currentTime ?? 0; if (now - downAt < 0.4) return; downAt = now; play('down') || sfx.bad(); },
-  enrage() { play('enrage', { bus: 'loud' }) || tone(80, 0.8, 'sawtooth', 0.2, 0, 60, 'loud'); },
-  /** Party wipe: wah wah wah waaah, then he slams the desk (the Noise echo). */
-  wipe() { if (!play('wipe')) [233, 220, 208, 196].forEach((f, i) => tone(f, 0.35, 'sawtooth', 0.12, i * 0.36)); play('slam', { bus: 'loud', when: 1.7, vol: 0.8 }); },
+  down() { const now = ctx?.currentTime ?? 0; if (now - downAt < 0.4) return; downAt = now; play('down', { pan: PAN_PARTY }) || sfx.bad(); },
+  /** A boss ENRAGED: one roar each (0 the Gaoler, 1 the Bellringer, 2 the Inquisitor, 3 the Abbot, also when he wakes). */
+  enrage(k = 0) { play('enrage', { bus: 'loud', variant: k, pan: PAN_FOE }) || tone(80, 0.8, 'sawtooth', 0.2, 0, 60, 'loud'); },
+  /** Party wipe: the dirge, and on its last chord he slams the desk (the Noise echo: real life, the desk slam). */
+  wipe() { for (const k of [...winds.keys()]) windStop(k, 0.1); if (!play('wipe')) [233, 220, 208, 196].forEach((f, i) => tone(f, 0.35, 'sawtooth', 0.12, i * 0.36)); play('slam', { bus: 'loud', when: 1.7, vol: 0.8 }); },
+  // ----- shared by the desk and the RPG's old callers -----
+  heal() { tone(660, 0.1, 'sine', 0.15); tone(990, 0.15, 'sine', 0.15, 0.08); },
+  level() { [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.12, 'square', 0.12, i * 0.08)); },
+  bad() { tone(200, 0.25, 'sawtooth', 0.15, 0, 90); },
+  good() { tone(660, 0.08, 'square', 0.12); tone(880, 0.12, 'square', 0.12, 0.07); },
+  coin() { play('coins', { variant: 1 }) || (tone(1320, 0.05, 'square', 0.1), tone(1760, 0.12, 'square', 0.1, 0.06)); },
+  /** The desk slam (him, in the room). */
+  slam() { if (!play('slam', { bus: 'loud' })) { tone(70, 0.5, 'sawtooth', 0.25, 0, 35, 'loud'); noise(0.4, 0.4, 900, 0, 'loud'); } },
   /** Caught: only for her (the boss enrage has its own roar now). */
   sting() { [233, 247, 370, 392].forEach(f => tone(f, 0.6, 'sawtooth', 0.22, 0, undefined, 'loud')); noise(0.5, 0.5, 4000, 0, 'loud'); },
 };

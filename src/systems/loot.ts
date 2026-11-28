@@ -147,7 +147,7 @@ export function toggleLock(id: string) {
   const item = it?.item ?? S.g.heroes.flatMap(h => Object.values(h.gear)).find(g => g && g.id === id);
   if (!item) return;
   item.locked = !item.locked;
-  toast(item.locked ? `Locked: ${item.name}` : `Unlocked: ${item.name}`, '#f2c46b'); sfx.click();
+  toast(item.locked ? `Locked: ${item.name}` : `Unlocked: ${item.name}`, '#f2c46b'); sfx.aoj('lock');
 }
 export function removeEntry(id: string): BagEntry | undefined {
   const i = S.g.bag.findIndex(e => e.id === id);
@@ -176,6 +176,7 @@ export function rollBattleExtras() {
   if (chance(T.MAP_DROP_CHANCE)) out.push(mapEntry(pick(Object.keys(MAP_INFO) as MapKind[])));
   if (chance(T.FEATHER_DROP_CHANCE)) out.push(featherEntry());
   out.forEach(en => n.floorLoot.push({ entry: en, x: ENEMY_SLOTS[0].x + (Math.random() - 0.5) * 20, t: 0 }));
+  if (out.length) sfx.dropFloor(false);
 }
 
 /** Drops go onto the floor where the enemies stood (grid px); the looter picks them up during the walk. */
@@ -191,6 +192,7 @@ export function rollBattleDrops(floor: number, opts: { boss?: boolean; elite?: b
   const at = opts.at?.length ? opts.at : [186, 226, 266];
   out.forEach((e, i) => noteDrop(e.kind === 'item' ? e.item.rarity : null, whys[i]));
   out.forEach((e, i) => n.floorLoot.push({ entry: e, x: at[i % at.length] + (Math.floor(i / at.length) * 11) + (Math.random() - 0.5) * 7, t: 0 }));
+  if (out.length) sfx.dropFloor(out.some(e => e.kind === 'item' && RARITIES.indexOf(e.item.rarity) >= 2));   // it lands on the stone; a rare glints (#155)
 }
 
 /** The courier's parcel (#23): one rare-or-better item at your current depth, straight to the bag queue. */
@@ -218,7 +220,7 @@ export function moveFloorLoot(dx: number, dt: number) {
   n.floorLoot = n.floorLoot.filter(l => !got.includes(l));
   const waiting = n.lootFly.filter(f => f.t < f.delay).length;
   got.forEach((l, i) => {
-    markRun(l.entry); n.dropQueue.push(l.entry); sfx.click();
+    markRun(l.entry); n.dropQueue.push(l.entry); sfx.aoj('pickup');
     // its name flies up from where it lay (#49): a batch is staggered and spread sideways; legendaries stay longer
     const leg = l.entry.kind === 'item' && l.entry.item.rarity === 'legendary';
     const k = waiting + i;
@@ -244,7 +246,7 @@ export function updateDrops(dt: number) {
   if (n.monitorOff > 0) { toast(`Monitor off. Missed: ${entryName(e)}`, '#ff8a80'); return; }
   if (S.g.autoSalvage && e.kind === 'item' && RARITIES.indexOf(e.item.rarity) < 2) {
     const y = T.SALVAGE_YIELD[RARITIES.indexOf(e.item.rarity)];
-    S.g.mats += y; toast(`Auto-salvaged ${entryName(e)}: +${y} Souls`, '#9a8a6a'); sfx.key();
+    S.g.mats += y; toast(`Auto-salvaged ${entryName(e)}: +${y} Souls`, '#9a8a6a'); sfx.aoj('souls');
     return;
   }
   announce(e);
@@ -282,7 +284,7 @@ export function swapDrop(bagId: string) {
   const i = S.g.bag.findIndex(e => e.id === bagId);
   if (i < 0) return;
   const old = S.g.bag[i];
-  if (old.kind === 'item' && old.item.locked) { toast('That item is locked.', '#f2c46b'); sfx.bad(); return; }
+  if (old.kind === 'item' && old.item.locked) { toast('That item is locked.', '#f2c46b'); sfx.refuse(); return; }
   S.g.bag[i] = n.dropPopup.entry;
   n.fresh.push({ id: n.dropPopup.entry.id, t: 1.1 });
   toast(`Dropped ${entryName(old)}`, '#a999bd');

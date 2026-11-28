@@ -23,13 +23,13 @@ export function identify() {
   const e = selectedItemEntry();
   if (!inTown() || !e || e.kind !== 'item' || e.item.identified) return;
   const cost = e.item.rarity === 'legendary' ? T.IDENTIFY_COST.legendary : T.IDENTIFY_COST.epic;
-  if (S.g.gold < cost) { toast(`Identify costs ${cost} gold.`, '#ff8a80'); sfx.bad(); return; }
+  if (S.g.gold < cost) { toast(`Identify costs ${cost} gold.`, '#ff8a80'); sfx.refuse(); return; }
   S.g.gold -= cost;
   n.clock += T.COST_IDENTIFY_MIN;
   e.item.identified = true;
   n.reveal = { name: e.item.name, t: 2.5 };
   if (!isUpgradeForSomeone(e.item)) boysSay('badDrop');   // the boys' chat (#109)
-  sfx.loot(RARITIES.indexOf(e.item.rarity));
+  sfx.identify(RARITIES.indexOf(e.item.rarity));
   toast(`Identified: ${e.item.name}.`, '#b98cff');
 }
 
@@ -43,12 +43,12 @@ export function vendorValue(id: string): number {
 export function vendor() {
   const n = N();
   if (!inTown() || !n.selected) return;
-  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.refuse(); return; }
   const v = vendorValue(n.selected);
   const e = removeEntry(n.selected);
   if (!e) return;
   S.g.gold += v;
-  toast(`Sold ${entryName(e)} for ${v} gold`, '#f2b84b'); sfx.good();
+  toast(`Sold ${entryName(e)} for ${v} gold`, '#f2b84b'); sfx.aoj('sell');
 }
 
 export function salvageYield(id: string): number {
@@ -59,13 +59,13 @@ export function salvageYield(id: string): number {
 export function salvage() {
   const n = N();
   if (!inTown() || !n.selected) return;
-  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.refuse(); return; }
   const y = salvageYield(n.selected);
   if (!y) return;
   const e = removeEntry(n.selected);
   if (!e) return;
   S.g.mats += y;
-  toast(`Salvaged ${entryName(e)}: +${y} Souls`, '#c9a46a'); sfx.good();
+  toast(`Salvaged ${entryName(e)}: +${y} Souls`, '#c9a46a'); sfx.aoj('souls');
 }
 
 export function listValue(id: string): number {
@@ -76,7 +76,7 @@ export function listValue(id: string): number {
 export function list() {
   const n = N();
   if (!inTown() || !n.selected) return;
-  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.bad(); return; }
+  if (isLocked(n.selected)) { toast('Locked. Unlock it first (L).', '#f2c46b'); sfx.refuse(); return; }
   const zl = listValue(n.selected);
   if (!zl) return;
   const e = removeEntry(n.selected);
@@ -84,7 +84,7 @@ export function list() {
   S.g.pendingListings.push({ name: entryName(e), zl });
   if (e.kind === 'item' && (e.item.rarity === 'common' || e.item.rarity === 'uncommon')) boysSay('cheap');   // the boys' chat (#109)
   n.clock += T.COST_LIST_MIN;
-  toast(`Listed ${entryName(e)} for ~$${zl}. Pays tomorrow morning.`, '#6fcf7f'); sfx.good();
+  toast(`Listed ${entryName(e)} for ~$${zl}. Pays tomorrow morning.`, '#6fcf7f'); sfx.aoj('list');
 }
 
 export function buildCity(id: CityId) {
@@ -94,14 +94,14 @@ export function buildCity(id: CityId) {
   const lvl = S.g.furniture[id] ?? 0;
   if (lvl >= 3) return;
   const gold = f.gold[lvl], mats = f.mats[lvl];
-  if (S.g.gold < gold || S.g.mats < mats) { toast(`Need ${gold} gold and ${mats} Souls.`, '#ff8a80'); sfx.bad(); return; }
+  if (S.g.gold < gold || S.g.mats < mats) { toast(`Need ${gold} gold and ${mats} Souls.`, '#ff8a80'); sfx.refuse(); return; }
   const hpRatios = S.g.heroes.map(h => h.hp / maxHp(h));
   S.g.gold -= gold; S.g.mats -= mats;
   S.g.furniture[id] = lvl + 1;
   applyCity();
   S.g.heroes.forEach((h, i) => { if (!h.downed) h.hp = Math.round(maxHp(h) * hpRatios[i]); });
   n.clock += T.COST_FURNITURE_MIN;
-  toast(`${f.name} ${lvl ? `upgraded to level ${lvl + 1}` : 'built'}! ${f.effect[lvl]}`, '#f2b84b'); sfx.level();
+  toast(`${f.name} ${lvl ? `upgraded to level ${lvl + 1}` : 'built'}! ${f.effect[lvl]}`, '#f2b84b'); sfx.aoj('build');
   save();
 }
 
@@ -122,14 +122,14 @@ export function serviceApplies(svc: ServiceSpot, e: BagEntry): boolean {
   if (e.kind !== 'item' || e.item.locked) return false;
   return svc === 'appraiser' ? !e.item.identified : e.item.identified;
 }
-export function openService(svc: ServiceSpot | null) { const n = N(); n.svc = svc; n.svcPick = []; n.appraised = null; n.townTab = 'town'; n.plotHot = null; sfx.click(); }
+export function openService(svc: ServiceSpot | null) { const n = N(); n.svc = svc; n.svcPick = []; n.appraised = null; n.townTab = 'town'; n.plotHot = null; sfx.ui(); }
 export function servicePick(id: string) {
   const n = N(), e = S.g.bag.find(x => x.id === id);
-  if (!n.svc || !e || !serviceApplies(n.svc, e)) { sfx.bad(); return; }
+  if (!n.svc || !e || !serviceApplies(n.svc, e)) { sfx.refuse(); return; }
   const p = (n.svcPick ??= []);
-  if (n.svc === 'appraiser') { n.svcPick = p.includes(id) ? [] : [id]; sfx.click(); return; }   // one at a time: the reveal
+  if (n.svc === 'appraiser') { n.svcPick = p.includes(id) ? [] : [id]; sfx.ui(); return; }   // one at a time: the reveal
   if (p.includes(id)) p.splice(p.indexOf(id), 1); else p.push(id);
-  sfx.click();
+  sfx.ui();
 }
 /** The picked items' total: Souls at the forge, gold at the Merchant and the Appraiser (a cost), dollars at the auction. */
 export function serviceSum(svc: ServiceSpot, ids: string[]): number {

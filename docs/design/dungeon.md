@@ -139,6 +139,13 @@ as the party walks (they walk over it), then dithers out over `CORPSE_FADE_SEC` 
 wipe clears them. Those who run when their boss falls leave nothing. Visual only: no rule reads a corpse and nothing
 in it is random (a hash of the enemy), so the sims are unchanged. Each pile is drawn once and kept (it moves with the
 floor, its grain with it), so lying corpses cost nothing; a falling one costs about what a living enemy does.
+**Each kind falls with its own sound** (#155, `DIE_CUE` in `data/sounds.ts`): its pieces landing as the chunks do
+(the Hollow's helm rolling, the Guardian's shield face up, the Penitent's cage rolling off and his candle pinched out,
+a Cherub's porcelain face per body, the Vigil's rotor winding down, the Gravedigger's coffin lids), its light going
+out; the bosses and the Abbot their own, bigger (the Gaoler's ball and chain running out, the Bellringer's bell's last
+cracked toll, the Inquisitor's blade-feathers and sword, the Abbot's mace and the tithe spilling), through the speakers.
+Several at once follow each other a beat apart; the variant follows the corpse, so the sims are still unchanged
+([screen.md](screen.md), Audio).
 
 **Skills: three slots per hero, two skills and the ultimate** (#52; decisions 2026-11-20). Skill 1 from the start,
 skill 2 and the ultimate from the skill tree ([trees.md](trees.md), #53). The third key is the ultimate: a charge that
@@ -454,7 +461,8 @@ floor 10: 35; about 180 a normal night), shown in the feed. Steady income beside
   smiths); each pile carries the figure's own pieces so it reads as who fell. Drawn behind the party, who walk over
   them. Rejected: a generic pile for all (Paweł asked for one per kind), the figure tipping over whole (they are
   constructs: they come apart), corpses that stay all floor (the corridor fills up; 9 s covers the fight and the walk
-  on), a sound for it (the RPG's sounds are chiptune and the hit already sounds; open).
+  on). Its sound came the same day (0.107.0, #155): each kind's own fall and each boss's own ([screen.md](screen.md),
+  Audio; the first call, no sound because the RPG was chiptune, went with the chiptune).
 
 - **The floor map reads like the world's** (0.103.0, #146, #147; Paweł, 2026-11-28): the cards show only what a floor
   has, named in the lore from it (a "Floor 4" told you nothing the subtitle didn't), the margin in the darkest ink,

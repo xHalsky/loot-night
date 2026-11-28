@@ -6,6 +6,7 @@ import { chance, pick, randi, rand } from '../core/rng';
 import { toastAs } from '../core/fx';
 const toast = toastAs('GAME');   // feed tag (#49)
 import { sfx } from '../ui/audio';
+import { ENRAGE_OF } from '../data/sounds';
 import { rollBattleDrops } from './loot';
 import { spawnCurioFight } from './battle';
 import { isAway } from './autopilot';
@@ -56,7 +57,7 @@ export function startCurio() {
   if (!def) return;
   n.curio = { id: def.id, stage: 'ask', t: T.CURIO_WAIT_SEC, max: T.CURIO_WAIT_SEC };
   n.phase = 'curio';
-  sfx.click();
+  sfx.aoj('curio');
   if (isAway()) {   // the reckless autopilot handles it, or walks past
     if (chance(T.CURIO_AWAY_RECKLESS)) { toast(`[Party] ${def.awayLine}`, '#8fd0ff'); chooseCurio(def.reckless); }
     else endCurio();
@@ -70,13 +71,13 @@ export function updateCurio(realDt: number) {
   if (!c) return;
   c.t -= realDt;
   if (c.stage === 'sneak' && (n.monitor !== 'rpg' || n.switching || n.monitorOff > 0)) {   // you looked away: he wakes
-    toast('The Abbot wakes up and roars!', '#ff8a80'); sfx.bad();
+    toast('The Abbot wakes up and roars!', '#ff8a80');
     return trollFight();
   }
   if (c.t > 0) return;
   if (c.stage === 'ask') { toast('The party walks past.', '#a999bd'); return endCurio(); }
-  if (c.stage === 'pick') { toast('Click. The chest opens.', '#f2b84b'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); markDone('pick'); return endCurio(); }
-  if (c.stage === 'sneak') { toast('You tiptoe away with an armful. He keeps snoring.', '#6fcf7f'); sfx.good(); rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true }); markDone('sneak'); return endCurio(); }
+  if (c.stage === 'pick') { toast('Click. The chest opens.', '#f2b84b'); sfx.aoj('chest'); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); markDone('pick'); return endCurio(); }
+  if (c.stage === 'sneak') { toast('You tiptoe away with an armful. He keeps snoring.', '#6fcf7f'); sfx.aoj('chest'); rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true }); markDone('sneak'); return endCurio(); }
 }
 
 /** Can this choice be taken right now? Returns the reason if not. */
@@ -90,29 +91,29 @@ export function chooseCurio(choice: string) {
   if (!c || c.stage !== 'ask' || curioBlocked(choice)) return;
   const noise = (v: number) => { n.noise = Math.min(100, n.noise + v); };
   switch (choice) {
-    case 'pick': c.stage = 'pick'; c.t = c.max = T.CURIO_PICK_SEC; sfx.click(); return;
-    case 'smash': noise(T.CURIO_SMASH_NOISE); sfx.slam(); toast('CRASH. The chest gives up.', '#ff9a4d'); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); break;
+    case 'pick': c.stage = 'pick'; c.t = c.max = T.CURIO_PICK_SEC; sfx.aoj('pick'); return;
+    case 'smash': noise(T.CURIO_SMASH_NOISE); sfx.aoj('crash', true); toast('CRASH. The chest gives up.', '#ff9a4d'); rollBattleDrops(n.floor, { count: T.CURIO_BOX_DROPS, minRare: true }); break;
     case 'open': {
-      noise(T.CURIO_GROAN_NOISE);
+      noise(T.CURIO_GROAN_NOISE); sfx.aoj('groan');
       const r = Math.random(), [g, rare] = T.CURIO_MAIL_ODDS;
-      if (r < g) { const gold = T.CURIO_MAIL_GOLD * n.floor; S.g.gold += gold; toast(`Old coins! +${gold} gold.`, '#f2b84b'); sfx.coin(); markDone('open', 'gold'); }
+      if (r < g) { const gold = T.CURIO_MAIL_GOLD * n.floor; S.g.gold += gold; toast(`Old coins! +${gold} gold.`, '#f2b84b'); sfx.gold(0.6); markDone('open', 'gold'); }
       else if (r < g + rare) { toast('A relic lies inside.', '#f2b84b'); rollBattleDrops(n.floor, { count: 1, minRare: true }); markDone('open', 'rare'); }
-      else { markDone('open', 'curse'); addBuff({ name: 'Curse', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'curse', floor: true }); toast(CURIO_LINES.curse.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); sfx.bad(); }
+      else { markDone('open', 'curse'); sfx.aoj('curse'); addBuff({ name: 'Curse', dmg: -T.CURIO_FEE_DMG, speed: 0, t: 1, max: 1, icon: 'curse', floor: true }); toast(CURIO_LINES.curse.replace('{fee}', String(Math.round(T.CURIO_FEE_DMG * 100))), '#ff8a80'); }
       break;
     }
     // run blessings (#52, 1.5b): each lasts until the run ends and has its cost
-    case 'shrine': noise(T.BLESS_SHRINE_NOISE); sfx.bad(); bless('shrine'); break;
-    case 'pilgrim': n.run && (n.run.oath = true); sfx.good(); bless('pilgrim'); break;
-    case 'supply': bless('supply'); S.g.heroes.forEach(h => { h.hp = Math.min(h.hp, maxHp(h)); }); sfx.heal(); break;
-    case 'altar': bless('altar'); sfx.bad(); break;
-    case 'moonwell': n.flow = T.FLOW_MIN; bless('moonwell'); sfx.heal(); break;
-    case 'ritual': bless('ritual'); sfx.windup(); break;
+    case 'shrine': noise(T.BLESS_SHRINE_NOISE); bless('shrine'); break;
+    case 'pilgrim': n.run && (n.run.oath = true); bless('pilgrim'); break;
+    case 'supply': bless('supply'); S.g.heroes.forEach(h => { h.hp = Math.min(h.hp, maxHp(h)); }); break;
+    case 'altar': bless('altar'); break;
+    case 'moonwell': n.flow = T.FLOW_MIN; bless('moonwell'); break;
+    case 'ritual': bless('ritual'); break;
     case 'potion':
-      noise(T.CURIO_KICK_NOISE); sfx.slam();
+      noise(T.CURIO_KICK_NOISE); sfx.aoj('kick', true);
       if (chance(0.5)) { bless('potion'); markDone('potion', 'caught'); }
-      else { markDone('potion', 'glass'); S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP.`, '#ff9a4d'); }
+      else { markDone('potion', 'glass'); sfx.aoj('glass', true); S.g.heroes.forEach(h => { if (!h.downed) h.hp = Math.max(1, Math.round(h.hp - maxHp(h) * T.BLESS_POTION_GLASS)); }); toast(`CRASH. Broken glass: the party loses ${Math.round(T.BLESS_POTION_GLASS * 100)}% HP.`, '#ff9a4d'); }
       break;
-    case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking...', '#8fd0ff'); return;
+    case 'sneak': c.stage = 'sneak'; c.t = c.max = T.CURIO_SNEAK_SEC; toast('Sneaking...', '#8fd0ff'); sfx.aoj('sneak'); return;
     case 'fight': return trollFight();
     case 'withdraw': {
       const before = S.g.bag.length;
@@ -120,7 +121,7 @@ export function chooseCurio(choice: string) {
       const got = S.g.bag.length > before ? S.g.bag[S.g.bag.length - 1] : null;
       n.bankItem = got?.kind === 'item' ? got.item.name : 'thing';
       n.bankNotice = rand(...T.CURIO_BANK_NOTICE_SEC);
-      toast('You take one item. Nobody saw. Probably.', '#f2b84b'); sfx.coin();
+      toast('You take one item. Nobody saw. Probably.', '#f2b84b'); sfx.aoj('withdraw');
       break;
     }
     case 'leave': toast('You leave it alone.', '#a999bd'); break;
@@ -130,8 +131,10 @@ export function chooseCurio(choice: string) {
 }
 
 /** A run blessing joins the run (it shows in the buffs row with a dashed frame and "run"). */
+/** Each blessing's own sound (#155): the rpg_bless cue's variants. */
+const BLESS_SOUND: Record<BlessingId, number> = { shrine: 0, pilgrim: 1, supply: 2, altar: 3, moonwell: 4, ritual: 5, potion: 6 };
 function bless(id: BlessingId) {
-  addBlessing(id);
+  addBlessing(id); sfx.bless(BLESS_SOUND[id]);
   const b = BLESSINGS[id], k = blessCount(id);
   toast(`${b.name}${k > 1 ? ` x${k}` : ''}, this run: ${b.got}.`, '#6ef06e');   // its cost is on its well's tooltip: some are the room's (Noise, Flow), not the realm's (#145)
   if (id === 'shrine') boysSay('dmgBuff');   // the boys' chat (#109): a damage buff
@@ -143,7 +146,7 @@ function trollFight() {
   n.curio = null; n.curioFight = true; n.curioAt = null;   // he gets up: the troll is in the fight now
   spawnCurioFight(TROLL);
   n.phase = 'battle'; n.phaseT = 0;
-  sfx.windup();
+  sfx.enrage(ENRAGE_OF.troll);   // he wakes roaring (#155)
 }
 
 /** What was chosen at the curio standing in the corridor, for its look after the choice (#131): opened, emptied, used,

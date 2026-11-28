@@ -12,7 +12,7 @@ import { drawMonitor, MON_W, MON_H } from './ui/monitor';
 import { drawDoor, doorHit, DOOR_W, DOOR_H } from './ui/door';
 import { hover, tooltipHtml, entryIcon, uiPopHtml, screenHtml, debugHtml, toastsHtml } from './ui/panels';
 import { toggleHeadset } from './systems/apartment';
-import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints } from './ui/audio';
+import { initAudio, sfx, stopAmbience, audition, soundStatus, ambienceNow, loopPoints, soundLog } from './ui/audio';
 import { HOTKEYS, HERO_NAME, HERO_CLASS, HERO_COLORS } from './data/heroes';
 import { queueAbility } from './systems/battle';
 import { clickBagSlot, closeSelection, equipOn, dropSelected, useSelected, setHeroTab, equipItemOn, unequip, trashItem } from './systems/bag';
@@ -77,7 +77,7 @@ import { COACH } from './data/tips';
 // the renderer's hero tables read the game's names and classes (data/heroes.ts, the one table; cast of 2026-11-27)
 PK.heroNames(Object.fromEntries((['knight', 'rogue', 'mage', 'healer'] as const).map(id => [id === 'healer' ? 'priest' : id, { name: HERO_NAME[id], cls: HERO_CLASS[id] }])));
 
-(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints }, herView: () => herView(), launch: { t: launchT, seek: launchSeek, skip: () => actions.dbgSkipLaunch(''), fired: launchFired } };   // test hook for the Playwright scripts
+(window as unknown as Record<string, unknown>).__lootnight = { S, audio: { soundStatus, ambienceNow, loopPoints, soundLog }, herView: () => herView(), launch: { t: launchT, seek: launchSeek, skip: () => actions.dbgSkipLaunch(''), fired: launchFired } };   // test hook for the Playwright scripts
 
 // ---------- DOM skeleton (#49, monitor-first; docs/design/screen.md) ----------
 // Left: the webcam view and her panel. Right: the desk, with the monitor on top. All RPG UI lives inside the game
@@ -164,9 +164,9 @@ const actions: Record<string, (arg: string) => void> = {
   useSel: () => useSelected(),
   heroTab: a => setHeroTab(Number(a)),
   swap: a => { const [i, j] = a.split(',').map(Number); swapHeroes(i, j); },   // marching order (#52, 1.6)
-  townTab: a => { N().townTab = a as 'town' | 'inventory' | 'tree'; sfx.click(); },   // the town side panel's tabs (#53)
-  treeHero: a => { N().treeHero = a as HeroId; N().treeSel = undefined; sfx.click(); },
-  treeNode: a => { N().treeSel = a; sfx.click(); },
+  townTab: a => { N().townTab = a as 'town' | 'inventory' | 'tree'; sfx.ui(); },   // the town side panel's tabs (#53)
+  treeHero: a => { N().treeHero = a as HeroId; N().treeSel = undefined; sfx.ui(); },
+  treeNode: a => { N().treeSel = a; sfx.ui(); },
   treeBuy: a => { const n = N(); if (n.treeHero || S.g.heroes[0]) buyNode((n.treeHero ?? S.g.heroes[0].id) as HeroId, a as NodeId); },
   treeRespec: a => respec(a as HeroId),
   // the town map (V2): the portal goes down, a service opens in the panel's Town tab, a plot lights its build row
@@ -174,7 +174,7 @@ const actions: Record<string, (arg: string) => void> = {
     const n = N();
     if (a === 'portal') { travelToDungeon(); return; }
     if (a === 'forge' || a === 'merchant' || a === 'appraiser' || a === 'auction') { openService(a); return; }
-    n.townTab = 'town'; n.svc = null; n.plotHot = a; sfx.click();
+    n.townTab = 'town'; n.svc = null; n.plotHot = a; sfx.ui();
   },
   svcClose: () => openService(null),
   svcPick: a => servicePick(a),
@@ -262,7 +262,7 @@ const actions: Record<string, (arg: string) => void> = {
   dbgUnplug: () => triggerUnplug(),
   dbgLap: () => startLap(),
   dbgFrame: a => setPreview(!a || previewScene() === a ? null : a as PreviewScene),
-  autoSalvage: () => { S.g.autoSalvage = !S.g.autoSalvage; sfx.click(); },
+  autoSalvage: () => { S.g.autoSalvage = !S.g.autoSalvage; sfx.ui(); },
   lock: a => toggleLock(a),
   dbgDebt: () => { N().tired = Math.min(100, N().tired + 20); },
 };

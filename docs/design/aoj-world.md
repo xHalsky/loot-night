@@ -356,8 +356,10 @@ sound chip did:
 - **Replaceable like every cue:** a file in `src/assets/sfx/own/` named after a cue replaces it. For `aoj_theme` it
   starts at T 6.2 and keeps the times above (silence at 17, the downbeat at 21.15, the last chord at 39.15), so Paweł
   can score it himself.
-- **The RPG's own sounds in play stay chiptune** (the build's decision at 0.33): the launch is the exception, the
-  game's own cinematic. Open, Paweł's call: whether the play sounds follow the launch later.
+- **The RPG's own sounds in play follow the launch** (#155, Paweł 2026-11-28: "PS1 fidelity, more detailed, more
+  crunchy"): every blow, skill, wind-up, fall, loot and curio sound through the same console chain, in the world's
+  materials (iron, stone, chain, bells, choir, fire), each action its own and each boss its own
+  ([screen.md](screen.md), Audio). Was: chiptune blips from the prototype (0.33), the launch the one exception.
 
 ## 8. When it gets built
 
@@ -377,6 +379,5 @@ sound chip did:
 ## 9. Open
 
 - The Hunter's mechanic (the page only shows its look); the deeper depths' bosses and their curios' bargains.
-- Whether the RPG's own sounds in play follow the launch's PlayStation 1 sound (§7b), or stay chiptune (now).
 - The angel's eye opening a little more each night as a tell for the twist (`claude/loot-night-the-other-her.md`): an
   idea, not decided.

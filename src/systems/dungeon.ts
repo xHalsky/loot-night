@@ -40,7 +40,7 @@ function startFloor(map: MapKind | 'plain', card?: PathCard) {
   if (n.run) n.run.deepest = Math.max(n.run.deepest, n.floor);
   if (map === 'shrine') {
     S.g.heroes.forEach(h => { reviveHero(h, 1); h.hp = maxHp(h); });
-    toast('Shrine: party healed and revived', '#6fcf7f'); sfx.heal();
+    toast('Shrine: party healed and revived', '#6fcf7f'); sfx.revive();
     floorEnd(); return;
   }
   if (map === 'vault') {   // no fights: the drops, the walk to pick them up, the floor end
@@ -62,7 +62,7 @@ function floorEnd() {
   const pay = T.FLOOR_GOLD_BASE + T.FLOOR_GOLD_PER * n.floor;   // floor bounty: depth pays, not only lucky drops
   const souls = T.SOULS_PER_FLOOR_BASE + n.floor;              // #52, 1.4
   gainGold(pay); gainSouls(souls);
-  toast(`Floor ${n.floor} cleared: +${pay} gold, +${souls} Souls.`, '#f2b84b');
+  toast(`Floor ${n.floor} cleared: +${pay} gold, +${souls} Souls.`, '#f2b84b'); sfx.aoj('floor');
   n.phase = 'mapChoice'; n.phaseT = 0; n.enemies = []; n.pack = null;
   makePaths();
 }
@@ -108,7 +108,7 @@ export function choosePath(k: number) {
   if (card.map) { const e = removeEntry(card.map); if (e && e.kind === 'map') kind = e.map; }
   n.paths = null; n.mapAway = 0;
   n.floor++;
-  sfx.click();
+  sfx.aoj('page');
   if (kind !== 'plain') toast(`Next floor: ${MAP_INFO[kind].name}`, MAP_INFO[kind].color);
   startFloor(kind, card);
 }
@@ -148,12 +148,13 @@ export function updateDungeon(realDt: number) {
     if (r === 'victory' && n.curioFight) {   // the troll: extra loot, then the walk goes on (not one of the floor's battles)
       const x = ENEMY_SLOTS[MID_SLOT].x;
       rollBattleDrops(n.floor, { count: T.CURIO_TROLL_DROPS, minRare: true, at: [x - 20, x, x + 20] });
-      toast('The Abbot is down. The tithe is yours.', '#f2b84b');
+      toast('The Abbot is down. The tithe is yours.', '#f2b84b'); sfx.victory();
       n.curioFight = false; n.phase = 'walk'; n.phaseT = T.WALK_SEC * 0.5;
     } else if (r === 'victory') {
       const boss = isBossBattle();
       rollBattleExtras();
       if (boss) {   // a checkpoint for good: runs can start at the next floor (#52, 1.4)
+        sfx.victory();
         n.checkpoint = n.floor + 1;
         if (!S.g.checkpoints.includes(n.checkpoint)) S.g.checkpoints.push(n.checkpoint);
         gainSouls(T.SOULS_PER_BOSS);
@@ -224,7 +225,7 @@ export function useFeather(id: string) {
   if (!downed) { toast('Nobody is down.', '#a999bd'); return; }
   removeEntry(id);
   reviveHero(downed, T.FEATHER_REVIVE_PCT);
-  toast(`${heroLabel(downed.id)} revived!`, '#ff7ab8'); sfx.heal();
+  toast(`${heroLabel(downed.id)} revived!`, '#ff7ab8'); sfx.revive();
 }
 
 export function canLeaveDungeon() { const n = N(); return n.location === 'dungeon' && n.phase !== 'battle' && !n.run?.oath; }
@@ -237,7 +238,7 @@ export function returnToTown() {
   sweepFloorLoot();
   bankRun();
   clearCorpses(); n.location = 'town'; n.enemies = []; n.reserve = []; n.pack = null; n.goblin = null; n.curio = null; n.curioAt = null; n.phase = 'walk';
-  toast('Back in town.', '#8fb3ff');
+  toast('Back in town.', '#8fb3ff'); sfx.portal();
 }
 
 /** A run starts at the Dungeon Portal, at floor 1 or an unlocked checkpoint (the town's floor picker). */
@@ -247,7 +248,7 @@ export function travelToDungeon(floor = S.g.startFloor) {
   n.clock += T.COST_TRAVEL_MIN;
   startRun(start);
   enterDungeon(start);
-  toast(`Dungeon Portal: floor ${start}.`, '#8fb3ff');
+  toast(`Dungeon Portal: floor ${start}.`, '#8fb3ff'); sfx.portal();
 }
 /** The town's floor picker: floor 1 and every unlocked checkpoint. */
 export function pickStartFloor(step: number) {

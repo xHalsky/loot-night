@@ -27,7 +27,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', '..', 'src', 'assets', 'sfx')
 KEN = os.path.join(HERE, 'kenney')
 LOOP_PAD = 0.25
-PROFILES = {'wall': (24000, '32k'), 'room': (32000, '40k'), 'desk': (32000, '48k')}
+PROFILES = {'wall': (24000, '32k'), 'room': (32000, '40k'), 'desk': (32000, '48k'),
+            'game': (22050, '40k')}   # the RPG (#155): its console's 22,050 Hz holds nothing above 11 kHz
 CUES = {}
 
 
@@ -641,162 +642,9 @@ def _key():
         write(f'key_{k}', x, 'desk')
 
 
-# ======================= RPG: audio-first cues =======================
-
-def chip(freq, d, duty=0.25, vib=0.0):
-    t = tt(d)
-    f = freq * (1 + vib * np.sin(2 * np.pi * 6 * t) * np.clip(t / 0.25, 0, 1)) if vib else freq
-    return D.osc(f, d, 'square', duty)
-
-
-@cue('legendary')
-def _legendary():
-    """Unmistakable even under Excel: a fanfare with drums, a held chord and sparkles (1.7 s)."""
-    D.seed(1800)
-    d = 1.9
-    x = np.zeros(secs(d))
-    arp = ['G4', 'C5', 'E5', 'G5', 'C6']
-    for i, n in enumerate(arp):
-        place(x, chip(note(n), 0.11) * D.env_exp(0.11, 0.08) * 0.35, i * 0.07)
-    hold = 5 * 0.07
-    for n, a in (('C6', 0.3), ('E6', 0.22), ('G6', 0.2)):
-        place(x, chip(note(n), 1.2, 0.25, 0.012) * D.env_lin(1.2, [(0, 1), (0.6, 0.7), (1.2, 0)]) * a, hold)
-    place(x, D.osc(note('C3'), 1.2, 'tri') * D.env_exp(1.2, 0.5) * 0.6, hold)
-    place(x, D.osc(note('G2'), 0.3, 'tri') * D.env_exp(0.3, 0.1) * 0.5, 0)
-    kick = D.osc(np.interp(tt(0.15), [0, 0.15], [160, 45]), 0.15) * D.env_exp(0.15, 0.05) * 0.9
-    place(x, kick, hold)
-    place(x, D.hp(D.white(1.0), 4000) * D.env_exp(1.0, 0.3) * 0.35, hold)            # crash
-    for k in range(14):
-        n = ['C7', 'E7', 'G7', 'C8'][k % 4]
-        place(x, D.osc(note(n), 0.12) * D.env_exp(0.12, 0.04) * 0.12 * (1 - k / 16), hold + 0.1 + k * 0.06)
-    write('legendary', D.lp(x, 12000), 'desk')
-
-
-@cue('trash')
-def _trash():
-    """An item thrown in the bag's trash can (#148): it lands in a tin bin, a dry crunch, two notes down."""
-    D.seed(1950)
-    x = np.zeros(secs(0.55))
-    place(x, kenney('impact_tin_medium_002'), 0, 0.75)
-    crunch = D.hp(kenney('cloth_2'), 900)[:secs(0.2)]
-    place(x, D.fade(crunch, 0.002, 0.06), 0.04, 0.6)
-    place(x, chip(note('D4'), 0.08, 0.5) * D.env_exp(0.08, 0.05) * 0.2, 0.12)
-    place(x, chip(note('A3'), 0.16, 0.5) * D.env_exp(0.16, 0.08) * 0.2, 0.21)
-    write('trash', D.lp(x, 7000), 'desk')
-
-
-@cue('bagfull')
-def _bagfull():
-    """A stuffed bag thumps, then 'nuh-uh'."""
-    D.seed(1900)
-    x = np.zeros(secs(0.62))
-    place(x, kenney('drop_leather'), 0, 0.9)
-    place(x, chip(note('A4'), 0.1, 0.5) * D.env_exp(0.1, 0.07) * 0.25, 0.14)
-    place(x, chip(note('E4'), 0.2, 0.5) * D.env_lin(0.2, [(0, 1), (0.15, 0.7), (0.2, 0)]) * 0.25, 0.26)
-    write('bagfull', D.lp(x, 6000), 'desk')
-
-
-def giggle(n, f0, rate=9.0, vowel='i', drop=0.8):
-    d = n / rate + 0.1
-    t = tt(d)
-    f = f0 * np.interp(t, [0, d], [1.0, drop])
-    F = np.tile(np.array(D.VOWELS[vowel]) * 1.25, (len(t), 1))
-    v = D.voice(f, np.ones(len(t)), F, breath=0.5, tilt=0.8, jitter=0.03, maxf=6000)
-    pulses = np.zeros(len(t))
-    for k in range(n):
-        place(pulses, D.env_exp(0.09, 0.03, 0.006), k / rate)
-    return v * pulses / (np.max(np.abs(v * pulses)) + 1e-9)
-
-
-@cue('goblin')
-def _goblin():
-    D.seed(2000)
-    x = np.zeros(secs(1.0))
-    place(x, kenney('handle_coins'), 0, 0.55)
-    place(x, giggle(5, 720), 0.1, 0.8)
-    write('goblin', x, 'desk')
-
-
-@cue('goblincatch')
-def _goblincatch():
-    D.seed(2001)
-    d = 0.42
-    t = tt(d)
-    f = np.interp(t, [0, 0.22, d], [850, 1550, 1300])
-    F = np.tile(np.array(D.VOWELS['i']) * 1.25, (len(t), 1))
-    F[:, 0] = np.interp(t, [0, d], [400, 900])
-    sq = D.voice(f, D.env_lin(d, [(0, 0), (0.02, 1), (0.3, 1), (d, 0)]), F, breath=0.4, tilt=0.7, jitter=0.05, maxf=7000)
-    sq = np.tanh(2 * sq / (np.max(np.abs(sq)) + 1e-9))
-    x = np.zeros(secs(1.0))
-    place(x, sq, 0, 0.75)
-    place(x, kenney('handle_coins'), 0.18, 0.8)
-    write('goblincatch', x, 'desk')
-
-
-@cue('goblinlost')
-def _goblinlost():
-    D.seed(2002)
-    d = 1.3
-    x = np.zeros(secs(d))
-    place(x, giggle(2, 560, 5.0, 'e', 0.85), 0, 0.8)
-    coins = np.concatenate([kenney('handle_coins'), kenney('handle_coins')])
-    away = coins[:secs(1.0)] * np.interp(tt(1.0), [0, 1.0], [0.8, 0])
-    away = D.lp(away, 2500)
-    place(x, away, 0.3)
-    write('goblinlost', x, 'desk')
-
-
-@cue('down')
-def _down():
-    """A hero falls: body thud, then three sad notes down."""
-    D.seed(2100)
-    x = np.zeros(secs(0.95))
-    place(x, kenney('impact_soft_heavy_001'), 0, 0.9)
-    for i, (n, dd) in enumerate((('E4', 0.15), ('C4', 0.15), ('A3', 0.4))):
-        place(x, D.osc(note(n), dd, 'tri') * D.env_lin(dd, [(0, 0), (0.01, 1), (dd * 0.7, 0.7), (dd, 0)]) * 0.45, 0.12 + i * 0.15)
-    write('down', x, 'desk')
-
-
-@cue('enrage')
-def _enrage():
-    """The boss roars: low, rough, swelling (1.3 s)."""
-    D.seed(2200)
-    d = 1.35
-    t = tt(d)
-    f0 = np.interp(t, [0, 0.3, 0.9, d], [70, 95, 88, 60])
-    F = np.tile([480, 860, 2100], (len(t), 1)).astype(float)
-    amp = D.env_lin(d, [(0, 0), (0.25, 1), (0.9, 0.9), (d, 0)])
-    v = D.voice(f0, amp, F, breath=1.0, tilt=0.6, jitter=0.18, maxf=4000, B=(200, 250, 350))
-    v += D.osc(f0 / 2, d) * amp * 0.3 * np.max(np.abs(v))
-    v = np.tanh(3.0 * v / (np.max(np.abs(v)) + 1e-9))
-    v += D.osc(45, d) * amp * 0.5
-    write('enrage', D.reverb(v, 0.6, 0.3, 4000), 'desk')
-
-
-@cue('wipe')
-def _wipe():
-    """Party wipe: wah, wah, wah, waaah."""
-    D.seed(2300)
-    seq = [('Bb3', 0.36), ('A3', 0.36), ('Ab3', 0.36), ('G3', 1.25)]
-    d = sum(s[1] for s in seq) + 0.1
-    x = np.zeros(secs(d))
-    at = 0
-    for i, (n, dd) in enumerate(seq):
-        t = tt(dd)
-        vib = 0.03 * np.sin(2 * np.pi * 5.5 * t) * np.clip((t - 0.3) / 0.3, 0, 1) if i == 3 else 0
-        f = note(n) * (1 + vib) * np.interp(t, [0, 0.04, dd], [0.97, 1.0, 0.995])
-        env = D.env_lin(dd, [(0, 0), (0.03, 1), (dd * 0.6, 0.85), (dd, 0)])
-        tone = D.osc(f, dd, 'saw')
-        # brass: brighter when louder (the 'wah')
-        out = np.zeros(len(t))
-        blk = secs(0.02)
-        for j in range(0, len(t), blk):
-            c = 400 + 2200 * float(env[j])
-            out[j:j + blk] = D.lp(tone[max(0, j - blk):j + blk], c)[-len(tone[j:j + blk]):]
-        place(x, out * env * 0.5, at)
-        at += dd
-    write('wipe', D.reverb(x, 0.4, 0.2), 'desk')
-
+# ======================= the RPG =======================
+# Every RPG cue is the game's own and lives in tools/sfx/aoj_sfx.py, through the console chain (#155). The desk slam
+# stays here: it is him, in the room.
 
 @cue('slam')
 def _slam():
@@ -812,10 +660,14 @@ def _slam():
 # the launch's cues and its theme (#127): tools/sfx/launch.py, through the console chain in ps1.py
 import launch as _launch  # noqa: E402
 _launch.register(cue, write, level, kenney, OUT)
+# the RPG's own sounds (#155): tools/sfx/aoj_sfx.py, the same chain
+import aoj_sfx as _aoj  # noqa: E402
+_aoj.register(cue, write, kenney)
 
 
 if __name__ == '__main__':
-    want = sys.argv[1:] or list(CUES)
+    # a name ending in * bakes every cue that starts with it ('rpg_*', 'die_*')
+    want = [c for a in sys.argv[1:] for c in (sorted(k for k in CUES if k.startswith(a[:-1])) if a.endswith('*') else [a])] or list(CUES)
     for name in want:
         CUES[name]()
         print('baked', name)
