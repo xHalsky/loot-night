@@ -3,6 +3,30 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.108.0 (2026-11-28)
+
+Paweł on 0.107.0: the battle sounds sounded awful, like empty pots or porcelain on porcelain, no weight, too tiny
+(#157).
+
+- **The cause:** the blows and the falls were built from Kenney's light metal, tin and plate recordings and from
+  synthesised iron left to ring, with little low end. Measured, 90 to 100% of a blow's tail above 400 Hz sat in a few
+  tones (a pan's ring).
+- **Every battle sound is rebuilt on weight.** Each blow is a body hit (Kenney's heavy punches), a low thump whose
+  pitch drops fast, the body's thud, a dense crunch and a short edge. They are balanced by band like a struck body
+  (about 45% under 120 Hz, 30% at 120 to 500 Hz, 20% at 500 to 2,500 Hz). The weapon's own sound sits on top: a
+  blade's hiss and the meat under it, a mace's heavier thud, a bolt's crackle. The tails ring half as much (about
+  50%, from 90 to 100%).
+- Rebuilt this way:
+  - every blow both ways, crit, combo, shield break, Bash, Backstab, Frost, Fire's blast, Taunt's shield, Last Stand's
+    slam;
+  - the big moves and their wind-ups;
+  - every fall, the bosses' and the Abbot's included, and a hero going down;
+  - the metal in the roars, the pack seeing the party, loot landing on the stone.
+- **Pieces land as thuds and grit, iron is struck and stopped, chains are thick and dull.** Nothing in battle rings
+  any more except the bells, the choir and the organ. The blows have less reverb.
+- The blows sit a little louder in the mix (they are less shrill now).
+- Sound only: the seeded sims (good and idle) are identical; every file decodes; `test/aojsound.py` passes.
+
 ## 0.107.1 (2026-11-28)
 
 Paweł's note: in the first Monday's chat, Lance's "would you like to know more?" made no sense (#156).

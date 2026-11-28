@@ -11,7 +11,9 @@ the sample's own rate (16,000 or 22,050 Hz: the console kept its effects small),
 with a plain interpolation (its grain), the console's reverb at 22,050 Hz.
 
 The world is iron angels, the Church and its crypts (aoj-world.md): everything here is iron, stone, chain, bells,
-choir and fire, and it plays it straight. The jokes stay in real life. The loot goblin stays what it is (a critter
+choir and fire, and it plays it straight. Battle has weight (#157): every blow is a body hit with a fast-falling thump,
+a dense crunch and a short edge (blow()), pieces land as thuds and grit, iron is struck and stopped; nothing in battle
+rings but the bells, the choir and the organ (ringing iron read as empty pots and porcelain). The jokes stay in real life. The loot goblin stays what it is (a critter
 you catch, Goblin Fuel's mascot), its giggle through the same chain. Everything is seeded: a rebuild gives the same
 files. The wind-ups are as long as tuning's (BOSS_WINDUP_SEC 3, LOAN_WINDUP_SEC 2, EVICT_WINDUP_SEC 3,
 LINE_BREAK_WINDUP_SEC 1) and a little more: the game cuts them where the move lands.
@@ -234,6 +236,120 @@ def ember_out(d=0.7, f0=880):
     return y + D.bp(D.white(d), 4000, 9000) * np.exp(-t / (d / 4)) * 0.25
 
 
+# ---------------------------------------------------------------- weight (#157): what a blow is made of
+# Paweł on 0.107.0: the blows clanked like empty pots and porcelain, no weight. A blow's weight is a low punch with a
+# fast pitch drop, a dense crunch and a short edge; heavy pieces land as thuds and grit; iron is struck and stopped,
+# never left ringing (a ring is a pan, a bell, a plate).
+def kick(f0, f1, d, tau, sat=1.6, drop=0.03):
+    """The weight of a blow: a low thump whose pitch drops fast (as a kick drum's), a little saturated."""
+    t = tt(d)
+    f = f1 + (f0 - f1) * np.exp(-t / drop)
+    y = np.sin(2 * np.pi * np.cumsum(f) / SR) * env_ar(d, 0.0015, tau)
+    return np.tanh(sat * y) / np.tanh(sat)
+
+
+def crunch(d, tau, lo=300, hi=3500, grain=0.5, attack=0.0008):
+    """The crunch of a heavy blow: dense dark noise, a grainy crackle in it."""
+    nz = D.bp(D.pink(d), lo, hi)
+    nz = nz / (np.max(np.abs(nz)) + 1e-9)
+    g = grit(d, tau * 1.4, lo * 1.5, min(hi * 2, 9000), dens=2500)
+    g = g / (np.max(np.abs(g)) + 1e-9)
+    return (nz * (1 - grain) + g * grain) * D.env_exp(d, tau, attack)
+
+
+def slap(d=0.015, lo=1200, hi=8000):
+    """The edge: the instant it lands."""
+    return D.click(d, lo, hi, 0.0025)
+
+
+def cut(d=0.1, f0=6500, f1=2200, tau=0.035):
+    """A blade going through: a bright hiss falling fast."""
+    t = tt(d)
+    return swept(d, [(0, f0), (1, f1)], np.clip(t / 0.002, 0, 1) * np.exp(-t / tau), q=0.8)
+
+
+def thunk(f, d=0.12, tau=0.035):
+    """Heavy iron struck and stopped (armour, a dropped blade, a helm): low partials that die at once, in noise."""
+    t = tt(d)
+    y = sum(a * np.sin(2 * np.pi * f * r * t + r) * np.exp(-t / (tau / r ** 0.3)) for r, a in ((1, 1), (1.47, 0.7), (2.09, 0.5), (2.56, 0.35)))
+    y = y + 0.8 * D.bp(D.white(d), f * 0.8, min(f * 5, 10000)) * np.exp(-t / (tau * 0.6))
+    return y * np.clip(t / 0.0008, 0, 1) * np.clip((d - t) / (0.3 * d), 0, 1)
+
+
+def boom(d, cut_hz, tau, attack=0.004):
+    """The body of a big blast or a fall: low noise."""
+    return D.lp(D.white(d), cut_hz, 2) * env_ar(d, attack, tau)
+
+
+def rubble(d, n, spread, lo=150, hi=900, start=0.0, decay=None):
+    """Heavy pieces landing (iron chunks, bones, stone): each a small thump and a gritty knock, never a ping."""
+    x = np.zeros(secs(d))
+    r = D.rng
+    for _ in range(n):
+        at = start + r.exponential(spread)
+        if at > d - 0.1:
+            continue
+        a = r.uniform(0.35, 1.0) * np.exp(-(at - start) / (decay or spread * 2.5))
+        f = r.uniform(lo, hi)
+        place(x, kick(f * 1.6, f * 0.7, 0.09, 0.025, 1.2), at, a * 0.6)
+        place(x, D.bp(D.white(0.06), f * 1.5, min(f * 7, 10000)) * D.env_exp(0.06, 0.012), at, a * 0.8)
+    return x
+
+
+def heavy_chain(d, rate=26, env=None, lo=700, hi=2200):
+    """A heavy chain: thick links knocking, dull and gritty."""
+    x = np.zeros(secs(d))
+    r = D.rng
+    t = 0.0
+    while t < d - 0.04:
+        a = r.uniform(0.4, 1.0) * (env(t) if env else 1.0)
+        f = r.uniform(lo, hi)
+        place(x, thunk(f, 0.06, 0.012), t, a * 0.6)
+        place(x, D.bp(D.white(0.03), f, min(f * 4, 10000)) * D.env_exp(0.03, 0.006), t, a)
+        t += (1 / rate) * r.uniform(0.65, 1.35)
+    return x
+
+
+def mail(d=0.14, tau=0.04):
+    """Mail shivering under a blow: a dense grainy hiss, no rings."""
+    g = grit(d, tau, 2500, 7500, dens=9000)
+    return g / (np.max(np.abs(g)) + 1e-9)
+
+
+def squelch(d=0.12, tau=0.04):
+    """The meat under the armour: a dark wet burst falling in pitch."""
+    t = tt(d)
+    return swept(d, [(0, 1300), (1, 350)], np.clip(t / 0.003, 0, 1) * np.exp(-t / tau), q=0.9)
+
+
+def rasp(d, f=700, rate=38, tau=None):
+    """A throat's rasp (a snarl, a shriek of iron): band noise chopped fast."""
+    t = tt(d)
+    am = 0.55 + 0.45 * np.sign(np.sin(2 * np.pi * rate * t))
+    env = env_ar(d, 0.01, tau or d / 2.5)
+    return D.bp(D.white(d), f * 0.6, f * 2.4) * am * env
+
+
+def body(d, tau, lo=120, hi=600):
+    """The thud of a body taking it: dark noise in the low mids."""
+    nz = D.bp(D.pink(d), lo, hi)
+    return nz / (np.max(np.abs(nz)) + 1e-9) * env_ar(d, 0.002, tau)
+
+
+def blow(m, at, weight=1.0, f0=200, f1=None, tau=None, punch=0, crunch_lo=500, crunch_hi=3200, crunch_tau=None, edge=0.5, crunch_g=1.0):
+    """The core of a blow at `at`, heavier with `weight` (0.5 a dagger, 1 a sword, 1.5 a shield or a crit): the punch
+    (a Kenney body hit), its low thump, the body's thud, the crunch (where a blow is heard), its edge. Balanced by
+    band like a struck body: about a third sub, a third body, a quarter crunch, a little edge (#157)."""
+    f1 = f1 or 85 - 18 * weight
+    tau = tau or 0.045 + 0.035 * weight
+    ctau = crunch_tau or 0.035 + 0.02 * weight
+    m.add(K(f'impact_punch_heavy_00{punch % 3}', -1 - 1.5 * weight), at, 0.6)
+    m.add(kick(f0, f1, 0.15 + 0.2 * weight, tau), at, 0.35)
+    m.add(body(0.12 + 0.1 * weight, 0.03 + 0.03 * weight), at, 1.0)
+    m.add(crunch(0.1 + 0.08 * weight, ctau, crunch_lo, crunch_hi, grain=0.55), at, 2.5 * crunch_g)
+    m.add(slap(), at, edge)
+
+
 def giggle(n, f0, rate=9.0, vowel='i', drop=0.8):
     """The loot goblin's (as it always was)."""
     d = n / rate + 0.1
@@ -305,216 +421,213 @@ def register(cue, write, kenney):
     def out(name, x, **kw):
         write(name, psx(x.out() if isinstance(x, Mix) else x, **kw), 'game')
 
-    # ================================================ the heroes' blows (one per weapon)
+    # ================================================ the heroes' blows (one per weapon; #157: weight, not clank)
     @cue('rpg_slash')
     def _slash():
-        """The Knight's sword on iron: a short swing, the clang, the crunch, its ring."""
+        """The Knight's sword: a short swing, the blade biting through, the blow's weight, mail and meat under it."""
         for k in range(3):
             D.seed(12000 + k)
             m = Mix()
-            m.add(whoosh(0.09, [(0, 700), (1, 3200)], at=0.8, q=0.9), 0.0, 0.35)
-            hit = 0.035
-            m.add(K(f'impact_metal_light_00{k}', -6 - k), hit, 1.0)
-            m.add(iron(430 + 70 * k, 0.6, 0.16, 0.8), hit, 0.28)
-            m.add(grit(0.07, 0.018, 1500, 7500), hit, 0.55)
-            m.add(thud(170, 70, 0.14, 0.04), hit, 0.6)
-            out(f'rpg_slash_{k}', m, drive=2.4, wet=0.12, decay=1.0)
+            m.add(whoosh(0.07, [(0, 400), (1, 1800)], at=0.85, q=1.0), 0.0, 0.3)
+            hit = 0.028
+            blow(m, hit, 1.0, 150 - 10 * k, 46, 0.08, punch=k, crunch_hi=3200)
+            m.add(cut(0.09, 6000 - 400 * k, 2000), hit, 0.45)
+            m.add(squelch(0.1, 0.035), hit + 0.004, 0.35)
+            m.add(thunk(230 + 25 * k, 0.1, 0.025), hit, 0.25)
+            out(f'rpg_slash_{k}', m, drive=3.4, wet=0.06, decay=0.7)
 
     @cue('rpg_stab')
     def _stab():
-        """The Rogue's dagger: a quick thin swish, the point going in between plates."""
+        """The Rogue's dagger: quick and deep, a short hiss, the point going in, a wet punch."""
         for k in range(3):
             D.seed(12100 + k)
             m = Mix()
-            m.add(whoosh(0.06, [(0, 2200), (1, 6500)], at=0.85, q=0.8), 0.0, 0.3)
-            hit = 0.028
-            m.add(K(f'impact_plate_light_00{k}', -4), hit, 0.8)
-            m.add(tink(2300 + 250 * k, 0.12, 0.014), hit, 0.45)
-            m.add(noise_burst(0.05, 2500, 8000, 0.012), hit + 0.004, 0.5)
-            m.add(thud(210, 110, 0.08, 0.022), hit, 0.45)
-            out(f'rpg_stab_{k}', m, drive=2.0, wet=0.1, decay=0.9)
+            m.add(whoosh(0.05, [(0, 900), (1, 3000)], at=0.85, q=0.9), 0.0, 0.25)
+            hit = 0.022
+            blow(m, hit, 0.6, 210 - 10 * k, 75, 0.045, punch=k + 1, crunch_lo=600, crunch_hi=4000, crunch_tau=0.025, crunch_g=1.6)
+            m.add(cut(0.06, 7000, 3000, 0.02), hit, 0.35)
+            m.add(squelch(0.09, 0.03), hit + 0.006, 0.5)
+            out(f'rpg_stab_{k}', m, drive=3.0, wet=0.05, decay=0.6)
 
     @cue('rpg_bolt')
     def _bolt():
-        """The Mage's bolt: a crackling zap falling in pitch, a thump, a glassy ping."""
+        """The Mage's bolt: a crackling burst that slams in, a low blast under it."""
         for k in range(3):
             D.seed(12200 + k)
             m = Mix()
-            d = 0.16
-            top = 1900 + 200 * k
-            m.add(fmz(0, 1.41, d, 6, 0.06, 0.07, fpath=lambda t: top * (260 / top) ** np.clip(t / d, 0, 1)), 0.0, 0.5)
-            m.add(grit(0.14, 0.05, 2000, 9000, dens=4000), 0.0, 0.5)
-            m.add(thud(140, 55, 0.18, 0.05), 0.05, 0.7)
-            m.add(tink(1500 + 200 * k, 0.2, 0.05, ratios=[(1, 1), (2.0, 0.4), (3.1, 0.2)]), 0.05, 0.25)
-            out(f'rpg_bolt_{k}', m, rate=16000, drive=3.0, wet=0.14, decay=1.0)
+            d = 0.14
+            top = 1100 + 120 * k
+            m.add(fmz(0, 1.41, d, 5, 0.05, 0.06, fpath=lambda t: top * (140 / top) ** np.clip(t / d, 0, 1)), 0.0, 0.4)
+            m.add(grit(0.12, 0.04, 1200, 7000, dens=4000), 0.0, 0.45)
+            m.add(kick(160, 55, 0.35, 0.07), 0.02, 0.4)
+            m.add(boom(0.35, 1500, 0.07), 0.02, 0.5)
+            m.add(crunch(0.16, 0.04, 400, 3500, grain=0.7), 0.02, 2.4)
+            out(f'rpg_bolt_{k}', m, drive=3.6, wet=0.07, decay=0.8)
 
     @cue('rpg_smite')
     def _smite():
-        """The Priest's mace: a dull blow, a small bell of light on it."""
+        """The Priest's mace: a heavy blunt blow, a dull crack, a breath of light."""
         for k in range(2):
             D.seed(12300 + k)
             m = Mix()
-            m.add(whoosh(0.08, [(0, 500), (1, 1800)], at=0.8), 0.0, 0.25)
-            hit = 0.04
-            m.add(K(f'impact_punch_heavy_00{k}', -2), hit, 0.9)
-            m.add(K('impact_metal_light_002', -10), hit, 0.5)
-            m.add(iron(1320 + 120 * k, 0.9, 0.35, 0.6, BELL_SMALL), hit + 0.01, 0.25)
-            m.add(noise_burst(0.3, 5000, 9500, 0.09, 0.01), hit, 0.18)
-            out(f'rpg_smite_{k}', m, drive=1.8, wet=0.22, decay=1.6)
+            m.add(whoosh(0.08, [(0, 300), (1, 1200)], at=0.8, q=1.0), 0.0, 0.3)
+            hit = 0.035
+            blow(m, hit, 1.2, 170, 50, 0.09, punch=k, crunch_lo=300, crunch_hi=2800, crunch_tau=0.05, edge=0.35, crunch_g=1.4)
+            m.add(K(f'impact_wood_heavy_00{k}', -6), hit, 0.45)
+            t = tt(0.4)
+            m.add(D.bp(D.white(0.4), 3500, 8000) * np.clip(t / 0.03, 0, 1) * np.exp(-t / 0.12), hit + 0.01, 0.12)   # the light
+            out(f'rpg_smite_{k}', m, drive=3.4, wet=0.08, decay=0.8)
 
     @cue('rpg_bash')
     def _bash():
-        """Bash: the Knight's shield driven in, wood and iron, the frame inside rattling."""
+        """Bash: the Knight's shield driven in with his weight behind it, wood and iron and the frame inside cracking."""
         D.seed(12400)
         m = Mix()
-        m.add(whoosh(0.12, [(0, 300), (1, 1400)], at=0.8, q=0.9), 0.0, 0.3)
+        m.add(whoosh(0.12, [(0, 200), (1, 900)], at=0.8, q=1.0), 0.0, 0.35)
         hit = 0.08
-        m.add(K('impact_wood_heavy_000', -3), hit, 0.9)
-        m.add(K('impact_punch_heavy_001', -4), hit, 0.9)
-        m.add(K('impact_metal_light_001', -9), hit, 0.6)
-        m.add(thud(120, 38, 0.35, 0.11), hit, 0.9)
-        m.add(iron(230, 0.9, 0.3, 0.7), hit, 0.22)
-        m.add(rattle(0.7, 7, 1400, 4200, 0.06), hit + 0.03, 0.25)
-        out('rpg_bash', m, drive=3.0, wet=0.16, decay=1.2)
+        blow(m, hit, 1.6, 150, 42, 0.13, punch=1, crunch_lo=300, crunch_hi=3000, crunch_tau=0.07, crunch_g=1.5)
+        m.add(K('impact_wood_heavy_000', -4), hit, 0.9)
+        m.add(thunk(170, 0.2, 0.05), hit, 0.35)
+        m.add(boom(0.5, 600, 0.14), hit, 0.6)
+        m.add(rubble(0.6, 6, 0.06, 200, 800), hit + 0.03, 0.4)
+        out('rpg_bash', m, drive=4.0, wet=0.08, decay=0.9)
 
     @cue('rpg_backstab')
     def _backstab():
-        """Backstab: the dagger drawn with a ring, driven in deep, and twisted."""
+        """Backstab: a dagger drawn in a hiss, driven in deep with the shoulder behind it, twisted."""
         D.seed(13600)
         m = Mix()
-        t = tt(0.12)
-        m.add(swept(0.12, [(0, 3000), (1, 9000)], np.clip(t / 0.01, 0, 1) * np.exp(-t / 0.06), q=0.5), 0.0, 0.35)
-        m.add(iron(2400, 0.3, 0.08, 0.7, BAR), 0.0, 0.2)
-        hit = 0.1
-        m.add(K('impact_punch_heavy_002', -4), hit, 0.9)
-        m.add(K('impact_plate_light_003', -6), hit, 0.6)
-        m.add(grit(0.16, 0.06, 1300, 5000, dens=1800), hit + 0.02, 0.45)
-        m.add(iron(1800, 0.5, 0.12, 0.6, BAR), hit, 0.2)
-        out('rpg_backstab', m, drive=3.0, wet=0.12, decay=1.0)
+        t = tt(0.1)
+        m.add(swept(0.1, [(0, 2500), (1, 7000)], np.clip(t / 0.01, 0, 1) * np.exp(-t / 0.05), q=0.6), 0.0, 0.3)
+        hit = 0.09
+        blow(m, hit, 1.3, 170, 50, 0.1, punch=2, crunch_lo=350, crunch_hi=3200, crunch_tau=0.055, crunch_g=1.4)
+        m.add(squelch(0.16, 0.05), hit + 0.005, 0.6)
+        m.add(crunch(0.2, 0.07, 250, 1800, grain=0.8), hit + 0.06, 0.5)   # the twist
+        out('rpg_backstab', m, drive=3.8, wet=0.06, decay=0.8)
 
     @cue('rpg_fire')
     def _fire():
-        """Fire: the burst on them, its roar and the crackling after (heard once however many it hits)."""
+        """Fire: the burst on them, its blast and roar and the crackling after (heard once however many it hits)."""
         D.seed(12500)
         d = 1.1
         m = Mix()
         t = tt(d)
-        m.add(swept(d, [(0, 500), (0.15, 1800), (1, 400)], np.clip(t / 0.03, 0, 1) * np.exp(-t / 0.32), q=1.2), 0.0, 0.8)
-        m.add(D.lp(D.white(0.6), 700) * env_ar(0.6, 0.02, 0.16), 0.0, 0.9)
-        m.add(thud(95, 40, 0.3, 0.09, a=0.01), 0.0, 0.6)
-        m.add(crackle(1.0, 70, 0.35, 900, 7000), 0.03, 0.6)
-        out('rpg_fire', m, rate=16000, drive=2.6, wet=0.18, decay=1.3)
+        m.add(swept(d, [(0, 400), (0.15, 1500), (1, 350)], np.clip(t / 0.03, 0, 1) * np.exp(-t / 0.3), q=1.2), 0.0, 0.8)
+        m.add(boom(0.7, 700, 0.18, attack=0.015), 0.0, 1.0)
+        m.add(kick(130, 42, 0.5, 0.13, drop=0.05), 0.0, 0.45)
+        m.add(crackle(1.0, 70, 0.35, 700, 6000), 0.03, 0.55)
+        out('rpg_fire', m, rate=16000, drive=3.0, wet=0.12, decay=1.1)
 
     @cue('rpg_frost')
     def _frost():
-        """Frost: ice forming in a rush of crystals, a crack, the cold hissing off it."""
+        """Frost: ice slamming shut on them, a hard crack, a few crystals, the cold hissing off."""
         D.seed(12600)
         m = Mix()
-        m.add(rattle(0.4, 16, 2600, 6500, 0.09, tau=0.03, ratios=GLASS), 0.0, 0.5)
-        m.add(K('impact_glass_light_001', -3), 0.05, 0.6)
-        m.add(grit(0.08, 0.02, 1800, 8000), 0.05, 0.45)
-        m.add(noise_burst(0.7, 4000, 10000, 0.22, 0.02), 0.02, 0.22)
-        m.add(tink(310, 0.2, 0.05, ratios=[(1, 1), (2.3, 0.4)]), 0.05, 0.45)
-        out('rpg_frost', m, drive=1.6, wet=0.24, decay=1.6)
+        m.add(kick(170, 55, 0.35, 0.08), 0.02, 0.4)
+        m.add(body(0.2, 0.05, 150, 700), 0.02, 0.8)
+        m.add(crunch(0.22, 0.05, 700, 5000, grain=0.75), 0.02, 2.6)   # the crack
+        m.add(K('impact_punch_heavy_001', -4), 0.02, 0.6)
+        m.add(rattle(0.4, 7, 2600, 5200, 0.07, tau=0.02, ratios=GLASS), 0.03, 0.15)
+        m.add(noise_burst(0.7, 3500, 9000, 0.2, 0.02), 0.04, 0.25)
+        out('rpg_frost', m, drive=3.0, wet=0.12, decay=1.1)
 
     @cue('rpg_crit')
     def _crit():
-        """A critical hit, over the weapon's own sound: a heavy crunch, a boom, the edge's shriek."""
+        """A critical hit, over the weapon's own: a much heavier blow, a deep boom, a hard crack."""
         for k in range(2):
             D.seed(12700 + k)
             m = Mix()
-            m.add(K(f'impact_punch_heavy_00{k + 1}', -6), 0.0, 1.0)
-            m.add(thud(95, 32, 0.45, 0.14), 0.0, 1.0)
-            m.add(grit(0.12, 0.03, 1200, 9000, dens=2500), 0.0, 0.7)
-            m.add(iron(620 + 90 * k, 0.8, 0.22, 0.9), 0.0, 0.3)
-            m.add(noise_burst(0.1, 6000, 10000, 0.025), 0.0, 0.4)
-            out(f'rpg_crit_{k}', m, drive=4.0, wet=0.16, decay=1.2)
+            m.add(K(f'impact_punch_heavy_00{k + 1}', -5), 0.0, 0.7)
+            m.add(kick(150, 45, 0.5, 0.13, sat=2.2), 0.0, 0.45)
+            m.add(boom(0.5, 900, 0.12), 0.0, 0.4)
+            m.add(body(0.3, 0.08), 0.0, 1.0)
+            m.add(crunch(0.25, 0.07, 400, 4000, grain=0.75), 0.0, 3.0)
+            m.add(slap(0.02, 1500, 8000), 0.0, 0.7)
+            out(f'rpg_crit_{k}', m, drive=4.2, wet=0.08, decay=0.9)
 
     @cue('rpg_combo')
     def _combo():
-        """A mark cashed in (Shatter, a Backstab on Stagger): a crack and iron ringing up, a fifth and the octave."""
+        """A mark cashed in (Shatter, a Backstab on Stagger): a double blow, the second the heavier, and something
+        breaking under it."""
         D.seed(12800)
         m = Mix()
-        m.add(K('impact_metal_light_000', -2), 0.0, 0.8)
-        m.add(grit(0.06, 0.015, 2000, 9000), 0.0, 0.5)
-        for i, f in enumerate((880, 1320, 1760)):
-            m.add(iron(f, 1.0, 0.4, 0.6, BELL_SMALL), 0.03 + i * 0.06, 0.28)
-        m.add(rattle(0.5, 10, 3000, 7000, 0.12), 0.05, 0.18)
-        out('rpg_combo', m, drive=2.0, wet=0.22, decay=1.5)
+        blow(m, 0.0, 0.7, 170, 60, 0.05, punch=0, crunch_hi=4000)
+        blow(m, 0.075, 1.5, 120, 30, 0.14, punch=2, crunch_lo=200, crunch_hi=3500, crunch_tau=0.07)
+        m.add(crunch(0.3, 0.09, 700, 6000, grain=0.85), 0.08, 0.6)
+        m.add(boom(0.6, 500, 0.15), 0.075, 0.6)
+        out('rpg_combo', m, drive=4.0, wet=0.1, decay=1.0)
 
     @cue('rpg_shieldbreak')
     def _shieldbreak():
-        """A shield broken: a great iron plate splitting, its halo shattering, the pieces coming down."""
+        """A shield broken: a great iron-bound shield split in two, splinters and plates coming down, its halo cracking."""
         D.seed(12900)
         m = Mix()
-        m.add(K('impact_metal_light_001', -12), 0.0, 1.0)
-        m.add(K('impact_tin_medium_003', -6), 0.01, 0.7)
-        m.add(grit(0.16, 0.05, 1000, 8000, dens=3000), 0.0, 0.8)
-        for i in range(3):
-            m.add(K(f'impact_glass_light_00{i}', -4 - 2 * i), 0.02 + 0.03 * i, 0.45)
-        m.add(iron(300, 1.4, 0.5, 0.8), 0.0, 0.3)
-        m.add(rattle(1.2, 14, 900, 4000, 0.18), 0.08, 0.35)
-        m.add(thud(110, 40, 0.3, 0.1), 0.0, 0.7)
-        out('rpg_shieldbreak', m, drive=3.0, wet=0.2, decay=1.4)
+        blow(m, 0.0, 1.6, 110, 30, 0.16, punch=0, crunch_lo=200, crunch_hi=3000, crunch_tau=0.08)
+        m.add(K('impact_wood_heavy_001', -5), 0.0, 1.0)
+        m.add(K('impact_wood_heavy_000', -2), 0.05, 0.6)
+        m.add(crunch(0.45, 0.13, 500, 5000, grain=0.9), 0.01, 0.7)   # it splits
+        m.add(thunk(160, 0.25, 0.06), 0.0, 0.4)
+        m.add(rubble(1.0, 10, 0.15, 180, 900), 0.12, 0.6)
+        m.add(K('impact_glass_light_000', -8), 0.03, 0.15)
+        out('rpg_shieldbreak', m, drive=3.8, wet=0.1, decay=1.0)
 
     @cue('rpg_whiff')
     def _whiff():
-        """A miss (Smoke Bomb, a dodge, a drowsy swing): the swing alone."""
+        """A miss (Smoke Bomb, a dodge, a drowsy swing): the swing alone, through air."""
         for k in range(2):
             D.seed(13000 + k)
             m = Mix()
-            m.add(whoosh(0.2, [(0, 700 + 200 * k), (0.6, 3400), (1, 1500)], at=0.45, q=0.8), 0.0, 0.8)
-            m.add(D.hp(K('cloth_1', 4), 900)[:secs(0.12)], 0.02, 0.25)
-            out(f'rpg_whiff_{k}', m, drive=1.2, wet=0.08, decay=0.8)
+            m.add(whoosh(0.22, [(0, 300 + 100 * k), (0.6, 1800), (1, 700)], at=0.45, q=1.0), 0.0, 0.9)
+            m.add(D.hp(K('cloth_1', 2), 500)[:secs(0.12)], 0.02, 0.2)
+            out(f'rpg_whiff_{k}', m, drive=1.6, wet=0.05, decay=0.6)
 
     # ================================================ the enemies' blows on the party
     @cue('rpg_hurt')
     def _hurt():
-        """A hero takes a blow: a heavy hit on mail, the rings shivering."""
+        """A hero takes a blow: a heavy hit on his armour and the body under it, the mail shivering."""
         for k in range(3):
             D.seed(13100 + k)
             m = Mix()
-            m.add(K(f'impact_punch_heavy_00{k}', -2 - k), 0.0, 1.0)
-            m.add(K(f'impact_soft_heavy_00{k}', -3), 0.0, 0.6)
-            m.add(chain(0.16, 60, 2800, 6500, env=lambda u: np.exp(-u / 0.05)), 0.005, 0.35)
-            m.add(thud(130, 60, 0.15, 0.05), 0.0, 0.6)
-            out(f'rpg_hurt_{k}', m, drive=2.6, wet=0.1, decay=0.9)
+            blow(m, 0.0, 1.0, 170, 55, 0.07, punch=k, crunch_lo=350, crunch_hi=2800, edge=0.35, crunch_g=1.4)
+            m.add(K(f'impact_soft_heavy_00{k}', -3), 0.0, 0.7)
+            m.add(mail(0.14, 0.04), 0.004, 0.18)
+            m.add(thunk(200 + 30 * k, 0.1, 0.03), 0.0, 0.2)
+            out(f'rpg_hurt_{k}', m, drive=3.4, wet=0.06, decay=0.7)
 
     @cue('rpg_bite')
     def _bite():
-        """An Ironwing or a Cherub bites: an iron shriek, the snap of its jaw."""
+        """An Ironwing or a Cherub bites: a rasping snarl, the jaw snapping shut, bone crunching."""
         for k in range(2):
             D.seed(13200 + k)
             m = Mix()
-            d = 0.14
-            top = 2300 - 300 * k
-            m.add(fmz(0, 2.01, d, 2.5, 0.08, 0.06, attack=0.008, fpath=lambda t: top * (1 - 0.3 * t / d) * (1 + 0.04 * np.sin(2 * np.pi * 38 * t))), 0.0, 0.3)
-            m.add(D.hp(K('metal_click', 3), 1500), 0.04, 0.7)
-            m.add(K('impact_soft_heavy_002', 2), 0.045, 0.5)
-            m.add(tink(2900, 0.08, 0.01), 0.045, 0.3)
-            out(f'rpg_bite_{k}', m, rate=16000, drive=2.2, wet=0.1, decay=0.9)
+            m.add(rasp(0.14, 900 - 150 * k, 42), 0.0, 0.45)
+            hit = 0.05
+            blow(m, hit, 0.5, 220, 70, 0.04, punch=k + 1, crunch_lo=600, crunch_hi=4500, crunch_tau=0.03)
+            m.add(crunch(0.1, 0.03, 900, 5000, grain=0.9), hit + 0.01, 0.6)
+            out(f'rpg_bite_{k}', m, drive=3.2, wet=0.05, decay=0.6)
 
     @cue('rpg_hex')
     def _hex():
-        """The Confessor's curse lands on the back line: a whisper rushing in, a sour tritone, a blow."""
+        """The Confessor's curse lands on the back line: a whisper rushing in, a sour tritone, a blow from nowhere."""
         D.seed(13300)
         m = Mix()
         t = tt(0.22)
-        m.add(swept(0.22, [(0, 1500), (1, 6000)], (t / 0.22) ** 2, q=0.9), 0.0, 0.5)
-        m.add(fmz(110, 1.41, 0.55, 3.5, 0.2, 0.22), 0.2, 0.45)
-        m.add(fmz(155.6, 1.41, 0.55, 3.0, 0.2, 0.2), 0.2, 0.3)
-        m.add(K('impact_soft_heavy_000', -2), 0.2, 0.7)
-        m.add(grit(0.2, 0.06, 900, 5000), 0.2, 0.3)
-        out('rpg_hex', m, rate=16000, drive=2.0, wet=0.28, decay=1.6)
+        m.add(swept(0.22, [(0, 1200), (1, 4500)], (t / 0.22) ** 2, q=0.9), 0.0, 0.45)
+        m.add(fmz(110, 1.41, 0.55, 3.5, 0.2, 0.22), 0.2, 0.4)
+        m.add(fmz(155.6, 1.41, 0.55, 3.0, 0.2, 0.2), 0.2, 0.28)
+        m.add(kick(120, 36, 0.45, 0.12), 0.2, 1.0)
+        m.add(K('impact_soft_heavy_000', -3), 0.2, 0.7)
+        m.add(crunch(0.15, 0.05, 250, 2500), 0.2, 0.4)
+        out('rpg_hex', m, rate=16000, drive=3.0, wet=0.2, decay=1.4)
 
     @cue('rpg_darkmend')
     def _darkmend():
-        """The Confessor mends one of them: a low choir on a tritone, its censer swinging."""
+        """The Confessor mends one of them: a low choir on a tritone, its censer swinging on a heavy chain."""
         D.seed(13400)
         m = Mix()
         for n_, v in (('D3', 0.5), ('Ab3', 0.4), ('D4', 0.25)):
             play(m, 'choir_o', n_, 0.0, 0.8, v, adsr=(0.15, 0.4, 0.8, 0.5))
-        m.add(chain(0.5, 18, 2200, 5200, env=lambda u: np.sin(np.pi * min(u, 0.5) / 0.5)), 0.1, 0.25)
+        m.add(heavy_chain(0.5, 14, env=lambda u: np.sin(np.pi * min(u, 0.5) / 0.5)), 0.1, 0.3)
         m.add(sigh(0.9, 'o', 0.7), 0.05, 0.25)
         out('rpg_darkmend', m, drive=1.2, wet=0.32, decay=2.0)
 
@@ -524,9 +637,9 @@ def register(cue, write, kenney):
         """Taunt: the sword beaten twice on the shield, a war horn."""
         D.seed(13500)
         m = Mix()
-        for at in (0.0, 0.17):
-            m.add(K('impact_metal_light_000', -7), at, 0.9)
-            m.add(thud(150, 70, 0.12, 0.04), at, 0.5)
+        for i, at in enumerate((0.0, 0.17)):   # the sword's pommel beaten on the shield
+            blow(m, at, 0.8, 190, 60, 0.06, punch=i, crunch_lo=400, crunch_hi=3000, edge=0.3)
+            m.add(K(f'impact_wood_heavy_00{i}', -2), at, 0.7)
         for n_, v in (('D3', 0.9), ('A3', 0.7), ('D2', 0.6)):
             play(m, 'brass', n_, 0.3, 0.75, v, adsr=(0.06, 0.3, 0.85, 0.35))
         m.add(timp('D2', 1.5, 0.9, 711), 0.3, 0.7)
@@ -590,8 +703,8 @@ def register(cue, write, kenney):
         """Last Stand: the shield slammed down, war drums, the horns and the men's choir."""
         D.seed(14100)
         m = Mix()
-        m.add(K('impact_metal_light_001', -9), 0.0, 1.0)
-        m.add(thud(110, 36, 0.4, 0.14), 0.0, 0.9)
+        blow(m, 0.0, 1.6, 150, 40, 0.14, punch=0, crunch_lo=300, crunch_hi=2800)   # the shield slammed down
+        m.add(K('impact_wood_heavy_001', -4), 0.0, 0.8)
         for at, v in ((0.0, 1.0), (0.36, 0.8), (0.54, 0.9)):
             m.add(timp('D2', 1.6, v, 710 + int(at * 100)), at, 0.8)
         for n_, v in (('D2', 0.7), ('D3', 0.9), ('A3', 0.75), ('D4', 0.4)):
@@ -622,11 +735,12 @@ def register(cue, write, kenney):
         t = tt(0.16)
         m.add(swept(0.16, [(0, 300), (1, 2400)], (t / 0.16) ** 1.5, q=1.0), 0.0, 0.6)
         hit = 0.13
-        m.add(thud(75, 22, 1.0, 0.45, a=0.004), hit, 1.0)
+        m.add(kick(120, 30, 1.0, 0.3, drop=0.06), hit, 0.5)
+        m.add(crunch(0.4, 0.12, 300, 3500, grain=0.8), hit, 1.8)
         m.add(D.lp(D.white(1.2), 2400) * env_ar(1.2, 0.005, 0.35), hit, 0.9)
         m.add(K('impact_punch_heavy_000', -10), hit, 0.9)
         m.add(crackle(1.6, 50, 0.7, 700, 6000), hit + 0.05, 0.6)
-        m.add(rattle(1.6, 24, 500, 2800, 0.35), hit + 0.1, 0.4)
+        m.add(rubble(1.6, 24, 0.35, 180, 1000), hit + 0.1, 0.6)
         m.add(thunder_roll(2.6, 260, seed=14301), hit + 0.1, 0.9)
         D.seed(14302)
         for n_, v in (('D3', 0.4), ('Eb3', 0.3), ('A3', 0.3)):
@@ -678,11 +792,8 @@ def register(cue, write, kenney):
         """A hero falls (audio-first): his armour crashing down, a low toll for him."""
         D.seed(14700)
         m = Mix()
-        m.add(K('impact_punch_heavy_001', -5), 0.0, 1.0)
-        m.add(K('impact_soft_heavy_001', -2), 0.02, 0.7)
-        m.add(K('impact_tin_medium_001', -7), 0.05, 0.5)
-        m.add(rattle(0.6, 9, 1200, 4000, 0.08), 0.06, 0.4)
-        m.add(thud(100, 40, 0.3, 0.1), 0.0, 0.8)
+        fall(m, 0.0, 1.3, punch=1, soft=1)
+        m.add(rubble(0.6, 8, 0.08, 200, 900), 0.04, 0.6)
         play(m, 'bell', 'A2', 0.18, 1.6, 0.55)
         for n_, v in (('D3', 0.3), ('F3', 0.25)):
             play(m, 'choir_o', n_, 0.2, 0.7, v, adsr=(0.15, 0.4, 0.7, 0.6))
@@ -716,7 +827,8 @@ def register(cue, write, kenney):
     # ================================================ the big moves: wind-ups (cut where they land) and blows
     @cue('rpg_wind_smash')
     def _wind_smash():
-        """The Gaoler whirls the ball over his head, faster and faster (3 s; audio-first: you hear it from Excel)."""
+        """The Gaoler whirls the ball over his head, faster and faster (3 s; audio-first: you hear it from Excel): each
+        pass a heavy whoosh, the chain's thick links knocking, a dread rising under it."""
         D.seed(14900)
         d = 3.3
         m = Mix()
@@ -724,31 +836,30 @@ def register(cue, write, kenney):
         while t < d - 0.05:
             f = 1.1 + 3.1 * (t / 3.0) ** 1.4
             pd = min(0.5, 0.9 / f)
-            m.add(whoosh(pd, [(0, 180), (0.5, 900 + 400 * t / 3), (1, 250)], at=0.5, q=1.1), t, 0.45 + 0.35 * t / 3)
-            m.add(chain(0.12, 50, 2400, 6000, env=lambda u: np.exp(-u / 0.05)), t + pd * 0.45, 0.18 + 0.12 * t / 3)
+            m.add(whoosh(pd, [(0, 120), (0.5, 600 + 300 * t / 3), (1, 160)], at=0.5, q=1.2), t, 0.6 + 0.35 * t / 3)
+            m.add(heavy_chain(0.12, 40, env=lambda u: np.exp(-u / 0.05)), t + pd * 0.45, 0.25 + 0.15 * t / 3)
             t += 1 / f
-        m.add(chain(0.25, 40, 2200, 5200, env=lambda u: np.sin(np.pi * min(u, 0.25) / 0.25)), 0.0, 0.4)
-        m.add(K('impact_tin_medium_000', -8), 0.0, 0.4)
+        m.add(heavy_chain(0.3, 30, env=lambda u: np.sin(np.pi * min(u, 0.3) / 0.3)), 0.0, 0.5)   # he hauls it up off the floor
+        m.add(kick(90, 40, 0.3, 0.08), 0.0, 0.5)
         u = tt(d)
-        m.add(drone(55, d, (u / d) ** 1.6, lp=700), 0.0, 0.35)
-        m.add(drone(82.4, d, (u / d) ** 2.2, lp=900), 0.0, 0.25)
-        out('rpg_wind_smash', m, drive=2.0, wet=0.22, decay=1.6)
+        m.add(drone(55, d, (u / d) ** 1.6, lp=700), 0.0, 0.4)
+        m.add(drone(82.4, d, (u / d) ** 2.2, lp=900), 0.0, 0.3)
+        out('rpg_wind_smash', m, drive=2.2, wet=0.16, decay=1.4)
 
     @cue('rpg_smash')
     def _smash():
-        """SMASH lands: the iron ball through the floor, the stone breaking, its chain, the rumble."""
+        """SMASH lands: the iron ball through the floor, the stone breaking, chips raining, the chain, the rumble."""
         D.seed(15000)
         m = Mix()
-        m.add(whoosh(0.1, [(0, 200), (1, 700)], at=0.9, q=1.0), 0.0, 0.6)
+        m.add(whoosh(0.1, [(0, 150), (1, 600)], at=0.9, q=1.0), 0.0, 0.6)
         hit = 0.06
-        m.add(thud(62, 21, 1.2, 0.45, a=0.003), hit, 1.0)
-        m.add(K('impact_punch_heavy_000', -9), hit, 1.0)
-        m.add(K('impact_wood_heavy_001', -8), hit, 0.8)
-        m.add(D.lp(D.white(0.5), 2800) * env_ar(0.5, 0.003, 0.12), hit, 0.8)
-        m.add(rattle(1.2, 28, 500, 2600, 0.25, tau=0.02), hit + 0.05, 0.45)
-        m.add(chain(0.5, 36, 2000, 5200, env=lambda u: np.exp(-u / 0.2)), hit + 0.03, 0.4)
-        m.add(thunder_roll(1.8, 220, seed=15001), hit + 0.05, 0.8)
-        out('rpg_smash', m, drive=3.0, wet=0.28, decay=2.0)
+        blow(m, hit, 2.0, 140, 30, 0.2, punch=0, crunch_lo=250, crunch_hi=3000, crunch_tau=0.09, crunch_g=1.4)
+        m.add(K('impact_wood_heavy_001', -7), hit, 0.8)
+        m.add(boom(0.9, 900, 0.25), hit, 0.7)
+        m.add(rubble(1.4, 26, 0.25, 180, 1100), hit + 0.04, 0.6)
+        m.add(heavy_chain(0.5, 32, env=lambda u: np.exp(-u / 0.2)), hit + 0.03, 0.4)
+        m.add(thunder_roll(1.8, 260, seed=15001), hit + 0.05, 0.6)
+        out('rpg_smash', m, drive=3.4, wet=0.16, decay=1.6)
 
     @cue('rpg_wind_toll')
     def _wind_toll():
@@ -762,7 +873,7 @@ def register(cue, write, kenney):
         m.add(D.lp(D.brown(d), 220) * (u / d) ** 1.2, 0.0, 0.5)
         for n_, v in (('D3', 0.35), ('Eb3', 0.3), ('A3', 0.3)):
             play(m, 'choir_o', n_, 0.2, d - 0.3, v, adsr=(d - 0.5, 0.3, 1.0, 0.3))
-        m.add(D.hp(K('metal_latch', -9), 200), 1.6, 0.3)
+        m.add(thunk(140, 0.2, 0.05), 1.6, 0.4)   # the tongue knocks
         out('rpg_wind_toll', m, drive=1.5, wet=0.3, decay=2.0)
 
     @cue('rpg_toll')
@@ -772,44 +883,46 @@ def register(cue, write, kenney):
         m = Mix()
         play(m, 'bell', 'A1', 0.0, 3.5, 1.0)
         play(m, 'bell', 'D2', 0.0, 3.0, 0.5)
-        m.add(thud(70, 40, 0.6, 0.25), 0.0, 0.6)
-        m.add(K('impact_metal_light_002', -14), 0.0, 0.5)
+        m.add(kick(90, 38, 0.6, 0.2), 0.0, 0.6)
+        m.add(boom(0.6, 600, 0.18), 0.0, 0.4)
         for n_, v in (('D3', 0.45), ('A3', 0.4), ('D4', 0.3), ('F3', 0.3)):
             play(m, 'choir_o', n_, 0.12, 1.6, v, adsr=(0.1, 0.5, 0.8, 0.8))
         out('rpg_toll', m, drive=1.8, wet=0.36, decay=2.8)
 
     @cue('rpg_wind_execute')
     def _wind_execute():
-        """The Inquisitor draws the headsman's sword, his wings unfold blade by blade, drums, the organ (3 s)."""
+        """The Inquisitor draws the headsman's sword (a long scrape), his wings rise with a rush, drums close in, the
+        organ climbs (3 s)."""
         D.seed(15300)
         d = 3.3
         m = Mix()
-        t = tt(0.7)
-        m.add(swept(0.7, [(0, 2500), (1, 6500)], np.clip(t / 0.05, 0, 1) * np.clip((0.7 - t) / 0.1, 0, 1), q=0.4), 0.0, 0.5)
-        m.add(iron(1100, 1.2, 0.5, 0.8, BAR), 0.65, 0.3)
-        m.add(rattle(1.0, 26, 3000, 7500, 0.35, tau=0.03), 0.7, 0.3)
-        m.add(whoosh(0.6, [(0, 200), (1, 900)], at=0.6, q=1.0), 0.75, 0.4)
+        t = tt(0.8)
+        m.add(swept(0.8, [(0, 1200), (1, 4200)], np.clip(t / 0.05, 0, 1) * np.clip((0.8 - t) / 0.1, 0, 1), q=0.5), 0.0, 0.5)
+        m.add(thunk(260, 0.25, 0.06), 0.78, 0.5)   # out of the scabbard
+        m.add(whoosh(0.9, [(0, 120), (0.6, 700), (1, 200)], at=0.6, q=1.2), 0.8, 0.7)   # the wings
+        t2 = tt(1.2)
+        m.add(D.bp(D.white(1.2), 2500, 7000) * np.sin(np.pi * t2 / 1.2) ** 2 * (0.6 + 0.4 * D.smooth_rand(1.2, 30, 0, 1)), 0.85, 0.15)
         for at, v in ((1.2, 0.5), (1.9, 0.6), (2.4, 0.7), (2.75, 0.8), (3.0, 0.9)):
-            m.add(timp('D2', 0.9, v, 720 + int(at * 10)), at, 0.6)
+            m.add(timp('D2', 0.9, v, 720 + int(at * 10)), at, 0.7)
         for n_, v in (('D2', 0.4), ('Eb2', 0.35), ('A2', 0.3)):
             play(m, 'organ', n_, 0.3, d - 0.4, v, adsr=(d - 0.6, 0.3, 1.0, 0.2))
-        out('rpg_wind_execute', m, drive=2.0, wet=0.26, decay=1.8)
+        out('rpg_wind_execute', m, drive=2.0, wet=0.22, decay=1.6)
 
     @cue('rpg_execute')
     def _execute():
-        """EXECUTE lands: the great swing, the cleave, the blade ringing, a choir stab."""
+        """EXECUTE lands: the great swing, the headsman's blade biting deep, the floor taking it, a choir stab."""
         D.seed(15400)
         m = Mix()
-        m.add(whoosh(0.16, [(0, 250), (1, 2200)], at=0.85, q=0.9), 0.0, 0.7)
+        m.add(whoosh(0.16, [(0, 180), (1, 1600)], at=0.85, q=1.0), 0.0, 0.8)
         hit = 0.13
-        m.add(K('impact_metal_light_001', -10), hit, 1.0)
-        m.add(K('impact_punch_heavy_002', -6), hit, 1.0)
-        m.add(thud(85, 26, 0.9, 0.35), hit, 1.0)
-        m.add(iron(180, 2.0, 0.9, 0.9), hit, 0.3)
-        m.add(grit(0.2, 0.06, 1000, 8000, dens=2500), hit, 0.6)
+        blow(m, hit, 2.0, 150, 32, 0.2, punch=2, crunch_lo=300, crunch_hi=3500, crunch_tau=0.09, crunch_g=1.4)
+        m.add(cut(0.14, 5500, 1500, 0.05), hit, 0.6)
+        m.add(squelch(0.18, 0.06), hit + 0.005, 0.5)
+        m.add(thunk(190, 0.3, 0.07), hit + 0.02, 0.4)   # the blade into the floor
+        m.add(boom(0.8, 800, 0.22), hit, 0.6)
         for n_, v in (('D3', 0.45), ('F3', 0.4), ('Ab3', 0.35)):
             play(m, 'choir_a', n_, hit, 0.5, v, adsr=(0.02, 0.3, 0.6, 0.7))
-        out('rpg_execute', m, drive=3.4, wet=0.28, decay=2.0)
+        out('rpg_execute', m, drive=3.4, wet=0.2, decay=1.6)
 
     @cue('rpg_wind_hook')
     def _wind_hook():
@@ -817,23 +930,22 @@ def register(cue, write, kenney):
         D.seed(15500)
         m = Mix()
         for i, at in enumerate((0.05, 0.45, 0.78)):
-            m.add(whoosh(0.3, [(0, 300), (0.5, 1500), (1, 400)], at=0.5, q=1.0), at, 0.4 + 0.15 * i)
-            m.add(chain(0.1, 50, 2500, 6000, env=lambda u: np.exp(-u / 0.04)), at + 0.14, 0.25)
-        out('rpg_wind_hook', m, drive=1.8, wet=0.16, decay=1.2)
+            m.add(whoosh(0.3, [(0, 200), (0.5, 1000), (1, 250)], at=0.5, q=1.2), at, 0.5 + 0.15 * i)
+            m.add(heavy_chain(0.12, 40, env=lambda u: np.exp(-u / 0.05)), at + 0.14, 0.35)
+        out('rpg_wind_hook', m, drive=2.0, wet=0.12, decay=1.0)
 
     @cue('rpg_hook')
     def _hook():
-        """Hook lands: the chain cracks out, the hook bites, the hero dragged to the front."""
+        """Hook lands: the chain lashes out, the hook bites, the hero dragged to the front over the stone."""
         D.seed(15600)
         m = Mix()
-        m.add(noise_burst(0.05, 1500, 9000, 0.008), 0.0, 0.8)
-        m.add(chain(0.3, 55, 2400, 6200, env=lambda u: np.exp(-u / 0.12)), 0.0, 0.55)
-        m.add(K('metal_latch', -2), 0.02, 0.7)
-        m.add(K('impact_punch_heavy_001', -1), 0.03, 0.6)
+        m.add(noise_burst(0.05, 1200, 6000, 0.01), 0.0, 0.7)   # the lash
+        m.add(heavy_chain(0.3, 45, env=lambda u: np.exp(-u / 0.12)), 0.0, 0.6)
+        blow(m, 0.03, 1.0, 180, 55, 0.07, punch=1, crunch_g=1.3)
         t = tt(0.6)
-        m.add(D.bp(D.white(0.6), 300, 1800) * np.clip(t / 0.03, 0, 1) * np.clip((0.6 - t) / 0.2, 0, 1) * (0.6 + 0.4 * np.sin(2 * np.pi * 9 * t)), 0.12, 0.35)
-        m.add(chain(0.6, 30, 2000, 4800, env=lambda u: max(0.0, 1 - u / 0.6)), 0.12, 0.3)
-        out('rpg_hook', m, drive=2.4, wet=0.16, decay=1.2)
+        m.add(D.bp(D.white(0.6), 200, 1400) * np.clip(t / 0.03, 0, 1) * np.clip((0.6 - t) / 0.2, 0, 1) * (0.6 + 0.4 * np.sin(2 * np.pi * 9 * t)), 0.12, 0.5)   # dragged
+        m.add(heavy_chain(0.6, 24, env=lambda u: max(0.0, 1 - u / 0.6)), 0.12, 0.35)
+        out('rpg_hook', m, drive=3.0, wet=0.1, decay=1.0)
 
     @cue('rpg_wind_shove')
     def _wind_shove():
@@ -843,36 +955,36 @@ def register(cue, write, kenney):
         m.add(growl(0.75, [(0, 70), (0.4, 92), (0.75, 80)], 'o', 0.9, 0.14, 2.4, 0.55), 0.1, 0.55)
         for at in (0.0, 0.55):
             m.add(K('impact_soft_heavy_000', -6), at, 0.7)
-            m.add(thud(80, 40, 0.2, 0.06), at, 0.5)
-        m.add(K('impact_wood_heavy_000', -2), 0.56, 0.3)
-        m.add(K('impact_wood_heavy_001', 0), 0.62, 0.25)
-        out('rpg_wind_shove', m, drive=2.0, wet=0.16, decay=1.2)
+            m.add(kick(110, 45, 0.25, 0.06), at, 0.4)
+        m.add(K('impact_wood_heavy_000', -2), 0.56, 0.35)
+        m.add(K('impact_wood_heavy_001', 0), 0.62, 0.3)
+        out('rpg_wind_shove', m, drive=2.2, wet=0.12, decay=1.0)
 
     @cue('rpg_shove')
     def _shove():
-        """Shove lands: his whole weight, the coffin lids clattering, the hero sliding back."""
+        """Shove lands: his whole weight, the coffin lids clattering, the hero thrown back and sliding."""
         D.seed(15800)
         m = Mix()
-        m.add(K('impact_punch_heavy_000', -6), 0.0, 1.0)
-        m.add(thud(90, 32, 0.45, 0.14), 0.0, 0.9)
-        m.add(K('impact_wood_heavy_000', -4), 0.01, 0.6)
-        m.add(K('impact_wood_heavy_001', -3), 0.07, 0.45)
-        m.add(rattle(0.7, 12, 1100, 4000, 0.12), 0.02, 0.35)
-        t = tt(0.4)
-        m.add(D.bp(D.white(0.4), 400, 2500) * np.exp(-t / 0.15), 0.05, 0.3)
-        out('rpg_shove', m, drive=2.8, wet=0.18, decay=1.3)
+        blow(m, 0.0, 1.8, 140, 35, 0.16, punch=0, crunch_lo=250, crunch_hi=2800, crunch_tau=0.08, crunch_g=1.3)
+        m.add(K('impact_wood_heavy_000', -4), 0.01, 0.7)
+        m.add(K('impact_wood_heavy_001', -3), 0.07, 0.5)
+        m.add(rubble(0.7, 8, 0.1, 200, 900), 0.02, 0.45)
+        t = tt(0.45)
+        m.add(D.bp(D.white(0.45), 250, 1800) * np.exp(-t / 0.16), 0.05, 0.5)   # the slide
+        out('rpg_shove', m, drive=3.2, wet=0.1, decay=1.0)
 
     @cue('rpg_interrupt')
     def _interrupt():
-        """Bash stops the SMASH: a sharp clang, the chain going slack, the ball dropping."""
+        """Bash stops the SMASH: shield meets the ball's chain hard, the chain goes slack, the ball drops."""
         D.seed(15900)
         m = Mix()
-        m.add(K('impact_metal_light_000', -3), 0.0, 1.0)
-        m.add(iron(1760, 0.8, 0.25, 0.6, BELL_SMALL), 0.0, 0.35)
-        m.add(grit(0.06, 0.015, 2000, 9000), 0.0, 0.5)
-        m.add(chain(0.5, 28, 2000, 5000, env=lambda u: np.exp(-u / 0.18)), 0.04, 0.4)
-        m.add(K('impact_tin_medium_004', -10), 0.3, 0.45)
-        out('rpg_interrupt', m, drive=2.0, wet=0.2, decay=1.4)
+        blow(m, 0.0, 1.4, 170, 45, 0.11, punch=1, crunch_lo=400, crunch_hi=4000, crunch_g=1.4)
+        m.add(K('impact_wood_heavy_000', -3), 0.0, 0.6)
+        m.add(thunk(330, 0.15, 0.04), 0.0, 0.4)
+        m.add(heavy_chain(0.5, 26, env=lambda u: np.exp(-u / 0.18)), 0.04, 0.5)
+        m.add(kick(90, 35, 0.4, 0.12), 0.3, 0.5)   # the ball drops
+        m.add(K('impact_wood_heavy_001', -8), 0.3, 0.6)
+        out('rpg_interrupt', m, drive=3.0, wet=0.12, decay=1.1)
 
     @cue('enrage')
     def _enrage():
@@ -883,20 +995,20 @@ def register(cue, write, kenney):
             m = Mix()
             if k == 0:   # muzzled; his chains thrash, the ball drags
                 m.add(growl(1.4, [(0, 66), (0.3, 92), (1.0, 86), (1.4, 58)], 'u', 1.0, 0.2, 3.2, 0.62), 0.0, 1.0)
-                m.add(chain(1.3, 40, 2200, 5600, env=lambda u: min(1.0, u / 0.2) * np.exp(-u / 0.8)), 0.05, 0.4)
+                m.add(heavy_chain(1.3, 30, env=lambda u: min(1.0, u / 0.2) * np.exp(-u / 0.8)), 0.05, 0.45)
                 m.add(D.lp(D.brown(1.0), 600) * env_ar(1.0, 0.1, 0.4), 0.2, 0.5)
-            elif k == 1:   # the cracked bell struck over and over, a shriek over it
+            elif k == 1:   # his bell rung wild, a shriek over it
                 m.add(growl(1.2, [(0, 120), (0.4, 160), (1.2, 100)], 'a', 0.9, 0.16, 2.6, 0.8), 0.15, 0.6)
                 at = 0.0
-                for i in range(7):
-                    m.add(iron(330, 0.8, 0.35, 0.8, CRACKED), at, 0.4)
-                    at += 0.22 * 0.82 ** i
-                for n_, v in (('D5', 0.3), ('Eb5', 0.28)):
+                for i in range(6):
+                    play(m, 'bell', 'E2', at, 0.35, 0.55 - 0.05 * i)
+                    at += 0.24 * 0.84 ** i
+                for n_, v in (('D5', 0.25), ('Eb5', 0.22)):
                     play(m, 'choir_i', n_, 0.2, 1.0, v, adsr=(0.15, 0.4, 0.8, 0.4))
-            elif k == 2:   # an iron roar behind the angel mask, the wings bristling, the organ
+            elif k == 2:   # an iron roar behind the angel mask, the wings rising in a rush, the organ
                 g = growl(1.4, [(0, 72), (0.3, 98), (1.0, 90), (1.4, 62)], 'a', 1.0, 0.18, 3.0, 0.6)
                 m.add(g * (0.6 + 0.4 * np.sin(2 * np.pi * 61 * tt(1.4))), 0.0, 1.0)
-                m.add(rattle(1.0, 30, 3000, 7500, 0.3, tau=0.025), 0.1, 0.35)
+                m.add(whoosh(0.8, [(0, 150), (0.6, 800), (1, 200)], at=0.5, q=1.2), 0.1, 0.5)
                 for n_, v in (('D2', 0.4), ('Eb2', 0.35), ('Ab2', 0.3)):
                     play(m, 'organ', n_, 0.1, 1.1, v, adsr=(0.15, 0.3, 0.9, 0.4))
             else:   # through the iron jaw, the pipe hissing, the jaw-plate rattling
@@ -904,146 +1016,155 @@ def register(cue, write, kenney):
                 m.add(D.bp(g, 150, 2400), 0.0, 1.0)
                 t = tt(1.2)
                 m.add(D.bp(D.white(1.2), 3000, 9000) * np.clip(t / 0.3, 0, 1) * np.exp(-np.clip(t - 0.3, 0, None) / 0.4), 0.3, 0.35)
-                m.add(D.hp(K('metal_latch', -6), 200), 0.02, 0.4)
-            m.add(thud(48, 30, 1.2, 0.5, a=0.15), 0.0, 0.5)
-            out(f'enrage_{k}', m, drive=2.4, wet=0.26, decay=1.8)
+                m.add(heavy_chain(0.4, 30, env=lambda u: np.exp(-u / 0.15)), 0.02, 0.3)
+            m.add(kick(60, 32, 1.2, 0.5, drop=0.2), 0.0, 0.4)
+            out(f'enrage_{k}', m, drive=2.4, wet=0.24, decay=1.6)
 
     # ================================================ the fallen (#154): one per kind, the bosses and the Abbot their own
     # The fall lasts DEATH_SEC (0.9 s): the chunks land from about 0.2 s to 0.65 s (taller ones later), so the pieces
-    # do; then the light goes out and the last bits settle.
+    # do: heavy and dull (a body coming down, armour, iron chunks), never pinging (#157); then the light goes out.
+    def fall(m, at, weight=1.0, punch=1, soft=0):
+        """A body coming down at `at`: its weight on the floor."""
+        m.add(K(f'impact_punch_heavy_00{punch % 3}', -3 - 2 * weight), at, 0.7)
+        m.add(K(f'impact_soft_heavy_00{soft % 3}', -2 - 2 * weight), at + 0.01, 0.6)
+        m.add(kick(130, 70 - 20 * weight, 0.3 + 0.2 * weight, 0.07 + 0.05 * weight), at, 0.4)
+        m.add(body(0.25 + 0.1 * weight, 0.06 + 0.03 * weight, 100, 500), at, 0.9)
+        m.add(crunch(0.16, 0.05, 300, 2500, grain=0.7), at, 1.6)
+
     @cue('die_hollow')
     def _die_hollow():
-        """The Hollow: his iron bones, the plate, the kite shield, the greatsword on stone, the great helm rolling."""
+        """The Hollow: his frame folding, plate and bones landing, the kite shield, the greatsword, the great helm
+        rolling off."""
         D.seed(17000)
         m = Mix()
-        m.add(ember_out(0.7, 760), 0.0, 0.25)
-        m.add(rattle(1.0, 16, 900, 3800, 0.18, start=0.15), 0.0, 0.5)
-        m.add(K('impact_metal_light_000', -6), 0.26, 0.6)
-        m.add(K('impact_tin_medium_001', -5), 0.3, 0.7)
-        m.add(K('impact_wood_heavy_000', -3), 0.4, 0.55)
-        m.add(thud(110, 45, 0.25, 0.08), 0.4, 0.5)
-        m.add(K('impact_metal_light_002', -2), 0.52, 0.8)
-        m.add(iron(420, 1.0, 0.4, 0.8, BAR), 0.52, 0.28)
+        m.add(ember_out(0.7, 760), 0.0, 0.2)
+        m.add(rubble(1.0, 12, 0.16, 180, 800, start=0.16), 0.0, 0.8)
+        m.add(thunk(300, 0.15, 0.04), 0.26, 0.5)   # the helm
+        fall(m, 0.32, 1.0, punch=1, soft=0)
+        m.add(K('impact_wood_heavy_000', -4), 0.42, 0.7)   # the shield
+        m.add(thunk(220, 0.2, 0.05), 0.52, 0.55)   # the greatsword
+        t = tt(0.18)
+        m.add(D.bp(D.white(0.18), 900, 3500) * np.exp(-t / 0.06), 0.53, 0.25)   # it skids
         at = 0.62
-        for i in range(5):
-            m.add(tink(700 - 20 * i, 0.1, 0.02, BOWL), at, 0.3 * 0.75 ** i)
+        for i in range(5):   # the helm rolls
+            m.add(thunk(340 - 10 * i, 0.1, 0.03), at, 0.35 * 0.75 ** i)
             at += 0.13 * (1 + 0.1 * i)
-        out('die_hollow', m, drive=2.4, wet=0.2, decay=1.5)
+        out('die_hollow', m, drive=3.0, wet=0.12, decay=1.2)
 
     @cue('die_guardian')
     def _die_guardian():
-        """The Guardian: his frame in a heap, then the great shield falls face up, its rim ringing, the halo cracking."""
+        """The Guardian: his frame in a heap, then the great shield slamming down face up, its halo cracking through."""
         D.seed(17100)
         m = Mix()
-        m.add(ember_out(0.8, 700), 0.0, 0.25)
-        m.add(rattle(1.0, 14, 700, 3200, 0.2, start=0.18), 0.0, 0.5)
-        m.add(K('impact_tin_medium_002', -6), 0.32, 0.5)
-        m.add(K('impact_wood_heavy_001', -5), 0.48, 0.9)
-        m.add(K('impact_punch_heavy_002', -6), 0.48, 0.8)
-        m.add(thud(90, 36, 0.4, 0.13), 0.48, 0.8)
-        m.add(iron(260, 1.6, 0.6, 0.75), 0.48, 0.28)
-        m.add(K('impact_glass_light_001', -6), 0.5, 0.45)
-        m.add(grit(0.12, 0.04, 1200, 7000), 0.5, 0.45)
-        out('die_guardian', m, drive=2.6, wet=0.22, decay=1.6)
+        m.add(ember_out(0.8, 700), 0.0, 0.2)
+        m.add(rubble(1.0, 10, 0.18, 160, 700, start=0.18), 0.0, 0.8)
+        fall(m, 0.32, 1.1, punch=2, soft=1)
+        m.add(K('impact_wood_heavy_001', -6), 0.48, 1.0)   # the great shield
+        m.add(kick(110, 40, 0.5, 0.14), 0.48, 0.45)
+        m.add(boom(0.5, 700, 0.12), 0.48, 0.5)
+        m.add(crunch(0.25, 0.07, 600, 4500, grain=0.85), 0.5, 1.4)   # the halo cracks
+        m.add(thunk(180, 0.25, 0.06), 0.48, 0.4)
+        out('die_guardian', m, drive=3.0, wet=0.12, decay=1.3)
 
     @cue('die_revenant')
     def _die_revenant():
-        """The Revenant: the bare frame comes apart, rods and joints in a high heap, the heart-lens humming down and cracking."""
+        """The Revenant: the heart-lens dying, the bare frame coming apart, rods and joints in a high heap, the lens
+        cracking."""
         D.seed(17200)
         m = Mix()
-        m.add(fmz(0, 2.0, 0.9, 1.5, 0.3, 0.35, fpath=lambda u: 660 * (110 / 660) ** (u / 0.9)), 0.0, 0.3)
-        m.add(rattle(1.2, 26, 500, 2600, 0.2, start=0.12, tau=0.035), 0.0, 0.7)
-        m.add(rattle(1.0, 10, 2200, 5200, 0.25, start=0.2), 0.0, 0.3)
-        m.add(K('impact_tin_medium_004', -6), 0.36, 0.6)
-        m.add(K('impact_metal_light_001', -7), 0.45, 0.5)
-        m.add(K('impact_glass_light_002', -3), 0.6, 0.55)
-        out('die_revenant', m, drive=2.4, wet=0.22, decay=1.5)
+        m.add(fmz(0, 2.0, 0.9, 1.5, 0.3, 0.35, fpath=lambda u: 520 * (90 / 520) ** (u / 0.9)), 0.0, 0.3)
+        m.add(rubble(1.2, 24, 0.2, 200, 1100, start=0.12), 0.0, 1.0)   # rods and joints
+        fall(m, 0.36, 1.0, punch=0, soft=2)
+        m.add(thunk(260, 0.15, 0.04), 0.45, 0.4)   # the skull
+        m.add(crunch(0.18, 0.05, 900, 5000, grain=0.85), 0.6, 1.0)   # the lens cracks
+        out('die_revenant', m, drive=3.0, wet=0.12, decay=1.2)
 
     @cue('die_penitent')
     def _die_penitent():
-        """The Penitent: a last breath, his robe in a heap, the scourge's weights, the head-cage rolling off, the candle out."""
+        """The Penitent: a last breath, his body and robe coming down, the scourge's weights, the head-cage rolling off,
+        the candle out."""
         D.seed(17300)
         m = Mix()
         m.add(sigh(0.6, 'a', 0.75), 0.0, 0.35)
-        m.add(K('cloth_1', -5), 0.3, 0.7)
+        fall(m, 0.33, 1.0, punch=2, soft=2)
+        m.add(K('cloth_1', -5), 0.3, 0.6)
         m.add(K('drop_leather', -4), 0.36, 0.7)
-        m.add(K('impact_soft_heavy_002', -3), 0.36, 0.6)
-        m.add(rattle(0.9, 8, 800, 2600, 0.18, start=0.3), 0.0, 0.35)
-        for i, at in enumerate((0.42, 0.48, 0.56)):
-            m.add(tink(1900 + 300 * i, 0.12, 0.03), at, 0.35)
+        m.add(rubble(0.9, 6, 0.15, 200, 700, start=0.3), 0.0, 0.5)
+        for i, at in enumerate((0.42, 0.48, 0.56)):   # the scourge's iron weights
+            m.add(thunk(380 + 40 * i, 0.1, 0.025), at, 0.35)
         at = 0.5
-        for i in range(6):
-            m.add(chain(0.06, 80, 1400, 3200), at, 0.35 * 0.8 ** i)
+        for i in range(6):   # the head-cage rolls off
+            m.add(thunk(420, 0.08, 0.02), at, 0.35 * 0.8 ** i)
             at += 0.11 * (1 + 0.12 * i)
-        m.add(snuff(0.25), 0.62, 0.35)
-        out('die_penitent', m, drive=2.2, wet=0.2, decay=1.4)
+        m.add(snuff(0.25), 0.62, 0.3)
+        out('die_penitent', m, drive=2.8, wet=0.12, decay=1.2)
 
     @cue('die_confessor')
     def _die_confessor():
-        """The Confessor: the glow behind its grille going out in a whisper of choir, the robe, the grille, the crozier,
-        the censer on its chain, its last smoke."""
+        """The Confessor: the glow behind its grille going out in a whisper of choir, the robe falling, the grille, the
+        crozier, the censer on its heavy chain, its last smoke."""
         D.seed(17400)
         m = Mix()
         play(m, 'choir_o', 'A3', 0.0, 0.5, 0.35, adsr=(0.02, 0.3, 0.5, 0.4))
         play(m, 'choir_o', 'Eb3', 0.05, 0.5, 0.3, adsr=(0.02, 0.3, 0.5, 0.4))
-        m.add(ember_out(0.9, 600), 0.0, 0.3)
+        m.add(ember_out(0.9, 600), 0.0, 0.25)
+        fall(m, 0.32, 0.8, punch=1, soft=1)
         m.add(K('cloth_2', -4), 0.3, 0.6)
-        m.add(K('drop_leather', -6), 0.35, 0.5)
-        m.add(K('impact_plate_light_002', -5), 0.42, 0.6)
-        m.add(chain(0.2, 60, 2600, 6000, env=lambda u: np.exp(-u / 0.08)), 0.42, 0.3)
-        m.add(K('impact_metal_light_001', -1), 0.55, 0.5)
-        m.add(iron(700, 0.8, 0.28, 0.7, BAR), 0.55, 0.22)
-        m.add(chain(0.3, 40, 2400, 5500, env=lambda u: np.exp(-u / 0.12)), 0.62, 0.35)
-        m.add(iron(520, 0.7, 0.25, 0.6, BOWL), 0.66, 0.3)
+        m.add(thunk(320, 0.12, 0.03), 0.42, 0.5)   # the grille
+        m.add(thunk(210, 0.2, 0.05), 0.55, 0.5)   # the crozier
+        m.add(heavy_chain(0.3, 30, env=lambda u: np.exp(-u / 0.12)), 0.62, 0.4)   # the censer
+        m.add(thunk(280, 0.15, 0.04), 0.66, 0.4)
         t = tt(1.8)
-        m.add(D.bp(D.white(1.8), 1200, 4500) * np.clip(t / 0.15, 0, 1) * np.exp(-t / 0.4), 0.7, 0.25)
-        out('die_confessor', m, drive=2.0, wet=0.26, decay=1.8)
+        m.add(D.bp(D.white(1.8), 1200, 4500) * np.clip(t / 0.15, 0, 1) * np.exp(-t / 0.4), 0.7, 0.2)
+        out('die_confessor', m, drive=2.6, wet=0.18, decay=1.5)
 
     @cue('die_cherub')
     def _die_cherub():
-        """A Cherub (one per body): the porcelain face cracking, its little iron wings, its halo's spark."""
+        """A Cherub (one per body): it drops, its porcelain face cracks in a crunch, its little iron wing, its halo's spark."""
         for k in range(3):
             D.seed(17500 + k)
             m = Mix()
             t = tt(0.3)
-            m.add(np.sin(2 * np.pi * np.cumsum(2400 * 0.25 ** (t / 0.3)) / SR) * np.exp(-t / 0.1) * 0.4, 0.0, 0.35)
-            m.add(tink(2600 + 300 * k, 0.1, 0.02), 0.15, 0.35)
-            m.add(K(f'impact_glass_light_00{k}', -2 + k), 0.2, 0.8)
-            m.add(K(f'impact_plate_light_00{k + 1}', -3), 0.21, 0.6)
-            m.add(tink(3100 + 200 * k, 0.1, 0.02), 0.27, 0.25)
-            out(f'die_cherub_{k}', m, drive=2.0, wet=0.16, decay=1.1)
+            m.add(np.sin(2 * np.pi * np.cumsum(1800 * 0.25 ** (t / 0.3)) / SR) * np.exp(-t / 0.1) * 0.4, 0.0, 0.2)
+            m.add(K(f'impact_punch_heavy_00{k}', 1), 0.2, 0.6)
+            m.add(kick(220, 90, 0.18, 0.04), 0.2, 0.35)
+            m.add(body(0.12, 0.03, 200, 900), 0.2, 0.8)
+            m.add(crunch(0.12, 0.03, 900, 5500, grain=0.85), 0.2, 1.8)   # the face cracks
+            m.add(thunk(480 + 60 * k, 0.08, 0.02), 0.27, 0.3)   # a wing
+            out(f'die_cherub_{k}', m, drive=2.8, wet=0.1, decay=0.9)
 
     @cue('die_ironwing')
     def _die_ironwing():
-        """The Ironwing: a last iron shriek, the leather wings, its struts splaying, the skull."""
+        """The Ironwing: a last rasping shriek, it drops, the leather wings slap the floor, the struts splay, the skull."""
         D.seed(17600)
         m = Mix()
-        d = 0.34
-        m.add(fmz(0, 2.01, d, 3.0, 0.15, 0.14, attack=0.01, fpath=lambda u: 1900 * (650 / 1900) ** (u / d) * (1 + 0.05 * np.sin(2 * np.pi * 31 * u))), 0.0, 0.4)
+        m.add(rasp(0.34, 1100, 45), 0.0, 0.5)
+        m.add(fmz(0, 2.01, 0.34, 2.0, 0.15, 0.14, attack=0.01, fpath=lambda u: 1300 * (450 / 1300) ** (u / 0.34)), 0.0, 0.25)
+        fall(m, 0.32, 0.7, punch=0, soft=0)
         m.add(K('cloth_2', -3), 0.3, 0.6)
         m.add(K('drop_leather', -1), 0.34, 0.6)
-        m.add(rattle(0.6, 12, 2000, 5000, 0.12, start=0.3), 0.0, 0.4)
-        m.add(K('impact_metal_light_000', 3), 0.46, 0.5)
-        m.add(ember_out(0.6, 900), 0.3, 0.2)
-        out('die_ironwing', m, rate=16000, drive=2.2, wet=0.18, decay=1.3)
+        m.add(rubble(0.6, 8, 0.1, 250, 1000, start=0.32), 0.0, 0.6)
+        m.add(thunk(360, 0.12, 0.03), 0.46, 0.4)
+        m.add(ember_out(0.6, 900), 0.3, 0.15)
+        out('die_ironwing', m, drive=2.8, wet=0.12, decay=1.1)
 
     @cue('die_vigil')
     def _die_vigil():
-        """The Vigil: its rotor winding down, the iron feathers ticking slower, the drum falling on its side."""
+        """The Vigil: its rotor winding down, the iron feathers knocking slower, the drum crashing down on its side."""
         D.seed(17700)
         m = Mix()
         d = 0.9
         t = tt(d)
         fr = 85 * (12 / 85) ** (t / d)
-        m.add(D.bp(D.osc(fr, d, 'saw'), 200, 3000) * np.exp(-t / 0.5) * np.clip(t / 0.01, 0, 1), 0.0, 0.45)
+        m.add(D.bp(D.osc(fr, d, 'saw'), 150, 2200) * np.exp(-t / 0.5) * np.clip(t / 0.01, 0, 1), 0.0, 0.45)
         ph = np.cumsum(fr / 6) / SR
         for i in np.nonzero(np.diff(np.floor(ph)) > 0)[0]:
-            m.add(tink(D.rng.uniform(2200, 4200), 0.06, 0.012), i / SR, 0.25)
-        m.add(K('impact_tin_medium_003', -6), 0.68, 0.8)
-        m.add(K('impact_punch_heavy_001', -4), 0.68, 0.6)
-        m.add(rattle(0.7, 12, 1500, 4500, 0.12), 0.7, 0.35)
-        m.add(ember_out(0.7, 1000), 0.6, 0.2)
-        out('die_vigil', m, drive=2.4, wet=0.2, decay=1.4)
+            m.add(thunk(D.rng.uniform(380, 600), 0.06, 0.015), i / SR, 0.3)
+        fall(m, 0.68, 1.0, punch=1, soft=1)
+        m.add(thunk(200, 0.25, 0.06), 0.68, 0.5)   # the drum
+        m.add(rubble(0.7, 8, 0.12, 250, 900), 0.7, 0.5)
+        m.add(ember_out(0.7, 1000), 0.6, 0.15)
+        out('die_vigil', m, drive=2.8, wet=0.12, decay=1.1)
 
     @cue('die_gravedigger')
     def _die_gravedigger():
@@ -1051,107 +1172,102 @@ def register(cue, write, kenney):
         D.seed(17800)
         m = Mix()
         m.add(growl(0.8, [(0, 88), (0.5, 70), (0.8, 50)], 'o', 0.95, 0.12, 2.0, 0.55, env=D.env_lin(0.8, [(0, 0), (0.05, 1), (0.5, 0.6), (0.8, 0)])), 0.0, 0.4)
-        for i, (at, s) in enumerate(((0.48, -2), (0.62, -3), (0.8, -4))):
-            m.add(K(f'impact_wood_heavy_00{i % 2}', s), at, 0.6)
-        m.add(thud(70, 28, 0.6, 0.22), 0.55, 1.0)
-        m.add(K('impact_punch_heavy_000', -8), 0.55, 1.0)
-        m.add(K('impact_soft_heavy_000', -5), 0.56, 0.7)
-        m.add(chain(0.6, 35, 2000, 5000, env=lambda u: np.exp(-u / 0.2)), 0.6, 0.35)
-        m.add(K('impact_metal_light_002', -3), 0.72, 0.6)
-        m.add(iron(600, 0.9, 0.3, 0.7, BAR), 0.72, 0.22)
-        m.add(ember_out(0.7, 640), 0.4, 0.2)
-        out('die_gravedigger', m, drive=2.6, wet=0.22, decay=1.6)
+        for i, (at, sm) in enumerate(((0.48, -2), (0.62, -3), (0.8, -4))):
+            m.add(K(f'impact_wood_heavy_00{i % 2}', sm), at, 0.7)
+        fall(m, 0.55, 1.6, punch=0, soft=0)
+        m.add(boom(0.6, 600, 0.16), 0.55, 0.5)
+        m.add(heavy_chain(0.6, 30, env=lambda u: np.exp(-u / 0.2)), 0.6, 0.4)
+        m.add(thunk(240, 0.25, 0.06), 0.72, 0.5)   # the spade
+        m.add(ember_out(0.7, 640), 0.4, 0.15)
+        out('die_gravedigger', m, drive=3.0, wet=0.14, decay=1.3)
 
     @cue('die_gaoler')
     def _die_gaoler():
-        """The Gaoler: a roar dying in the muzzle, the ball dropping, its chain running out, the keys, the giant falling,
-        the manacle, the rumble, the last link settling."""
+        """The Gaoler: a roar dying in the muzzle, the ball dropping through the floor, its chain running out, the keys,
+        the giant coming down, the manacle, the rumble, the last link settling."""
         D.seed(17900)
         m = Mix()
         m.add(growl(1.3, [(0, 84), (0.4, 72), (1.3, 40)], 'u', 1.0, 0.2, 2.8, 0.6, env=D.env_lin(1.3, [(0, 0), (0.06, 1), (0.8, 0.6), (1.3, 0)])), 0.0, 0.7)
-        m.add(thud(55, 20, 1.2, 0.5), 0.22, 1.0)
-        m.add(K('impact_punch_heavy_000', -10), 0.22, 1.0)
-        m.add(D.lp(D.white(0.4), 2400) * env_ar(0.4, 0.003, 0.1), 0.22, 0.6)
-        m.add(chain(1.3, 30, 2000, 5200, env=lambda u: np.exp(-u / 0.5)), 0.24, 0.5)
-        m.add(rattle(0.8, 14, 3200, 6200, 0.15, tau=0.03), 0.6, 0.3)
-        m.add(thud(70, 30, 0.6, 0.25), 0.85, 0.8)
+        blow(m, 0.22, 2.0, 120, 30, 0.22, punch=0, crunch_lo=250, crunch_hi=2800, crunch_tau=0.09)   # the ball
+        m.add(boom(0.9, 700, 0.25), 0.22, 0.7)
+        m.add(heavy_chain(1.3, 26, env=lambda u: np.exp(-u / 0.5)), 0.24, 0.55)
+        m.add(rubble(0.8, 10, 0.15, 300, 1000), 0.6, 0.4)   # the keys
+        fall(m, 0.85, 2.0, punch=2, soft=0)
         m.add(K('impact_wood_heavy_001', -6), 0.85, 0.7)
-        m.add(K('drop_leather', -6), 0.9, 0.6)
-        m.add(K('metal_latch', -6), 1.05, 0.5)
-        m.add(thunder_roll(1.6, 200, seed=17901), 0.3, 0.5)
+        m.add(thunk(260, 0.15, 0.04), 1.05, 0.4)   # the manacle
+        m.add(thunder_roll(1.6, 220, seed=17901), 0.3, 0.5)
         D.seed(17902)
-        m.add(ember_out(1.2, 520), 0.9, 0.25)
-        m.add(tink(2100, 0.2, 0.03), 2.1, 0.2)
-        out('die_gaoler', m, drive=2.6, wet=0.28, decay=2.2)
+        m.add(ember_out(1.2, 520), 0.9, 0.2)
+        m.add(thunk(400, 0.12, 0.03), 2.1, 0.2)
+        out('die_gaoler', m, drive=3.0, wet=0.2, decay=1.8)
 
     @cue('die_bellringer')
     def _die_bellringer():
-        """The Bellringer: the yoke gives, the bell comes down on the stone and tolls once more, cracked, and rolls;
-        his candles go out; the choir drops away."""
+        """The Bellringer: the yoke breaks, the bell comes down on the stone and tolls once more, deep and cracked, and
+        rolls; his candles go out; the choir drops away."""
         D.seed(18000)
         m = Mix()
         for n_, v in (('D3', 0.3), ('A3', 0.28), ('D4', 0.22)):
             play(m, 'choir_o', n_, 0.0, 0.9, v, adsr=(0.05, 0.4, 0.6, 0.9))
         m.add(K('creak_2', -6), 0.0, 0.6)
-        m.add(K('impact_wood_heavy_000', -2), 0.32, 0.7)
-        m.add(grit(0.15, 0.05, 800, 5000), 0.32, 0.5)
+        m.add(K('impact_wood_heavy_000', -3), 0.32, 0.8)   # the yoke breaks
+        m.add(crunch(0.2, 0.06, 400, 3500, grain=0.85), 0.32, 1.2)
         hit = 0.6
-        m.add(thud(65, 30, 0.8, 0.3), hit, 0.9)
-        m.add(iron(98, 4.0, 1.8, 0.95, CRACKED), hit, 0.6)
-        t = tt(3.0)
-        m.add(D.bp(D.white(3.0), 1500, 4000) * np.exp(-t / 0.8) * (0.5 + 0.5 * np.sin(2 * np.pi * 7.3 * t)) ** 2, hit, 0.12)
-        for i in range(5):
-            m.add(iron(196, 0.4, 0.12, 0.6, CRACKED), hit + 0.55 + i * 0.26 * 1.2 ** i, 0.25 * 0.72 ** i)
+        blow(m, hit, 2.0, 110, 30, 0.22, punch=0, crunch_lo=250, crunch_hi=2500, crunch_tau=0.08)
+        play(m, 'bell', 'A1', hit, 3.0, 0.9)   # its last toll
+        t = tt(2.5)
+        m.add(D.bp(D.white(2.5), 800, 2500) * np.exp(-t / 0.7) * (0.5 + 0.5 * np.sin(2 * np.pi * 7.3 * t)) ** 2, hit, 0.15)   # the crack buzzes
+        for i in range(5):   # it rolls, slower
+            m.add(thunk(150, 0.2, 0.06), hit + 0.55 + i * 0.26 * 1.2 ** i, 0.4 * 0.72 ** i)
         for at in (0.9, 1.1):
-            m.add(snuff(0.2), at, 0.3)
-        out('die_bellringer', m, drive=2.2, wet=0.34, decay=2.8)
+            m.add(snuff(0.2), at, 0.25)
+        out('die_bellringer', m, drive=2.6, wet=0.28, decay=2.4)
 
     @cue('die_inquisitor')
     def _die_inquisitor():
-        """The Inquisitor: the choir screams and falls, his blade-feathers cascade and shatter, the armour comes down,
-        the headsman's sword rings out on the stone, the organ holds the end of judgment."""
+        """The Inquisitor: the choir screams and falls, his blade-feathers come down in a heavy iron rain, the armour
+        crashes down, the headsman's sword drops flat on the stone, the organ holds the end of judgment."""
         D.seed(18100)
         m = Mix()
         for n_, v in (('D4', 0.4), ('Eb4', 0.35), ('A4', 0.3)):
             play(m, 'choir_a', n_, 0.0, 0.5, v, adsr=(0.03, 0.3, 0.7, 0.3))
         for n_, v in (('D3', 0.4), ('Eb3', 0.35), ('A2', 0.35)):
             play(m, 'choir_a', n_, 0.45, 1.2, v, adsr=(0.1, 0.5, 0.6, 1.0))
-        m.add(rattle(1.4, 44, 2800, 7800, 0.35, start=0.1, tau=0.03), 0.0, 0.5)
-        for i in range(3):
-            m.add(K(f'impact_glass_light_00{i}', -5 - i), 0.25 + 0.12 * i, 0.4)
+        m.add(rubble(1.4, 34, 0.3, 250, 1300, start=0.1), 0.0, 0.9)   # the feathers
+        m.add(crunch(0.8, 0.25, 600, 5000, grain=0.9), 0.15, 0.6)
         hit = 0.85
-        m.add(K('impact_punch_heavy_001', -8), hit, 1.0)
-        m.add(K('impact_tin_medium_000', -7), hit + 0.02, 0.7)
-        m.add(thud(60, 22, 1.0, 0.4), hit, 1.0)
-        m.add(K('impact_metal_light_001', -4), hit + 0.2, 0.8)
-        m.add(iron(330, 2.2, 1.0, 0.85), hit + 0.2, 0.3)
+        fall(m, hit, 2.0, punch=1, soft=1)
+        m.add(boom(0.9, 700, 0.25), hit, 0.6)
+        m.add(K('impact_wood_heavy_001', -6), hit + 0.02, 0.6)
+        m.add(thunk(170, 0.35, 0.09), hit + 0.2, 0.6)   # the sword
+        m.add(kick(120, 50, 0.3, 0.08), hit + 0.2, 0.35)
         for n_, v in (('D2', 0.35), ('A2', 0.3)):
             play(m, 'organ', n_, 0.4, 2.0, v, adsr=(0.3, 0.6, 0.8, 1.0))
-        m.add(ember_out(1.4, 480), hit, 0.25)
-        out('die_inquisitor', m, drive=2.4, wet=0.34, decay=2.8)
+        m.add(ember_out(1.4, 480), hit, 0.2)
+        out('die_inquisitor', m, drive=2.8, wet=0.26, decay=2.4)
 
     @cue('die_abbot')
     def _die_abbot():
-        """The Abbot: a groan through the jaw-plate, the halo mace, his banner coming down, the war-priest falling, the
-        iron jaw, the pipe's last breath, the tithe spilling."""
+        """The Abbot: a groan through the jaw-plate, the halo mace dropped, his banner coming down, the war-priest
+        crashing down, the iron jaw, the pipe's last breath, the tithe spilling."""
         D.seed(18200)
         m = Mix()
         g = growl(0.9, [(0, 76), (0.5, 62), (0.9, 44)], 'o', 1.0, 0.16, 2.4, 0.56, env=D.env_lin(0.9, [(0, 0), (0.05, 1), (0.6, 0.5), (0.9, 0)]))
         m.add(D.bp(g, 150, 2400), 0.0, 0.5)
         t = tt(0.7)
-        m.add(swept(0.7, [(0, 900), (1, 300)], np.sin(np.pi * t / 0.7) ** 2, q=1.4), 0.3, 0.3)
-        m.add(K('impact_metal_light_000', -6), 0.4, 0.8)
-        m.add(iron(470, 1.2, 0.45, 0.75, BELL_SMALL), 0.4, 0.25)
-        m.add(thud(62, 24, 0.9, 0.35), 0.7, 1.0)
-        m.add(K('impact_punch_heavy_002', -9), 0.7, 1.0)
-        m.add(K('metal_latch', -3), 0.78, 0.5)
+        m.add(swept(0.7, [(0, 700), (1, 250)], np.sin(np.pi * t / 0.7) ** 2, q=1.4), 0.3, 0.35)   # the banner
+        m.add(thunk(230, 0.25, 0.06), 0.4, 0.6)   # the mace
+        m.add(kick(140, 55, 0.3, 0.08), 0.4, 0.35)
+        fall(m, 0.7, 2.0, punch=2, soft=2)
+        m.add(boom(0.7, 700, 0.2), 0.7, 0.5)
+        m.add(thunk(300, 0.12, 0.03), 0.78, 0.4)   # the iron jaw
         m.add(K('cloth_1', -6), 0.85, 0.5)
         t2 = tt(1.6)
-        m.add(swept(1.6, [(0, 6000), (1, 1500)], np.clip(t2 / 0.08, 0, 1) * np.exp(-t2 / 0.6), q=1.2), 0.9, 0.3)
-        m.add(K('handle_coins', -2), 0.95, 0.6)
-        m.add(K('handle_coins_2', -3), 1.1, 0.45)
-        m.add(ember_out(1.0, 560), 0.8, 0.2)
-        out('die_abbot', m, drive=2.4, wet=0.28, decay=2.2)
+        m.add(swept(1.6, [(0, 5000), (1, 1300)], np.clip(t2 / 0.08, 0, 1) * np.exp(-t2 / 0.6), q=1.2), 0.9, 0.3)
+        m.add(K('handle_coins', -3), 0.95, 0.55)
+        m.add(K('handle_coins_2', -4), 1.1, 0.4)
+        m.add(ember_out(1.0, 560), 0.8, 0.15)
+        out('die_abbot', m, drive=2.8, wet=0.2, decay=1.8)
 
     # ================================================ the crypt
     @cue('rpg_spotted')
@@ -1159,8 +1275,8 @@ def register(cue, write, kenney):
         """The next pack sees the party ("!"): a ring of steel, a drum, their eyes lighting, a sour choir stab."""
         D.seed(18300)
         m = Mix()
-        m.add(K('impact_metal_light_002', 2), 0.0, 0.6)
-        m.add(timp('D2', 1.0, 0.8, 730), 0.0, 0.7)
+        m.add(cut(0.18, 3000, 6500, 0.07), 0.0, 0.35)   # blades drawn
+        m.add(timp('D2', 1.0, 0.8, 730), 0.0, 0.8)
         d = 0.18
         m.add(fmz(0, 1.5, d, 2.0, 0.1, 0.12, fpath=lambda u: 300 * 3 ** (u / d)), 0.02, 0.35)
         play(m, 'choir_a', 'D4', 0.02, 0.2, 0.3, adsr=(0.01, 0.2, 0.5, 0.3))
@@ -1243,9 +1359,10 @@ def register(cue, write, kenney):
         for k in range(2):
             D.seed(19000 + k)
             m = Mix()
-            m.add(K(f'impact_plate_light_00{k + 2}', -4), 0.0, 0.8)
-            m.add(tink(1600 + 300 * k, 0.12, 0.02), 0.0, 0.3)
-            m.add(K(f'impact_plate_light_00{k + 2}', -1), 0.09, 0.3)
+            m.add(K('drop_leather', -1 - k), 0.0, 0.7)
+            m.add(thunk(330 + 50 * k, 0.12, 0.03), 0.0, 0.5)
+            m.add(kick(200, 90, 0.12, 0.03), 0.0, 0.3)
+            m.add(thunk(380 + 50 * k, 0.08, 0.02), 0.09, 0.2)   # a bounce
             out(f'rpg_floordrop_{k}', m, drive=1.6, wet=0.14, decay=1.0)
 
     @cue('rpg_glint')
@@ -1299,7 +1416,7 @@ def register(cue, write, kenney):
         m.add(ps1.from_psr(ps1.rev_cymbal(0.3, seed=19301)), 0.0, 0.5)
         hit = 0.28
         m.add(timp('D2', 2.0, 1.0, 19302), hit, 0.9)
-        m.add(K('impact_metal_light_001', -8), hit, 0.5)
+        m.add(kick(120, 45, 0.5, 0.12), hit, 0.4)
         D.seed(19303)
         for n_, v in (('D4', 0.55), ('F#4', 0.5), ('A4', 0.5), ('D5', 0.45), ('D3', 0.45)):
             play(m, 'choir_a', n_, hit, 1.3, v, adsr=(0.04, 0.5, 0.85, 0.7))
@@ -1400,7 +1517,7 @@ def register(cue, write, kenney):
         m = Mix()
         for i, at in enumerate((0.0, 0.2, 0.4)):
             m.add(K(f'impact_wood_heavy_00{i % 2}', -1 + i), at, 0.7)
-            m.add(K('impact_metal_light_000', -4 + i), at, 0.35)
+            m.add(thunk(260 + 30 * i, 0.12, 0.03), at, 0.4)
             m.add(rattle(0.2, 4, 700, 2500, 0.04), at + 0.01, 0.2)
         for n_ in ('D3', 'A3', 'D4'):
             play(m, 'brass', n_, 0.62, 0.7, 0.6, adsr=(0.04, 0.3, 0.85, 0.5))
@@ -1458,7 +1575,7 @@ def register(cue, write, kenney):
         """Dropped from the bag: set down on the stone."""
         D.seed(20600)
         m = Mix()
-        m.add(K('impact_plate_light_000', -6), 0.0, 0.7)
+        m.add(thunk(300, 0.12, 0.03), 0.0, 0.6)
         m.add(K('drop_leather', 2), 0.0, 0.5)
         out('rpg_drop', m, drive=1.4, wet=0.1, decay=0.9)
 

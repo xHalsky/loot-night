@@ -17,9 +17,9 @@ export const MIX: Record<string, number> = {
   // step up; the big moves, the bosses' falls and the audio-first cues the loudest.
   legendary: 0.85, bagfull: 0.6, goblin: 0.6, goblincatch: 0.65, goblinlost: 0.5, down: 0.6, enrage: 0.8,
   wipe: 0.65, slam: 0.75, coins: 0.5, trash: 0.5,
-  rpg_slash: 0.26, rpg_stab: 0.24, rpg_bolt: 0.24, rpg_smite: 0.24, rpg_bash: 0.5, rpg_backstab: 0.5, rpg_fire: 0.5,
-  rpg_frost: 0.45, rpg_crit: 0.36, rpg_combo: 0.45, rpg_shieldbreak: 0.6, rpg_whiff: 0.18,
-  rpg_hurt: 0.24, rpg_bite: 0.2, rpg_hex: 0.34, rpg_darkmend: 0.3,
+  rpg_slash: 0.3, rpg_stab: 0.28, rpg_bolt: 0.28, rpg_smite: 0.28, rpg_bash: 0.5, rpg_backstab: 0.5, rpg_fire: 0.5,
+  rpg_frost: 0.45, rpg_crit: 0.4, rpg_combo: 0.45, rpg_shieldbreak: 0.6, rpg_whiff: 0.18,
+  rpg_hurt: 0.28, rpg_bite: 0.24, rpg_hex: 0.34, rpg_darkmend: 0.3,
   rpg_taunt: 0.5, rpg_smoke: 0.45, rpg_mend: 0.45, rpg_ward: 0.45, rpg_heal: 0.3,
   rpg_laststand: 0.6, rpg_heist: 0.55, rpg_cataclysm: 0.7, rpg_miracle: 0.6,
   rpg_levelup: 0.5, rpg_revive: 0.45, rpg_refuse: 0.35, rpg_ui: 0.4, rpg_swap: 0.35,

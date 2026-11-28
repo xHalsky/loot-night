@@ -143,14 +143,20 @@ listening, so her sounds are the most important ones in the game.
   ADPCM round trip, back up with a plain interpolation, the console's reverb. Iron, stone, chain, bells, choir, fire:
   the world's materials ([aoj-world.md](aoj-world.md)), played straight. Files at 22,050 Hz (the `game` profile).
   The party sits left in the stereo field, the enemies right (a light pan).
+  - **Battle has weight** (#157): every blow is built on one core (`blow` in `aoj_sfx.py`): a body hit (Kenney's heavy
+    punches), a low thump whose pitch drops fast, the body's thud, a dense crunch and a short edge, balanced by band
+    like a struck body (about 45% under 120 Hz, 30% 120 to 500 Hz, 20% 500 to 2,500 Hz, a little above), the weapon's
+    own on top (a blade's hiss and the meat under it, a mace's heavier thud, a bolt's crackle). Heavy pieces land as
+    thuds and grit (`rubble`), iron is struck and stopped (`thunk`), chains are thick and dull (`heavy_chain`):
+    nothing in battle rings but the bells, the choir and the organ. Little reverb on the blows.
   - **Every action its own:**
 
     | What | Sound |
     |---|---|
-    | The party's blows | The Knight's sword on iron (slash), the Rogue's dagger (stab), the Mage's crackling bolt, the Priest's mace with a small bell (smite); a crit adds a heavy crunch over the weapon's own |
+    | The party's blows | The Knight's sword biting through (slash), the Rogue's dagger going in deep (stab), the Mage's crackling bolt slamming in, the Priest's heavy mace (smite); a crit adds a much heavier blow and a hard crack over the weapon's own |
     | The skills | Taunt (the sword beaten on the shield, a war horn), Bash, Backstab (drawn, driven in, twisted), Smoke Bomb (a vial bursting, the smoke hissing), Fire (a burst, heard once however many it hits), Frost (crystals, a crack), Mend (the choir, a harp), Ward (a deep bell, the barrier humming), a combo (Shatter and the like), a shield broken |
     | The ultimates | Last Stand (drums, horns, the men's choir), Heist (a lock picked, coins, a sly harp), Cataclysm (fire coming down, the crypt's stone falling, the choir in terror), Miracle (the whole choir, the organ, bells) |
-    | The enemies' blows | Steel on mail; a bite (Ironwings, Cherubs); the Confessor's hex; its dark mend; a miss (Smoke Bomb, a dodge, a drowsy swing) is a swing alone |
+    | The enemies' blows | A heavy blow on armour and the body under it, the mail shivering; a bite (a rasping snarl, the jaw snapping, bone crunching: Ironwings, Cherubs); the Confessor's hex; its dark mend; a miss (Smoke Bomb, a dodge, a drowsy swing) is a swing alone |
     | The big moves | Each a wind-up as long as the move's (the Gaoler whirling the ball, faster and faster; the Bellringer hauling the rope; the Inquisitor drawing the sword, his wings unfolding; the Penitent's hook swung; the Gravedigger heaving), cut where it lands into its blow (SMASH, the toll, EXECUTE, Hook, Shove); Bash stopping the SMASH has its own; the wind-up also stops when its maker dies |
     | Enraged | Each boss its own roar (the Gaoler muzzled, chains thrashing; the Bellringer's cracked bell; the Inquisitor's iron roar and the organ; the Abbot through his jaw-plate, the pipe hissing, also when he wakes) |
     | The fallen (#154) | Each kind its own fall, the pieces landing as its figure crumbles (the Hollow's helm rolling, the Guardian's shield, the Revenant's rods and heart-lens, the Penitent's cage and candle, the Confessor's grille and censer, a Cherub's porcelain face per body, the Ironwing's shriek, the Vigil's rotor winding down, the Gravedigger's coffin lids); the bosses and the Abbot their own, bigger (the Gaoler's ball and chain, the Bellringer's last cracked toll, the Inquisitor's blade-feathers and sword, the Abbot's mace and the tithe spilling). Several at once follow each other a beat apart; the variant follows the corpse, never a random draw |
@@ -418,6 +424,16 @@ webcam (#103): "Headset" and what it does; there is no ring or label of its own.
     corpse's id, the blows' variants are picked in the audio only.
   - Real-life cues standing in for RPG moves (the apartment latch on Hook and the summon, the desk slam on SMASH,
     EXECUTE and Shove): they told the wrong story.
+- **Battle sounds have weight, and nothing in battle rings** (0.108.0, #157; Paweł on 0.107.0: "like empty pots or
+  porcelain on porcelain, no weight, too tiny"). The first pass built the blows and the falls from Kenney's light
+  metal, tin and plate recordings and from synthesised iron left to ring, with little low end: measured, 90 to 100% of
+  a blow's tail above 400 Hz sat in a few tones (a pan's ring). Now every blow is a body hit with a fast-falling
+  thump, a dense crunch and a short edge, balanced by band; pieces land as thuds and grit; iron is struck and stopped.
+  Rejected:
+  - Iron that rings (bars, bowls, cracked bells): it reads as kitchenware, not as a fight.
+  - A thump that is mostly sub-bass (the first try at weight: 90% of the energy under 120 Hz): laptop speakers and most
+    headphones barely play it, so it sounds small again; the weight sits at 80 to 200 Hz with the crunch above it.
+  - More reverb for size: on short hits the console's combs ring too.
 - **Size:** the build grows to 928 KB, still one file that loads instantly. Lower bitrates were not worth it:
   through-wall sounds are already 32 kbps. With the RPG's own sounds (#155, 95 cues) and the launch's music it is about
   4.7 MB; the RPG's files are 22,050 Hz at 40 kbps (their console holds nothing above 11 kHz).
