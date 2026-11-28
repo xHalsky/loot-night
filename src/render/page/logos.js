@@ -429,8 +429,8 @@ function halskyLabs(u, len, cx, cy) {
 // ---------------------------------------------------------------------------
 const PS_T = { drop: 0.15, land: 0.55, refl: 0.8, band: 1.0, studios: 1.35, bars: 0.7, scroll: 0.8 };   // the bars and the scroller sooner (#151)
 const PS_BANDS = [[0.1, P.moon], [0.24, P.s6], [0.36, P.s5], [0.44, P.d5], [0.52, P.s2], [0.6, P.d3], [0.72, P.d4], [0.86, P.d5], [1.01, P.d6]];
-// read whole before the title comes in (#151): about 8 s of scrolling at 100 px/s
-const PS_SCROLL = 'YO! THIS INTRO WAS DUE IN MARCH.   GREETZ TO DUTCH, HIXX, HUDZOR AND ARKBISHOP.   ';
+// read whole before the title comes in (#151, #153): under 6 s of scrolling at 110 px/s
+const PS_SCROLL = 'YO! THIS INTRO WAS DUE IN MARCH.   GREETZ TO THE WHOLE SCENE.   ';
 function procrastinationStudios(u, len, cx, cy) {
   const font = '40px rock', LM = typeMask('PROCRASTINATION', font, { sy: 1.45 }), cap = LM.cap, base = 74;
   const lx = Math.round(cx - LM.tw / 2) - 2;
@@ -438,7 +438,7 @@ function procrastinationStudios(u, len, cx, cy) {
   // the copper bars swing in at the bottom, the scroller rides over them
   const bv = clamp((u - PS_T.bars) / 0.4);
   if (bv > 0) { copperBar(182 + Math.sin(u * 2.1) * 12, COPPER_SEA, bv); copperBar(206 + Math.sin(u * 2.1 + 2.6) * 10, COPPER_DUSK, bv); }
-  if (u > PS_T.scroll) sineScroller(PS_SCROLL, 190, u - PS_T.scroll, { speed: 100, amp: 7, k: 0.03, drift: 18, ramp: COPPER_FIRE.slice(1), rampOff: 0 });
+  if (u > PS_T.scroll) sineScroller(PS_SCROLL, 190, u - PS_T.scroll, { speed: 110, amp: 7, k: 0.03, drift: 18, ramp: COPPER_FIRE.slice(1), rampOff: 0 });
   // the logo drops in from above, bounces twice and lands; it wobbles row by row while it moves
   let dy = 0;
   if (u < PS_T.land) { const k = clamp((u - PS_T.drop) / (PS_T.land - PS_T.drop)); dy = -Math.round((1 - k * k) * 110); }

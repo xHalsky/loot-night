@@ -1,5 +1,5 @@
 """The launch's whole audio as one file (#127): every cue of the sheet at its time with its MIX level, the rain with its
-fades, the theme from 6.2 s, 0 to 44 s as it plays in the game (for Paweł's ear; nothing in the build reads it).
+fades, the theme from 6.2 s, 0 to 42 s as it plays in the game (for Paweł's ear; nothing in the build reads it).
 
     python3 tools/sfx/launch_mix.py [out_dir]   ->  launch-audio.mp3, aoj_theme-alone.mp3
 
@@ -93,7 +93,7 @@ def encode(x, dst):
 
 def main(out_dir):
     sh, mix, lsec = sheet(), mixes(), loop_sec()
-    dur = 44.0   # the launch is 42 s since #151
+    dur = 42.0   # the launch is 40 s since #153
     out = np.zeros((int(dur * SR), 2))
     seen = {}
     for at, cue, _ in sorted(sh['sound'], key=lambda c: c[0]):

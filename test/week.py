@@ -94,8 +94,8 @@ async def main():
         # --- Tuesday: the boys' chat (Let's go with the mouse), then How to hide with the headset new ---
         check(await ev("g.day") == 1 and await ev("!!g.voice && g.voice.chat[0][1].startsWith(\"no curfew\")"), 'Tuesday: the boys\' chat: no curfew')
         await pg.wait_for_timeout(3000)
-        await shot('6b_tuesday_chat')   # from the login (#127): the first bubble at 28.6 s, the monitor on the login
-        check(27 < await ev("L.launch.t()") < 31.5 and not await tap('voiceOk'), 'Tuesday: Age of Judgment from the login (T 27), the phone stays up')
+        await shot('6b_tuesday_chat')   # from the login (#127): the first bubble at 26.6 s, the monitor on the login
+        check(25 < await ev("L.launch.t()") < 29.5 and not await tap('voiceOk'), 'Tuesday: Age of Judgment from the login (T 25), the phone stays up')
         await ev("L.launch.skip(); 0"); await pg.wait_for_timeout(300)
         check(await tap('voiceOk'), "Let's go on the phone")
         check(await ev("g.day") == 1 and await ev("g.howto && !g.voice"), 'Tuesday: How to hide, the headset new')
@@ -118,7 +118,7 @@ async def main():
         check(await ev("g.day") == 1 and await ev("g.nightsPlayed") == 2, 'the replay: Tuesday again, the third night played')
         check(await ev("g.voice && g.voice.date") == 'Tuesday, again' and await ev("g.voice.chat[0][1]") == 'game over man. GAME OVER.', 'the replay: the boys react in their chat')
         await shot('11_replay_chat', 3000)
-        check(27 < await ev("L.launch.t()") < 31.5, 'the replay: from the login too')
+        check(25 < await ev("L.launch.t()") < 29.5, 'the replay: from the login too')
         # the title
         await pg.reload(); await pg.wait_for_timeout(700)
         txt = await pg.evaluate("()=>{const b=document.querySelector('[data-act=continue]'); return b ? b.textContent : ''}")

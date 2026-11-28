@@ -1185,7 +1185,7 @@ function drawPhone() {
   }
   const now = performance.now(), k = Math.min(1, (now - (n!.phUp ?? 0)) / PH_RISE_MS), dy = Math.round((1 - (1 - (1 - k) ** 3)) * 540);
   phCanvas.style.transform = dy ? `translateY(${dy}px)` : '';
-  el('phClose').style.visibility = launchHolds() ? 'hidden' : '';   // the launch (#127): not escapable, it sets the mood; its 42 s are the night's waiting
+  el('phClose').style.visibility = launchHolds() ? 'hidden' : '';   // the launch (#127): not escapable, it sets the mood; its 40 s are the night's waiting
   el('phClose').dataset.act = voiceUp() ? 'voiceOk' : n!.game?.kind === 'phone' ? 'closeGame' : phoneAction() ? 'preCancel' : 'preMenu';
   if (now - phLast < 33) return;   // 30 fps is plenty for a phone
   phLast = now;

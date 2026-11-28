@@ -3,6 +3,21 @@
 One entry per build. Newest first. The design bible describes the current game; this file records how it got there.
 Versions before 0.14.0 predate the repository (they exist only as published artifact versions and zips).
 
+## 0.105.1 (2026-11-28)
+
+Paweł's note on 0.105.0: the Procrastination part shorter, and its greetz (#153).
+
+- The scroller says "YO! THIS INTRO WAS DUE IN MARCH.   GREETZ TO THE WHOLE SCENE." It runs at 110 px/s (was 100) and
+  is read whole before the title.
+- The developer's logo holds 6.4 s (10.6 to 17), 2 s less than 0.105.0 (4.4 s before #151). Everything from the
+  title on is 2 s later than before #151, so the first Monday's launch is 40 s.
+  - The first Monday's chat after 15 s lands at 23.4, 29.6 and 37.0 s. Let's go comes at 40 s.
+  - The later nights' login starts at T 25, and the fast part runs from 30.4. The town still comes 7.4 s after the
+    chat.
+- Re-baked: the tracker jingle has one bar more than the original (44 rows; 0.105.0 had two more), and the theme moved
+  to the new times. The review mix is re-made (42 s).
+- Tests follow the times.
+
 ## 0.105.0 (2026-11-28)
 
 Paweł's notes on 0.104.0: the trash can in one colour, the Procrastination logo longer with a snaking scroller, and

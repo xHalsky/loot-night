@@ -21,7 +21,7 @@ async def main():
         await pg.add_init_script('window.__lnDay = 1'); await pg.goto('file:///home/claude/loot-night/dist/index.html'); await pg.wait_for_timeout(500)
         await pg.evaluate(GO, 'newGame')
         t0 = time.time(); shots = []
-        for want in (28.0, 30.5, 32.2, 33.5, 35.6, 37.4, 39.5, 41.6, 42.6):
+        for want in (26.0, 28.5, 30.2, 31.5, 33.6, 35.4, 37.5, 39.6, 40.6):
             while True:
                 t = await ev("L.launch.t()")
                 if t >= want or t < 0 or time.time() - t0 > 30: break
@@ -30,9 +30,9 @@ async def main():
             path = f'test/shots/fastboot_{int(want * 10)}.png'
             await pg.screenshot(path=path); shots.append((t, real, path))
             print(f'T {t:5.2f} at {real:4.2f} s')
-        town = next((r for t, r, _ in shots if t >= 42), None)
+        town = next((r for t, r, _ in shots if t >= 40), None)
         check(town is not None and 6.6 < town < 9.5, f'the town in about 7.4 real s ({town and round(town, 2)} s, with the screenshots\' own time)')
-        lg = next((r for t, r, _ in shots if t >= 32.2), 99)
+        lg = next((r for t, r, _ in shots if t >= 30.2), 99)
         check(4.8 < lg < 6.8, f'the login and the typing at their pace: Log in pressed about 5.2 s in ({round(lg, 2)} s)')
         check(await ev("!!g.voice && g.voice.launch === 'login'"), 'the phone still up, waiting for Let\'s go')
         check(not errs, 'no page errors ' + str(errs[:2]))
